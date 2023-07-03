@@ -9,7 +9,6 @@ namespace EchoDotNetLite.Common
     {
         public static string GetDebugString(this EchoObjectInstance echoObjectInstance)
         {
-            var sb = new StringBuilder();
             if (echoObjectInstance == null)
             {
                 return "null";
