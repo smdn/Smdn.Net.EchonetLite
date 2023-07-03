@@ -248,7 +248,7 @@ namespace EchoDotNetLite
             else
             {
                 OnFrameReceived -= handler;
-                throw new Exception("Time has expired");
+                throw new TimeoutException($"'{nameof(プロパティ値書き込み応答要)}'が指定されたタイムアウト時間を超過しました");
             }
         }
 
@@ -320,7 +320,7 @@ namespace EchoDotNetLite
             else
             {
                 OnFrameReceived -= handler;
-                throw new Exception("Time has expired");
+                throw new TimeoutException($"'{nameof(プロパティ値読み出し)}'が指定されたタイムアウト時間を超過しました");
             }
         }
         /// <summary>
@@ -409,7 +409,7 @@ namespace EchoDotNetLite
             else
             {
                 OnFrameReceived -= handler;
-                throw new Exception("Time has expired");
+                throw new TimeoutException($"'{nameof(プロパティ値書き込み読み出し)}'が指定されたタイムアウト時間を超過しました");
             }
         }
 
@@ -539,7 +539,7 @@ namespace EchoDotNetLite
             else
             {
                 OnFrameReceived -= handler;
-                throw new Exception("Time has expired");
+                throw new TimeoutException($"'{nameof(プロパティ値通知応答要)}'が指定されたタイムアウト時間を超過しました");
             }
         }
 
