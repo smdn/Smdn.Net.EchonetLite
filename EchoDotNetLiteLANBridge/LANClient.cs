@@ -14,7 +14,7 @@ namespace EchoDotNetLiteLANBridge
     {
         private readonly UdpClient receiveUdpClient;
         private readonly ILogger _logger;
-        private static int DefaultUdpPort = 3610;
+        private const int DefaultUdpPort = 3610;
         public LANClient(ILogger<LANClient> logger)
         {
             var selfAddresses = NetworkInterface.GetAllNetworkInterfaces().SelectMany(ni => ni.GetIPProperties().UnicastAddresses.Select(ua => ua.Address.ToString()));
