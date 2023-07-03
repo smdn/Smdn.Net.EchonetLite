@@ -33,7 +33,7 @@ namespace EchoDotNetLiteSkstackIpBridge
 
         public string BroadcastIpaddr { get; set; }
 
-        public string SmartMaterIpaddr { get; set; }
+        public string SmartMeterIpaddr { get; set; }
         public string SelfIpaddr { get; set; }
 
         public async Task<bool> ScanAndJoinAsync(string bRouteId, string bRoutePassword)
@@ -67,7 +67,7 @@ namespace EchoDotNetLiteSkstackIpBridge
             var skll64 = await SKDevice.SKLl64Async(pan.Addr);
             //TODO Bルートの一斉同報の宛先ってスマートメーターだけ…?
             BroadcastIpaddr = skll64.Ipaddr;
-            SmartMaterIpaddr = skll64.Ipaddr;
+            SmartMeterIpaddr = skll64.Ipaddr;
             var joinTCS = new TaskCompletionSource<bool>();
             var joinEvent = default(EventHandler<EVENT>);
             joinEvent += (sender, e) =>
@@ -87,7 +87,7 @@ namespace EchoDotNetLiteSkstackIpBridge
             };
             SKDevice.OnEVENTReceived += joinEvent;
             _logger.LogDebug($"PANA接続シーケンス開始");
-            await SKDevice.SKJoinAsync(SmartMaterIpaddr);
+            await SKDevice.SKJoinAsync(SmartMeterIpaddr);
             if (await Task.WhenAny(joinTCS.Task, Task.Delay(30*1000)) == joinTCS.Task)
             {
                 return await joinTCS.Task;
