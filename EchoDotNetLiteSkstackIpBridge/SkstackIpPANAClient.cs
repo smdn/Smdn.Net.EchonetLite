@@ -96,7 +96,7 @@ namespace EchoDotNetLiteSkstackIpBridge
             {
                 _logger.LogDebug($"PANA接続シーケンス タイムアウト");
                 SKDevice.OnEVENTReceived -= joinEvent;
-                throw new Exception("Time has expired");
+                throw new TimeoutException("PANA接続シーケンスがタイムアウトしました");
             }
         }
 
