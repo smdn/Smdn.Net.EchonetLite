@@ -11,10 +11,10 @@ namespace EchoDotNetLite.Specifications
     {
         public EchonetObject(byte classGroupCode, byte classCode)
         {
-            ClassGroup = SpecificationMaster.GetInstance().プロファイル.Where(p => p.ClassGroupCode == classGroupCode).FirstOrDefault();
+            ClassGroup = SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.ClassGroupCode == classGroupCode);
             if (ClassGroup == null)
             {
-                ClassGroup = SpecificationMaster.GetInstance().機器.Where(p => p.ClassGroupCode == classGroupCode).FirstOrDefault();
+                ClassGroup = SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode);
             }
             if (ClassGroup != null)
             {
@@ -26,7 +26,7 @@ namespace EchoDotNetLite.Specifications
                     var superClassProperties = JsonConvert.DeserializeObject<PropertyMaster>(File.ReadAllText(superClassFilePath, new UTF8Encoding(false)));
                     Properties.AddRange(superClassProperties.Properties);
                 }
-                Class = ClassGroup.ClassList.Where(c => c.Status && c.ClassCode == classCode).FirstOrDefault();
+                Class = ClassGroup.ClassList.FirstOrDefault(c => c.Status && c.ClassCode == classCode);
                 if (Class.Status)
                 {
                     var classFilePath = Path.Combine(SpecificationMaster.GetSpecificationMasterDataDirectory(),$"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}", $"0x{Class.ClassCode:X2}-{Class.ClassName}.json");

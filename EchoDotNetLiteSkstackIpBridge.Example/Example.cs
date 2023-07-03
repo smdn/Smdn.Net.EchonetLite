@@ -125,10 +125,10 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                             {
                                 _logger.LogTrace(t.Exception, "Exception");
                             }
-                            var 瞬時電力計測値 = properties.Where(p => p.Spec.Name == "瞬時電力計測値").First();
-                            var 瞬時電流計測値 = properties.Where(p => p.Spec.Name == "瞬時電流計測値").First();
-                            var 現在時刻設定 = properties.Where(p => p.Spec.Name == "現在時刻設定").First();
-                            var 現在年月日設定 = properties.Where(p => p.Spec.Name == "現在年月日設定").First();
+                            var 瞬時電力計測値 = properties.First(p => p.Spec.Name == "瞬時電力計測値");
+                            var 瞬時電流計測値 = properties.First(p => p.Spec.Name == "瞬時電流計測値");
+                            var 現在時刻設定 = properties.First(p => p.Spec.Name == "現在時刻設定");
+                            var 現在年月日設定 = properties.First(p => p.Spec.Name == "現在年月日設定");
 
                             _logger.LogDebug($"瞬時電力計測値:{EndianBitConverter.BigEndian.ToInt32(瞬時電力計測値.Value,0)}W");
                             _logger.LogDebug($"瞬時電流計測値: R相{EndianBitConverter.BigEndian.ToInt16(瞬時電流計測値.Value, 0) * 0.1}A,T相{EndianBitConverter.BigEndian.ToInt16(瞬時電流計測値.Value, 2) * 0.1}A");
