@@ -52,17 +52,17 @@ namespace EchoDotNetLite.Models
             if (@class != null)
             {
                 Specifications.EchoProperty property;
-                 property = @class.AnnoProperties.Where(p => p.Code == epc).FirstOrDefault();
+                 property = @class.AnnoProperties.FirstOrDefault(p => p.Code == epc);
                 if (property != null)
                 {
                     return property;
                 }
-                property = @class.GetProperties.Where(p => p.Code == epc).FirstOrDefault();
+                property = @class.GetProperties.FirstOrDefault(p => p.Code == epc);
                 if (property != null)
                 {
                     return property;
                 }
-                property = @class.SetProperties.Where(p => p.Code == epc).FirstOrDefault();
+                property = @class.SetProperties.FirstOrDefault(p => p.Code == epc);
                 if (property != null)
                 {
                     return property;
@@ -106,16 +106,16 @@ namespace EchoDotNetLite.Models
 
         public static Specifications.IEchonetObject FindClass(byte classGroupCode, byte classCode)
         {
-            var profileClass = Specifications.プロファイル.クラス一覧.Where(
+            var profileClass = Specifications.プロファイル.クラス一覧.FirstOrDefault(
                                 g => g.ClassGroup.ClassGroupCode == classGroupCode
-                                && g.Class.ClassCode == classCode).FirstOrDefault();
+                                && g.Class.ClassCode == classCode);
             if (profileClass != null)
             {
                 return profileClass;
             }
-            var deviceClass = Specifications.機器.クラス一覧.Where(
+            var deviceClass = Specifications.機器.クラス一覧.FirstOrDefault(
                                 g => g.ClassGroup.ClassGroupCode == classGroupCode
-                                && g.Class.ClassCode == classCode).FirstOrDefault();
+                                && g.Class.ClassCode == classCode);
             if (deviceClass != null)
             {
                 return deviceClass;

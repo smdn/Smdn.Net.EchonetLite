@@ -52,7 +52,7 @@ namespace EchoDotNetLite
         public async Task インスタンスリスト通知Async()
         {
             //インスタンスリスト通知プロパティ
-            var property = SelfNode.NodeProfile.ANNOProperties.Where(p => p.Spec.Code == 0xD5).First();
+            var property = SelfNode.NodeProfile.ANNOProperties.First(p => p.Spec.Code == 0xD5);
             using (var ms = new MemoryStream())
             using (var bw = new BinaryWriter(ms))
             {
@@ -132,11 +132,11 @@ namespace EchoDotNetLite
                 foreach (var prop in edata.OPCList)
                 {
                     //一部成功した書き込みを反映
-                    var target = destinationObject.Properties.Where(p => p.Spec.Code == prop.EPC).First();
+                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
                     if (prop.PDC == 0x00)
                     {
                         //書き込み成功
-                        target.Value = properties.Where(p => p.Spec.Code == prop.EPC).First().Value;
+                        target.Value = properties.First(p => p.Spec.Code == prop.EPC).Value;
                     }
                 }
                 responseTCS.SetResult((false, edata.OPCList));
@@ -171,7 +171,7 @@ namespace EchoDotNetLite
             {
                 foreach (var prop in properties)
                 {
-                    var target = destinationObject.Properties.Where(p => p.Spec.Code == prop.Spec.Code).First();
+                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.Spec.Code);
                     //成功した書き込みを反映(全部OK)
                     target.Value = prop.Value;
                 }
@@ -211,11 +211,11 @@ namespace EchoDotNetLite
                 foreach (var prop in edata.OPCList)
                 {
                     //成功した書き込みを反映
-                    var target = destinationObject.Properties.Where(p => p.Spec.Code == prop.EPC).First();
+                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
                     if(prop.PDC == 0x00)
                     {
                         //書き込み成功
-                        target.Value = properties.Where(p => p.Spec.Code == prop.EPC).First().Value;
+                        target.Value = properties.First(p => p.Spec.Code == prop.EPC).Value;
                     }
                 }
                 responseTCS.SetResult((edata.ESV == ESV.Set_Res, edata.OPCList));
@@ -283,7 +283,7 @@ namespace EchoDotNetLite
                 foreach (var prop in edata.OPCList)
                 {
                     //成功した読み込みを反映
-                    var target = destinationObject.Properties.Where(p => p.Spec.Code == prop.EPC).First();
+                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
                     if (prop.PDC != 0x00)
                     {
                         //読み込み成功
@@ -356,17 +356,17 @@ namespace EchoDotNetLite
                 foreach (var prop in edata.OPCSetList)
                 {
                     //成功した書き込みを反映
-                    var target = destinationObject.Properties.Where(p => p.Spec.Code == prop.EPC).First();
+                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
                     if (prop.PDC == 0x00)
                     {
                         //書き込み成功
-                        target.Value = propertiesSet.Where(p => p.Spec.Code == prop.EPC).First().Value;
+                        target.Value = propertiesSet.First(p => p.Spec.Code == prop.EPC).Value;
                     }
                 }
                 foreach (var prop in edata.OPCGetList)
                 {
                     //成功した読み込みを反映
-                    var target = destinationObject.Properties.Where(p => p.Spec.Code == prop.EPC).First();
+                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
                     if (prop.PDC != 0x00)
                     {
                         //読み込み成功
@@ -577,7 +577,7 @@ namespace EchoDotNetLite
                         ClassCode = classCode,
                         InstanceCode = instanceCode,
                     };
-                    var device = sourceNode.Devices.Where(d => d.GetEOJ() == eoj).FirstOrDefault();
+                    var device = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == eoj);
                     if (device == null)
                     {
                         device = new EchoObjectInstance(eoj);
@@ -628,7 +628,7 @@ namespace EchoDotNetLite
                         var propertyMap = ParsePropertyMap(pr.EDT);
                         foreach (var propertyCode in propertyMap)
                         {
-                            var property = device.Properties.Where(p => p.Spec.Code == propertyCode).FirstOrDefault();
+                            var property = device.Properties.FirstOrDefault(p => p.Spec.Code == propertyCode);
                             if (property == null)
                             {
                                 property = new EchoPropertyInstance(device.Spec.ClassGroup.ClassGroupCode, device.Spec.Class.ClassCode, propertyCode);
@@ -643,7 +643,7 @@ namespace EchoDotNetLite
                         var propertyMap = ParsePropertyMap(pr.EDT);
                         foreach (var propertyCode in propertyMap)
                         {
-                            var property = device.Properties.Where(p => p.Spec.Code == propertyCode).FirstOrDefault();
+                            var property = device.Properties.FirstOrDefault(p => p.Spec.Code == propertyCode);
                             if (property == null)
                             {
                                 property = new EchoPropertyInstance(device.Spec.ClassGroup.ClassGroupCode, device.Spec.Class.ClassCode, propertyCode);
@@ -658,7 +658,7 @@ namespace EchoDotNetLite
                         var propertyMap = ParsePropertyMap(pr.EDT);
                         foreach (var propertyCode in propertyMap)
                         {
-                            var property = device.Properties.Where(p => p.Spec.Code == propertyCode).FirstOrDefault();
+                            var property = device.Properties.FirstOrDefault(p => p.Spec.Code == propertyCode);
                             if (property == null)
                             {
                                 property = new EchoPropertyInstance(device.Spec.ClassGroup.ClassGroupCode, device.Spec.Class.ClassCode, propertyCode);
@@ -765,7 +765,7 @@ namespace EchoDotNetLite
                 }
                 else
                 {
-                    var device = SelfNode.Devices.Where(d => d.GetEOJ() == edata.DEOJ).FirstOrDefault();
+                    var device = SelfNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.DEOJ);
                     destObject = device;
                 }
                 Task task = null;
@@ -868,7 +868,7 @@ namespace EchoDotNetLite
             var opcList = new List<PropertyRequest>();
             foreach (var opc in edata.OPCList)
             {
-                var property = destObject.SETProperties.Where(p => p.Spec.Code == opc.EPC).FirstOrDefault();
+                var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                 if (property == null
                         || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                         || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -928,7 +928,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCList)
                 {
-                    var property = destObject.SETProperties.Where(p => p.Spec.Code == opc.EPC).FirstOrDefault();
+                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1002,7 +1002,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCList)
                 {
-                    var property = destObject.SETProperties.Where(p => p.Spec.Code == opc.EPC).FirstOrDefault();
+                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1079,7 +1079,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCSetList)
                 {
-                    var property = destObject.SETProperties.Where(p => p.Spec.Code == opc.EPC).FirstOrDefault();
+                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1100,7 +1100,7 @@ namespace EchoDotNetLite
                 }
                 foreach (var opc in edata.OPCGetList)
                 {
-                    var property = destObject.SETProperties.Where(p => p.Spec.Code == opc.EPC).FirstOrDefault();
+                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1167,7 +1167,7 @@ namespace EchoDotNetLite
         private bool プロパティ値通知サービス((string address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
         {
             bool hasError = false;
-            var sourceObject = sourceNode.Devices.Where(d => d.GetEOJ() == edata.SEOJ).FirstOrDefault();
+            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
             if (sourceObject == null)
             {
                 //ノードプロファイルからの通知の場合
@@ -1185,7 +1185,7 @@ namespace EchoDotNetLite
             }
             foreach (var opc in edata.OPCList)
             {
-                var property = sourceObject.Properties.Where(p => p.Spec.Code == opc.EPC).FirstOrDefault();
+                var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                 if (property == null)
                 {
                     //未知のプロパティ
@@ -1231,7 +1231,7 @@ namespace EchoDotNetLite
                 //"けどこっそり保持する"
                 hasError = true;
             }
-            var sourceObject = sourceNode.Devices.Where(d => d.GetEOJ() == edata.SEOJ).FirstOrDefault();
+            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
             if (sourceObject == null)
             {
                 //ノードプロファイルからの通知の場合
@@ -1249,7 +1249,7 @@ namespace EchoDotNetLite
             }
             foreach (var opc in edata.OPCList)
             {
-                var property = sourceObject.Properties.Where(p => p.Spec.Code == opc.EPC).FirstOrDefault();
+                var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                 if (property == null)
                 {
                     //未知のプロパティ
