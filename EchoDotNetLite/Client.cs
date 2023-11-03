@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EchoDotNetLite
@@ -162,7 +163,7 @@ namespace EchoDotNetLite
                         EDT = p.Value,
                     }).ToList(),
                 }
-            });
+            }, default);
             if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
             {
                 return await responseTCS.Task;
@@ -240,7 +241,7 @@ namespace EchoDotNetLite
                         EDT = p.Value,
                     }).ToList(),
                 }
-            });
+            }, default);
             if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
             {
                 return await responseTCS.Task;
@@ -401,7 +402,7 @@ namespace EchoDotNetLite
                         EDT = null,
                     }).ToList(),
                 }
-            });
+            }, default);
             if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
             {
                 return await responseTCS.Task;
@@ -444,7 +445,7 @@ namespace EchoDotNetLite
                         EDT = null,
                     }).ToList(),
                 }
-            });
+            }, default);
         }
 
 
@@ -479,7 +480,7 @@ namespace EchoDotNetLite
                         EDT = p.Value,
                     }).ToList(),
                 }
-            });
+            }, default);
         }
 
         /// <summary>
@@ -531,7 +532,7 @@ namespace EchoDotNetLite
                         EDT = p.Value,
                     }).ToList(),
                 }
-            });
+            }, default);
             if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
             {
                 return await responseTCS.Task;
@@ -553,10 +554,10 @@ namespace EchoDotNetLite
             }
         }
 
-        private async Task RequestAsync(string address,Frame frame)
+        private async Task RequestAsync(string address, Frame frame, CancellationToken cancellationToken)
         {
             _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonConvert.SerializeObject(frame)}");
-            await _panaClient.RequestAsync(address, FrameSerializer.Serialize(frame));
+            await _panaClient.RequestAsync(address, FrameSerializer.Serialize(frame), cancellationToken);
         }
 
         private void インスタンスリスト通知受信(EchoNode sourceNode, byte[] edt)
@@ -901,7 +902,7 @@ namespace EchoDotNetLite
                         ESV = ESV.SetI_SNA,//SetI_SNA(0x50)
                         OPCList = opcList,
                     }
-                });
+                }, default);
                 return false;
             }
             return true;
@@ -962,7 +963,7 @@ namespace EchoDotNetLite
                         ESV = ESV.SetC_SNA,//SetC_SNA(0x51)
                         OPCList = opcList,
                     }
-                });
+                }, default);
                 return false;
             }
             await RequestAsync(request.address, new Frame()
@@ -977,7 +978,7 @@ namespace EchoDotNetLite
                     ESV = ESV.Set_Res,//Set_Res(0x71)
                     OPCList = opcList,
                 }
-            });
+            }, default);
             return true;
         }
 
@@ -1037,7 +1038,7 @@ namespace EchoDotNetLite
                         ESV = ESV.Get_SNA,//Get_SNA(0x52)
                         OPCList = opcList,
                     }
-                });
+                }, default);
                 return false;
             }
             await RequestAsync(request.address, new Frame()
@@ -1052,7 +1053,7 @@ namespace EchoDotNetLite
                     ESV = ESV.Get_Res,//Get_Res(0x72)
                     OPCList = opcList,
                 }
-            });
+            }, default);
             return true;
         }
 
@@ -1136,7 +1137,7 @@ namespace EchoDotNetLite
                         OPCSetList = opcSetList,
                         OPCGetList = opcGetList,
                     }
-                });
+                }, default);
                 return false;
             }
             await RequestAsync(request.address, new Frame()
@@ -1152,7 +1153,7 @@ namespace EchoDotNetLite
                     OPCSetList = opcSetList,
                     OPCGetList = opcGetList,
                 }
-            });
+            }, default);
             return true;
         }
 
@@ -1294,7 +1295,7 @@ namespace EchoDotNetLite
                         ESV = ESV.INFC_Res,//INFC_Res(0x74)
                         OPCList = opcList,
                     }
-                });
+                }, default);
             }
             return !hasError;
 

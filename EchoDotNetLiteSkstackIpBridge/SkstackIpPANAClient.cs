@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EchoDotNetLiteSkstackIpBridge
@@ -108,7 +109,7 @@ namespace EchoDotNetLiteSkstackIpBridge
         }
 
 
-        public async Task RequestAsync(string address,byte[] request)
+        public async Task RequestAsync(string address,byte[] request,CancellationToken cancellationToken)
         {
             if (address == null)
             {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EchoDotNetLiteLANBridge
@@ -73,7 +74,7 @@ namespace EchoDotNetLiteLANBridge
             }
         }
 
-        public async Task RequestAsync(string address, byte[] request)
+        public async Task RequestAsync(string address, byte[] request, CancellationToken cancellationToken)
         {
             _logger.LogDebug($"UDP送信:{address ?? "Broadcast"} {BytesConvert.ToHexString(request)}");
             IPEndPoint remote;
@@ -90,7 +91,11 @@ namespace EchoDotNetLiteLANBridge
                 EnableBroadcast = true
             };
             sendUdpClient.Connect(remote);
+#if NET6_0_OR_GREATER
+            await sendUdpClient.SendAsync(request.AsMemory(), cancellationToken);
+#else
             await sendUdpClient.SendAsync(request, request.Length);
+#endif
             sendUdpClient.Close();
         }
     }
