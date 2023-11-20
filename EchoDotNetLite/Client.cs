@@ -975,7 +975,7 @@ namespace EchoDotNetLite
             }
         }
 
-        private void ReceiveFrame(object sendor, (string address, Frame frame) value)
+        private void ReceiveFrame(object sender, (string address, Frame frame) value)
         {
             if (value.frame.EHD1 == EHD1.ECHONETLite
                 && value.frame.EHD2 == EHD2.Type1)

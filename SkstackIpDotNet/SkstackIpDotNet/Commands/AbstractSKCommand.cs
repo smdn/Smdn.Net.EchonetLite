@@ -15,7 +15,7 @@ namespace SkstackIpDotNet.Commands
             Timeout = timeout;
         }
         internal TaskCompletionSource<TResponse> TaskCompletionSource { get; set; }
-        public virtual void ReceiveHandler(object sendor, string eventRow)
+        public virtual void ReceiveHandler(object sender, string eventRow)
         {
             if (eventRow.StartsWith(Command))
             {
@@ -57,9 +57,9 @@ namespace SkstackIpDotNet.Commands
         {
 
         }
-        public override void ReceiveHandler(object sendor, string eventRow)
+        public override void ReceiveHandler(object sender, string eventRow)
         {
-            base.ReceiveHandler(sendor, eventRow);
+            base.ReceiveHandler(sender, eventRow);
             if (eventRow.StartsWith("OK"))
             {
                 TaskCompletionSource.SetResult(new OK(eventRow));
