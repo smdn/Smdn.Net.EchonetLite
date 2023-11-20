@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EchoDotNetLite
@@ -49,7 +50,9 @@ namespace EchoDotNetLite
             return ++tid;
         }
 
-        public async Task インスタンスリスト通知Async()
+        public async Task インスタンスリスト通知Async(
+          CancellationToken cancellationToken = default
+        )
         {
             //インスタンスリスト通知プロパティ
             var property = SelfNode.NodeProfile.ANNOProperties.First(p => p.Spec.Code == 0xD5);
@@ -80,9 +83,12 @@ namespace EchoDotNetLite
 
                 })
                 , new List<EchoPropertyInstance>() { property }
+                , cancellationToken
                 );
         }
-        public async Task インスタンスリスト通知要求Async()
+        public async Task インスタンスリスト通知要求Async(
+          CancellationToken cancellationToken = default
+        )
         {
             var a = new List<EchoPropertyInstance>() { new EchoPropertyInstance(
                 Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
@@ -99,7 +105,28 @@ namespace EchoDotNetLite
                     ClassCode = Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
                     InstanceCode = 0x01,
                 })
-                , a);
+                , a
+                , cancellationToken
+                );
+        }
+
+        /// <summary>
+        /// 指定された時間でタイムアウトする<see cref="CancellationTokenSource"/>を作成します。
+        /// </summary>
+        /// <param name="timeoutMilliseconds">
+        /// ミリ秒単位でのタイムアウト時間。
+        /// 値が<see cref="Timeout.Infinite"/>に等しい場合は、タイムアウトしない<see cref="CancellationTokenSource"/>を返します。
+        /// </param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeoutMilliseconds"/>に負の値を指定することはできません。</exception>
+        private static CancellationTokenSource CreateTimeoutCancellationTokenSource(int timeoutMilliseconds)
+        {
+            if (0 > timeoutMilliseconds)
+                throw new ArgumentOutOfRangeException("タイムアウト時間に負の値を指定することはできません。", nameof(timeoutMilliseconds));
+
+            if (timeoutMilliseconds == Timeout.Infinite)
+                return new CancellationTokenSource();
+
+            return new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
         }
 
         /// <summary>
@@ -118,10 +145,49 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , int timeoutMilliseconds = 1000)
         {
+            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
+
+            try {
+                return await プロパティ値書き込み要求応答不要(
+                    sourceObject,
+                    destinationNode,
+                    destinationObject,
+                    properties,
+                    cts.Token
+                ).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
+                return (true, null);
+            }
+        }
+
+        /// <summary>
+        /// 一斉通知可
+        /// </summary>
+        /// <param name="sourceObject"></param>
+        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationObject"></param>
+        /// <param name="properties"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>true:タイムアウトまでに不可応答なし,false:不可応答</returns>
+        public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み要求応答不要(
+            EchoObjectInstance sourceObject
+            , EchoNode destinationNode
+            , EchoObjectInstance destinationObject
+            , IEnumerable<EchoPropertyInstance> properties
+            , CancellationToken cancellationToken)
+        {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
             var handler = default(EventHandler<(string, Frame)>);
             handler += (object sender, (string address, Frame response) value) =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _ = responseTCS.TrySetCanceled(cancellationToken);
+                    OnFrameReceived -= handler;
+                    return;
+                }
+
                 if ((destinationNode!=null && value.address != destinationNode.Address)
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
@@ -162,21 +228,23 @@ namespace EchoDotNetLite
                         EDT = p.Value,
                     }).ToList(),
                 }
-            });
-            if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
-            {
-                return await responseTCS.Task;
+            }, cancellationToken);
+
+            try {
+                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
+                    return await responseTCS.Task;
+                }
             }
-            else
-            {
+            catch (OperationCanceledException ex) when (cancellationToken.Equals(ex.CancellationToken)) {
                 foreach (var prop in properties)
                 {
                     var target = destinationObject.Properties.First(p => p.Spec.Code == prop.Spec.Code);
                     //成功した書き込みを反映(全部OK)
                     target.Value = prop.Value;
                 }
-                OnFrameReceived -= handler; ;
-                return (true, null);
+                OnFrameReceived -= handler;
+
+                throw;
             }
         }
 
@@ -196,10 +264,49 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , int timeoutMilliseconds = 1000)
         {
+            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
+
+            try {
+                return await プロパティ値書き込み応答要(
+                    sourceObject,
+                    destinationNode,
+                    destinationObject,
+                    properties,
+                    cts.Token
+                ).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
+                throw new TimeoutException($"'{nameof(プロパティ値書き込み応答要)}'が指定されたタイムアウト時間を超過しました", ex);
+            }
+        }
+
+        /// <summary>
+        /// 一斉通知可
+        /// </summary>
+        /// <param name="sourceObject"></param>
+        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationObject"></param>
+        /// <param name="properties"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>true:成功の応答、false:不可応答</returns>
+        public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み応答要(
+            EchoObjectInstance sourceObject
+            , EchoNode destinationNode
+            , EchoObjectInstance destinationObject
+            , IEnumerable<EchoPropertyInstance> properties
+            , CancellationToken cancellationToken)
+        {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
             var handler = default(EventHandler<(string, Frame)>);
             handler += (object sender, (string address, Frame response) value) =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _ = responseTCS.TrySetCanceled(cancellationToken);
+                    OnFrameReceived -= handler;
+                    return;
+                }
+
                 if ((destinationNode != null && value.address != destinationNode.Address)
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
@@ -240,15 +347,17 @@ namespace EchoDotNetLite
                         EDT = p.Value,
                     }).ToList(),
                 }
-            });
-            if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
-            {
-                return await responseTCS.Task;
+            }, cancellationToken);
+
+            try {
+                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
+                    return await responseTCS.Task;
+                }
             }
-            else
-            {
+            catch {
                 OnFrameReceived -= handler;
-                throw new TimeoutException($"'{nameof(プロパティ値書き込み応答要)}'が指定されたタイムアウト時間を超過しました");
+
+                throw;
             }
         }
 
@@ -268,10 +377,49 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , int timeoutMilliseconds = 1000)
         {
+            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
+
+            try {
+                return await プロパティ値読み出し(
+                    sourceObject,
+                    destinationNode,
+                    destinationObject,
+                    properties,
+                    cts.Token
+                ).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
+                throw new TimeoutException($"'{nameof(プロパティ値読み出し)}'が指定されたタイムアウト時間を超過しました", ex);
+            }
+        }
+
+        /// <summary>
+        /// 一斉通知可
+        /// </summary>
+        /// <param name="sourceObject"></param>
+        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationObject"></param>
+        /// <param name="properties"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>true:成功の応答、false:不可応答</returns>
+        public async Task<(bool, List<PropertyRequest>)> プロパティ値読み出し(
+            EchoObjectInstance sourceObject
+            , EchoNode destinationNode
+            , EchoObjectInstance destinationObject
+            , IEnumerable<EchoPropertyInstance> properties
+            , CancellationToken cancellationToken)
+        {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
             var handler = default(EventHandler<(string, Frame)>);
             handler += (object sender, (string address, Frame response) value) =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _ = responseTCS.TrySetCanceled(cancellationToken);
+                    OnFrameReceived -= handler;
+                    return;
+                }
+
                 if ((destinationNode != null && value.address != destinationNode.Address)
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
@@ -312,15 +460,17 @@ namespace EchoDotNetLite
                         EDT = null
                     }).ToList(),
                 }
-            });
-            if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
-            {
-                return await responseTCS.Task;
+            }, cancellationToken);
+
+            try {
+                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
+                    return await responseTCS.Task;
+                }
             }
-            else
-            {
+            catch {
                 OnFrameReceived -= handler;
-                throw new TimeoutException($"'{nameof(プロパティ値読み出し)}'が指定されたタイムアウト時間を超過しました");
+
+                throw;
             }
         }
         /// <summary>
@@ -341,10 +491,52 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> propertiesGet
             , int timeoutMilliseconds = 1000)
         {
+            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
+
+            try {
+                return await プロパティ値書き込み読み出し(
+                    sourceObject,
+                    destinationNode,
+                    destinationObject,
+                    propertiesSet,
+                    propertiesGet,
+                    cts.Token
+                ).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
+                throw new TimeoutException($"'{nameof(プロパティ値書き込み読み出し)}'が指定されたタイムアウト時間を超過しました", ex);
+            }
+        }
+
+        /// <summary>
+        /// 一斉通知可
+        /// </summary>
+        /// <param name="sourceObject"></param>
+        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationObject"></param>
+        /// <param name="propertiesSet"></param>
+        /// <param name="propertiesGet"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>true:成功の応答、false:不可応答</returns></returns>
+        public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> プロパティ値書き込み読み出し(
+            EchoObjectInstance sourceObject
+            , EchoNode destinationNode
+            , EchoObjectInstance destinationObject
+            , IEnumerable<EchoPropertyInstance> propertiesSet
+            , IEnumerable<EchoPropertyInstance> propertiesGet
+            , CancellationToken cancellationToken)
+        {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>, List<PropertyRequest>)>();
             var handler = default(EventHandler<(string, Frame)>);
             handler += (object sender, (string address, Frame response) value) =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _ = responseTCS.TrySetCanceled(cancellationToken);
+                    OnFrameReceived -= handler;
+                    return;
+                }
+
                 if ((destinationNode != null && value.address != destinationNode.Address)
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
@@ -401,15 +593,17 @@ namespace EchoDotNetLite
                         EDT = null,
                     }).ToList(),
                 }
-            });
-            if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
-            {
-                return await responseTCS.Task;
+            }, cancellationToken);
+
+            try {
+                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
+                    return await responseTCS.Task;
+                }
             }
-            else
-            {
+            catch {
                 OnFrameReceived -= handler;
-                throw new TimeoutException($"'{nameof(プロパティ値書き込み読み出し)}'が指定されたタイムアウト時間を超過しました");
+
+                throw;
             }
         }
 
@@ -425,7 +619,8 @@ namespace EchoDotNetLite
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
             , EchoObjectInstance destinationObject
-            , IEnumerable<EchoPropertyInstance> properties)
+            , IEnumerable<EchoPropertyInstance> properties
+            , CancellationToken cancellationToken = default)
         {
             await RequestAsync(destinationNode?.Address, new Frame()
             {
@@ -444,7 +639,7 @@ namespace EchoDotNetLite
                         EDT = null,
                     }).ToList(),
                 }
-            });
+            }, cancellationToken);
         }
 
 
@@ -460,7 +655,8 @@ namespace EchoDotNetLite
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
             , EchoObjectInstance destinationObject
-            , IEnumerable<EchoPropertyInstance> properties)
+            , IEnumerable<EchoPropertyInstance> properties
+            , CancellationToken cancellationToken = default)
         {
             await RequestAsync(destinationNode?.Address, new Frame()
             {
@@ -479,7 +675,7 @@ namespace EchoDotNetLite
                         EDT = p.Value,
                     }).ToList(),
                 }
-            });
+            }, cancellationToken);
         }
 
         /// <summary>
@@ -498,10 +694,49 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , int timeoutMilliseconds = 1000)
         {
+            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
+
+            try {
+                return await プロパティ値通知応答要(
+                    sourceObject,
+                    destinationNode,
+                    destinationObject,
+                    properties,
+                    cts.Token
+                ).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
+                throw new TimeoutException($"'{nameof(プロパティ値通知応答要)}'が指定されたタイムアウト時間を超過しました", ex);
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="sourceObject"></param>
+        /// <param name="destinationNode"></param>
+        /// <param name="destinationObject"></param>
+        /// <param name="properties"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>成功の応答</returns>
+        public async Task<List<PropertyRequest>> プロパティ値通知応答要(
+            EchoObjectInstance sourceObject
+            , EchoNode destinationNode
+            , EchoObjectInstance destinationObject
+            , IEnumerable<EchoPropertyInstance> properties
+            , CancellationToken cancellationToken)
+        {
             var responseTCS = new TaskCompletionSource<List<PropertyRequest>>();
             var handler = default(EventHandler<(string, Frame)>);
             handler += (object sender, (string address, Frame response) value) =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _ = responseTCS.TrySetCanceled(cancellationToken);
+                    OnFrameReceived -= handler;
+                    return;
+                }
+
                 if (value.address != destinationNode.Address
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
@@ -531,15 +766,17 @@ namespace EchoDotNetLite
                         EDT = p.Value,
                     }).ToList(),
                 }
-            });
-            if (await Task.WhenAny(responseTCS.Task, Task.Delay(timeoutMilliseconds)) == responseTCS.Task)
-            {
-                return await responseTCS.Task;
+            }, cancellationToken);
+
+            try {
+                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
+                    return await responseTCS.Task;
+                }
             }
-            else
-            {
+            catch {
                 OnFrameReceived -= handler;
-                throw new TimeoutException($"'{nameof(プロパティ値通知応答要)}'が指定されたタイムアウト時間を超過しました");
+
+                throw;
             }
         }
 
@@ -553,10 +790,10 @@ namespace EchoDotNetLite
             }
         }
 
-        private async Task RequestAsync(string address,Frame frame)
+        private async Task RequestAsync(string address, Frame frame, CancellationToken cancellationToken)
         {
             _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonConvert.SerializeObject(frame)}");
-            await _panaClient.RequestAsync(address, FrameSerializer.Serialize(frame));
+            await _panaClient.RequestAsync(address, FrameSerializer.Serialize(frame), cancellationToken);
         }
 
         private void インスタンスリスト通知受信(EchoNode sourceNode, byte[] edt)
@@ -901,7 +1138,7 @@ namespace EchoDotNetLite
                         ESV = ESV.SetI_SNA,//SetI_SNA(0x50)
                         OPCList = opcList,
                     }
-                });
+                }, default);
                 return false;
             }
             return true;
@@ -962,7 +1199,7 @@ namespace EchoDotNetLite
                         ESV = ESV.SetC_SNA,//SetC_SNA(0x51)
                         OPCList = opcList,
                     }
-                });
+                }, default);
                 return false;
             }
             await RequestAsync(request.address, new Frame()
@@ -977,7 +1214,7 @@ namespace EchoDotNetLite
                     ESV = ESV.Set_Res,//Set_Res(0x71)
                     OPCList = opcList,
                 }
-            });
+            }, default);
             return true;
         }
 
@@ -1037,7 +1274,7 @@ namespace EchoDotNetLite
                         ESV = ESV.Get_SNA,//Get_SNA(0x52)
                         OPCList = opcList,
                     }
-                });
+                }, default);
                 return false;
             }
             await RequestAsync(request.address, new Frame()
@@ -1052,7 +1289,7 @@ namespace EchoDotNetLite
                     ESV = ESV.Get_Res,//Get_Res(0x72)
                     OPCList = opcList,
                 }
-            });
+            }, default);
             return true;
         }
 
@@ -1136,7 +1373,7 @@ namespace EchoDotNetLite
                         OPCSetList = opcSetList,
                         OPCGetList = opcGetList,
                     }
-                });
+                }, default);
                 return false;
             }
             await RequestAsync(request.address, new Frame()
@@ -1152,7 +1389,7 @@ namespace EchoDotNetLite
                     OPCSetList = opcSetList,
                     OPCGetList = opcGetList,
                 }
-            });
+            }, default);
             return true;
         }
 
@@ -1294,7 +1531,7 @@ namespace EchoDotNetLite
                         ESV = ESV.INFC_Res,//INFC_Res(0x74)
                         OPCList = opcList,
                     }
-                });
+                }, default);
             }
             return !hasError;
 
