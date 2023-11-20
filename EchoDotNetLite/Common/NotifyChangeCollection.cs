@@ -10,24 +10,24 @@ namespace EchoDotNetLite.Common
         public NotifyChangeCollection(TParent parentNode)
         {
             ParentNode = parentNode;
-            InnnerConnection = new List<TItem>();
+            InnerConnection = new List<TItem>();
         }
         private TParent ParentNode;
-        private List<TItem> InnnerConnection;
-        public int Count => InnnerConnection.Count;
+        private List<TItem> InnerConnection;
+        public int Count => InnerConnection.Count;
 
         public bool IsReadOnly => false;
 
         public void Add(TItem item)
         {
-            InnnerConnection.Add(item);
+            InnerConnection.Add(item);
             ParentNode.RaiseCollectionChanged(CollectionChangeType.Add,item);
         }
 
         public void Clear()
         {
-            //var temp = InnnerConnection.ToArray();
-            InnnerConnection.Clear();
+            //var temp = InnerConnection.ToArray();
+            InnerConnection.Clear();
             //foreach (var item in temp)
             //{
             //    ParentNode.RaiseCollectionChanged(CollectionChangeType.Remove, item);
@@ -36,12 +36,12 @@ namespace EchoDotNetLite.Common
 
         public bool Contains(TItem item)
         {
-            return InnnerConnection.Contains(item);
+            return InnerConnection.Contains(item);
         }
 
         public void CopyTo(TItem[] array, int arrayIndex)
         {
-            InnnerConnection.CopyTo(array, arrayIndex);
+            InnerConnection.CopyTo(array, arrayIndex);
             foreach (var item in array)
             {
                 ParentNode.RaiseCollectionChanged(CollectionChangeType.Remove, item);
@@ -50,18 +50,18 @@ namespace EchoDotNetLite.Common
 
         public IEnumerator<TItem> GetEnumerator()
         {
-            return InnnerConnection.GetEnumerator();
+            return InnerConnection.GetEnumerator();
         }
 
         public bool Remove(TItem item)
         {
             ParentNode.RaiseCollectionChanged(CollectionChangeType.Remove, item);
-            return InnnerConnection.Remove(item);
+            return InnerConnection.Remove(item);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return InnnerConnection.GetEnumerator();
+            return InnerConnection.GetEnumerator();
         }
     }
 }
