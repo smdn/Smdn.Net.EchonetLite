@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using Newtonsoft.Json;
+using System.Text.Json;
 
 using NUnit.Framework;
 
@@ -23,7 +23,7 @@ public class EDATA1Tests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(edata1)
+      JsonSerializer.Serialize(edata1)
     );
   }
 }

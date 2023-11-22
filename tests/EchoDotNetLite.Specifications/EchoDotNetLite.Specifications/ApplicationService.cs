@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using Newtonsoft.Json;
+using System.Text.Json;
 
 using NUnit.Framework;
 
@@ -18,9 +18,13 @@ public class ApplicationServiceTests {
   {
     var expectedJsonFragment = "\"" + expected + "\"";
 
+    var options = new JsonSerializerOptions() {
+      Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     Assert.AreEqual(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(value)
+      JsonSerializer.Serialize(value, options)
     );
   }
 }

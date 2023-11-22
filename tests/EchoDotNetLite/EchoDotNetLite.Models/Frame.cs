@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 using EchoDotNetLite.Enums;
 
-using Newtonsoft.Json;
+using System.Text.Json;
 
 using NUnit.Framework;
 
@@ -22,7 +22,7 @@ public class FrameTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(f)
+      JsonSerializer.Serialize(f)
     );
   }
 
@@ -39,7 +39,7 @@ public class FrameTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(f)
+      JsonSerializer.Serialize(f)
     );
   }
 
@@ -57,7 +57,7 @@ public class FrameTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(f)
+      JsonSerializer.Serialize(f)
     );
   }
 }

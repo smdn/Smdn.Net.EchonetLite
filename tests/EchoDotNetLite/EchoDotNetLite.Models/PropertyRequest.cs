@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Enums;
+using System.Text.Json;
 
-using Newtonsoft.Json;
+using EchoDotNetLite.Enums;
 
 using NUnit.Framework;
 
@@ -23,7 +23,7 @@ public class PropertyRequestTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(pr)
+      JsonSerializer.Serialize(pr)
     );
   }
 
@@ -40,7 +40,7 @@ public class PropertyRequestTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(pr)
+      JsonSerializer.Serialize(pr)
     );
   }
 
@@ -71,7 +71,7 @@ public class PropertyRequestTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(pr)
+      JsonSerializer.Serialize(pr)
     );
   }
 }

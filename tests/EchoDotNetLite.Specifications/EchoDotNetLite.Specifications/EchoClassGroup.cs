@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-
-using Newtonsoft.Json;
+using System.Text.Json;
 
 using NUnit.Framework;
 
@@ -67,7 +66,7 @@ public class EchoClassGroupTests {
     string expectedSuperClass
   )
   {
-    var cg = JsonConvert.DeserializeObject<EchoClassGroup>(input);
+    var cg = JsonSerializer.Deserialize<EchoClassGroup>(input);
 
     Assert.IsNotNull(cg);
     Assert.AreEqual(expectedClassGroupCode, cg!.ClassGroupCode, nameof(cg.ClassGroupCode));
@@ -89,7 +88,7 @@ public class EchoClassGroupTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(cg)
+      JsonSerializer.Serialize(cg)
     );
   }
 
@@ -109,11 +108,11 @@ public class EchoClassGroupTests {
         );
 
         StringAssert.Contains(
-          JsonConvert.SerializeObject(機器.センサ関連機器.ガス漏れセンサ.Class),
+          JsonSerializer.Serialize(機器.センサ関連機器.ガス漏れセンサ.Class),
           json
         );
         StringAssert.Contains(
-          JsonConvert.SerializeObject(機器.センサ関連機器.防犯センサ.Class),
+          JsonSerializer.Serialize(機器.センサ関連機器.防犯センサ.Class),
           json
         );
       })
@@ -146,5 +145,5 @@ public class EchoClassGroupTests {
 
   [TestCaseSource(nameof(YieldTestCases_Serialize_ClassList))]
   public void Serialize_ClassList(EchoClassGroup cg, Action<string> assertJson)
-    => assertJson(JsonConvert.SerializeObject(cg));
+    => assertJson(JsonSerializer.Serialize(cg));
 }

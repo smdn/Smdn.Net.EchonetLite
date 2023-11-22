@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using Newtonsoft.Json;
+using System.Text.Json;
 
 using NUnit.Framework;
 
@@ -21,7 +21,7 @@ public class EOJTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(eoj)
+      JsonSerializer.Serialize(eoj)
     );
   }
 
@@ -38,7 +38,7 @@ public class EOJTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(eoj)
+      JsonSerializer.Serialize(eoj)
     );
   }
 
@@ -55,7 +55,7 @@ public class EOJTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(eoj)
+      JsonSerializer.Serialize(eoj)
     );
   }
 }

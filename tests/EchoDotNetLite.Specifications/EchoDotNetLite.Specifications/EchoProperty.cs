@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-
-using Newtonsoft.Json;
+using System.Text.Json;
 
 using NUnit.Framework;
 
@@ -276,7 +275,7 @@ public class EchoPropertyTests {
     IEnumerable<ApplicationService>? expectedRequiredOptions
   )
   {
-    var p = JsonConvert.DeserializeObject<EchoProperty>(input);
+    var p = JsonSerializer.Deserialize<EchoProperty>(input);
 
     Assert.IsNotNull(p);
     Assert.AreEqual(expectedName, p!.Name, message: $"{testCaseName}; {nameof(p.Name)}");
@@ -334,7 +333,13 @@ public class EchoPropertyTests {
 
   [TestCaseSource(nameof(YieldTestCases_Serialize_OptionRequierd))]
   public void Serialize_OptionRequierd(EchoProperty prop, Action<string> assertJson)
-    => assertJson(JsonConvert.SerializeObject(prop));
+  {
+    var options = new JsonSerializerOptions() {
+      Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
+    assertJson(JsonSerializer.Serialize(prop, options));
+  }
 
   [TestCase(0x00, "\"Code\":\"0x0\"")]
   [TestCase(0x01, "\"Code\":\"0x1\"")]
@@ -349,7 +354,7 @@ public class EchoPropertyTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(prop)
+      JsonSerializer.Serialize(prop)
     );
   }
 }

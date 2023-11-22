@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using Newtonsoft.Json;
+using System.Text.Json;
 
 using NUnit.Framework;
 
@@ -61,7 +61,7 @@ public class EchoClassTests {
     string expectedClassName
   )
   {
-    var c = JsonConvert.DeserializeObject<EchoClass>(input);
+    var c = JsonSerializer.Deserialize<EchoClass>(input);
 
     Assert.IsNotNull(c);
     Assert.AreEqual(expectedStatus, c!.Status, nameof(c.Status));
@@ -83,7 +83,7 @@ public class EchoClassTests {
 
     StringAssert.Contains(
       expectedJsonFragment,
-      JsonConvert.SerializeObject(c)
+      JsonSerializer.Serialize(c)
     );
   }
 }
