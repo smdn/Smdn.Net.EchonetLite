@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Specifications
 {
@@ -17,7 +17,6 @@ namespace EchoDotNetLite.Specifications
         /// EPC プロパティコード
         /// </summary>
         [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
-        [System.Text.Json.Serialization.JsonConverter(typeof(SingleByteHexStringSystemTextJsonJsonConverter))]
         public byte Code { get; set; }
         /// <summary>
         /// プロパティ内容
@@ -74,8 +73,7 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// アプリケーションサービスの「オプション必須」プロパティ表記
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<ApplicationService> OptionRequierd { get; set; }
         /// <summary>
         /// 備考

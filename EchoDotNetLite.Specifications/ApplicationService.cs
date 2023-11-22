@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Specifications
 {
@@ -7,8 +6,7 @@ namespace EchoDotNetLite.Specifications
     /// <summary>
     /// アプリケーションサービス
     /// </summary>
-    [JsonConverter(typeof(StringEnumConverter))]
-    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ApplicationService
     {
         /// <summary>

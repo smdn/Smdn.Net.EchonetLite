@@ -1,42 +1,21 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-
-using SystemTextJson = System.Text.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Specifications
 {
-    internal sealed class SingleByteHexStringJsonConverter : JsonConverter
-    {
-        public override bool CanConvert(Type objectType)
-        {
-            return typeof(uint).Equals(objectType);
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            writer.WriteValue($"0x{value:x}");
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            if (!(reader.Value is string str) || !str.StartsWith("0x"))
-                throw new JsonSerializationException();
-            return Convert.ToByte(str,16);
-        }
-    }
-
-    internal sealed class SingleByteHexStringSystemTextJsonJsonConverter : SystemTextJson.Serialization.JsonConverter<byte>
+    internal sealed class SingleByteHexStringJsonConverter : JsonConverter<byte>
     {
         private const string SingleByteHexStringPrefix = "0x";
         private const NumberStyles SingleByteHexNumberStyles = NumberStyles.AllowHexSpecifier;
 
-        public override byte Read(ref SystemTextJson.Utf8JsonReader reader, Type typeToConvert, SystemTextJson.JsonSerializerOptions options)
+        public override byte Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType != SystemTextJson.JsonTokenType.String)
-                throw new JsonException($"expected {nameof(SystemTextJson.JsonTokenType)}.{nameof(SystemTextJson.JsonTokenType.String)}, but was {reader.TokenType}");
+            if (reader.TokenType != JsonTokenType.String)
+                throw new JsonException($"expected {nameof(JsonTokenType)}.{nameof(JsonTokenType.String)}, but was {reader.TokenType}");
 
             var str = reader.GetString();
 
@@ -53,7 +32,7 @@ namespace EchoDotNetLite.Specifications
             return value;
         }
 
-        public override void Write(SystemTextJson.Utf8JsonWriter writer, byte value, SystemTextJson.JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, byte value, JsonSerializerOptions options)
             => writer.WriteStringValue($"{SingleByteHexStringPrefix}{value:x}");
     }
 }

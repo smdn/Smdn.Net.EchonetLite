@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Specifications
 {
@@ -14,7 +14,6 @@ namespace EchoDotNetLite.Specifications
         /// クラスグループコード
         /// </summary>
         [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
-        [System.Text.Json.Serialization.JsonConverter(typeof(SingleByteHexStringSystemTextJsonJsonConverter))]
         public byte ClassGroupCode { get; set; }
         /// <summary>
         /// クラスグループ名

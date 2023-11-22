@@ -3,9 +3,7 @@ using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
-
-using NewtonsoftJson = Newtonsoft.Json;
-using SystemTextJsonSerialization = System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Models
 {
@@ -17,36 +15,18 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// クラスグループコード
         /// </summary>
-        [NewtonsoftJson.JsonIgnore]
-        [SystemTextJsonSerialization.JsonConverter(typeof(SingleByteJsonConverterFactory))]
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public byte ClassGroupCode { get; set; }
-
-        [NewtonsoftJson.JsonProperty("ClassGroupCode")]
-        [SystemTextJsonSerialization.JsonIgnore]
-        public string _ClassGroupCode { get { return $"{ClassGroupCode:X2}"; } }
-
         /// <summary>
         /// クラスクラスコード
         /// </summary>
-        [NewtonsoftJson.JsonIgnore]
-        [SystemTextJsonSerialization.JsonConverter(typeof(SingleByteJsonConverterFactory))]
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public byte ClassCode { get; set; }
-
-        [NewtonsoftJson.JsonProperty("ClassCode")]
-        [SystemTextJsonSerialization.JsonIgnore]
-        public string _ClassCode { get { return $"{ClassCode:X2}"; } }
-
         /// <summary>
         /// インスタンスコード
         /// </summary>
-        [NewtonsoftJson.JsonIgnore]
-        [SystemTextJsonSerialization.JsonConverter(typeof(SingleByteJsonConverterFactory))]
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public byte InstanceCode { get; set; }
-
-        [NewtonsoftJson.JsonProperty("InstanceCode")]
-        [SystemTextJsonSerialization.JsonIgnore]
-        public string _InstanceCode { get { return $"{InstanceCode:X2}"; } }
-
 
         public bool Equals(EOJ other)
         {
