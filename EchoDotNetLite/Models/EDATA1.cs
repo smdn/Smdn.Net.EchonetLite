@@ -1,9 +1,12 @@
 ﻿using EchoDotNetLite.Enums;
-using Newtonsoft.Json;
+using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using static EchoDotNetLite.Models.Frame;
+
+using NewtonsoftJson = Newtonsoft.Json;
+using SystemTextJsonSerialization = System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Models
 {
@@ -25,9 +28,12 @@ namespace EchoDotNetLite.Models
         /// ECHONET Liteサービス(1B)
         /// ECHONET Liteサービスコード
         /// </summary>
-        [JsonIgnore]
+        [NewtonsoftJson.JsonIgnore]
+        [SystemTextJsonSerialization.JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public ESV ESV { get; set; }
-        [JsonProperty("ESV")]
+
+        [NewtonsoftJson.JsonProperty("ESV")]
+        [SystemTextJsonSerialization.JsonIgnore]
         public string _ESV { get { return $"{(byte)ESV:X2}"; } }
 
         public List<PropertyRequest> OPCList { get; set; }
