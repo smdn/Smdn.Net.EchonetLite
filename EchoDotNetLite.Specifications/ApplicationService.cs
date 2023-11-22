@@ -8,6 +8,7 @@ namespace EchoDotNetLite.Specifications
     /// アプリケーションサービス
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
     public enum ApplicationService
     {
         /// <summary>

@@ -14,6 +14,7 @@ namespace EchoDotNetLite.Specifications
         /// クラスグループコード
         /// </summary>
         [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
+        [System.Text.Json.Serialization.JsonConverter(typeof(SingleByteHexStringSystemTextJsonJsonConverter))]
         public byte ClassGroupCode { get; set; }
         /// <summary>
         /// クラスグループ名
