@@ -1,6 +1,5 @@
 ﻿using EchoDotNetLite;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SkstackIpDotNet;
 using SkstackIpDotNet.Events;
 using System;

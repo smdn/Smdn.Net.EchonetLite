@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 
 namespace EchoDotNetLite.Specifications
 {
@@ -23,8 +23,11 @@ namespace EchoDotNetLite.Specifications
                 var superClassFilePath = Path.Combine(SpecificationMaster.GetSpecificationMasterDataDirectory(), $"{ClassGroup.SuperClass}.json");
                 if (File.Exists(superClassFilePath))
                 {
-                    var superClassProperties = JsonConvert.DeserializeObject<PropertyMaster>(File.ReadAllText(superClassFilePath, new UTF8Encoding(false)));
-                    Properties.AddRange(superClassProperties.Properties);
+                    using (var stream = File.OpenRead(superClassFilePath))
+                    {
+                        var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
+                        Properties.AddRange(superClassProperties.Properties);
+                    }
                 }
                 Class = ClassGroup.ClassList.FirstOrDefault(c => c.Status && c.ClassCode == classCode);
                 if (Class.Status)
@@ -33,8 +36,11 @@ namespace EchoDotNetLite.Specifications
                     if (File.Exists(classFilePath))
                     {
                         //クラスのプロパティを列挙
-                        var classProperties = JsonConvert.DeserializeObject<PropertyMaster>(File.ReadAllText(classFilePath, new UTF8Encoding(false)));
-                        Properties.AddRange(classProperties.Properties);
+                        using (var stream = File.OpenRead(classFilePath))
+                        {
+                            var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
+                            Properties.AddRange(classProperties.Properties);
+                        }
                     }
                 }
             }

@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Models
 {
@@ -10,23 +11,20 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// ECHONET Liteプロパティ(1B)
         /// </summary>
-        [JsonIgnore]
+        [JsonInclude]
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public byte EPC;
-        [JsonProperty("EPC")]
-        public string _EPC { get { return $"{EPC:X2}"; } }
         /// <summary>
         /// EDTのバイト数(1B)
         /// </summary>
-        [JsonIgnore]
+        [JsonInclude]
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public byte PDC;
-        [JsonProperty("PDC")]
-        public string _PDC { get { return $"{PDC:X2}"; } }
         /// <summary>
         /// プロパティ値データ(PDCで指定)
         /// </summary>
-        [JsonIgnore]
+        [JsonInclude]
+        [JsonConverter(typeof(ByteSequenceJsonConverter))]
         public byte[] EDT;
-        [JsonProperty("EDT")]
-        public string _EDT { get { return $"{BytesConvert.ToHexString(EDT)}"; } }
     }
 }

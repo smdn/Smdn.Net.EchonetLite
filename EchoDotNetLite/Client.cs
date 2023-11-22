@@ -2,12 +2,12 @@
 using EchoDotNetLite.Enums;
 using EchoDotNetLite.Models;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -785,14 +785,14 @@ namespace EchoDotNetLite
             var frame = FrameSerializer.Deserialize(value.e);
             if (frame != null)
             {
-                _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonConvert.SerializeObject(frame)}");
+                _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
                 OnFrameReceived?.Invoke(this, (value.address, frame));
             }
         }
 
         private async Task RequestAsync(string address, Frame frame, CancellationToken cancellationToken)
         {
-            _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonConvert.SerializeObject(frame)}");
+            _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
             await _panaClient.RequestAsync(address, FrameSerializer.Serialize(frame), cancellationToken);
         }
 

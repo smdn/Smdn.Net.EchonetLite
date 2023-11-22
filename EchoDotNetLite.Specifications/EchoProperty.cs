@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Specifications
 {
@@ -73,7 +73,7 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// アプリケーションサービスの「オプション必須」プロパティ表記
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<ApplicationService> OptionRequierd { get; set; }
         /// <summary>
         /// 備考

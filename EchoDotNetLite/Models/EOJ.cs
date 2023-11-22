@@ -1,8 +1,9 @@
 ﻿using EchoDotNetLite.Enums;
-using Newtonsoft.Json;
+using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Models
 {
@@ -14,25 +15,18 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// クラスグループコード
         /// </summary>
-        [JsonIgnore]
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public byte ClassGroupCode { get; set; }
-        [JsonProperty("ClassGroupCode")]
-        public string _ClassGroupCode { get { return $"{ClassGroupCode:X2}"; } }
         /// <summary>
         /// クラスクラスコード
         /// </summary>
-        [JsonIgnore]
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public byte ClassCode { get; set; }
-        [JsonProperty("ClassCode")]
-        public string _ClassCode { get { return $"{ClassCode:X2}"; } }
         /// <summary>
         /// インスタンスコード
         /// </summary>
-        [JsonIgnore]
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public byte InstanceCode { get; set; }
-        [JsonProperty("InstanceCode")]
-        public string _InstanceCode { get { return $"{InstanceCode:X2}"; } }
-
 
         public bool Equals(EOJ other)
         {
