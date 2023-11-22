@@ -106,11 +106,11 @@ public class 機器Tests {
     Assert.IsNotNull(epc80);
     Assert.AreEqual(0x80, epc80!.Code, nameof(epc80.Code));
     Assert.AreEqual("動作状態", epc80.Name, nameof(epc80.Name));
-    Assert.IsNotNull(epc80.OptionRequierd, nameof(epc80.OptionRequierd));
+    Assert.IsNotNull(epc80.OptionRequired, nameof(epc80.OptionRequired));
     CollectionAssert.AreEquivalent(
       new[] { ApplicationService.エネルギーサービス },
-      epc80.OptionRequierd,
-      nameof(epc80.OptionRequierd)
+      epc80.OptionRequired,
+      nameof(epc80.OptionRequired)
     );
 
     var epcB0 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xB0);
@@ -118,21 +118,21 @@ public class 機器Tests {
     Assert.IsNotNull(epcB0);
     Assert.AreEqual(0xB0, epcB0!.Code, nameof(epcB0.Code));
     Assert.AreEqual("表示制御設定", epcB0.Name, nameof(epcB0.Name));
-    CollectionAssert.IsEmpty(epcB0.OptionRequierd ?? Enumerable.Empty<ApplicationService>(), nameof(epcB0.OptionRequierd));
+    CollectionAssert.IsEmpty(epcB0.OptionRequired ?? Enumerable.Empty<ApplicationService>(), nameof(epcB0.OptionRequired));
 
     var epcB1 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xB1);
 
     Assert.IsNotNull(epcB1);
     Assert.AreEqual(0xB1, epcB1!.Code, nameof(epcB1.Code));
     Assert.AreEqual("文字列設定受付可能状態", epcB1.Name, nameof(epcB1.Name));
-    Assert.IsNotNull(epcB1.OptionRequierd, nameof(epcB1.OptionRequierd));
+    Assert.IsNotNull(epcB1.OptionRequired, nameof(epcB1.OptionRequired));
     CollectionAssert.AreEquivalent(
       new[] {
         ApplicationService.快適生活支援サービス,
         ApplicationService.セキュリティサービス
       },
-      epcB1.OptionRequierd,
-      nameof(epcB1.OptionRequierd)
+      epcB1.OptionRequired,
+      nameof(epcB1.OptionRequired)
     );
   }
 }

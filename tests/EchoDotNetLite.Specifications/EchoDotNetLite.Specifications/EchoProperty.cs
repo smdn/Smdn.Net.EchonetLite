@@ -284,16 +284,16 @@ public class EchoPropertyTests {
     Assert.AreEqual(expectedGet, p.Get, message: $"{testCaseName}; {nameof(p.Get)}");
 
     if (expectedRequiredOptions is null)
-      Assert.IsNull(p.OptionRequierd, message: $"{testCaseName}; {nameof(p.OptionRequierd)}");
+      Assert.IsNull(p.OptionRequired, message: $"{testCaseName}; {nameof(p.OptionRequired)}");
     else
-      CollectionAssert.AreEquivalent(expectedRequiredOptions, p.OptionRequierd, message: $"{testCaseName}; {nameof(p.OptionRequierd)}");
+      CollectionAssert.AreEquivalent(expectedRequiredOptions, p.OptionRequired, message: $"{testCaseName}; {nameof(p.OptionRequired)}");
   }
 
-  private static System.Collections.IEnumerable YieldTestCases_Serialize_OptionRequierd()
+  private static System.Collections.IEnumerable YieldTestCases_Serialize_OptionRequired()
   {
     yield return new object?[] {
       new EchoProperty() {
-        OptionRequierd = new List<ApplicationService>() {
+        OptionRequired = new List<ApplicationService>() {
           ApplicationService.モバイルサービス,
           ApplicationService.エネルギーサービス
         }
@@ -308,7 +308,7 @@ public class EchoPropertyTests {
 
     yield return new object?[] {
       new EchoProperty() {
-        OptionRequierd = new List<ApplicationService>(),
+        OptionRequired = new List<ApplicationService>(),
       },
       new Action<string>(static json => {
         StringAssert.Contains(
@@ -320,7 +320,7 @@ public class EchoPropertyTests {
 
     yield return new object?[] {
       new EchoProperty() {
-        OptionRequierd = null
+        OptionRequired = null
       },
       new Action<string>(static json => {
         StringAssert.DoesNotContain(
@@ -331,8 +331,8 @@ public class EchoPropertyTests {
     };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_Serialize_OptionRequierd))]
-  public void Serialize_OptionRequierd(EchoProperty prop, Action<string> assertJson)
+  [TestCaseSource(nameof(YieldTestCases_Serialize_OptionRequired))]
+  public void Serialize_OptionRequired(EchoProperty prop, Action<string> assertJson)
   {
     var options = new JsonSerializerOptions() {
       Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
