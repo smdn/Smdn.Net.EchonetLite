@@ -98,11 +98,11 @@ namespace EchoDotNetLite.Models
             public EchoClassGroup ClassGroup { get; set; }
             public EchoClass Class { get; set; }
 
-            public IEnumerable<EchoProperty> GetProperties => new EchoProperty[] { };
+            public IEnumerable<EchoProperty> GetProperties => Enumerable.Empty<EchoProperty>();
 
-            public IEnumerable<EchoProperty> SetProperties => new EchoProperty[] { };
+            public IEnumerable<EchoProperty> SetProperties => Enumerable.Empty<EchoProperty>();
 
-            public IEnumerable<EchoProperty> AnnoProperties => new EchoProperty[] { };
+            public IEnumerable<EchoProperty> AnnoProperties => Enumerable.Empty<EchoProperty>();
         }
 
         public static Specifications.IEchonetObject FindClass(byte classGroupCode, byte classCode)
