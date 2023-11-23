@@ -19,24 +19,21 @@ namespace EchoDotNetLite.Specifications
             if (ClassGroup != null)
             {
                 //スーパークラスのプロパティを列挙
-                
-                var superClassFilePath = Path.Combine(SpecificationMaster.GetSpecificationMasterDataDirectory(), $"{ClassGroup.SuperClass}.json");
-                if (File.Exists(superClassFilePath))
+                using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
                 {
-                    using (var stream = File.OpenRead(superClassFilePath))
-                    {
-                        var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
-                        Properties.AddRange(superClassProperties.Properties);
-                    }
+                    var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
+                    Properties.AddRange(superClassProperties.Properties);
                 }
                 Class = ClassGroup.ClassList.FirstOrDefault(c => c.Status && c.ClassCode == classCode);
                 if (Class.Status)
                 {
-                    var classFilePath = Path.Combine(SpecificationMaster.GetSpecificationMasterDataDirectory(),$"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}", $"0x{Class.ClassCode:X2}-{Class.ClassName}.json");
-                    if (File.Exists(classFilePath))
+                    var classGroupDirectoryName = $"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}";
+                    var classFileName = $"0x{Class.ClassCode:X2}-{Class.ClassName}.json";
+
+                    //クラスのプロパティを列挙
+                    using (var stream = SpecificationMaster.GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName))
                     {
-                        //クラスのプロパティを列挙
-                        using (var stream = File.OpenRead(classFilePath))
+                        if (stream is not null)
                         {
                             var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
                             Properties.AddRange(classProperties.Properties);
