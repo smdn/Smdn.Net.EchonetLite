@@ -11,6 +11,6 @@ namespace EchoDotNetLite
     {
         Task RequestAsync(string address, byte[] request, CancellationToken cancellationToken);
 
-        event EventHandler<(string,byte[])> OnEventReceived;
+        event EventHandler<(string,byte[])> DataReceived;
     }
 }

@@ -45,7 +45,7 @@ namespace EchoDotNetLiteLANBridge
                             continue;
                         }
                         _logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address.ToString()} {BytesConvert.ToHexString(receivedResults.Buffer)}");
-                        OnEventReceived?.Invoke(this, (receivedResults.RemoteEndPoint.Address.ToString(), receivedResults.Buffer));
+                        DataReceived?.Invoke(this, (receivedResults.RemoteEndPoint.Address.ToString(), receivedResults.Buffer));
                     }
                 }
                 catch (System.ObjectDisposedException)
@@ -59,7 +59,7 @@ namespace EchoDotNetLiteLANBridge
             });
         }
 
-        public event EventHandler<(string, byte[])> OnEventReceived;
+        public event EventHandler<(string, byte[])> DataReceived;
 
         public void Dispose()
         {

@@ -100,11 +100,11 @@ namespace EchoDotNetLiteSkstackIpBridge
             }
         }
 
-        public event EventHandler<(string,byte[])> OnEventReceived;
+        public event EventHandler<(string,byte[])> DataReceived;
 
         public void ReceivedERXUDP(object sender, ERXUDP erxudp)
         {
-            OnEventReceived?.Invoke(this, (erxudp.Sender, BytesConvert.FromHexString(erxudp.Data)));
+            DataReceived?.Invoke(this, (erxudp.Sender, BytesConvert.FromHexString(erxudp.Data)));
         }
 
 

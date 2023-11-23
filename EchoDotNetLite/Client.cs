@@ -21,7 +21,7 @@ namespace EchoDotNetLite
         {
             _logger = logger;
             _panaClient = panaClient;
-            _panaClient.OnEventReceived += ReceiveEvent;
+            _panaClient.DataReceived += ReceiveEvent;
             SelfNode = new EchoNode()
             {
                 NodeProfile = new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01),
