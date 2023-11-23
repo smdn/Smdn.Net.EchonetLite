@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -84,7 +85,7 @@ namespace EchoDotNetLiteLANBridge.Example
                 //ノードを手動で追加し、自ノードインスタンスリストSをプロパティ値読み出し する
                 var エミュレーターノード = new EchoNode()
                 {
-                    Address = "192.168.11.11",
+                    Address = IPAddress.Parse("192.168.11.11"),
                     NodeProfile = new EchoObjectInstance(EchoDotNetLite.Specifications.プロファイル.ノードプロファイル, 0x01)
                 };
                 echoClient.NodeList.Add(エミュレーターノード);
