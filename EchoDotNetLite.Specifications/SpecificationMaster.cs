@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -42,9 +43,7 @@ namespace EchoDotNetLite.Specifications
         {
             if (_Instance == null)
             {
-                var filePath = Path.Combine(GetSpecificationMasterDataDirectory(), "SpecificationMaster.json");
-
-                using (var stream = File.OpenRead(filePath))
+                using (var stream = GetSpecificationMasterDataStream("SpecificationMaster.json"))
                 {
                     _Instance = JsonSerializer.Deserialize<SpecificationMaster>(stream, DeserializationOptions);
                 }
@@ -52,12 +51,28 @@ namespace EchoDotNetLite.Specifications
             return _Instance;
         }
 
-        internal static string GetSpecificationMasterDataDirectory()
-        {
-            var assemblyLocatedDirectory = Path.GetDirectoryName(typeof(SpecificationMaster).Assembly.Location);
+#nullable enable
+        internal static readonly string SpecificationMasterDataLogicalRootName = "MasterData/";
 
-            return Path.Combine(assemblyLocatedDirectory, "MasterData");
+        internal static Stream GetSpecificationMasterDataStream(string file)
+        {
+            var logicalName = SpecificationMasterDataLogicalRootName + file;
+
+            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(logicalName);
+
+            if (stream is null)
+                throw new InvalidOperationException($"resource not found: {logicalName}");
+
+            return stream;
         }
+
+        internal static Stream? GetSpecificationMasterDataStream(string classGroupDirectoryName, string classFileName)
+        {
+            var logicalName = string.Concat(SpecificationMasterDataLogicalRootName, classGroupDirectoryName, "/", classFileName);
+
+            return Assembly.GetExecutingAssembly().GetManifestResourceStream(logicalName);
+        }
+#nullable restore
 
         /// <summary>
         /// ECHONET Lite SPECIFICATIONのバージョン
