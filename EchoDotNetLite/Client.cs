@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -15,13 +16,13 @@ namespace EchoDotNetLite
 {
     public class EchoClient
     {
-        private readonly IPANAClient _panaClient;
+        private readonly IEchonetLiteFrameHandler _echoFrameHandler;
         private readonly ILogger _logger;
-        public EchoClient(ILogger<EchoClient> logger,IPANAClient panaClient)
+        public EchoClient(ILogger<EchoClient> logger, IEchonetLiteFrameHandler handler)
         {
             _logger = logger;
-            _panaClient = panaClient;
-            _panaClient.OnEventReceived += ReceiveEvent;
+            _echoFrameHandler = handler;
+            _echoFrameHandler.DataReceived += ReceiveEvent;
             SelfNode = new EchoNode()
             {
                 NodeProfile = new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01),
@@ -31,7 +32,7 @@ namespace EchoDotNetLite
             OnFrameReceived += ReceiveFrame;
         }
 
-        public void Initialize(string selfAddress)
+        public void Initialize(IPAddress selfAddress)
         {
             SelfNode.Address = selfAddress;
         }
@@ -40,7 +41,7 @@ namespace EchoDotNetLite
 
         public List<EchoNode> NodeList { get; set; }
 
-        public event EventHandler<(string, Frame)> OnFrameReceived;
+        public event EventHandler<(IPAddress, Frame)> OnFrameReceived;
 
         public event EventHandler<EchoNode> OnNodeJoined;
 
@@ -178,8 +179,8 @@ namespace EchoDotNetLite
             , CancellationToken cancellationToken)
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
-            var handler = default(EventHandler<(string, Frame)>);
-            handler += (object sender, (string address, Frame response) value) =>
+            var handler = default(EventHandler<(IPAddress, Frame)>);
+            handler += (object sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -188,7 +189,7 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if ((destinationNode!=null && value.address != destinationNode.Address)
+                if ((destinationNode!=null && !destinationNode.Address.Equals(value.address))
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
                     || edata.ESV != ESV.SetI_SNA)
@@ -297,8 +298,8 @@ namespace EchoDotNetLite
             , CancellationToken cancellationToken)
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
-            var handler = default(EventHandler<(string, Frame)>);
-            handler += (object sender, (string address, Frame response) value) =>
+            var handler = default(EventHandler<(IPAddress, Frame)>);
+            handler += (object sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -307,7 +308,7 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if ((destinationNode != null && value.address != destinationNode.Address)
+                if ((destinationNode != null && !destinationNode.Address.Equals(value.address))
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
                     || (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
@@ -410,8 +411,8 @@ namespace EchoDotNetLite
             , CancellationToken cancellationToken)
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
-            var handler = default(EventHandler<(string, Frame)>);
-            handler += (object sender, (string address, Frame response) value) =>
+            var handler = default(EventHandler<(IPAddress, Frame)>);
+            handler += (object sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -420,7 +421,7 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if ((destinationNode != null && value.address != destinationNode.Address)
+                if ((destinationNode != null && !destinationNode.Address.Equals(value.address))
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
                     || (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
@@ -527,8 +528,8 @@ namespace EchoDotNetLite
             , CancellationToken cancellationToken)
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>, List<PropertyRequest>)>();
-            var handler = default(EventHandler<(string, Frame)>);
-            handler += (object sender, (string address, Frame response) value) =>
+            var handler = default(EventHandler<(IPAddress, Frame)>);
+            handler += (object sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -537,7 +538,7 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if ((destinationNode != null && value.address != destinationNode.Address)
+                if ((destinationNode != null && !destinationNode.Address.Equals(value.address))
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
                     || (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
@@ -727,8 +728,8 @@ namespace EchoDotNetLite
             , CancellationToken cancellationToken)
         {
             var responseTCS = new TaskCompletionSource<List<PropertyRequest>>();
-            var handler = default(EventHandler<(string, Frame)>);
-            handler += (object sender, (string address, Frame response) value) =>
+            var handler = default(EventHandler<(IPAddress, Frame)>);
+            handler += (object sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -737,7 +738,7 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if (value.address != destinationNode.Address
+                if (!destinationNode.Address.Equals(value.address)
                     || !(value.response.EDATA is EDATA1 edata)
                     || edata.SEOJ != destinationObject.GetEOJ()
                     || (edata.ESV != ESV.INFC_Res)
@@ -780,9 +781,9 @@ namespace EchoDotNetLite
             }
         }
 
-        private void ReceiveEvent(object sender, (string address, byte[] e) value)
+        private void ReceiveEvent(object sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
-            var frame = FrameSerializer.Deserialize(value.e);
+            var frame = FrameSerializer.Deserialize(value.data);
             if (frame != null)
             {
                 _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
@@ -790,11 +791,13 @@ namespace EchoDotNetLite
             }
         }
 
-        private async Task RequestAsync(string address, Frame frame, CancellationToken cancellationToken)
+#nullable enable
+        private async Task RequestAsync(IPAddress? address, Frame frame, CancellationToken cancellationToken)
         {
             _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
-            await _panaClient.RequestAsync(address, FrameSerializer.Serialize(frame), cancellationToken);
+            await _echoFrameHandler.RequestAsync(address, FrameSerializer.Serialize(frame), cancellationToken);
         }
+#nullable restore
 
         private void インスタンスリスト通知受信(EchoNode sourceNode, byte[] edt)
         {
@@ -975,13 +978,13 @@ namespace EchoDotNetLite
             }
         }
 
-        private void ReceiveFrame(object sender, (string address, Frame frame) value)
+        private void ReceiveFrame(object sender, (IPAddress address, Frame frame) value)
         {
             if (value.frame.EHD1 == EHD1.ECHONETLite
                 && value.frame.EHD2 == EHD2.Type1)
             {
                 var edata = value.frame.EDATA as EDATA1;
-                var sourceNode = NodeList.SingleOrDefault(n => n.Address == value.address);
+                var sourceNode = NodeList.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
                 //未知のノードの場合
                 if (sourceNode == null)
                 {
@@ -1094,7 +1097,7 @@ namespace EchoDotNetLite
         /// <param name="edata"></param>
         /// <param name="destObject"></param>
         /// <returns>true:成功</returns>
-        private async Task<bool> プロパティ値書き込みサービス応答不要((string address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値書き込みサービス応答不要((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
         {
             if (destObject == null)
             {
@@ -1151,7 +1154,7 @@ namespace EchoDotNetLite
         /// <param name="edata"></param>
         /// <param name="destObject"></param>
         /// <returns>true:成功</returns>
-        private async Task<bool> プロパティ値書き込みサービス応答要((string address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値書き込みサービス応答要((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
         {
             bool hasError = false;
             var opcList = new List<PropertyRequest>();
@@ -1225,7 +1228,7 @@ namespace EchoDotNetLite
         /// <param name="edata"></param>
         /// <param name="destObject"></param>
         /// <returns>true:成功</returns>
-        private async Task<bool> プロパティ値読み出しサービス((string address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値読み出しサービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
         {
             bool hasError = false;
             var opcList = new List<PropertyRequest>();
@@ -1300,7 +1303,7 @@ namespace EchoDotNetLite
         /// <param name="request"></param>
         /// <param name="edata"></param>
         /// <param name="destObject"></param>
-        private async Task<bool> プロパティ値書き込み読み出しサービス((string address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値書き込み読み出しサービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
         {
             bool hasError = false;
             var opcSetList = new List<PropertyRequest>();
@@ -1401,7 +1404,7 @@ namespace EchoDotNetLite
         /// <param name="edata"></param>
         /// <param name="sourceNode"></param>
         /// <returns></returns>
-        private bool プロパティ値通知サービス((string address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
+        private bool プロパティ値通知サービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
         {
             bool hasError = false;
             var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
@@ -1458,7 +1461,7 @@ namespace EchoDotNetLite
         /// <param name="sourceNode"></param>
         /// <param name="destObject"></param>
         /// <returns></returns>
-        private async Task<bool> プロパティ値通知応答要サービス((string address, Frame frame) request, EDATA1 edata, EchoNode sourceNode, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値通知応答要サービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode, EchoObjectInstance destObject)
         {
             bool hasError = false;
             var opcList = new List<PropertyRequest>();

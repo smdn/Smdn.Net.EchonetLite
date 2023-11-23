@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 namespace EchoDotNetLite.Models
@@ -20,7 +21,7 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// 下位スタックのアドレス
         /// </summary>
-        public string Address { get; set;}
+        public IPAddress Address { get; set;}
 
         /// <summary>
         /// ノードプロファイルオブジェクト

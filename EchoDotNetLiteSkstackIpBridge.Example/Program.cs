@@ -47,7 +47,7 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                 .CreateLogger<Example>();
 
             var skStackClient = serviceProvider.GetService<SkstackIpPANAClient>();
-            serviceCollection.AddSingleton<IPANAClient, SkstackIpPANAClient>(f=>skStackClient);
+            serviceCollection.AddSingleton<IEchonetLiteFrameHandler, SkstackIpPANAClient>(f=>skStackClient);
             serviceCollection.AddSingleton<EchoClient>();
             serviceProvider = serviceCollection.BuildServiceProvider();
             var configuration = serviceProvider.GetService<IConfigurationRoot>();
