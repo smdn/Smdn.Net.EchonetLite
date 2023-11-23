@@ -45,7 +45,7 @@ namespace EchoDotNetLiteLANBridge
                             continue;
                         }
                         _logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address.ToString()} {BytesConvert.ToHexString(receivedResults.Buffer)}");
-                        DataReceived?.Invoke(this, (receivedResults.RemoteEndPoint.Address.ToString(), receivedResults.Buffer));
+                        DataReceived?.Invoke(this, (receivedResults.RemoteEndPoint.Address.ToString(), receivedResults.Buffer.AsMemory()));
                     }
                 }
                 catch (System.ObjectDisposedException)
@@ -59,7 +59,7 @@ namespace EchoDotNetLiteLANBridge
             });
         }
 
-        public event EventHandler<(string, byte[])> DataReceived;
+        public event EventHandler<(string, ReadOnlyMemory<byte>)> DataReceived;
 
         public void Dispose()
         {
@@ -74,9 +74,9 @@ namespace EchoDotNetLiteLANBridge
             }
         }
 
-        public async Task RequestAsync(string address, byte[] request, CancellationToken cancellationToken)
+        public async Task RequestAsync(string address, ReadOnlyMemory<byte> request, CancellationToken cancellationToken)
         {
-            _logger.LogDebug($"UDP送信:{address ?? "Broadcast"} {BytesConvert.ToHexString(request)}");
+            _logger.LogDebug($"UDP送信:{address ?? "Broadcast"} {BytesConvert.ToHexString(request.Span)}");
             IPEndPoint remote;
             if (address == null)
             {
@@ -92,9 +92,9 @@ namespace EchoDotNetLiteLANBridge
             };
             sendUdpClient.Connect(remote);
 #if NET6_0_OR_GREATER
-            await sendUdpClient.SendAsync(request.AsMemory(), cancellationToken);
+            await sendUdpClient.SendAsync(request, cancellationToken);
 #else
-            await sendUdpClient.SendAsync(request, request.Length);
+            await sendUdpClient.SendAsync(request.ToArray(), request.Length);
 #endif
             sendUdpClient.Close();
         }

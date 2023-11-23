@@ -9,8 +9,8 @@ namespace EchoDotNetLite
 
     public interface IPANAClient
     {
-        Task RequestAsync(string address, byte[] request, CancellationToken cancellationToken);
+        Task RequestAsync(string address, ReadOnlyMemory<byte> request, CancellationToken cancellationToken);
 
-        event EventHandler<(string,byte[])> DataReceived;
+        event EventHandler<(string, ReadOnlyMemory<byte> Data)> DataReceived;
     }
 }

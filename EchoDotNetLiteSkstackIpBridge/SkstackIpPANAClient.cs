@@ -100,7 +100,7 @@ namespace EchoDotNetLiteSkstackIpBridge
             }
         }
 
-        public event EventHandler<(string,byte[])> DataReceived;
+        public event EventHandler<(string,ReadOnlyMemory<byte>)> DataReceived;
 
         public void ReceivedERXUDP(object sender, ERXUDP erxudp)
         {
@@ -108,7 +108,7 @@ namespace EchoDotNetLiteSkstackIpBridge
         }
 
 
-        public async Task RequestAsync(string address,byte[] request,CancellationToken cancellationToken)
+        public async Task RequestAsync(string address, ReadOnlyMemory<byte> request,CancellationToken cancellationToken)
         {
             if (address == null)
             {
@@ -119,7 +119,7 @@ namespace EchoDotNetLiteSkstackIpBridge
                 address,
                 "0E1A",
                 SKSendToSec.SecOrNotTransfer,
-                request);
+                request.ToArray()); // TODO: support sending ReadOnlyMemory<byte>
         }
 
 

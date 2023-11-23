@@ -3,6 +3,7 @@ using EchoDotNetLite.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using CommunityToolkit.HighPerformance;
 
 namespace EchoDotNetLite
 {
@@ -31,16 +32,16 @@ namespace EchoDotNetLite
                 return ms.ToArray();
             }
         }
-        public static Frame Deserialize(byte[] bytes)
+        public static Frame Deserialize(ReadOnlyMemory<byte> bytes)
         {
             //EHD1が0x1*(0001***)以外の場合、
-            if ((bytes[0] & 0xF0) != (byte)EHD1.ECHONETLite)
+            if ((bytes.Span[0] & 0xF0) != (byte)EHD1.ECHONETLite)
             {
                 //ECHONETLiteフレームではないため無視
                 return null;
             }
-            using (var ms = new MemoryStream(bytes))
-            using (var br = new BinaryReader(ms))
+            using (var roms = bytes.AsStream())
+            using (var br = new BinaryReader(roms))
             {
                 var flame = new Frame
                 {
@@ -60,7 +61,7 @@ namespace EchoDotNetLite
                     case EHD2.Type2:
                         flame.EDATA = new EDATA2()
                         {
-                            Message = br.ReadBytes((int)ms.Length - (int)ms.Position)
+                            Message = br.ReadBytes((int)roms.Length - (int)roms.Position)
                         };
                         break;
                 }

@@ -780,9 +780,9 @@ namespace EchoDotNetLite
             }
         }
 
-        private void ReceiveEvent(object sender, (string address, byte[] e) value)
+        private void ReceiveEvent(object sender, (string address, ReadOnlyMemory<byte> data) value)
         {
-            var frame = FrameSerializer.Deserialize(value.e);
+            var frame = FrameSerializer.Deserialize(value.data);
             if (frame != null)
             {
                 _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
