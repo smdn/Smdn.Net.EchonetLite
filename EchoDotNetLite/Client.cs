@@ -16,13 +16,13 @@ namespace EchoDotNetLite
 {
     public class EchoClient
     {
-        private readonly IPANAClient _panaClient;
+        private readonly IEchonetLiteFrameHandler _echoFrameHandler;
         private readonly ILogger _logger;
-        public EchoClient(ILogger<EchoClient> logger,IPANAClient panaClient)
+        public EchoClient(ILogger<EchoClient> logger, IEchonetLiteFrameHandler handler)
         {
             _logger = logger;
-            _panaClient = panaClient;
-            _panaClient.DataReceived += ReceiveEvent;
+            _echoFrameHandler = handler;
+            _echoFrameHandler.DataReceived += ReceiveEvent;
             SelfNode = new EchoNode()
             {
                 NodeProfile = new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01),
@@ -795,7 +795,7 @@ namespace EchoDotNetLite
         private async Task RequestAsync(IPAddress? address, Frame frame, CancellationToken cancellationToken)
         {
             _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
-            await _panaClient.RequestAsync(address, FrameSerializer.Serialize(frame), cancellationToken);
+            await _echoFrameHandler.RequestAsync(address, FrameSerializer.Serialize(frame), cancellationToken);
         }
 #nullable restore
 

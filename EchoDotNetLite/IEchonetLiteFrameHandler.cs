@@ -9,7 +9,7 @@ namespace EchoDotNetLite
 {
 
 #nullable enable
-    public interface IPANAClient
+    public interface IEchonetLiteFrameHandler
     {
         Task RequestAsync(IPAddress? address, ReadOnlyMemory<byte> request, CancellationToken cancellationToken);
 

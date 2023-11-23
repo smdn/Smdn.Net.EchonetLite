@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace EchoDotNetLiteSkstackIpBridge
 {
-    public class SkstackIpPANAClient : IPANAClient, IDisposable
+    public class SkstackIpPANAClient : IEchonetLiteFrameHandler, IDisposable
     {
         private readonly ILogger _logger;
         private readonly SKDevice SKDevice;

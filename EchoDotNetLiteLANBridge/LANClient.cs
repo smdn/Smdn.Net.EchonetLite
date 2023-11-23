@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace EchoDotNetLiteLANBridge
 {
-    public class LANClient : IPANAClient, IDisposable
+    public class LANClient : IEchonetLiteFrameHandler, IDisposable
     {
         private readonly UdpClient receiveUdpClient;
         private readonly ILogger _logger;
