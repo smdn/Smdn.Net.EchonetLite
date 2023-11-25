@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 using EchoDotNetLite.Models;
@@ -11,12 +12,34 @@ using NUnit.Framework;
 namespace EchoDotNetLite;
 
 partial class FrameSerializerTests {
+  private class PseudoBufferWriter : IBufferWriter<byte> {
+    public static readonly PseudoBufferWriter Instance = new();
+
+    public void Advance(int count) { /* do nothing */ }
+    public Span<byte> GetSpan(int sizeHint) => new byte[sizeHint];
+    public Memory<byte> GetMemory(int sizeHint) => new byte[sizeHint];
+  }
+
   [Test]
   public void Serialize_ArgumentNull()
   {
     Assert.Throws<ArgumentNullException>(
-      () => FrameSerializer.Serialize(frame: null!)
+      () => FrameSerializer.Serialize(frame: null!, buffer: PseudoBufferWriter.Instance),
+      message: "frame null"
     );
+    Assert.Throws<ArgumentNullException>(
+      () => FrameSerializer.Serialize(frame: new Frame(), buffer: null!),
+      message: "buffer null"
+    );
+  }
+
+  private static byte[] SerializeFrameAsByteArray(Frame frame)
+  {
+    var buffer = new ArrayBufferWriter<byte>(initialCapacity: 0x100);
+
+    FrameSerializer.Serialize(frame, buffer);
+
+    return buffer.WrittenMemory.ToArray();
   }
 
   [TestCase(EHD1.ECHONETLite, 0x10)]
@@ -24,7 +47,7 @@ partial class FrameSerializerTests {
   [TestCase((EHD1)0xFF, 0xFF)]
   public void Serialize_EHD1(EHD1 ehd1, byte expectedEHD1Byte)
   {
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = ehd1,
         EDATA = new EDATA1() {
@@ -74,7 +97,7 @@ partial class FrameSerializerTests {
   [TestCaseSource(nameof(YieldTestCases_Serialize_EHD2))]
   public void Serialize_EHD2(EHD2 ehd2, IEDATA? edata, byte expectedEHD2Byte)
   {
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = ehd2,
@@ -102,7 +125,8 @@ partial class FrameSerializerTests {
           EHD1 = EHD1.ECHONETLite,
           EHD2 = ehd2,
           EDATA = edata!
-        }
+        },
+        PseudoBufferWriter.Instance
       ),
       message: "type of EDATA mismatch"
     );
@@ -116,7 +140,7 @@ partial class FrameSerializerTests {
   [TestCase((ushort)0xFFFFu, (byte)0xFF, (byte)0xFF)]
   public void Serialize_TID(ushort tid, byte expectedTIDByteFirst, byte expectedTIDByteSecond)
   {
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         TID = tid,
@@ -156,7 +180,7 @@ partial class FrameSerializerTests {
     byte expectedSEOJByte2
   )
   {
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -182,7 +206,7 @@ partial class FrameSerializerTests {
     byte expectedDEOJByte2
   )
   {
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -220,7 +244,7 @@ partial class FrameSerializerTests {
   [TestCase((ESV)0xFF, (byte)0xFF)]
   public void Serialize_EHD2Type1_EDATA1_ESV(ESV esv, byte expectedESVByte)
   {
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -260,7 +284,7 @@ partial class FrameSerializerTests {
       },
     };
 
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -298,7 +322,7 @@ partial class FrameSerializerTests {
       },
     };
 
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -336,7 +360,8 @@ partial class FrameSerializerTests {
             OPCSetList = null, // this must not be used
             OPCGetList = null, // this must not be used
           },
-        }
+        },
+        PseudoBufferWriter.Instance
       )
     );
   }
@@ -363,7 +388,7 @@ partial class FrameSerializerTests {
       },
     };
 
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -416,7 +441,7 @@ partial class FrameSerializerTests {
       },
     };
 
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -471,7 +496,7 @@ partial class FrameSerializerTests {
       },
     };
 
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -523,7 +548,7 @@ partial class FrameSerializerTests {
       },
     };
 
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -569,7 +594,7 @@ partial class FrameSerializerTests {
       },
     };
 
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type1,
@@ -606,7 +631,8 @@ partial class FrameSerializerTests {
             OPCSetList = null, // can not be null
             OPCGetList = new(), // empty OPCGet
           },
-        }
+        },
+        PseudoBufferWriter.Instance
       )
     );
   }
@@ -627,7 +653,8 @@ partial class FrameSerializerTests {
             OPCSetList = new(), // empty OPCGet
             OPCGetList = null, // can not be null
           },
-        }
+        },
+        PseudoBufferWriter.Instance
       )
     );
   }
@@ -642,7 +669,7 @@ partial class FrameSerializerTests {
   [TestCaseSource(nameof(YieldTestCases_Serialize_EHD2Type2))]
   public void Serialize_EHD2Type2_EDATA(byte[] edata)
   {
-    var frameBytes = FrameSerializer.Serialize(
+    var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
         EHD2 = EHD2.Type2,
@@ -676,7 +703,8 @@ partial class FrameSerializerTests {
           EDATA = new EDATA2() {
             Message = null
           },
-        }
+        },
+        PseudoBufferWriter.Instance
       ),
       message: "EDATA can not be null."
     );

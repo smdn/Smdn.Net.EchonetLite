@@ -1,6 +1,7 @@
 ﻿using EchoDotNetLite.Enums;
 using EchoDotNetLite.Models;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using CommunityToolkit.HighPerformance;
@@ -9,40 +10,63 @@ namespace EchoDotNetLite
 {
     public static class FrameSerializer
     {
-        public static byte[] Serialize(Frame frame)
+        private static void Write(IBufferWriter<byte> buffer, byte value)
+        {
+          var span = buffer.GetSpan(1);
+
+          span[0] = value;
+
+          buffer.Advance(1);
+        }
+
+        private static void Write(IBufferWriter<byte> buffer, ushort value)
+        {
+          var span = buffer.GetSpan(2);
+
+          _ = BitConverter.TryWriteBytes(span, value);
+
+          buffer.Advance(2);
+        }
+
+#nullable enable
+        public static void Serialize(Frame frame, IBufferWriter<byte> buffer)
         {
             if (frame is null)
                 throw new ArgumentNullException(nameof(frame));
+            if (buffer is null)
+                throw new ArgumentNullException(nameof(buffer));
 
-            using (var ms = new MemoryStream())
+            Write(buffer, (byte)frame.EHD1);
+            Write(buffer, (byte)frame.EHD2);
+            Write(buffer, frame.TID);
+
+            switch (frame.EHD2)
             {
-                ms.WriteByte((byte)frame.EHD1);
-                ms.WriteByte((byte)frame.EHD2);
-                var tid = BitConverter.GetBytes(frame.TID);
-                ms.WriteByte(tid[0]);
-                ms.WriteByte(tid[1]);
-                switch (frame.EHD2)
-                {
-                    case EHD2.Type1:
-                        if (frame.EDATA is not EDATA1 edata1)
-                            throw new ArgumentException($"{nameof(EDATA1)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
+                case EHD2.Type1:
+                    if (frame.EDATA is not EDATA1 edata1)
+                        throw new ArgumentException($"{nameof(EDATA1)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
 
-                        var edata1Bytes = EDATA1ToBytes(edata1);
-                        ms.Write(edata1Bytes, 0, edata1Bytes.Length);
-                        break;
-                    case EHD2.Type2:
-                        if (frame.EDATA is not EDATA2 edata2)
-                            throw new ArgumentException($"{nameof(EDATA2)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
+                    WriteEDATAType1(buffer, edata1);
 
-                        if (edata2.Message is null)
-                            throw new ArgumentException($"{nameof(EDATA2)} can not be null.", paramName: nameof(frame));
+                    break;
 
-                        ms.Write(edata2.Message, 0, edata2.Message.Length);
-                        break;
-                }
-                return ms.ToArray();
+                case EHD2.Type2:
+                    if (frame.EDATA is not EDATA2 edata2)
+                        throw new ArgumentException($"{nameof(EDATA2)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
+
+                    if (edata2.Message is null)
+                        throw new ArgumentException($"{nameof(EDATA2)} can not be null.", paramName: nameof(frame));
+
+                    var edata2Span = buffer.GetSpan(edata2.Message.Length);
+
+                    edata2.Message.AsSpan().CopyTo(edata2Span);
+
+                    buffer.Advance(edata2.Message.Length);
+
+                    break;
             }
         }
+#nullable restore
 
         public static Frame Deserialize(ReadOnlyMemory<byte> bytes)
         {
@@ -167,86 +191,93 @@ namespace EchoDotNetLite
             return processingTargetProperties;
         }
 
-        private static byte[] EDATA1ToBytes(EDATA1 edata)
+#nullable enable
+        private static void WriteEDATAType1(IBufferWriter<byte> buffer, EDATA1 edata)
         {
-            using (var ms = new MemoryStream())
-            using (var bw = new BinaryWriter(ms))
+            WriteEOJ(buffer, edata.SEOJ);
+            WriteEOJ(buffer, edata.DEOJ);
+            Write(buffer, (byte)edata.ESV);
+
+            if (IsESVWriteOrReadService(edata.ESV))
             {
-                WriteEDATA1EOJ(bw, edata.SEOJ);
-                WriteEDATA1EOJ(bw, edata.DEOJ);
-                bw.Write((byte)edata.ESV);
+                if (edata.OPCSetList is null)
+                    throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCSetList)} can not be null for the write or read services.");
+                if (edata.OPCGetList is null)
+                    throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCGetList)} can not be null for the write or read services.");
 
-                if (IsESVWriteOrReadService(edata.ESV))
+                if (edata.ESV != ESV.SetGet_SNA)
                 {
-                    if (edata.OPCSetList is null)
-                        throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCSetList)} can not be null for the write or read services.");
-                    if (edata.OPCGetList is null)
-                        throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCGetList)} can not be null for the write or read services.");
+                    if (edata.OPCSetList.Count == 0)
+                        throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
 
-                    if (edata.ESV != ESV.SetGet_SNA)
-                    {
-                        if (edata.OPCSetList.Count == 0)
-                            throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
-
-                        if (edata.OPCGetList.Count == 0)
-                            throw new InvalidOperationException("OPCGet can not be zero when ESV is other than SetGet_SNA.");
-                    }
-
-                    //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
-                    // OPCSet 処理プロパティ数(1B)
-                    // ECHONET Liteプロパティ(1B)
-                    // EDTのバイト数(1B)
-                    // プロパティ値データ(PDCで指定)
-                    WriteEDATA1ProcessingTargetProperties(bw, edata.OPCSetList);
-                    // OPCGet 処理プロパティ数(1B)
-                    // ECHONET Liteプロパティ(1B)
-                    // EDTのバイト数(1B)
-                    // プロパティ値データ(PDCで指定)
-                    WriteEDATA1ProcessingTargetProperties(bw, edata.OPCGetList);
+                    if (edata.OPCGetList.Count == 0)
+                        throw new InvalidOperationException("OPCGet can not be zero when ESV is other than SetGet_SNA.");
                 }
-                else
-                {
-                    if (edata.OPCList is null)
-                        throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCList)} can not be null.");
 
-                    // OPC 処理プロパティ数(1B)
-                    // ECHONET Liteプロパティ(1B)
-                    // EDTのバイト数(1B)
-                    // プロパティ値データ(PDCで指定)
-                    WriteEDATA1ProcessingTargetProperties(bw, edata.OPCList);
-                }
-                return ms.ToArray();
+                //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+                // OPCSet 処理プロパティ数(1B)
+                // ECHONET Liteプロパティ(1B)
+                // EDTのバイト数(1B)
+                // プロパティ値データ(PDCで指定)
+                WriteEDATAType1ProcessingTargetProperties(buffer, edata.OPCSetList);
+                // OPCGet 処理プロパティ数(1B)
+                // ECHONET Liteプロパティ(1B)
+                // EDTのバイト数(1B)
+                // プロパティ値データ(PDCで指定)
+                WriteEDATAType1ProcessingTargetProperties(buffer, edata.OPCGetList);
+            }
+            else
+            {
+                if (edata.OPCList is null)
+                    throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCList)} can not be null.");
+
+                // OPC 処理プロパティ数(1B)
+                // ECHONET Liteプロパティ(1B)
+                // EDTのバイト数(1B)
+                // プロパティ値データ(PDCで指定)
+                WriteEDATAType1ProcessingTargetProperties(buffer, edata.OPCList);
             }
         }
 
-        private static void WriteEDATA1EOJ(BinaryWriter bw, EOJ eoj)
+        private static void WriteEOJ(IBufferWriter<byte> buffer, EOJ eoj)
         {
-            bw.Write(eoj.ClassGroupCode);
-            bw.Write(eoj.ClassCode);
-            bw.Write(eoj.InstanceCode);
+            var span = buffer.GetSpan(3);
+
+            span[0] = eoj.ClassGroupCode;
+            span[1] = eoj.ClassCode;
+            span[2] = eoj.InstanceCode;
+
+            buffer.Advance(3);
         }
 
-        private static void WriteEDATA1ProcessingTargetProperties(BinaryWriter bw, List<PropertyRequest> opcList)
+        private static void WriteEDATAType1ProcessingTargetProperties(IBufferWriter<byte> buffer, IReadOnlyCollection<PropertyRequest> opcList)
         {
             // ４．２．３ サービス内容に関する詳細シーケンス
             // OPC 処理プロパティ数(1B)
             // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
             // OPCSet 処理プロパティ数(1B)
             // OPCGet 処理プロパティ数(1B)
-            bw.Write((byte)opcList.Count);
+            Write(buffer, (byte)opcList.Count);
+
             foreach (var prp in opcList)
             {
                 // ECHONET Liteプロパティ(1B)
-                bw.Write(prp.EPC);
+                Write(buffer, prp.EPC);
                 // EDTのバイト数(1B)
-                bw.Write(prp.PDC);
+                Write(buffer, prp.PDC);
+
                 if (prp.PDC != 0)
                 {
                     // プロパティ値データ(PDCで指定)
-                    bw.Write(prp.EDT);
+                    var edtSpan = buffer.GetSpan(prp.PDC);
+
+                    prp.EDT.AsSpan().CopyTo(edtSpan);
+
+                    buffer.Advance(prp.PDC);
                 }
             }
         }
+#nullable restore
     }
 
 }
