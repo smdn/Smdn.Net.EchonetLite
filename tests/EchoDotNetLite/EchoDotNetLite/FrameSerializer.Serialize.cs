@@ -11,7 +11,6 @@ using NUnit.Framework;
 namespace EchoDotNetLite;
 
 partial class FrameSerializerTests {
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [Test]
   public void Serialize_ArgumentNull()
   {
@@ -94,7 +93,6 @@ partial class FrameSerializerTests {
     yield return new object?[] { EHD2.Type2, (IEDATA?)null };
   }
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [TestCaseSource(nameof(YieldTestCases_Serialize_EHD2_TypeOfEDATAMismatch))]
   public void Serialize_EHD2_Type1_InvalidEDATA(EHD2 ehd2, IEDATA? edata)
   {
@@ -228,9 +226,9 @@ partial class FrameSerializerTests {
         EHD2 = EHD2.Type1,
         EDATA = new EDATA1() {
           ESV = esv,
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
+          OPCList = new() { new PropertyRequest() },
+          OPCSetList = new() { new PropertyRequest() },
+          OPCGetList = new() { new PropertyRequest() },
         },
       }
     );
@@ -323,7 +321,6 @@ partial class FrameSerializerTests {
     CollectionAssert.AreEqual(opc[1].EDT, frameBytes[18..21], "Frame[18..21] OPC#1 EDT");
   }
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [TestCase(ESV.SetI)]
   [TestCase(ESV.Get)]
   public void Serialize_EHD2Type1_EDATA1_OPCListNull(ESV esv)
@@ -505,7 +502,6 @@ partial class FrameSerializerTests {
   public void Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty_OfESVSetGetSNA()
     => Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty(ESV.SetGet_SNA);
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGet_Res)]
   public void Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty_OfESVOtherThanSetGetSNA(ESV esv)
@@ -552,7 +548,6 @@ partial class FrameSerializerTests {
   public void Serialize_EHD2Type1_EDATA1_OPCGet_ForNoProperty_OfESVSetGetSNA()
     => Serialize_EHD2Type1_EDATA1_OPCGet_ForNoProperty(ESV.SetGet_SNA);
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGet_Res)]
   public void Serialize_EHD2Type1_EDATA1_OPCGet_ForNoProperty_OfESVOtherThanSetGetSNA(ESV esv)
@@ -595,7 +590,6 @@ partial class FrameSerializerTests {
     Assert.AreEqual(0, frameBytes[19], "Frame[19] OPCGet");
   }
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGet_Res)]
   [TestCase(ESV.SetGet_SNA)]
@@ -617,7 +611,6 @@ partial class FrameSerializerTests {
     );
   }
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGet_Res)]
   [TestCase(ESV.SetGet_SNA)]
@@ -671,11 +664,10 @@ partial class FrameSerializerTests {
     CollectionAssert.AreEqual(edata, frameBytes[4..], "Frame[4..] EDATA");
   }
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [Test]
   public void Serialize_EHD2Type2_EDATANull()
   {
-    Assert.Throws<InvalidOperationException>(
+    Assert.Throws<ArgumentException>(
       () => FrameSerializer.Serialize(
         new Frame() {
           EHD1 = EHD1.ECHONETLite,

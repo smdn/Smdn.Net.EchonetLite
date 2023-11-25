@@ -783,11 +783,16 @@ namespace EchoDotNetLite
 
         private void ReceiveEvent(object sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
-            var frame = FrameSerializer.Deserialize(value.data);
-            if (frame != null)
+            try
             {
+                var frame = FrameSerializer.Deserialize(value.data);
+
                 _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
                 OnFrameReceived?.Invoke(this, (value.address, frame));
+            }
+            catch (ArgumentException)
+            {
+                // ECHONETLiteフレームではないため無視
             }
         }
 

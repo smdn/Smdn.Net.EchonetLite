@@ -11,6 +11,9 @@ namespace EchoDotNetLite
     {
         public static byte[] Serialize(Frame frame)
         {
+            if (frame is null)
+                throw new ArgumentNullException(nameof(frame));
+
             using (var ms = new MemoryStream())
             {
                 ms.WriteByte((byte)frame.EHD1);
@@ -21,25 +24,41 @@ namespace EchoDotNetLite
                 switch (frame.EHD2)
                 {
                     case EHD2.Type1:
-                        var edata1 = EDATA1ToBytes(frame.EDATA as EDATA1);
-                        ms.Write(edata1, 0, edata1.Length);
+                        if (frame.EDATA is not EDATA1 edata1)
+                            throw new ArgumentException($"{nameof(EDATA1)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
+
+                        var edata1Bytes = EDATA1ToBytes(edata1);
+                        ms.Write(edata1Bytes, 0, edata1Bytes.Length);
                         break;
                     case EHD2.Type2:
-                        var edata2 = (frame.EDATA as EDATA2).Message;
-                        ms.Write(edata2, 0, edata2.Length);
+                        if (frame.EDATA is not EDATA2 edata2)
+                            throw new ArgumentException($"{nameof(EDATA2)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
+
+                        if (edata2.Message is null)
+                            throw new ArgumentException($"{nameof(EDATA2)} can not be null.", paramName: nameof(frame));
+
+                        ms.Write(edata2.Message, 0, edata2.Message.Length);
                         break;
                 }
                 return ms.ToArray();
             }
         }
+
         public static Frame Deserialize(ReadOnlyMemory<byte> bytes)
         {
+            if (bytes.Length < 4)
+            {
+                //ECHONETLiteフレームとしての最小長に満たない
+                throw new ArgumentException("input byte sequence does not fulfill the minimum length for an ECHONETLite frame", paramName: nameof(bytes));
+            }
+
             //EHD1が0x1*(0001***)以外の場合、
             if ((bytes.Span[0] & 0xF0) != (byte)EHD1.ECHONETLite)
             {
-                //ECHONETLiteフレームではないため無視
-                return null;
+                //ECHONETLiteフレームではない
+                throw new ArgumentException("input byte sequence is not an ECHONETLite frame", paramName: nameof(bytes));
             }
+
             using (var roms = bytes.AsStream())
             using (var br = new BinaryReader(roms))
             {
@@ -159,6 +178,20 @@ namespace EchoDotNetLite
 
                 if (IsESVWriteOrReadService(edata.ESV))
                 {
+                    if (edata.OPCSetList is null)
+                        throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCSetList)} can not be null for the write or read services.");
+                    if (edata.OPCGetList is null)
+                        throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCGetList)} can not be null for the write or read services.");
+
+                    if (edata.ESV != ESV.SetGet_SNA)
+                    {
+                        if (edata.OPCSetList.Count == 0)
+                            throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
+
+                        if (edata.OPCGetList.Count == 0)
+                            throw new InvalidOperationException("OPCGet can not be zero when ESV is other than SetGet_SNA.");
+                    }
+
                     //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
                     // OPCSet 処理プロパティ数(1B)
                     // ECHONET Liteプロパティ(1B)
@@ -173,6 +206,9 @@ namespace EchoDotNetLite
                 }
                 else
                 {
+                    if (edata.OPCList is null)
+                        throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCList)} can not be null.");
+
                     // OPC 処理プロパティ数(1B)
                     // ECHONET Liteプロパティ(1B)
                     // EDTのバイト数(1B)

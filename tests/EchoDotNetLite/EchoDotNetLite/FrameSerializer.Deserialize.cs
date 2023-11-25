@@ -26,7 +26,6 @@ partial class FrameSerializerTests {
     yield return new object?[] { new byte[4] };
   }
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [TestCaseSource(nameof(YieldTestCases_Deserialize_InputTooShort))]
   public void Deserialize_InputTooShort(byte[] input)
   {
@@ -46,7 +45,6 @@ partial class FrameSerializerTests {
     yield return new object?[] { new byte[5] { 0b1111_1111, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, false };
   }
 
-  [Ignore("TODO: Change the implementation to pass this case.")]
   [TestCaseSource(nameof(YieldTestCases_Deserialize_EHD1))]
   public void Deserialize_EHD1(byte[] input, bool expectAsEchonetLiteFrame)
   {
