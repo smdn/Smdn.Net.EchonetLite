@@ -68,91 +68,84 @@ namespace EchoDotNetLite
                 return flame;
             }
         }
+
+        private static bool IsESVWriteOrReadService(ESV esv)
+            => esv switch {
+                ESV.SetGet => true,
+                ESV.SetGet_Res => true,
+                ESV.SetGet_SNA => true,
+                _ => false,
+            };
+
         private static EDATA1 EDATA1FromBytes(BinaryReader br)
         {
             var edata = new EDATA1
             {
-                SEOJ = new EOJ()
-                {
-                    ClassGroupCode = br.ReadByte(),
-                    ClassCode = br.ReadByte(),
-                    InstanceCode = br.ReadByte()
-                },
-                DEOJ = new EOJ()
-                {
-                    ClassGroupCode = br.ReadByte(),
-                    ClassCode = br.ReadByte(),
-                    InstanceCode = br.ReadByte()
-                },
+                SEOJ = ReadEDATA1EOJ(br),
+                DEOJ = ReadEDATA1EOJ(br),
                 ESV = (ESV)br.ReadByte()
             };
-            if (edata.ESV == ESV.SetGet
-                || edata.ESV == ESV.SetGet_Res
-                || edata.ESV == ESV.SetGet_SNA)
+            if (IsESVWriteOrReadService(edata.ESV))
             {
                 //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
                 // OPCSet 処理プロパティ数(1B)
-                var opcSet = br.ReadByte();
-                edata.OPCSetList = new List<PropertyRequest>();
-                for (int i = 0; i < opcSet; i++)
-                {
-                    var prp = new PropertyRequest
-                    {
-                        // ECHONET Liteプロパティ(1B)
-                        EPC = br.ReadByte(),
-                        // EDTのバイト数(1B)
-                        PDC = br.ReadByte()
-                    };
-                    if (prp.PDC != 0)
-                    {
-                        // プロパティ値データ(PDCで指定)
-                        prp.EDT = br.ReadBytes(prp.PDC);
-                    }
-                    edata.OPCSetList.Add(prp);
-                }
+                // ECHONET Liteプロパティ(1B)
+                // EDTのバイト数(1B)
+                // プロパティ値データ(PDCで指定)
+                edata.OPCSetList = ReadEDATA1ProcessingTargetProperties(br);
                 // OPCGet 処理プロパティ数(1B)
-                var opcGet = br.ReadByte();
-                edata.OPCGetList = new List<PropertyRequest>();
-                for (int i = 0; i < opcGet; i++)
-                {
-                    var prp = new PropertyRequest
-                    {
-                        // ECHONET Liteプロパティ(1B)
-                        EPC = br.ReadByte(),
-                        // EDTのバイト数(1B)
-                        PDC = br.ReadByte()
-                    };
-                    if (prp.PDC != 0)
-                    {
-                        // プロパティ値データ(PDCで指定)
-                        prp.EDT = br.ReadBytes(prp.PDC);
-                    }
-                    edata.OPCGetList.Add(prp);
-                }
+                // ECHONET Liteプロパティ(1B)
+                // EDTのバイト数(1B)
+                // プロパティ値データ(PDCで指定)
+                edata.OPCGetList = ReadEDATA1ProcessingTargetProperties(br);
             }
             else
             {
                 // OPC 処理プロパティ数(1B)
-                var opc = br.ReadByte();
-                edata.OPCList = new List<PropertyRequest>();
-                for (int i = 0; i < opc; i++)
-                {
-                    var prp = new PropertyRequest
-                    {
-                        // ECHONET Liteプロパティ(1B)
-                        EPC = br.ReadByte(),
-                        // EDTのバイト数(1B)
-                        PDC = br.ReadByte()
-                    };
-                    if (prp.PDC != 0)
-                    {
-                        // プロパティ値データ(PDCで指定)
-                        prp.EDT = br.ReadBytes(prp.PDC);
-                    }
-                    edata.OPCList.Add(prp);
-                }
+                // ECHONET Liteプロパティ(1B)
+                // EDTのバイト数(1B)
+                // プロパティ値データ(PDCで指定)
+                edata.OPCList = ReadEDATA1ProcessingTargetProperties(br);
             }
             return edata;
+        }
+
+        private static EOJ ReadEDATA1EOJ(BinaryReader br)
+            => new EOJ()
+                {
+                    ClassGroupCode = br.ReadByte(),
+                    ClassCode = br.ReadByte(),
+                    InstanceCode = br.ReadByte()
+                };
+
+        private static List<PropertyRequest> ReadEDATA1ProcessingTargetProperties(BinaryReader br)
+        {
+            // ４．２．３ サービス内容に関する詳細シーケンス
+            // OPC 処理プロパティ数(1B)
+            // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+            // OPCSet 処理プロパティ数(1B)
+            // OPCGet 処理プロパティ数(1B)
+            var opc = br.ReadByte();
+            var processingTargetProperties = new List<PropertyRequest>(capacity: opc);
+
+            for (byte i = 0; i < opc; i++)
+            {
+                var prp = new PropertyRequest
+                {
+                    // ECHONET Liteプロパティ(1B)
+                    EPC = br.ReadByte(),
+                    // EDTのバイト数(1B)
+                    PDC = br.ReadByte()
+                };
+                if (prp.PDC != 0)
+                {
+                    // プロパティ値データ(PDCで指定)
+                    prp.EDT = br.ReadBytes(prp.PDC);
+                }
+                processingTargetProperties.Add(prp);
+            }
+
+            return processingTargetProperties;
         }
 
         private static byte[] EDATA1ToBytes(EDATA1 edata)
@@ -160,67 +153,62 @@ namespace EchoDotNetLite
             using (var ms = new MemoryStream())
             using (var bw = new BinaryWriter(ms))
             {
-                bw.Write(edata.SEOJ.ClassGroupCode);
-                bw.Write(edata.SEOJ.ClassCode);
-                bw.Write(edata.SEOJ.InstanceCode);
-                bw.Write(edata.DEOJ.ClassGroupCode);
-                bw.Write(edata.DEOJ.ClassCode);
-                bw.Write(edata.DEOJ.InstanceCode);
+                WriteEDATA1EOJ(bw, edata.SEOJ);
+                WriteEDATA1EOJ(bw, edata.DEOJ);
                 bw.Write((byte)edata.ESV);
 
-                if (edata.ESV == ESV.SetGet
-                    || edata.ESV == ESV.SetGet_Res
-                    || edata.ESV == ESV.SetGet_SNA)
+                if (IsESVWriteOrReadService(edata.ESV))
                 {
                     //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
                     // OPCSet 処理プロパティ数(1B)
-                    bw.Write((byte)edata.OPCSetList.Count);
-                    foreach (var prp in edata.OPCSetList)
-                    {
-                        // ECHONET Liteプロパティ(1B)
-                        bw.Write(prp.EPC);
-                        // EDTのバイト数(1B)
-                        bw.Write(prp.PDC);
-                        if (prp.PDC != 0)
-                        {
-                            // プロパティ値データ(PDCで指定)
-                            bw.Write(prp.EDT);
-                        }
-                    }
+                    // ECHONET Liteプロパティ(1B)
+                    // EDTのバイト数(1B)
+                    // プロパティ値データ(PDCで指定)
+                    WriteEDATA1ProcessingTargetProperties(bw, edata.OPCSetList);
                     // OPCGet 処理プロパティ数(1B)
-                    bw.Write((byte)edata.OPCGetList.Count);
-                    foreach (var prp in edata.OPCGetList)
-                    {
-                        // ECHONET Liteプロパティ(1B)
-                        bw.Write(prp.EPC);
-                        // EDTのバイト数(1B)
-                        bw.Write(prp.PDC);
-                        if (prp.PDC != 0)
-                        {
-                            // プロパティ値データ(PDCで指定)
-                            ms.Write(prp.EDT);
-                        }
-                    }
-
+                    // ECHONET Liteプロパティ(1B)
+                    // EDTのバイト数(1B)
+                    // プロパティ値データ(PDCで指定)
+                    WriteEDATA1ProcessingTargetProperties(bw, edata.OPCGetList);
                 }
                 else
                 {
                     // OPC 処理プロパティ数(1B)
-                    bw.Write((byte)edata.OPCList.Count);
-                    foreach (var prp in edata.OPCList)
-                    {
-                        // ECHONET Liteプロパティ(1B)
-                        bw.Write(prp.EPC);
-                        // EDTのバイト数(1B)
-                        bw.Write(prp.PDC);
-                        if (prp.PDC != 0)
-                        {
-                            // プロパティ値データ(PDCで指定)
-                            bw.Write(prp.EDT);
-                        }
-                    }
+                    // ECHONET Liteプロパティ(1B)
+                    // EDTのバイト数(1B)
+                    // プロパティ値データ(PDCで指定)
+                    WriteEDATA1ProcessingTargetProperties(bw, edata.OPCList);
                 }
                 return ms.ToArray();
+            }
+        }
+
+        private static void WriteEDATA1EOJ(BinaryWriter bw, EOJ eoj)
+        {
+            bw.Write(eoj.ClassGroupCode);
+            bw.Write(eoj.ClassCode);
+            bw.Write(eoj.InstanceCode);
+        }
+
+        private static void WriteEDATA1ProcessingTargetProperties(BinaryWriter bw, List<PropertyRequest> opcList)
+        {
+            // ４．２．３ サービス内容に関する詳細シーケンス
+            // OPC 処理プロパティ数(1B)
+            // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+            // OPCSet 処理プロパティ数(1B)
+            // OPCGet 処理プロパティ数(1B)
+            bw.Write((byte)opcList.Count);
+            foreach (var prp in opcList)
+            {
+                // ECHONET Liteプロパティ(1B)
+                bw.Write(prp.EPC);
+                // EDTのバイト数(1B)
+                bw.Write(prp.PDC);
+                if (prp.PDC != 0)
+                {
+                    // プロパティ値データ(PDCで指定)
+                    bw.Write(prp.EDT);
+                }
             }
         }
     }
