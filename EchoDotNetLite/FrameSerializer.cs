@@ -155,7 +155,7 @@ namespace EchoDotNetLite
             return edata;
         }
 
-        public static byte[] EDATA1ToBytes(EDATA1 edata)
+        private static byte[] EDATA1ToBytes(EDATA1 edata)
         {
             using (var ms = new MemoryStream())
             using (var bw = new BinaryWriter(ms))
