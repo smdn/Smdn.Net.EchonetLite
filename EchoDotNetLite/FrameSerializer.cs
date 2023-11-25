@@ -1,10 +1,11 @@
-﻿using EchoDotNetLite.Enums;
+﻿#nullable enable
+
+using EchoDotNetLite.Enums;
 using EchoDotNetLite.Models;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
-using CommunityToolkit.HighPerformance;
+using System.Diagnostics.CodeAnalysis;
 
 namespace EchoDotNetLite
 {
@@ -28,7 +29,6 @@ namespace EchoDotNetLite
           buffer.Advance(2);
         }
 
-#nullable enable
         public static void Serialize(Frame frame, IBufferWriter<byte> buffer)
         {
             if (frame is null)
@@ -66,50 +66,54 @@ namespace EchoDotNetLite
                     break;
             }
         }
-#nullable restore
 
-        public static Frame Deserialize(ReadOnlyMemory<byte> bytes)
+        public static bool TryDeserialize(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out Frame? frame)
         {
+            frame = null;
+
+            //ECHONETLiteフレームとしての最小長に満たない
             if (bytes.Length < 4)
+                return false;
+
+            //EHD1が0x1*(0001***)以外の場合、ECHONETLiteフレームではない
+            if ((bytes[0] & 0xF0) != (byte)EHD1.ECHONETLite)
+                return false;
+
+            frame = new Frame
             {
-                //ECHONETLiteフレームとしての最小長に満たない
-                throw new ArgumentException("input byte sequence does not fulfill the minimum length for an ECHONETLite frame", paramName: nameof(bytes));
+                /// ECHONET Lite電文ヘッダー１(1B)
+                EHD1 = (EHD1)bytes[0],
+                /// ECHONET Lite電文ヘッダー２(1B)
+                EHD2 = (EHD2)bytes[1],
+                /// トランザクションID(2B)
+                TID = BitConverter.ToUInt16(bytes.Slice(2, 2)),
+            };
+
+            /// ECHONET Liteデータ(残り全部)
+            var edataSpan = bytes.Slice(4);
+
+            switch (frame.EHD2)
+            {
+                case EHD2.Type1:
+                    if (TryReadEDATAType1(edataSpan, out var edata))
+                    {
+                        frame.EDATA = edata;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    break;
+
+                case EHD2.Type2:
+                    frame.EDATA = new EDATA2()
+                    {
+                        Message = edataSpan.ToArray() // TODO: reduce allocation
+                    };
+                    break;
             }
 
-            //EHD1が0x1*(0001***)以外の場合、
-            if ((bytes.Span[0] & 0xF0) != (byte)EHD1.ECHONETLite)
-            {
-                //ECHONETLiteフレームではない
-                throw new ArgumentException("input byte sequence is not an ECHONETLite frame", paramName: nameof(bytes));
-            }
-
-            using (var roms = bytes.AsStream())
-            using (var br = new BinaryReader(roms))
-            {
-                var flame = new Frame
-                {
-                    /// ECHONET Lite電文ヘッダー１(1B)
-                    EHD1 = (EHD1)br.ReadByte(),
-                    /// ECHONET Lite電文ヘッダー２(1B)
-                    EHD2 = (EHD2)br.ReadByte(),
-                    /// トランザクションID(2B)
-                    TID = br.ReadUInt16()
-                };
-                /// ECHONET Liteデータ(残り全部)
-                switch (flame.EHD2)
-                {
-                    case EHD2.Type1:
-                        flame.EDATA = EDATA1FromBytes(br);
-                        break;
-                    case EHD2.Type2:
-                        flame.EDATA = new EDATA2()
-                        {
-                            Message = br.ReadBytes((int)roms.Length - (int)roms.Position)
-                        };
-                        break;
-                }
-                return flame;
-            }
+            return true;
         }
 
         private static bool IsESVWriteOrReadService(ESV esv)
@@ -120,14 +124,22 @@ namespace EchoDotNetLite
                 _ => false,
             };
 
-        private static EDATA1 EDATA1FromBytes(BinaryReader br)
+        private static bool TryReadEDATAType1(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out EDATA1? edata)
         {
-            var edata = new EDATA1
+            edata = null;
+
+            if (bytes.Length < 7)
+                return false;
+
+            edata = new EDATA1
             {
-                SEOJ = ReadEDATA1EOJ(br),
-                DEOJ = ReadEDATA1EOJ(br),
-                ESV = (ESV)br.ReadByte()
+                SEOJ = ReadEDATA1EOJ(bytes.Slice(0, 3)),
+                DEOJ = ReadEDATA1EOJ(bytes.Slice(3, 3)),
+                ESV = (ESV)bytes[6]
             };
+
+            bytes = bytes.Slice(7);
+
             if (IsESVWriteOrReadService(edata.ESV))
             {
                 //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
@@ -135,12 +147,23 @@ namespace EchoDotNetLite
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                edata.OPCSetList = ReadEDATA1ProcessingTargetProperties(br);
+                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcSetList, out var bytesReadForOPCSetList))
+                    return false;
+
+                edata.OPCSetList = opcSetList;
+
+                bytes = bytes.Slice(bytesReadForOPCSetList);
+
                 // OPCGet 処理プロパティ数(1B)
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                edata.OPCGetList = ReadEDATA1ProcessingTargetProperties(br);
+                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcGetList, out var bytesReadForOPCGetList))
+                    return false;
+
+                edata.OPCGetList = opcGetList;
+
+                bytes = bytes.Slice(bytesReadForOPCGetList);
             }
             else
             {
@@ -148,50 +171,91 @@ namespace EchoDotNetLite
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                edata.OPCList = ReadEDATA1ProcessingTargetProperties(br);
+                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcList, out var bytesRead))
+                    return false;
+
+                edata.OPCList = opcList;
+
+                bytes = bytes.Slice(bytesRead);
             }
-            return edata;
+
+            return true;
         }
 
-        private static EOJ ReadEDATA1EOJ(BinaryReader br)
-            => new EOJ()
-                {
-                    ClassGroupCode = br.ReadByte(),
-                    ClassCode = br.ReadByte(),
-                    InstanceCode = br.ReadByte()
-                };
-
-        private static List<PropertyRequest> ReadEDATA1ProcessingTargetProperties(BinaryReader br)
+        private static EOJ ReadEDATA1EOJ(ReadOnlySpan<byte> bytes)
         {
+#if DEBUG
+            if (bytes.Length < 3)
+                throw new InvalidOperationException("input too short");
+#endif
+
+            return new EOJ()
+            {
+                ClassGroupCode = bytes[0],
+                ClassCode = bytes[1],
+                InstanceCode = bytes[2]
+            };
+        }
+
+        private static bool TryReadEDATA1ProcessingTargetProperties(
+          ReadOnlySpan<byte> bytes,
+          [NotNullWhen(true)] out List<PropertyRequest>? processingTargetProperties,
+          out int bytesRead
+        )
+        {
+            processingTargetProperties = null;
+            bytesRead = 0;
+
+            if (bytes.Length < 1)
+                return false;
+
+            var initialLength = bytes.Length;
+
             // ４．２．３ サービス内容に関する詳細シーケンス
             // OPC 処理プロパティ数(1B)
             // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
             // OPCSet 処理プロパティ数(1B)
             // OPCGet 処理プロパティ数(1B)
-            var opc = br.ReadByte();
-            var processingTargetProperties = new List<PropertyRequest>(capacity: opc);
+            var opc = bytes[0];
+
+            processingTargetProperties = new List<PropertyRequest>(capacity: opc);
+
+            bytes = bytes.Slice(1);
 
             for (byte i = 0; i < opc; i++)
             {
+                if (bytes.Length < 2)
+                    return false;
+
                 var prp = new PropertyRequest
                 {
                     // ECHONET Liteプロパティ(1B)
-                    EPC = br.ReadByte(),
+                    EPC = bytes[0],
                     // EDTのバイト数(1B)
-                    PDC = br.ReadByte()
+                    PDC = bytes[1],
                 };
-                if (prp.PDC != 0)
+
+                bytes = bytes.Slice(2);
+
+                if (bytes.Length < prp.PDC)
+                    return false;
+
+                if (0 < prp.PDC)
                 {
                     // プロパティ値データ(PDCで指定)
-                    prp.EDT = br.ReadBytes(prp.PDC);
+                    prp.EDT = bytes.Slice(0, prp.PDC).ToArray(); // TODO: reduce allocation
+
+                    bytes = bytes.Slice(prp.PDC);
                 }
+
                 processingTargetProperties.Add(prp);
             }
 
-            return processingTargetProperties;
+            bytesRead = initialLength - bytes.Length;
+
+            return true;
         }
 
-#nullable enable
         private static void WriteEDATAType1(IBufferWriter<byte> buffer, EDATA1 edata)
         {
             WriteEOJ(buffer, edata.SEOJ);
@@ -277,7 +341,6 @@ namespace EchoDotNetLite
                 }
             }
         }
-#nullable restore
     }
 
 }

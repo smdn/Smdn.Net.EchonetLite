@@ -785,22 +785,18 @@ namespace EchoDotNetLite
             }
         }
 
+#nullable enable
         private void ReceiveEvent(object sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
-            try
-            {
-                var frame = FrameSerializer.Deserialize(value.data);
-
-                _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
-                OnFrameReceived?.Invoke(this, (value.address, frame));
-            }
-            catch (ArgumentException)
-            {
+            if (!FrameSerializer.TryDeserialize(value.data.Span, out var frame))
                 // ECHONETLiteフレームではないため無視
-            }
+                return;
+
+            _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
+
+            OnFrameReceived?.Invoke(this, (value.address, frame));
         }
 
-#nullable enable
         private async Task RequestAsync(IPAddress? address, Frame frame, CancellationToken cancellationToken)
         {
             await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);

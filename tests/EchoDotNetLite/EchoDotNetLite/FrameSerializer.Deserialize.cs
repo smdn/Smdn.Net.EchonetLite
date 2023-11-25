@@ -17,7 +17,7 @@ partial class FrameSerializerTests {
   private const byte TID_ZERO_0 = 0x00;
   private const byte TID_ZERO_1 = 0x00;
 
-  private static System.Collections.IEnumerable YieldTestCases_Deserialize_InputTooShort()
+  private static System.Collections.IEnumerable YieldTestCases_TryDeserialize_InputTooShort()
   {
     yield return new object?[] { Array.Empty<byte>() };
     yield return new object?[] { new byte[1] };
@@ -26,16 +26,16 @@ partial class FrameSerializerTests {
     yield return new object?[] { new byte[4] };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_Deserialize_InputTooShort))]
-  public void Deserialize_InputTooShort(byte[] input)
+  [TestCaseSource(nameof(YieldTestCases_TryDeserialize_InputTooShort))]
+  public void TryDeserialize_InputTooShort(byte[] input)
   {
-    Assert.Throws<ArgumentException>(
-      () => FrameSerializer.Deserialize(input),
+    Assert.IsFalse(
+      FrameSerializer.TryDeserialize(input, out _),
       message: "The length of input must be greater than 4 bytes."
     );
   }
 
-  private static System.Collections.IEnumerable YieldTestCases_Deserialize_EHD1()
+  private static System.Collections.IEnumerable YieldTestCases_TryDeserialize_EHD1()
   {
     yield return new object?[] { new byte[5] { 0b0001_0000, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, true };
     yield return new object?[] { new byte[5] { 0b0001_0001, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, true };
@@ -45,19 +45,19 @@ partial class FrameSerializerTests {
     yield return new object?[] { new byte[5] { 0b1111_1111, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, false };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_Deserialize_EHD1))]
-  public void Deserialize_EHD1(byte[] input, bool expectAsEchonetLiteFrame)
+  [TestCaseSource(nameof(YieldTestCases_TryDeserialize_EHD1))]
+  public void TryDeserialize_EHD1(byte[] input, bool expectAsEchonetLiteFrame)
   {
     if (expectAsEchonetLiteFrame) {
       Frame? frame = null;
 
-      Assert.DoesNotThrow(() => frame = FrameSerializer.Deserialize(input));
+      Assert.IsTrue(FrameSerializer.TryDeserialize(input, out frame));
 
       Assert.IsNotNull(frame);
     }
     else {
-      Assert.Throws<ArgumentException>(
-        () => FrameSerializer.Deserialize(input),
+      Assert.IsFalse(
+        FrameSerializer.TryDeserialize(input, out _),
         message: "The input byte sequence is not an ECHONETLite frame."
       );
     }
@@ -65,14 +65,14 @@ partial class FrameSerializerTests {
 
   [TestCase((byte)0x00, (EHD2)0x00)]
   [TestCase((byte)0xFF, (EHD2)0xFF)]
-  public void Deserialize_EHD2_OtherThan1Or2(byte ehd2, EHD2 expectedEHD2)
+  public void TryDeserialize_EHD2_OtherThan1Or2(byte ehd2, EHD2 expectedEHD2)
   {
     var input = new byte[] { EHD1_ECHONETLite, ehd2, TID_ZERO_0, TID_ZERO_1 };
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.AreEqual(expectedEHD2, frame.EHD2, nameof(frame.EHD2));
+    Assert.AreEqual(expectedEHD2, frame!.EHD2, nameof(frame.EHD2));
   }
 
   [TestCase((byte)0x00, (byte)0x00, (byte)0x00)]
@@ -82,7 +82,7 @@ partial class FrameSerializerTests {
   [TestCase((byte)0xFF, (byte)0x00, (byte)0x00)]
   [TestCase((byte)0xFF, (byte)0xFF, (byte)0x00)]
   [TestCase((byte)0xFF, (byte)0xFF, (byte)0xFF)]
-  public void Deserialize_EHD2Type1_EDATA_SEOJ(
+  public void TryDeserialize_EHD2Type1_EDATA_SEOJ(
     byte seojClassGroupCode,
     byte seojClassCode,
     byte seojInstanceCode
@@ -108,10 +108,10 @@ partial class FrameSerializerTests {
       0x00, // OPCSet
     };
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA;
 
@@ -127,7 +127,7 @@ partial class FrameSerializerTests {
   [TestCase((byte)0xFF, (byte)0x00, (byte)0x00)]
   [TestCase((byte)0xFF, (byte)0xFF, (byte)0x00)]
   [TestCase((byte)0xFF, (byte)0xFF, (byte)0xFF)]
-  public void Deserialize_EHD2Type1_EDATA_DEOJ(
+  public void TryDeserialize_EHD2Type1_EDATA_DEOJ(
     byte deojClassGroupCode,
     byte deojClassCode,
     byte deojInstanceCode
@@ -153,10 +153,10 @@ partial class FrameSerializerTests {
       0x00, // OPCSet
     };
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA;
 
@@ -201,7 +201,7 @@ partial class FrameSerializerTests {
   [TestCase((byte)0x5E, ESV.SetGet_SNA)]
   [TestCase((byte)0x62, ESV.Get)]
   [TestCase((byte)0x7E, ESV.SetGet_Res)]
-  public void Deserialize_EHD2Type1_EDATA_ESV(byte esv, ESV expectedESV)
+  public void TryDeserialize_EHD2Type1_EDATA_ESV(byte esv, ESV expectedESV)
   {
     var input = CreateEHD2Type1Frame(
       esv,
@@ -209,10 +209,10 @@ partial class FrameSerializerTests {
       0x00  // OPCGet
     );
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA;
 
@@ -222,7 +222,7 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGet_Res)]
   [TestCase(ESV.SetGet_SNA)]
-  public void Deserialize_EHD2Type1_EDATA_OPC_OfESVSetGet(ESV esv)
+  public void TryDeserialize_EHD2Type1_EDATA_OPC_OfESVSetGet(ESV esv)
   {
     var input = CreateEHD2Type1Frame(
       (byte)esv,
@@ -248,10 +248,10 @@ partial class FrameSerializerTests {
       0x44  // EDT #2 [3]
     );
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA;
 
@@ -283,7 +283,7 @@ partial class FrameSerializerTests {
   [TestCase(ESV.Get)]
   [TestCase(ESV.SetI)]
   [TestCase(ESV.INF)]
-  public void Deserialize_EHD2Type1_EDATA_OPC_OfESVOtherThanSetGet(ESV esv)
+  public void TryDeserialize_EHD2Type1_EDATA_OPC_OfESVOtherThanSetGet(ESV esv)
   {
     var input = CreateEHD2Type1Frame(
       (byte)esv,
@@ -297,10 +297,10 @@ partial class FrameSerializerTests {
       0x22  // EDT #2 [1]
     );
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA;
 
@@ -320,7 +320,7 @@ partial class FrameSerializerTests {
   }
 
   [Test]
-  public void Deserialize_EHD2Type1_EDATA_ESVSetGetSNA_OPCSetZero()
+  public void TryDeserialize_EHD2Type1_EDATA_ESVSetGetSNA_OPCSetZero()
   {
     var input = CreateEHD2Type1Frame(
       (byte)ESV.SetGet_SNA,
@@ -333,10 +333,10 @@ partial class FrameSerializerTests {
       0x33  // EDT #1 [2]
     );
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA;
 
@@ -354,7 +354,7 @@ partial class FrameSerializerTests {
   }
 
   [Test]
-  public void Deserialize_EHD2Type1_EDATA_ESVSetGetSNA_OPCGetZero()
+  public void TryDeserialize_EHD2Type1_EDATA_ESVSetGetSNA_OPCGetZero()
   {
     var input = CreateEHD2Type1Frame(
       (byte)ESV.SetGet_SNA,
@@ -365,10 +365,10 @@ partial class FrameSerializerTests {
       0x00  // OPCGet
     );
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA;
 
@@ -385,7 +385,7 @@ partial class FrameSerializerTests {
     CollectionAssert.IsEmpty(edata.OPCGetList, nameof(edata.OPCGetList));
   }
 
-  private static System.Collections.IEnumerable YieldTestCases_Deserialize_EHD2Type2_EDATA()
+  private static System.Collections.IEnumerable YieldTestCases_TryDeserialize_EHD2Type2_EDATA()
   {
     yield return new object?[] {
       new byte[] { EHD1_ECHONETLite, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0x00 },
@@ -401,13 +401,13 @@ partial class FrameSerializerTests {
     };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_Deserialize_EHD2Type2_EDATA))]
-  public void Deserialize_EHD2Type2_EDATA(byte[] input, byte[] expectedEDATA)
+  [TestCaseSource(nameof(YieldTestCases_TryDeserialize_EHD2Type2_EDATA))]
+  public void TryDeserialize_EHD2Type2_EDATA(byte[] input, byte[] expectedEDATA)
   {
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA2>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA2>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA2)frame.EDATA;
 
@@ -416,14 +416,14 @@ partial class FrameSerializerTests {
   }
 
   [Test]
-  public void Deserialize_EHD2Type2_EDATA_Empty()
+  public void TryDeserialize_EHD2Type2_EDATA_Empty()
   {
     var input = new byte[] { EHD1_ECHONETLite, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, /* no EDATA */ };
 
-    var frame = FrameSerializer.Deserialize(input);
+    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
 
     Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA2>(frame.EDATA, nameof(frame.EDATA));
+    Assert.IsInstanceOf<EDATA2>(frame!.EDATA, nameof(frame.EDATA));
 
     var edata = (EDATA2)frame.EDATA;
 
