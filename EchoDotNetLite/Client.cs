@@ -3,6 +3,7 @@ using EchoDotNetLite.Enums;
 using EchoDotNetLite.Models;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,6 +19,9 @@ namespace EchoDotNetLite
     {
         private readonly IEchonetLiteFrameHandler _echoFrameHandler;
         private readonly ILogger _logger;
+        private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
+        private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+
         public EchoClient(ILogger<EchoClient> logger, IEchonetLiteFrameHandler handler)
         {
             _logger = logger;
@@ -781,21 +785,39 @@ namespace EchoDotNetLite
             }
         }
 
+#nullable enable
         private void ReceiveEvent(object sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
-            var frame = FrameSerializer.Deserialize(value.data);
-            if (frame != null)
-            {
-                _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
-                OnFrameReceived?.Invoke(this, (value.address, frame));
-            }
+            if (!FrameSerializer.TryDeserialize(value.data.Span, out var frame))
+                // ECHONETLiteフレームではないため無視
+                return;
+
+            _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
+
+            OnFrameReceived?.Invoke(this, (value.address, frame));
         }
 
-#nullable enable
         private async Task RequestAsync(IPAddress? address, Frame frame, CancellationToken cancellationToken)
         {
-            _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
-            await _echoFrameHandler.RequestAsync(address, FrameSerializer.Serialize(frame), cancellationToken);
+            await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
+
+                FrameSerializer.Serialize(frame, requestFrameBuffer);
+
+                await _echoFrameHandler.RequestAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken);
+            }
+            finally {
+                // reset written count to reuse the buffer for the next write
+#if NET8_0_OR_GREATER
+                requestFrameBuffer.ResetWrittenCount();
+#else
+                requestFrameBuffer.Clear();
+#endif
+                requestSemaphore.Release();
+            }
         }
 #nullable restore
 
