@@ -45,13 +45,13 @@ partial class FrameSerializerTests {
   }
 
   [TestCase(EHD1.ECHONETLite, 0x10)]
-  [TestCase((EHD1)0x00, 0x00)]
-  [TestCase((EHD1)0xFF, 0xFF)]
+  [TestCase((EHD1)((byte)EHD1.ECHONETLite | (byte)0b_0000_1111), 0x10)]
   public void Serialize_EHD1(EHD1 ehd1, byte expectedEHD1Byte)
   {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = ehd1,
+        EHD2 = EHD2.Type1,
         EDATA = new EDATA1() {
           OPCList = new(),
           OPCSetList = new(),
@@ -61,6 +61,26 @@ partial class FrameSerializerTests {
     );
 
     Assert.AreEqual(expectedEHD1Byte, frameBytes[0], "Frame[0] EHD1");
+  }
+
+  [TestCase((EHD1)0x00)]
+  [TestCase((EHD1)0x20)]
+  [TestCase((EHD1)0xEF)]
+  public void Serialize_EHD1_Undefined(EHD1 ehd1)
+  {
+    Assert.Throws<InvalidOperationException>(
+      () => SerializeFrameAsByteArray(
+        new Frame() {
+          EHD1 = ehd1,
+          EHD2 = EHD2.Type1,
+          EDATA = new EDATA1() {
+            OPCList = new(),
+            OPCSetList = new(),
+            OPCGetList = new(),
+          },
+        }
+      )
+    );
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_EHD2()
@@ -82,22 +102,10 @@ partial class FrameSerializerTests {
       },
       (byte)0x82
     };
-
-    yield return new object?[] {
-      (EHD2)0x00,
-      null,
-      (byte)0x00
-    };
-
-    yield return new object?[] {
-      (EHD2)0xFF,
-      null,
-      (byte)0xFF
-    };
   }
 
   [TestCaseSource(nameof(YieldTestCases_Serialize_EHD2))]
-  public void Serialize_EHD2(EHD2 ehd2, IEDATA? edata, byte expectedEHD2Byte)
+  public void Serialize_EHD2(EHD2 ehd2, IEDATA edata, byte expectedEHD2Byte)
   {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
@@ -108,6 +116,21 @@ partial class FrameSerializerTests {
     );
 
     Assert.AreEqual(expectedEHD2Byte, frameBytes[1], "Frame[1] EHD2");
+  }
+
+  [TestCase((EHD2)0x00)]
+  [TestCase((EHD2)0xFF)]
+  public void Serialize_EHD2_Undefined(EHD2 ehd2)
+  {
+    Assert.Throws<InvalidOperationException>(
+      () => SerializeFrameAsByteArray(
+        new Frame() {
+          EHD1 = EHD1.ECHONETLite,
+          EHD2 = ehd2,
+          EDATA = null,
+        }
+      )
+    );
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_EHD2_TypeOfEDATAMismatch()
@@ -145,6 +168,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame() {
         EHD1 = EHD1.ECHONETLite,
+        EHD2 = EHD2.Type1,
         TID = tid,
         EDATA = new EDATA1() {
           OPCList = new(),
