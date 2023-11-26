@@ -216,24 +216,26 @@ namespace EchoDotNetLite
                 OnFrameReceived -= handler;
             };
             OnFrameReceived += handler;
-            await RequestAsync(destinationNode?.Address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = GetNewTid(),
-                EDATA = new EDATA1()
-                {
-                    SEOJ = sourceObject.GetEOJ(),
-                    DEOJ = destinationObject.GetEOJ(),
-                    ESV = ESV.SetI,
-                    OPCList = properties.Select(p => new PropertyRequest()
+
+            await RequestAsync
+            (
+                destinationNode?.Address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: GetNewTid(),
+                    sourceObject: sourceObject.GetEOJ(),
+                    destinationObject: destinationObject.GetEOJ(),
+                    esv: ESV.SetI,
+                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
                     {
                         EPC = p.Spec.Code,
                         PDC = (byte)p.Value.Length,
                         EDT = p.Value,
-                    }).ToList(),
-                }
-            }, cancellationToken);
+                    })
+                ),
+                cancellationToken
+            ).ConfigureAwait(false);
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
@@ -335,24 +337,26 @@ namespace EchoDotNetLite
                 OnFrameReceived -= handler;
             };
             OnFrameReceived += handler;
-            await RequestAsync(destinationNode?.Address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = GetNewTid(),
-                EDATA = new EDATA1()
-                {
-                    SEOJ = sourceObject.GetEOJ(),
-                    DEOJ = destinationObject.GetEOJ(),
-                    ESV = ESV.SetC,
-                    OPCList = properties.Select(p => new PropertyRequest()
+
+            await RequestAsync
+            (
+                destinationNode?.Address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: GetNewTid(),
+                    sourceObject: sourceObject.GetEOJ(),
+                    destinationObject: destinationObject.GetEOJ(),
+                    esv: ESV.SetC,
+                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
                     {
                         EPC = p.Spec.Code,
                         PDC = (byte)p.Value.Length,
                         EDT = p.Value,
-                    }).ToList(),
-                }
-            }, cancellationToken);
+                    })
+                ),
+                cancellationToken
+            ).ConfigureAwait(false);
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
@@ -448,24 +452,26 @@ namespace EchoDotNetLite
                 OnFrameReceived -= handler;
             };
             OnFrameReceived += handler;
-            await RequestAsync(destinationNode?.Address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = GetNewTid(),
-                EDATA = new EDATA1()
-                {
-                    SEOJ = sourceObject.GetEOJ(),
-                    DEOJ = destinationObject.GetEOJ(),
-                    ESV = ESV.Get,
-                    OPCList = properties.Select(p => new PropertyRequest()
+
+            await RequestAsync
+            (
+                destinationNode?.Address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: GetNewTid(),
+                    sourceObject: sourceObject.GetEOJ(),
+                    destinationObject: destinationObject.GetEOJ(),
+                    esv: ESV.Get,
+                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
                     {
                         EPC = p.Spec.Code,
                         PDC = 0x00,
                         EDT = null
-                    }).ToList(),
-                }
-            }, cancellationToken);
+                    })
+                ),
+                cancellationToken
+            ).ConfigureAwait(false);
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
@@ -575,30 +581,32 @@ namespace EchoDotNetLite
                 OnFrameReceived -= handler;
             };
             OnFrameReceived += handler;
-            await RequestAsync(destinationNode?.Address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = GetNewTid(),
-                EDATA = new EDATA1()
-                {
-                    SEOJ = sourceObject.GetEOJ(),
-                    DEOJ = destinationObject.GetEOJ(),
-                    ESV = ESV.SetGet,
-                    OPCSetList = propertiesSet.Select(p => new PropertyRequest()
+
+            await RequestAsync
+            (
+                destinationNode?.Address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: GetNewTid(),
+                    sourceObject: sourceObject.GetEOJ(),
+                    destinationObject: destinationObject.GetEOJ(),
+                    esv: ESV.SetGet,
+                    opcListOrOpcSetList: propertiesSet.Select(static p => new PropertyRequest()
                     {
                         EPC = p.Spec.Code,
                         PDC = (byte)p.Value.Length,
                         EDT = p.Value,
-                    }).ToList(),
-                    OPCGetList = propertiesGet.Select(p => new PropertyRequest()
+                    }),
+                    opcGetList: propertiesGet.Select(static p => new PropertyRequest()
                     {
                         EPC = p.Spec.Code,
                         PDC = 0x00,
                         EDT = null,
-                    }).ToList(),
-                }
-            }, cancellationToken);
+                    })
+                ),
+                cancellationToken
+            ).ConfigureAwait(false);
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
@@ -620,32 +628,31 @@ namespace EchoDotNetLite
         /// <param name="destinationNode">一斉通知の場合、NULL</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
-        public async Task プロパティ値通知要求(
+        public Task プロパティ値通知要求(
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
-        {
-            await RequestAsync(destinationNode?.Address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = GetNewTid(),
-                EDATA = new EDATA1()
-                {
-                    SEOJ = sourceObject.GetEOJ(),
-                    DEOJ = destinationObject.GetEOJ(),
-                    ESV = ESV.INF_REQ,
-                    OPCList = properties.Select(p => new PropertyRequest()
+            => RequestAsync
+            (
+                destinationNode?.Address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: GetNewTid(),
+                    sourceObject: sourceObject.GetEOJ(),
+                    destinationObject: destinationObject.GetEOJ(),
+                    esv: ESV.INF_REQ,
+                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
                     {
                         EPC = p.Spec.Code,
                         PDC = 0x00,
                         EDT = null,
-                    }).ToList(),
-                }
-            }, cancellationToken);
-        }
+                    })
+                ),
+                cancellationToken
+            );
 
 
         /// <summary>
@@ -656,32 +663,31 @@ namespace EchoDotNetLite
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="timeout"></param>
-        public async Task 自発プロパティ値通知(
+        public Task 自発プロパティ値通知(
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
-        {
-            await RequestAsync(destinationNode?.Address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = GetNewTid(),
-                EDATA = new EDATA1()
-                {
-                    SEOJ = sourceObject.GetEOJ(),
-                    DEOJ = destinationObject.GetEOJ(),
-                    ESV = ESV.INF,
-                    OPCList = properties.Select(p => new PropertyRequest()
+            => RequestAsync
+            (
+                destinationNode?.Address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: GetNewTid(),
+                    sourceObject: sourceObject.GetEOJ(),
+                    destinationObject: destinationObject.GetEOJ(),
+                    esv: ESV.INF,
+                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
                     {
                         EPC = p.Spec.Code,
                         PDC = (byte)p.Value.Length,
                         EDT = p.Value,
-                    }).ToList(),
-                }
-            }, cancellationToken);
-        }
+                    })
+                ),
+                cancellationToken
+            );
 
         /// <summary>
         /// 
@@ -754,24 +760,26 @@ namespace EchoDotNetLite
                 OnFrameReceived -= handler;
             };
             OnFrameReceived += handler;
-            await RequestAsync(destinationNode.Address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = GetNewTid(),
-                EDATA = new EDATA1()
-                {
-                    SEOJ = sourceObject.GetEOJ(),
-                    DEOJ = destinationObject.GetEOJ(),
-                    ESV = ESV.INFC,
-                    OPCList = properties.Select(p => new PropertyRequest()
+
+            await RequestAsync
+            (
+                destinationNode.Address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: GetNewTid(),
+                    sourceObject: sourceObject.GetEOJ(),
+                    destinationObject: destinationObject.GetEOJ(),
+                    esv: ESV.INFC,
+                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
                     {
                         EPC = p.Spec.Code,
                         PDC = (byte)p.Value.Length,
                         EDT = p.Value,
-                    }).ToList(),
-                }
-            }, cancellationToken);
+                    })
+                ),
+                cancellationToken
+            ).ConfigureAwait(false);
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
@@ -797,15 +805,27 @@ namespace EchoDotNetLite
             OnFrameReceived?.Invoke(this, (value.address, frame));
         }
 
-        private async Task RequestAsync(IPAddress? address, Frame frame, CancellationToken cancellationToken)
+        private async Task RequestAsync(IPAddress? address, Action<IBufferWriter<byte>> writeFrame, CancellationToken cancellationToken)
         {
             await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
+                writeFrame(requestFrameBuffer);
 
-                FrameSerializer.Serialize(frame, requestFrameBuffer);
+                if (_logger.IsEnabled(LogLevel.Trace))
+                {
+                    if (FrameSerializer.TryDeserialize(requestFrameBuffer.WrittenSpan, out var frame))
+                    {
+                        _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
+                    }
+#if DEBUG
+                    else
+                    {
+                        throw new InvalidOperationException("attempted to request an invalid format of frame");
+                    }
+#endif
+                }
 
                 await _echoFrameHandler.RequestAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken);
             }
@@ -1151,19 +1171,21 @@ namespace EchoDotNetLite
             }
             if (hasError)
             {
-                await RequestAsync(request.address, new Frame()
-                {
-                    EHD1 = EHD1.ECHONETLite,
-                    EHD2 = EHD2.Type1,
-                    TID = request.frame.TID,
-                    EDATA = new EDATA1()
-                    {
-                        SEOJ = edata.DEOJ,//入れ替え
-                        DEOJ = edata.SEOJ,
-                        ESV = ESV.SetI_SNA,//SetI_SNA(0x50)
-                        OPCList = opcList,
-                    }
-                }, default);
+                await RequestAsync
+                (
+                    request.address,
+                    buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                    (
+                        buffer: buffer,
+                        tid: request.frame.TID,
+                        sourceObject: edata.DEOJ, //入れ替え
+                        destinationObject: edata.SEOJ, //入れ替え
+                        esv: ESV.SetI_SNA, //SetI_SNA(0x50)
+                        opcListOrOpcSetList: opcList
+                    ),
+                    cancellationToken: default
+                ).ConfigureAwait(false);
+
                 return false;
             }
             return true;
@@ -1212,34 +1234,39 @@ namespace EchoDotNetLite
             }
             if (hasError)
             {
-                await RequestAsync(request.address, new Frame()
-                {
-                    EHD1 = EHD1.ECHONETLite,
-                    EHD2 = EHD2.Type1,
-                    TID = request.frame.TID,
-                    EDATA = new EDATA1()
-                    {
-                        SEOJ = edata.DEOJ,//入れ替え
-                        DEOJ = edata.SEOJ,
-                        ESV = ESV.SetC_SNA,//SetC_SNA(0x51)
-                        OPCList = opcList,
-                    }
-                }, default);
+                await RequestAsync
+                (
+                    request.address,
+                    buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                    (
+                        buffer: buffer,
+                        tid: request.frame.TID,
+                        sourceObject: edata.DEOJ, //入れ替え
+                        destinationObject: edata.SEOJ, //入れ替え
+                        esv: ESV.SetC_SNA, //SetC_SNA(0x51)
+                        opcListOrOpcSetList: opcList
+                    ),
+                    cancellationToken: default
+                ).ConfigureAwait(false);
+
                 return false;
             }
-            await RequestAsync(request.address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = request.frame.TID,
-                EDATA = new EDATA1()
-                {
-                    SEOJ = edata.DEOJ,//入れ替え
-                    DEOJ = edata.SEOJ,
-                    ESV = ESV.Set_Res,//Set_Res(0x71)
-                    OPCList = opcList,
-                }
-            }, default);
+
+            await RequestAsync
+            (
+                request.address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: request.frame.TID,
+                    sourceObject: edata.DEOJ, //入れ替え
+                    destinationObject: edata.SEOJ, //入れ替え
+                    esv: ESV.Set_Res, //Set_Res(0x71)
+                    opcListOrOpcSetList: opcList
+                ),
+                cancellationToken: default
+            ).ConfigureAwait(false);
+
             return true;
         }
 
@@ -1287,34 +1314,39 @@ namespace EchoDotNetLite
             }
             if (hasError)
             {
-                await RequestAsync(request.address, new Frame()
-                {
-                    EHD1 = EHD1.ECHONETLite,
-                    EHD2 = EHD2.Type1,
-                    TID = request.frame.TID,
-                    EDATA = new EDATA1()
-                    {
-                        SEOJ = edata.DEOJ,//入れ替え
-                        DEOJ = edata.SEOJ,
-                        ESV = ESV.Get_SNA,//Get_SNA(0x52)
-                        OPCList = opcList,
-                    }
-                }, default);
+                await RequestAsync
+                (
+                    request.address,
+                    buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                    (
+                        buffer: buffer,
+                        tid: request.frame.TID,
+                        sourceObject: edata.DEOJ, //入れ替え
+                        destinationObject: edata.SEOJ, //入れ替え
+                        esv: ESV.Get_SNA, //Get_SNA(0x52)
+                        opcListOrOpcSetList: opcList
+                    ),
+                    cancellationToken: default
+                ).ConfigureAwait(false);
+
                 return false;
             }
-            await RequestAsync(request.address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = request.frame.TID,
-                EDATA = new EDATA1()
-                {
-                    SEOJ = edata.DEOJ,//入れ替え
-                    DEOJ = edata.SEOJ,
-                    ESV = ESV.Get_Res,//Get_Res(0x72)
-                    OPCList = opcList,
-                }
-            }, default);
+
+            await RequestAsync
+            (
+                request.address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: request.frame.TID,
+                    sourceObject: edata.DEOJ, //入れ替え
+                    destinationObject: edata.SEOJ, //入れ替え
+                    esv: ESV.Get_Res, //Get_Res(0x72)
+                    opcListOrOpcSetList: opcList
+                ),
+                cancellationToken: default
+            ).ConfigureAwait(false);
+
             return true;
         }
 
@@ -1385,36 +1417,41 @@ namespace EchoDotNetLite
             }
             if (hasError)
             {
-                await RequestAsync(request.address, new Frame()
-                {
-                    EHD1 = EHD1.ECHONETLite,
-                    EHD2 = EHD2.Type1,
-                    TID = request.frame.TID,
-                    EDATA = new EDATA1()
-                    {
-                        SEOJ = edata.DEOJ,//入れ替え
-                        DEOJ = edata.SEOJ,
-                        ESV = ESV.SetGet_SNA,//SetGet_SNA(0x5E)
-                        OPCSetList = opcSetList,
-                        OPCGetList = opcGetList,
-                    }
-                }, default);
+                await RequestAsync
+                (
+                    request.address,
+                    buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                    (
+                        buffer: buffer,
+                        tid: request.frame.TID,
+                        sourceObject: edata.DEOJ, //入れ替え
+                        destinationObject: edata.SEOJ, //入れ替え
+                        esv: ESV.SetGet_SNA, //SetGet_SNA(0x5E)
+                        opcListOrOpcSetList: opcSetList,
+                        opcGetList: opcGetList
+                    ),
+                    cancellationToken: default
+                ).ConfigureAwait(false);
+
                 return false;
             }
-            await RequestAsync(request.address, new Frame()
-            {
-                EHD1 = EHD1.ECHONETLite,
-                EHD2 = EHD2.Type1,
-                TID = request.frame.TID,
-                EDATA = new EDATA1()
-                {
-                    SEOJ = edata.DEOJ,//入れ替え
-                    DEOJ = edata.SEOJ,
-                    ESV = ESV.SetGet_Res,//SetGet_Res(0x7E)
-                    OPCSetList = opcSetList,
-                    OPCGetList = opcGetList,
-                }
-            }, default);
+
+            await RequestAsync
+            (
+                request.address,
+                buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                (
+                    buffer: buffer,
+                    tid: request.frame.TID,
+                    sourceObject: edata.DEOJ, //入れ替え
+                    destinationObject: edata.SEOJ, //入れ替え
+                    esv: ESV.SetGet_Res, //SetGet_Res(0x7E)
+                    opcListOrOpcSetList: opcSetList,
+                    opcGetList: opcGetList
+                ),
+                cancellationToken: default
+            ).ConfigureAwait(false);
+
             return true;
         }
 
@@ -1544,19 +1581,20 @@ namespace EchoDotNetLite
             }
             if (destObject != null)
             {
-                await RequestAsync(request.address, new Frame()
-                {
-                    EHD1 = EHD1.ECHONETLite,
-                    EHD2 = EHD2.Type1,
-                    TID = request.frame.TID,
-                    EDATA = new EDATA1()
-                    {
-                        SEOJ = edata.DEOJ,//入れ替え
-                        DEOJ = edata.SEOJ,
-                        ESV = ESV.INFC_Res,//INFC_Res(0x74)
-                        OPCList = opcList,
-                    }
-                }, default);
+                await RequestAsync
+                (
+                    request.address,
+                    buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
+                    (
+                        buffer: buffer,
+                        tid: request.frame.TID,
+                        sourceObject: edata.DEOJ, //入れ替え
+                        destinationObject: edata.SEOJ, //入れ替え
+                        esv: ESV.INFC_Res, //INFC_Res(0x74)
+                        opcListOrOpcSetList: opcList
+                    ),
+                    cancellationToken: default
+                ).ConfigureAwait(false);
             }
             return !hasError;
 

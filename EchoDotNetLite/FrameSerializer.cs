@@ -6,29 +6,12 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace EchoDotNetLite
 {
     public static class FrameSerializer
     {
-        private static void Write(IBufferWriter<byte> buffer, byte value)
-        {
-          var span = buffer.GetSpan(1);
-
-          span[0] = value;
-
-          buffer.Advance(1);
-        }
-
-        private static void Write(IBufferWriter<byte> buffer, ushort value)
-        {
-          var span = buffer.GetSpan(2);
-
-          _ = BitConverter.TryWriteBytes(span, value);
-
-          buffer.Advance(2);
-        }
-
         public static void Serialize(Frame frame, IBufferWriter<byte> buffer)
         {
             if (frame is null)
@@ -36,9 +19,8 @@ namespace EchoDotNetLite
             if (buffer is null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            Write(buffer, (byte)frame.EHD1);
-            Write(buffer, (byte)frame.EHD2);
-            Write(buffer, frame.TID);
+            if (!frame.EHD1.HasFlag(EHD1.ECHONETLite))
+                throw new InvalidOperationException($"undefined EHD1 ({(byte)frame.EHD1:X2})");
 
             switch (frame.EHD2)
             {
@@ -46,7 +28,40 @@ namespace EchoDotNetLite
                     if (frame.EDATA is not EDATA1 edata1)
                         throw new ArgumentException($"{nameof(EDATA1)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
 
-                    WriteEDATAType1(buffer, edata1);
+                    if (IsESVWriteOrReadService(edata1.ESV))
+                    {
+                        if (edata1.OPCSetList is null)
+                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCSetList)} can not be null for the write or read services.");
+                        if (edata1.OPCGetList is null)
+                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCGetList)} can not be null for the write or read services.");
+
+                        SerializeEchonetLiteFrameFormat1
+                        (
+                            buffer,
+                            frame.TID,
+                            edata1.SEOJ,
+                            edata1.DEOJ,
+                            edata1.ESV,
+                            edata1.OPCSetList,
+                            edata1.OPCGetList
+                        );
+                    }
+                    else
+                    {
+                        if (edata1.OPCList is null)
+                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCList)} can not be null.");
+
+                        SerializeEchonetLiteFrameFormat1
+                        (
+                            buffer,
+                            frame.TID,
+                            edata1.SEOJ,
+                            edata1.DEOJ,
+                            edata1.ESV,
+                            edata1.OPCList,
+                            opcGetList: null
+                        );
+                    }
 
                     break;
 
@@ -57,15 +72,83 @@ namespace EchoDotNetLite
                     if (edata2.Message is null)
                         throw new ArgumentException($"{nameof(EDATA2)} can not be null.", paramName: nameof(frame));
 
-                    var edata2Span = buffer.GetSpan(edata2.Message.Length);
-
-                    edata2.Message.AsSpan().CopyTo(edata2Span);
-
-                    buffer.Advance(edata2.Message.Length);
+                    SerializeEchonetLiteFrameFormat2(buffer, frame.TID, edata2.Message.AsSpan());
 
                     break;
+
+                default:
+                    throw new InvalidOperationException($"undefined EHD2 ({(byte)frame.EHD2:X2})");
             }
         }
+
+        public static void SerializeEchonetLiteFrameFormat1(
+            IBufferWriter<byte> buffer,
+            ushort tid,
+            EOJ sourceObject,
+            EOJ destinationObject,
+            ESV esv,
+            IEnumerable<PropertyRequest> opcListOrOpcSetList,
+            IEnumerable<PropertyRequest>? opcGetList = null
+        )
+        {
+            if (buffer is null)
+                throw new ArgumentNullException(nameof(buffer));
+            if (opcListOrOpcSetList is null)
+                throw new ArgumentNullException(nameof(opcListOrOpcSetList));
+
+            WriteEchonetLiteEHDAndTID(buffer, EHD1.ECHONETLite, EHD2.Type1, tid);
+
+            WriteEOJ(buffer, sourceObject); // SEOJ
+            WriteEOJ(buffer, destinationObject); // DEOJ
+            Write(buffer, (byte)esv); // ESV
+
+            // OPC 処理プロパティ数(1B)
+            // ECHONET Liteプロパティ(1B)
+            // EDTのバイト数(1B)
+            // プロパティ値データ(PDCで指定)
+
+            //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+            // OPCSet 処理プロパティ数(1B)
+            // ECHONET Liteプロパティ(1B)
+            // EDTのバイト数(1B)
+            // プロパティ値データ(PDCで指定)
+            var failIfOpcSetOrOpcGetIsZero = IsESVWriteOrReadService(esv) && esv != ESV.SetGet_SNA;
+
+            if (!TryWriteEDATAType1ProcessingTargetProperties(buffer, opcListOrOpcSetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
+                throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
+
+            if (IsESVWriteOrReadService(esv))
+            {
+                if (opcGetList is null)
+                    throw new ArgumentNullException(nameof(opcGetList));
+
+                // OPCGet 処理プロパティ数(1B)
+                // ECHONET Liteプロパティ(1B)
+                // EDTのバイト数(1B)
+                // プロパティ値データ(PDCで指定)
+                if (!TryWriteEDATAType1ProcessingTargetProperties(buffer, opcGetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
+                    throw new InvalidOperationException("OPCGet can not be zero when ESV is other than SetGet_SNA.");
+            }
+        }
+
+        public static void SerializeEchonetLiteFrameFormat2(
+            IBufferWriter<byte> buffer,
+            ushort tid,
+            ReadOnlySpan<byte> edata
+        )
+        {
+            if (buffer is null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            WriteEchonetLiteEHDAndTID(buffer, EHD1.ECHONETLite, EHD2.Type2, tid);
+
+            var bufferEDATASpan = buffer.GetSpan(edata.Length);
+
+            edata.CopyTo(bufferEDATASpan);
+
+            buffer.Advance(edata.Length);
+        }
+
 
         public static bool TryDeserialize(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out Frame? frame)
         {
@@ -256,51 +339,27 @@ namespace EchoDotNetLite
             return true;
         }
 
-        private static void WriteEDATAType1(IBufferWriter<byte> buffer, EDATA1 edata)
+
+        private static void Write(IBufferWriter<byte> buffer, byte value)
         {
-            WriteEOJ(buffer, edata.SEOJ);
-            WriteEOJ(buffer, edata.DEOJ);
-            Write(buffer, (byte)edata.ESV);
+          var span = buffer.GetSpan(1);
 
-            if (IsESVWriteOrReadService(edata.ESV))
-            {
-                if (edata.OPCSetList is null)
-                    throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCSetList)} can not be null for the write or read services.");
-                if (edata.OPCGetList is null)
-                    throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCGetList)} can not be null for the write or read services.");
+          span[0] = value;
 
-                if (edata.ESV != ESV.SetGet_SNA)
-                {
-                    if (edata.OPCSetList.Count == 0)
-                        throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
+          buffer.Advance(1);
+        }
 
-                    if (edata.OPCGetList.Count == 0)
-                        throw new InvalidOperationException("OPCGet can not be zero when ESV is other than SetGet_SNA.");
-                }
+        private static void WriteEchonetLiteEHDAndTID(IBufferWriter<byte> buffer, EHD1 ehd1, EHD2 ehd2, ushort tid)
+        {
+            var span = buffer.GetSpan(4);
 
-                //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
-                // OPCSet 処理プロパティ数(1B)
-                // ECHONET Liteプロパティ(1B)
-                // EDTのバイト数(1B)
-                // プロパティ値データ(PDCで指定)
-                WriteEDATAType1ProcessingTargetProperties(buffer, edata.OPCSetList);
-                // OPCGet 処理プロパティ数(1B)
-                // ECHONET Liteプロパティ(1B)
-                // EDTのバイト数(1B)
-                // プロパティ値データ(PDCで指定)
-                WriteEDATAType1ProcessingTargetProperties(buffer, edata.OPCGetList);
-            }
-            else
-            {
-                if (edata.OPCList is null)
-                    throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCList)} can not be null.");
+            span[0] = (byte)ehd1; // EHD1
+            span[1] = (byte)ehd2; // EHD2
 
-                // OPC 処理プロパティ数(1B)
-                // ECHONET Liteプロパティ(1B)
-                // EDTのバイト数(1B)
-                // プロパティ値データ(PDCで指定)
-                WriteEDATAType1ProcessingTargetProperties(buffer, edata.OPCList);
-            }
+            // TID
+            _ = BitConverter.TryWriteBytes(span.Slice(2, 2), tid);
+
+            buffer.Advance(4);
         }
 
         private static void WriteEOJ(IBufferWriter<byte> buffer, EOJ eoj)
@@ -314,14 +373,21 @@ namespace EchoDotNetLite
             buffer.Advance(3);
         }
 
-        private static void WriteEDATAType1ProcessingTargetProperties(IBufferWriter<byte> buffer, IReadOnlyCollection<PropertyRequest> opcList)
+        private static bool TryWriteEDATAType1ProcessingTargetProperties(
+            IBufferWriter<byte> buffer,
+            IEnumerable<PropertyRequest> opcList,
+            bool failIfEmpty
+        )
         {
             // ４．２．３ サービス内容に関する詳細シーケンス
             // OPC 処理プロパティ数(1B)
             // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
             // OPCSet 処理プロパティ数(1B)
             // OPCGet 処理プロパティ数(1B)
-            Write(buffer, (byte)opcList.Count);
+            if (failIfEmpty && !opcList.Any()) // XXX: expecting LINQ optimization
+                return false;
+
+            Write(buffer, (byte)opcList.Count()); // XXX: expecting LINQ optimization
 
             foreach (var prp in opcList)
             {
@@ -340,6 +406,8 @@ namespace EchoDotNetLite
                     buffer.Advance(prp.PDC);
                 }
             }
+
+            return true;
         }
     }
 
