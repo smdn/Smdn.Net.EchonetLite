@@ -17,9 +17,7 @@ public class PropertyRequestTests {
   [TestCase(0xFF, "\"EPC\":\"FF\"")]
   public void Serialize_EPC(byte epc, string expectedJsonFragment)
   {
-    var pr = new PropertyRequest() {
-      EPC = epc
-    };
+    var pr = new PropertyRequest(epc);
 
     StringAssert.Contains(
       expectedJsonFragment,
@@ -34,9 +32,7 @@ public class PropertyRequestTests {
   [TestCase(0xFF, "\"PDC\":\"FF\"")]
   public void Serialize_PDC(byte pdc, string expectedJsonFragment)
   {
-    var pr = new PropertyRequest() {
-      PDC = pdc
-    };
+    var pr = new PropertyRequest(epc: 0x00, edt: new byte[pdc]);
 
     StringAssert.Contains(
       expectedJsonFragment,
@@ -65,9 +61,7 @@ public class PropertyRequestTests {
   [TestCaseSource(nameof(YieldTestCases_Serialize_EDT))]
   public void Serialize_EDT(byte[] edt, string expectedJsonFragment)
   {
-    var pr = new PropertyRequest() {
-      EDT = edt
-    };
+    var pr = new PropertyRequest(epc: 0x00, edt: edt);
 
     StringAssert.Contains(
       expectedJsonFragment,

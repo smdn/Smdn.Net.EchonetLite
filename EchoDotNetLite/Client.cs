@@ -755,20 +755,10 @@ namespace EchoDotNetLite
 
 #nullable enable
         private static PropertyRequest ConvertToPropertyRequest(EchoPropertyInstance p)
-            => new()
-            {
-                EPC = p.Spec.Code,
-                PDC = (byte)p.Value.Length,
-                EDT = p.Value,
-            };
+            => new(epc: p.Spec.Code, edt: p.Value);
 
         private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchoPropertyInstance p)
-            => new()
-            {
-                EPC = p.Spec.Code,
-                PDC = 0,
-                EDT = null,
-            };
+            => new(epc: p.Spec.Code);
 
         private void ReceiveEvent(object sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
@@ -1140,9 +1130,8 @@ namespace EchoDotNetLite
                 {
                     //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
                     property.Value = opc.EDT;
-                    opc.PDC = 0x00;
-                    opc.EDT = null;
-                    opcList.Add(opc);
+
+                    opcList.Add(new(opc.EPC));
                 }
             }
             if (hasError)
@@ -1202,9 +1191,8 @@ namespace EchoDotNetLite
                     {
                         //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
                         property.Value = opc.EDT;
-                        opc.PDC = 0x00;
-                        opc.EDT = null;
-                        opcList.Add(opc);
+
+                        opcList.Add(new(opc.EPC));
                     }
                 }
             }
@@ -1282,9 +1270,7 @@ namespace EchoDotNetLite
                     {
                         //要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
                         //EDT には読み出したプロパティ値を設定する
-                        opc.PDC = (byte)property.Value.Length;
-                        opc.EDT = property.Value;
-                        opcList.Add(opc);
+                        opcList.Add(new(opc.EPC, property.Value));
                     }
                 }
             }
@@ -1363,9 +1349,8 @@ namespace EchoDotNetLite
                     {
                         //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
                         property.Value = opc.EDT;
-                        opc.PDC = 0x00;
-                        opc.EDT = null;
-                        opcSetList.Add(opc);
+
+                        opcSetList.Add(new(opc.EPC));
                     }
                 }
                 foreach (var opc in edata.OPCGetList)
@@ -1385,9 +1370,7 @@ namespace EchoDotNetLite
                     {
                         //要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
                         //EDT には読み出したプロパティ値を設定する
-                        opc.PDC = (byte)property.Value.Length;
-                        opc.EDT = property.Value;
-                        opcGetList.Add(opc);
+                        opcSetList.Add(new(opc.EPC, property.Value));
                     }
                 }
             }
@@ -1551,9 +1534,7 @@ namespace EchoDotNetLite
                 }
                 //EPC には通知時と同じプロパティコードを設定するが、
                 //通知を受信したことを示すため、PDCには 0 を設定し、EDT は付けない。
-                opc.PDC = 0x00;
-                opc.EDT = null;
-                opcList.Add(opc);
+                opcList.Add(new(opc.EPC));
             }
             if (destObject != null)
             {

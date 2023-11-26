@@ -310,28 +310,29 @@ namespace EchoDotNetLite
                 if (bytes.Length < 2)
                     return false;
 
-                var prp = new PropertyRequest
-                {
-                    // ECHONET Liteプロパティ(1B)
-                    EPC = bytes[0],
-                    // EDTのバイト数(1B)
-                    PDC = bytes[1],
-                };
+                // ECHONET Liteプロパティ(1B)
+                var epc = bytes[0];
+                // EDTのバイト数(1B)
+                var pdc = bytes[1];
 
                 bytes = bytes.Slice(2);
 
-                if (bytes.Length < prp.PDC)
+                if (bytes.Length < pdc)
                     return false;
 
-                if (0 < prp.PDC)
+                if (0 < pdc)
                 {
                     // プロパティ値データ(PDCで指定)
-                    prp.EDT = bytes.Slice(0, prp.PDC).ToArray(); // TODO: reduce allocation
+                    var edt = bytes.Slice(0, pdc).ToArray(); // TODO: reduce allocation
 
-                    bytes = bytes.Slice(prp.PDC);
+                    processingTargetProperties.Add(new(epc, edt));
+
+                    bytes = bytes.Slice(pdc);
                 }
-
-                processingTargetProperties.Add(prp);
+                else
+                {
+                    processingTargetProperties.Add(new(epc));
+                }
             }
 
             bytesRead = initialLength - bytes.Length;

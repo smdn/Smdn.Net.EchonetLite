@@ -303,11 +303,10 @@ partial class FrameSerializerTests {
   {
     var edt = new byte[] { 0x00, 0x01, 0x02, 0x03 };
     var opc = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFF,
-        EDT = edt,
-        PDC = (byte)edt.Length,
-      },
+      new(
+        epc: 0xFF,
+        edt: edt
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
@@ -336,16 +335,14 @@ partial class FrameSerializerTests {
     var opc0edt = new byte[] { 0x10, 0x11 };
     var opc1edt = new byte[] { 0x20, 0x21, 0x22 };
     var opc = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x10,
-        EDT = opc0edt,
-        PDC = (byte)opc0edt.Length,
-      },
-      new PropertyRequest() {
-        EPC = 0x20,
-        EDT = opc1edt,
-        PDC = (byte)opc1edt.Length,
-      },
+      new(
+        epc: 0x10,
+        edt: opc0edt
+      ),
+      new(
+        epc: 0x20,
+        edt: opc1edt
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
@@ -399,19 +396,17 @@ partial class FrameSerializerTests {
   {
     var edtOPCSet = new byte[] { 0x00, 0x01, 0x02, 0x03 };
     var opcSet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFE,
-        EDT = edtOPCSet,
-        PDC = (byte)edtOPCSet.Length,
-      },
+      new(
+        epc: 0xFE,
+        edt: edtOPCSet
+      ),
     };
     var edtOPCGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
     var opcGet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFF,
-        EDT = edtOPCGet,
-        PDC = (byte)edtOPCGet.Length,
-      },
+      new(
+        epc: 0xFF,
+        edt: edtOPCGet
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
@@ -447,24 +442,21 @@ partial class FrameSerializerTests {
     var edtOPCSet0 = new byte[] { 0x11, 0x12 };
     var edtOPCSet1 = new byte[] { 0x21, 0x22, 0x23 };
     var opcSet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x10,
-        EDT = edtOPCSet0,
-        PDC = (byte)edtOPCSet0.Length,
-      },
-      new PropertyRequest() {
-        EPC = 0x20,
-        EDT = edtOPCSet1,
-        PDC = (byte)edtOPCSet1.Length,
-      },
+      new(
+        epc: 0x10,
+        edt: edtOPCSet0
+      ),
+      new(
+        epc: 0x20,
+        edt: edtOPCSet1
+      ),
     };
     var edtOPCGet = new byte[] { 0x31, 0x32, 0x33, 0x34 };
     var opcGet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x30,
-        EDT = edtOPCGet,
-        PDC = (byte)edtOPCGet.Length,
-      },
+      new(
+        epc: 0x30,
+        edt: edtOPCGet
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
@@ -501,25 +493,22 @@ partial class FrameSerializerTests {
   {
     var edtOPCSet = new byte[] { 0x11, 0x12 };
     var opcSet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x10,
-        EDT = edtOPCSet,
-        PDC = (byte)edtOPCSet.Length,
-      },
+      new(
+        epc: 0x10,
+        edt: edtOPCSet
+      ),
     };
     var edtOPCGet0 = new byte[] { 0x21, 0x22, 0x23 };
     var edtOPCGet1 = new byte[] { 0x31, 0x32, 0x33, 0x34 };
     var opcGet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x20,
-        EDT = edtOPCGet0,
-        PDC = (byte)edtOPCGet0.Length,
-      },
-      new PropertyRequest() {
-        EPC = 0x30,
-        EDT = edtOPCGet1,
-        PDC = (byte)edtOPCGet1.Length,
-      },
+      new(
+        epc: 0x20,
+        edt: edtOPCGet0
+      ),
+      new(
+        epc: 0x30,
+        edt: edtOPCGet1
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
@@ -567,11 +556,10 @@ partial class FrameSerializerTests {
   {
     var edtOPCGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
     var opcGet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFF,
-        EDT = edtOPCGet,
-        PDC = (byte)edtOPCGet.Length,
-      },
+      new(
+        epc: 0xFF,
+        edt: edtOPCGet
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
@@ -613,11 +601,10 @@ partial class FrameSerializerTests {
   {
     var edtOPCSet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
     var opcSet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFF,
-        EDT = edtOPCSet,
-        PDC = (byte)edtOPCSet.Length,
-      },
+      new(
+        epc: 0xFF,
+        edt: edtOPCSet
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
