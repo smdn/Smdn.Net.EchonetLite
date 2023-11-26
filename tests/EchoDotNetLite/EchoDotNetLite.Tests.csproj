@@ -10,4 +10,8 @@ SPDX-License-Identifier: MIT
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\EchoDotNetLite\EchoDotNetLite.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Smdn.Test.NUnit.Constraints" Version="1.0.0" />
+  </ItemGroup>
 </Project>
