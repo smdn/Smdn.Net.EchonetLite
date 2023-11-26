@@ -227,12 +227,7 @@ namespace EchoDotNetLite
                     sourceObject: sourceObject.GetEOJ(),
                     destinationObject: destinationObject.GetEOJ(),
                     esv: ESV.SetI,
-                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
-                    {
-                        EPC = p.Spec.Code,
-                        PDC = (byte)p.Value.Length,
-                        EDT = p.Value,
-                    })
+                    opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
                 cancellationToken
             ).ConfigureAwait(false);
@@ -348,12 +343,7 @@ namespace EchoDotNetLite
                     sourceObject: sourceObject.GetEOJ(),
                     destinationObject: destinationObject.GetEOJ(),
                     esv: ESV.SetC,
-                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
-                    {
-                        EPC = p.Spec.Code,
-                        PDC = (byte)p.Value.Length,
-                        EDT = p.Value,
-                    })
+                    opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
                 cancellationToken
             ).ConfigureAwait(false);
@@ -463,12 +453,7 @@ namespace EchoDotNetLite
                     sourceObject: sourceObject.GetEOJ(),
                     destinationObject: destinationObject.GetEOJ(),
                     esv: ESV.Get,
-                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
-                    {
-                        EPC = p.Spec.Code,
-                        PDC = 0x00,
-                        EDT = null
-                    })
+                    opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
                 ),
                 cancellationToken
             ).ConfigureAwait(false);
@@ -592,18 +577,8 @@ namespace EchoDotNetLite
                     sourceObject: sourceObject.GetEOJ(),
                     destinationObject: destinationObject.GetEOJ(),
                     esv: ESV.SetGet,
-                    opcListOrOpcSetList: propertiesSet.Select(static p => new PropertyRequest()
-                    {
-                        EPC = p.Spec.Code,
-                        PDC = (byte)p.Value.Length,
-                        EDT = p.Value,
-                    }),
-                    opcGetList: propertiesGet.Select(static p => new PropertyRequest()
-                    {
-                        EPC = p.Spec.Code,
-                        PDC = 0x00,
-                        EDT = null,
-                    })
+                    opcListOrOpcSetList: propertiesSet.Select(ConvertToPropertyRequest),
+                    opcGetList: propertiesGet.Select(ConvertToPropertyRequestExceptValueData)
                 ),
                 cancellationToken
             ).ConfigureAwait(false);
@@ -644,12 +619,7 @@ namespace EchoDotNetLite
                     sourceObject: sourceObject.GetEOJ(),
                     destinationObject: destinationObject.GetEOJ(),
                     esv: ESV.INF_REQ,
-                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
-                    {
-                        EPC = p.Spec.Code,
-                        PDC = 0x00,
-                        EDT = null,
-                    })
+                    opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
                 ),
                 cancellationToken
             );
@@ -679,12 +649,7 @@ namespace EchoDotNetLite
                     sourceObject: sourceObject.GetEOJ(),
                     destinationObject: destinationObject.GetEOJ(),
                     esv: ESV.INF,
-                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
-                    {
-                        EPC = p.Spec.Code,
-                        PDC = (byte)p.Value.Length,
-                        EDT = p.Value,
-                    })
+                    opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
                 cancellationToken
             );
@@ -771,12 +736,7 @@ namespace EchoDotNetLite
                     sourceObject: sourceObject.GetEOJ(),
                     destinationObject: destinationObject.GetEOJ(),
                     esv: ESV.INFC,
-                    opcListOrOpcSetList: properties.Select(static p => new PropertyRequest()
-                    {
-                        EPC = p.Spec.Code,
-                        PDC = (byte)p.Value.Length,
-                        EDT = p.Value,
-                    })
+                    opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
                 cancellationToken
             ).ConfigureAwait(false);
@@ -794,6 +754,22 @@ namespace EchoDotNetLite
         }
 
 #nullable enable
+        private static PropertyRequest ConvertToPropertyRequest(EchoPropertyInstance p)
+            => new()
+            {
+                EPC = p.Spec.Code,
+                PDC = (byte)p.Value.Length,
+                EDT = p.Value,
+            };
+
+        private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchoPropertyInstance p)
+            => new()
+            {
+                EPC = p.Spec.Code,
+                PDC = 0,
+                EDT = null,
+            };
+
         private void ReceiveEvent(object sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
             if (!FrameSerializer.TryDeserialize(value.data.Span, out var frame))
