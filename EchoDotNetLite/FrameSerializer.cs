@@ -270,12 +270,12 @@ namespace EchoDotNetLite
                 throw new InvalidOperationException("input too short");
 #endif
 
-            return new EOJ()
-            {
-                ClassGroupCode = bytes[0],
-                ClassCode = bytes[1],
-                InstanceCode = bytes[2]
-            };
+            return new EOJ
+            (
+                classGroupCode: bytes[0],
+                classCode: bytes[1],
+                instanceCode: bytes[2]
+            );
         }
 
         private static bool TryReadEDATA1ProcessingTargetProperties(

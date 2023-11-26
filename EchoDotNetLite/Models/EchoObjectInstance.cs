@@ -71,12 +71,12 @@ namespace EchoDotNetLite.Models
         /// <returns></returns>
         public EOJ GetEOJ()
         {
-            return new EOJ()
-            {
-                ClassGroupCode = Spec.ClassGroup.ClassGroupCode,
-                ClassCode = Spec.Class.ClassCode,
-                InstanceCode = InstanceCode,
-            };
+            return new EOJ
+            (
+                classGroupCode: Spec.ClassGroup.ClassGroupCode,
+                classCode: Spec.Class.ClassCode,
+                instanceCode: InstanceCode
+            );
         }
 
         /// <summary>

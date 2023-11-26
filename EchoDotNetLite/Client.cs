@@ -80,13 +80,11 @@ namespace EchoDotNetLite
             await 自発プロパティ値通知(
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
-                , new EchoObjectInstance(new EOJ()
-                {
-                    ClassGroupCode = Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                    ClassCode = Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
-                    InstanceCode = 0x01,
-
-                })
+                , new EchoObjectInstance(new EOJ(
+                    classGroupCode: Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
+                    classCode: Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
+                    instanceCode: 0x01
+                ))
                 , new List<EchoPropertyInstance>() { property }
                 , cancellationToken
                 );
@@ -104,12 +102,11 @@ namespace EchoDotNetLite
             await プロパティ値通知要求(
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
-                , new EchoObjectInstance(new EOJ()
-                {
-                    ClassGroupCode = Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                    ClassCode = Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
-                    InstanceCode = 0x01,
-                })
+                , new EchoObjectInstance(new EOJ(
+                    classGroupCode: Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
+                    classCode: Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
+                    instanceCode: 0x01
+                ))
                 , a
                 , cancellationToken
                 );
@@ -816,15 +813,12 @@ namespace EchoDotNetLite
                 var count = br.ReadByte();
                 for(int i = 0; i < count; i++)
                 {
-                    var classGroupCode = br.ReadByte();
-                    var classCode = br.ReadByte();
-                    var instanceCode = br.ReadByte();
-                    var eoj = new EOJ()
-                    {
-                        ClassGroupCode = classGroupCode,
-                        ClassCode = classCode,
-                        InstanceCode = instanceCode,
-                    };
+                    var eoj = new EOJ
+                    (
+                        classGroupCode: br.ReadByte(),
+                        classCode: br.ReadByte(),
+                        instanceCode: br.ReadByte()
+                    );
                     var device = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == eoj);
                     if (device == null)
                     {

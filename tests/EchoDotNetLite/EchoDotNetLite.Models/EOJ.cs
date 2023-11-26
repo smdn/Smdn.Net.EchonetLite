@@ -15,9 +15,7 @@ public class EOJTests {
   [TestCase(0xFF, "\"ClassGroupCode\":\"FF\"")]
   public void Serialize_ClassGroupCode(byte classGroupCode, string expectedJsonFragment)
   {
-    var eoj = new EOJ() {
-      ClassGroupCode = classGroupCode
-    };
+    var eoj = new EOJ(classGroupCode, 0x00, 0x00);
 
     StringAssert.Contains(
       expectedJsonFragment,
@@ -32,9 +30,7 @@ public class EOJTests {
   [TestCase(0xFF, "\"ClassCode\":\"FF\"")]
   public void Serialize_ClassCode(byte classCode, string expectedJsonFragment)
   {
-    var eoj = new EOJ() {
-      ClassCode = classCode
-    };
+    var eoj = new EOJ(0x00, classCode, 0x00);
 
     StringAssert.Contains(
       expectedJsonFragment,
@@ -49,9 +45,7 @@ public class EOJTests {
   [TestCase(0xFF, "\"InstanceCode\":\"FF\"")]
   public void Serialize_InstanceCode(byte instanceCode, string expectedJsonFragment)
   {
-    var eoj = new EOJ() {
-      InstanceCode = instanceCode
-    };
+    var eoj = new EOJ(0x00, 0x00, instanceCode);
 
     StringAssert.Contains(
       expectedJsonFragment,

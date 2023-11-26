@@ -171,13 +171,13 @@ partial class FrameSerializerTests {
 
   private static System.Collections.IEnumerable Serialize_EHD2Type1_EDATA1_SEOJ_DEOJ()
   {
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0x00, ClassCode = 0x00, InstanceCode = 0x00 }, (byte)0x00, (byte)0x00, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0x01, ClassCode = 0x00, InstanceCode = 0x00 }, (byte)0x01, (byte)0x00, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0x00, ClassCode = 0x01, InstanceCode = 0x00 }, (byte)0x00, (byte)0x01, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0x00, ClassCode = 0x00, InstanceCode = 0x01 }, (byte)0x00, (byte)0x00, (byte)0x01 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0xFF, ClassCode = 0x00, InstanceCode = 0x00 }, (byte)0xFF, (byte)0x00, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0xFF, ClassCode = 0xFF, InstanceCode = 0x00 }, (byte)0xFF, (byte)0xFF, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0xFF, ClassCode = 0xFF, InstanceCode = 0xFF }, (byte)0xFF, (byte)0xFF, (byte)0xFF };
+    yield return new object?[] { new EOJ(0x00, 0x00, 0x00), (byte)0x00, (byte)0x00, (byte)0x00 };
+    yield return new object?[] { new EOJ(0x01, 0x00, 0x00), (byte)0x01, (byte)0x00, (byte)0x00 };
+    yield return new object?[] { new EOJ(0x00, 0x01, 0x00), (byte)0x00, (byte)0x01, (byte)0x00 };
+    yield return new object?[] { new EOJ(0x00, 0x00, 0x01), (byte)0x00, (byte)0x00, (byte)0x01 };
+    yield return new object?[] { new EOJ(0xFF, 0x00, 0x00), (byte)0xFF, (byte)0x00, (byte)0x00 };
+    yield return new object?[] { new EOJ(0xFF, 0xFF, 0x00), (byte)0xFF, (byte)0xFF, (byte)0x00 };
+    yield return new object?[] { new EOJ(0xFF, 0xFF, 0xFF), (byte)0xFF, (byte)0xFF, (byte)0xFF };
   }
 
   [TestCaseSource(nameof(Serialize_EHD2Type1_EDATA1_SEOJ_DEOJ))]
