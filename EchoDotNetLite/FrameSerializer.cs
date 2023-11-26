@@ -14,8 +14,6 @@ namespace EchoDotNetLite
     {
         public static void Serialize(Frame frame, IBufferWriter<byte> buffer)
         {
-            if (frame is null)
-                throw new ArgumentNullException(nameof(frame));
             if (buffer is null)
                 throw new ArgumentNullException(nameof(buffer));
 
@@ -28,40 +26,20 @@ namespace EchoDotNetLite
                     if (frame.EDATA is not EDATA1 edata1)
                         throw new ArgumentException($"{nameof(EDATA1)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
 
-                    if (IsESVWriteOrReadService(edata1.ESV))
-                    {
-                        if (edata1.OPCSetList is null)
-                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCSetList)} can not be null for the write or read services.");
-                        if (edata1.OPCGetList is null)
-                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCGetList)} can not be null for the write or read services.");
-
-                        SerializeEchonetLiteFrameFormat1
-                        (
-                            buffer,
-                            frame.TID,
-                            edata1.SEOJ,
-                            edata1.DEOJ,
-                            edata1.ESV,
-                            edata1.OPCSetList,
-                            edata1.OPCGetList
-                        );
-                    }
-                    else
-                    {
-                        if (edata1.OPCList is null)
-                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCList)} can not be null.");
-
-                        SerializeEchonetLiteFrameFormat1
-                        (
-                            buffer,
-                            frame.TID,
-                            edata1.SEOJ,
-                            edata1.DEOJ,
-                            edata1.ESV,
-                            edata1.OPCList,
-                            opcGetList: null
-                        );
-                    }
+#if !NET5_0_OR_GREATER // NotNullWhenAttribute
+#pragma warning disable CS8604
+#endif
+                    SerializeEchonetLiteFrameFormat1
+                    (
+                        buffer,
+                        frame.TID,
+                        edata1.SEOJ,
+                        edata1.DEOJ,
+                        edata1.ESV,
+                        edata1.IsWriteOrReadService ? edata1.OPCSetList : edata1.OPCList,
+                        edata1.IsWriteOrReadService ? edata1.OPCGetList : null
+                    );
+#pragma warning restore CS8604
 
                     break;
 
@@ -69,10 +47,7 @@ namespace EchoDotNetLite
                     if (frame.EDATA is not EDATA2 edata2)
                         throw new ArgumentException($"{nameof(EDATA2)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
 
-                    if (edata2.Message is null)
-                        throw new ArgumentException($"{nameof(EDATA2)} can not be null.", paramName: nameof(frame));
-
-                    SerializeEchonetLiteFrameFormat2(buffer, frame.TID, edata2.Message.AsSpan());
+                    SerializeEchonetLiteFrameFormat2(buffer, frame.TID, edata2.Message.Span);
 
                     break;
 
@@ -150,9 +125,9 @@ namespace EchoDotNetLite
         }
 
 
-        public static bool TryDeserialize(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out Frame? frame)
+        public static bool TryDeserialize(ReadOnlySpan<byte> bytes, out Frame frame)
         {
-            frame = null;
+            frame = default;
 
             //ECHONETLiteフレームとしての最小長に満たない
             if (bytes.Length < 4)
@@ -162,44 +137,44 @@ namespace EchoDotNetLite
             if ((bytes[0] & 0xF0) != (byte)EHD1.ECHONETLite)
                 return false;
 
-            frame = new Frame
-            {
-                /// ECHONET Lite電文ヘッダー１(1B)
-                EHD1 = (EHD1)bytes[0],
-                /// ECHONET Lite電文ヘッダー２(1B)
-                EHD2 = (EHD2)bytes[1],
-                /// トランザクションID(2B)
-                TID = BitConverter.ToUInt16(bytes.Slice(2, 2)),
-            };
+            /// ECHONET Lite電文ヘッダー１(1B)
+            var ehd1 = (EHD1)bytes[0];
+            /// ECHONET Lite電文ヘッダー２(1B)
+            var ehd2 = (EHD2)bytes[1];
+            /// トランザクションID(2B)
+            var tid = BitConverter.ToUInt16(bytes.Slice(2, 2));
 
             /// ECHONET Liteデータ(残り全部)
             var edataSpan = bytes.Slice(4);
 
-            switch (frame.EHD2)
+            switch (ehd2)
             {
                 case EHD2.Type1:
                     if (TryReadEDATAType1(edataSpan, out var edata))
                     {
-                        frame.EDATA = edata;
-                    }
-                    else
-                    {
-                        return false;
+                        frame = new Frame(ehd1, ehd2, tid, edata);
+                        return true;
                     }
                     break;
 
                 case EHD2.Type2:
-                    frame.EDATA = new EDATA2()
-                    {
-                        Message = edataSpan.ToArray() // TODO: reduce allocation
-                    };
-                    break;
+                    frame = new Frame
+                    (
+                        ehd1,
+                        ehd2,
+                        tid,
+                        new EDATA2
+                        (
+                            edataSpan.ToArray() // TODO: reduce allocation
+                        )
+                    );
+                    return true;
             }
 
-            return true;
+            return false;
         }
 
-        private static bool IsESVWriteOrReadService(ESV esv)
+        internal static bool IsESVWriteOrReadService(ESV esv)
             => esv switch {
                 ESV.SetGet => true,
                 ESV.SetGet_Res => true,
@@ -214,16 +189,13 @@ namespace EchoDotNetLite
             if (bytes.Length < 7)
                 return false;
 
-            edata = new EDATA1
-            {
-                SEOJ = ReadEDATA1EOJ(bytes.Slice(0, 3)),
-                DEOJ = ReadEDATA1EOJ(bytes.Slice(3, 3)),
-                ESV = (ESV)bytes[6]
-            };
+            var seoj = ReadEDATA1EOJ(bytes.Slice(0, 3));
+            var deoj = ReadEDATA1EOJ(bytes.Slice(3, 3));
+            var esv = (ESV)bytes[6];
 
             bytes = bytes.Slice(7);
 
-            if (IsESVWriteOrReadService(edata.ESV))
+            if (IsESVWriteOrReadService(esv))
             {
                 //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
                 // OPCSet 処理プロパティ数(1B)
@@ -232,8 +204,6 @@ namespace EchoDotNetLite
                 // プロパティ値データ(PDCで指定)
                 if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcSetList, out var bytesReadForOPCSetList))
                     return false;
-
-                edata.OPCSetList = opcSetList;
 
                 bytes = bytes.Slice(bytesReadForOPCSetList);
 
@@ -244,7 +214,14 @@ namespace EchoDotNetLite
                 if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcGetList, out var bytesReadForOPCGetList))
                     return false;
 
-                edata.OPCGetList = opcGetList;
+                edata = new
+                (
+                    seoj,
+                    deoj,
+                    esv,
+                    opcSetList,
+                    opcGetList
+                );
 
                 bytes = bytes.Slice(bytesReadForOPCGetList);
             }
@@ -257,9 +234,15 @@ namespace EchoDotNetLite
                 if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcList, out var bytesRead))
                     return false;
 
-                edata.OPCList = opcList;
-
                 bytes = bytes.Slice(bytesRead);
+
+                edata = new
+                (
+                    seoj,
+                    deoj,
+                    esv,
+                    opcList
+                );
             }
 
             return true;
@@ -272,12 +255,12 @@ namespace EchoDotNetLite
                 throw new InvalidOperationException("input too short");
 #endif
 
-            return new EOJ()
-            {
-                ClassGroupCode = bytes[0],
-                ClassCode = bytes[1],
-                InstanceCode = bytes[2]
-            };
+            return new EOJ
+            (
+                classGroupCode: bytes[0],
+                classCode: bytes[1],
+                instanceCode: bytes[2]
+            );
         }
 
         private static bool TryReadEDATA1ProcessingTargetProperties(
@@ -310,28 +293,29 @@ namespace EchoDotNetLite
                 if (bytes.Length < 2)
                     return false;
 
-                var prp = new PropertyRequest
-                {
-                    // ECHONET Liteプロパティ(1B)
-                    EPC = bytes[0],
-                    // EDTのバイト数(1B)
-                    PDC = bytes[1],
-                };
+                // ECHONET Liteプロパティ(1B)
+                var epc = bytes[0];
+                // EDTのバイト数(1B)
+                var pdc = bytes[1];
 
                 bytes = bytes.Slice(2);
 
-                if (bytes.Length < prp.PDC)
+                if (bytes.Length < pdc)
                     return false;
 
-                if (0 < prp.PDC)
+                if (0 < pdc)
                 {
                     // プロパティ値データ(PDCで指定)
-                    prp.EDT = bytes.Slice(0, prp.PDC).ToArray(); // TODO: reduce allocation
+                    var edt = bytes.Slice(0, pdc).ToArray(); // TODO: reduce allocation
 
-                    bytes = bytes.Slice(prp.PDC);
+                    processingTargetProperties.Add(new(epc, edt));
+
+                    bytes = bytes.Slice(pdc);
                 }
-
-                processingTargetProperties.Add(prp);
+                else
+                {
+                    processingTargetProperties.Add(new(epc));
+                }
             }
 
             bytesRead = initialLength - bytes.Length;

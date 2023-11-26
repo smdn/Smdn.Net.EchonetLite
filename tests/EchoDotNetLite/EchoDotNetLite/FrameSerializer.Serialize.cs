@@ -22,13 +22,11 @@ partial class FrameSerializerTests {
     public Memory<byte> GetMemory(int sizeHint) => new byte[sizeHint];
   }
 
+  private const ushort ZeroTID = (ushort)0x0000u;
+
   [Test]
   public void Serialize_ArgumentNull()
   {
-    Assert.Throws<ArgumentNullException>(
-      () => FrameSerializer.Serialize(frame: null!, buffer: PseudoBufferWriter.Instance),
-      message: "frame null"
-    );
     Assert.Throws<ArgumentNullException>(
       () => FrameSerializer.Serialize(frame: new Frame(), buffer: null!),
       message: "buffer null"
@@ -49,15 +47,12 @@ partial class FrameSerializerTests {
   public void Serialize_EHD1(EHD1 ehd1, byte expectedEHD1Byte)
   {
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = ehd1,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
-        },
-      }
+      new Frame(
+        ehd1: ehd1,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(default, default, default, new())
+      )
     );
 
     Assert.AreEqual(expectedEHD1Byte, frameBytes[0], "Frame[0] EHD1");
@@ -70,15 +65,12 @@ partial class FrameSerializerTests {
   {
     Assert.Throws<InvalidOperationException>(
       () => SerializeFrameAsByteArray(
-        new Frame() {
-          EHD1 = ehd1,
-          EHD2 = EHD2.Type1,
-          EDATA = new EDATA1() {
-            OPCList = new(),
-            OPCSetList = new(),
-            OPCGetList = new(),
-          },
-        }
+        new Frame(
+          ehd1: ehd1,
+          ehd2: EHD2.Type1,
+          tid: ZeroTID,
+          edata: new EDATA1(default, default, default, new())
+        )
       )
     );
   }
@@ -87,19 +79,13 @@ partial class FrameSerializerTests {
   {
     yield return new object?[] {
       EHD2.Type1,
-      new EDATA1() {
-        OPCList = new(),
-        OPCGetList = new(),
-        OPCSetList = new(),
-      },
+      new EDATA1(default, default, default, new()),
       (byte)0x81
     };
 
     yield return new object?[] {
       EHD2.Type2,
-      new EDATA2() {
-        Message = Array.Empty<byte>()
-      },
+      new EDATA2(default),
       (byte)0x82
     };
   }
@@ -108,11 +94,12 @@ partial class FrameSerializerTests {
   public void Serialize_EHD2(EHD2 ehd2, IEDATA edata, byte expectedEHD2Byte)
   {
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = ehd2,
-        EDATA = edata,
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: ehd2,
+        tid: ZeroTID,
+        edata: edata
+      )
     );
 
     Assert.AreEqual(expectedEHD2Byte, frameBytes[1], "Frame[1] EHD2");
@@ -120,40 +107,17 @@ partial class FrameSerializerTests {
 
   [TestCase((EHD2)0x00)]
   [TestCase((EHD2)0xFF)]
-  public void Serialize_EHD2_Undefined(EHD2 ehd2)
-  {
-    Assert.Throws<InvalidOperationException>(
-      () => SerializeFrameAsByteArray(
-        new Frame() {
-          EHD1 = EHD1.ECHONETLite,
-          EHD2 = ehd2,
-          EDATA = null,
-        }
-      )
-    );
-  }
-
-  private static System.Collections.IEnumerable YieldTestCases_Serialize_EHD2_TypeOfEDATAMismatch()
-  {
-    yield return new object?[] { EHD2.Type1, new EDATA2() };
-    yield return new object?[] { EHD2.Type1, (IEDATA?)null };
-    yield return new object?[] { EHD2.Type2, new EDATA1() };
-    yield return new object?[] { EHD2.Type2, (IEDATA?)null };
-  }
-
-  [TestCaseSource(nameof(YieldTestCases_Serialize_EHD2_TypeOfEDATAMismatch))]
-  public void Serialize_EHD2_Type1_InvalidEDATA(EHD2 ehd2, IEDATA? edata)
+  public void Serialize_EHD2_EDATATypeMismatch(EHD2 ehd2)
   {
     Assert.Throws<ArgumentException>(
-      () => FrameSerializer.Serialize(
-        new Frame() {
-          EHD1 = EHD1.ECHONETLite,
-          EHD2 = ehd2,
-          EDATA = edata!
-        },
-        PseudoBufferWriter.Instance
-      ),
-      message: "type of EDATA mismatch"
+      () => SerializeFrameAsByteArray(
+        new Frame(
+          ehd1: EHD1.ECHONETLite,
+          ehd2: ehd2,
+          tid: ZeroTID,
+          edata: new EDATA1(default, default, default, new())
+        )
+      )
     );
   }
 
@@ -166,16 +130,12 @@ partial class FrameSerializerTests {
   public void Serialize_TID(ushort tid, byte expectedTIDByteFirst, byte expectedTIDByteSecond)
   {
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        TID = tid,
-        EDATA = new EDATA1() {
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: tid,
+        edata: new EDATA1(default, default, default, new())
+      )
     );
 
     // The specification does not clearly define endianness of TID.
@@ -189,13 +149,13 @@ partial class FrameSerializerTests {
 
   private static System.Collections.IEnumerable Serialize_EHD2Type1_EDATA1_SEOJ_DEOJ()
   {
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0x00, ClassCode = 0x00, InstanceCode = 0x00 }, (byte)0x00, (byte)0x00, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0x01, ClassCode = 0x00, InstanceCode = 0x00 }, (byte)0x01, (byte)0x00, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0x00, ClassCode = 0x01, InstanceCode = 0x00 }, (byte)0x00, (byte)0x01, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0x00, ClassCode = 0x00, InstanceCode = 0x01 }, (byte)0x00, (byte)0x00, (byte)0x01 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0xFF, ClassCode = 0x00, InstanceCode = 0x00 }, (byte)0xFF, (byte)0x00, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0xFF, ClassCode = 0xFF, InstanceCode = 0x00 }, (byte)0xFF, (byte)0xFF, (byte)0x00 };
-    yield return new object?[] { new EOJ() { ClassGroupCode = 0xFF, ClassCode = 0xFF, InstanceCode = 0xFF }, (byte)0xFF, (byte)0xFF, (byte)0xFF };
+    yield return new object?[] { new EOJ(0x00, 0x00, 0x00), (byte)0x00, (byte)0x00, (byte)0x00 };
+    yield return new object?[] { new EOJ(0x01, 0x00, 0x00), (byte)0x01, (byte)0x00, (byte)0x00 };
+    yield return new object?[] { new EOJ(0x00, 0x01, 0x00), (byte)0x00, (byte)0x01, (byte)0x00 };
+    yield return new object?[] { new EOJ(0x00, 0x00, 0x01), (byte)0x00, (byte)0x00, (byte)0x01 };
+    yield return new object?[] { new EOJ(0xFF, 0x00, 0x00), (byte)0xFF, (byte)0x00, (byte)0x00 };
+    yield return new object?[] { new EOJ(0xFF, 0xFF, 0x00), (byte)0xFF, (byte)0xFF, (byte)0x00 };
+    yield return new object?[] { new EOJ(0xFF, 0xFF, 0xFF), (byte)0xFF, (byte)0xFF, (byte)0xFF };
   }
 
   [TestCaseSource(nameof(Serialize_EHD2Type1_EDATA1_SEOJ_DEOJ))]
@@ -207,16 +167,12 @@ partial class FrameSerializerTests {
   )
   {
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          SEOJ = seoj,
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: seoj, deoj: default, esv: default, opcList: new())
+      )
     );
 
     Assert.AreEqual(expectedSEOJByte0, frameBytes[4], "Frame[4] SEOJ 1/3");
@@ -233,16 +189,12 @@ partial class FrameSerializerTests {
   )
   {
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          DEOJ = deoj,
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: default, deoj: deoj, esv: default, opcList: new())
+      )
     );
 
     Assert.AreEqual(expectedDEOJByte0, frameBytes[7], "Frame[7] DEOJ 1/3");
@@ -271,16 +223,15 @@ partial class FrameSerializerTests {
   public void Serialize_EHD2Type1_EDATA1_ESV(ESV esv, byte expectedESVByte)
   {
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          ESV = esv,
-          OPCList = new() { new PropertyRequest() },
-          OPCSetList = new() { new PropertyRequest() },
-          OPCGetList = new() { new PropertyRequest() },
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: esv switch {
+          ESV.SetGet or ESV.SetGet_Res or ESV.SetGet_SNA => new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: new() { new() }, opcGetList: new() { new() }),
+          _ => new EDATA1(seoj: default, deoj: default, esv: esv, opcList: new())
+        }
+      )
     );
 
     Assert.AreEqual(expectedESVByte, frameBytes[10], "Frame[10] ESV");
@@ -303,24 +254,19 @@ partial class FrameSerializerTests {
   {
     var edt = new byte[] { 0x00, 0x01, 0x02, 0x03 };
     var opc = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFF,
-        EDT = edt,
-        PDC = (byte)edt.Length,
-      },
+      new(
+        epc: 0xFF,
+        edt: edt
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          ESV = esv,
-          OPCList = opc,
-          OPCSetList = null, // this must not be used
-          OPCGetList = null, // this must not be used
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcList: opc)
+      )
     );
 
     Assert.AreEqual(opc.Count, frameBytes[11], "Frame[11] OPC");
@@ -336,29 +282,23 @@ partial class FrameSerializerTests {
     var opc0edt = new byte[] { 0x10, 0x11 };
     var opc1edt = new byte[] { 0x20, 0x21, 0x22 };
     var opc = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x10,
-        EDT = opc0edt,
-        PDC = (byte)opc0edt.Length,
-      },
-      new PropertyRequest() {
-        EPC = 0x20,
-        EDT = opc1edt,
-        PDC = (byte)opc1edt.Length,
-      },
+      new(
+        epc: 0x10,
+        edt: opc0edt
+      ),
+      new(
+        epc: 0x20,
+        edt: opc1edt
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          ESV = esv,
-          OPCList = opc,
-          OPCSetList = null, // this must not be used
-          OPCGetList = null, // this must not be used
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcList: opc)
+      )
     );
 
     Assert.AreEqual(opc.Count, frameBytes[11], "Frame[11] OPC");
@@ -371,27 +311,6 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[18..21], SequenceIs.EqualTo(opc[1].EDT), "Frame[18..21] OPC#1 EDT");
   }
 
-  [TestCase(ESV.SetI)]
-  [TestCase(ESV.Get)]
-  public void Serialize_EHD2Type1_EDATA1_OPCListNull(ESV esv)
-  {
-    Assert.Throws<InvalidOperationException>(
-      () => FrameSerializer.Serialize(
-        new Frame() {
-          EHD1 = EHD1.ECHONETLite,
-          EHD2 = EHD2.Type1,
-          EDATA = new EDATA1() {
-            ESV = esv,
-            OPCList = null, // can not be null
-            OPCSetList = null, // this must not be used
-            OPCGetList = null, // this must not be used
-          },
-        },
-        PseudoBufferWriter.Instance
-      )
-    );
-  }
-
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGet_Res)]
   [TestCase(ESV.SetGet_SNA)]
@@ -399,33 +318,26 @@ partial class FrameSerializerTests {
   {
     var edtOPCSet = new byte[] { 0x00, 0x01, 0x02, 0x03 };
     var opcSet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFE,
-        EDT = edtOPCSet,
-        PDC = (byte)edtOPCSet.Length,
-      },
+      new(
+        epc: 0xFE,
+        edt: edtOPCSet
+      ),
     };
     var edtOPCGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
     var opcGet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFF,
-        EDT = edtOPCGet,
-        PDC = (byte)edtOPCGet.Length,
-      },
+      new(
+        epc: 0xFF,
+        edt: edtOPCGet
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        TID = (ushort)0u,
-        EDATA = new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = opcSet,
-          OPCGetList = opcGet,
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
+      )
     );
 
     Assert.AreEqual(opcSet.Count, frameBytes[11], "Frame[11] OPCSet");
@@ -447,37 +359,30 @@ partial class FrameSerializerTests {
     var edtOPCSet0 = new byte[] { 0x11, 0x12 };
     var edtOPCSet1 = new byte[] { 0x21, 0x22, 0x23 };
     var opcSet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x10,
-        EDT = edtOPCSet0,
-        PDC = (byte)edtOPCSet0.Length,
-      },
-      new PropertyRequest() {
-        EPC = 0x20,
-        EDT = edtOPCSet1,
-        PDC = (byte)edtOPCSet1.Length,
-      },
+      new(
+        epc: 0x10,
+        edt: edtOPCSet0
+      ),
+      new(
+        epc: 0x20,
+        edt: edtOPCSet1
+      ),
     };
     var edtOPCGet = new byte[] { 0x31, 0x32, 0x33, 0x34 };
     var opcGet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x30,
-        EDT = edtOPCGet,
-        PDC = (byte)edtOPCGet.Length,
-      },
+      new(
+        epc: 0x30,
+        edt: edtOPCGet
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = opcSet,
-          OPCGetList = opcGet,
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
+      )
     );
 
     Assert.AreEqual(opcSet.Count, frameBytes[11], "Frame[11] OPCSet");
@@ -501,38 +406,31 @@ partial class FrameSerializerTests {
   {
     var edtOPCSet = new byte[] { 0x11, 0x12 };
     var opcSet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x10,
-        EDT = edtOPCSet,
-        PDC = (byte)edtOPCSet.Length,
-      },
+      new(
+        epc: 0x10,
+        edt: edtOPCSet
+      ),
     };
     var edtOPCGet0 = new byte[] { 0x21, 0x22, 0x23 };
     var edtOPCGet1 = new byte[] { 0x31, 0x32, 0x33, 0x34 };
     var opcGet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0x20,
-        EDT = edtOPCGet0,
-        PDC = (byte)edtOPCGet0.Length,
-      },
-      new PropertyRequest() {
-        EPC = 0x30,
-        EDT = edtOPCGet1,
-        PDC = (byte)edtOPCGet1.Length,
-      },
+      new(
+        epc: 0x20,
+        edt: edtOPCGet0
+      ),
+      new(
+        epc: 0x30,
+        edt: edtOPCGet1
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = opcSet,
-          OPCGetList = opcGet,
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
+      )
     );
 
     Assert.AreEqual(opcSet.Count, frameBytes[11], "Frame[11] OPCSet");
@@ -566,25 +464,21 @@ partial class FrameSerializerTests {
   private static void Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty(ESV esv)
   {
     var edtOPCGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
+    var opcSet = new List<PropertyRequest>(); // empty OPCSet
     var opcGet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFF,
-        EDT = edtOPCGet,
-        PDC = (byte)edtOPCGet.Length,
-      },
+      new(
+        epc: 0xFF,
+        edt: edtOPCGet
+      ),
     };
 
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = new(), // empty OPCSet
-          OPCGetList = opcGet,
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
+      )
     );
 
     Assert.AreEqual(0, frameBytes[11], "Frame[11] OPCSet");
@@ -613,24 +507,20 @@ partial class FrameSerializerTests {
   {
     var edtOPCSet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
     var opcSet = new List<PropertyRequest>() {
-      new PropertyRequest() {
-        EPC = 0xFF,
-        EDT = edtOPCSet,
-        PDC = (byte)edtOPCSet.Length,
-      },
+      new(
+        epc: 0xFF,
+        edt: edtOPCSet
+      ),
     };
+    var opcGet = new List<PropertyRequest>(); // empty OPCGet
 
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type1,
-        EDATA = new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = opcSet,
-          OPCGetList = new(), // empty OPCGet
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type1,
+        tid: ZeroTID,
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
+      )
     );
 
     Assert.AreEqual(opcSet.Count, frameBytes[11], "Frame[11] OPCSet");
@@ -639,50 +529,6 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[14..19], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..19] OPCSet#0 EDT");
 
     Assert.AreEqual(0, frameBytes[19], "Frame[19] OPCGet");
-  }
-
-  [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
-  public void Serialize_EHD2Type1_EDATA1_OPCSetListNull(ESV esv)
-  {
-    Assert.Throws<InvalidOperationException>(
-      () => FrameSerializer.Serialize(
-        new Frame() {
-          EHD1 = EHD1.ECHONETLite,
-          EHD2 = EHD2.Type1,
-          EDATA = new EDATA1() {
-            ESV = esv,
-            OPCList = null, // this should not be used
-            OPCSetList = null, // can not be null
-            OPCGetList = new(), // empty OPCGet
-          },
-        },
-        PseudoBufferWriter.Instance
-      )
-    );
-  }
-
-  [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
-  public void Serialize_EHD2Type1_EDATA1_OPCGetListNull(ESV esv)
-  {
-    Assert.Throws<InvalidOperationException>(
-      () => FrameSerializer.Serialize(
-        new Frame() {
-          EHD1 = EHD1.ECHONETLite,
-          EHD2 = EHD2.Type1,
-          EDATA = new EDATA1() {
-            ESV = esv,
-            OPCList = null, // this should not be used
-            OPCSetList = new(), // empty OPCGet
-            OPCGetList = null, // can not be null
-          },
-        },
-        PseudoBufferWriter.Instance
-      )
-    );
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_EHD2Type2()
@@ -696,14 +542,12 @@ partial class FrameSerializerTests {
   public void Serialize_EHD2Type2_EDATA(byte[] edata)
   {
     var frameBytes = SerializeFrameAsByteArray(
-      new Frame() {
-        EHD1 = EHD1.ECHONETLite,
-        EHD2 = EHD2.Type2,
-        TID = (ushort)0xBEAF,
-        EDATA = new EDATA2() {
-          Message = edata
-        },
-      }
+      new Frame(
+        ehd1: EHD1.ECHONETLite,
+        ehd2: EHD2.Type2,
+        tid: (ushort)0xBEAFu,
+        edata: new EDATA2(edata)
+      )
     );
 
     Assert.AreEqual(0x10, frameBytes[0], "Frame[0] EHD1");
@@ -715,24 +559,5 @@ partial class FrameSerializerTests {
     Assert.AreEqual(BitConverter.IsLittleEndian ? 0xBE : 0xAF, frameBytes[3], "Frame[3] TID 2/2");
 
     CollectionAssert.AreEqual(edata, frameBytes[4..], "Frame[4..] EDATA");
-  }
-
-  [Test]
-  public void Serialize_EHD2Type2_EDATANull()
-  {
-    Assert.Throws<ArgumentException>(
-      () => FrameSerializer.Serialize(
-        new Frame() {
-          EHD1 = EHD1.ECHONETLite,
-          EHD2 = EHD2.Type2,
-          TID = (ushort)0xBEAF,
-          EDATA = new EDATA2() {
-            Message = null
-          },
-        },
-        PseudoBufferWriter.Instance
-      ),
-      message: "EDATA can not be null."
-    );
   }
 }

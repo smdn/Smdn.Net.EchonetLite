@@ -1,4 +1,6 @@
-﻿using EchoDotNetLite.Enums;
+﻿#nullable enable
+
+using EchoDotNetLite.Enums;
 using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
@@ -10,23 +12,36 @@ namespace EchoDotNetLite.Models
     /// <summary>
     /// ECHONET オブジェクト（EOJ）
     /// </summary>
-    public struct EOJ:IEquatable<EOJ>
+    public readonly struct EOJ:IEquatable<EOJ>
     {
+        /// <summary>
+        /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
+        /// </summary>
+        /// <param name="classGroupCode"><see cref="ClassGroupCode"/>に指定する値。</param>
+        /// <param name="classCode"><see cref="ClassCode"/>に指定する値。</param>
+        /// <param name="instanceCode"><see cref="InstanceCode"/>に指定する値。</param>
+        public EOJ(byte classGroupCode, byte classCode, byte instanceCode)
+        {
+            ClassGroupCode = classGroupCode;
+            ClassCode = classCode;
+            InstanceCode = instanceCode;
+        }
+
         /// <summary>
         /// クラスグループコード
         /// </summary>
         [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-        public byte ClassGroupCode { get; set; }
+        public byte ClassGroupCode { get; }
         /// <summary>
         /// クラスクラスコード
         /// </summary>
         [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-        public byte ClassCode { get; set; }
+        public byte ClassCode { get; }
         /// <summary>
         /// インスタンスコード
         /// </summary>
         [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-        public byte InstanceCode { get; set; }
+        public byte InstanceCode { get; }
 
         public bool Equals(EOJ other)
         {
@@ -35,8 +50,10 @@ namespace EchoDotNetLite.Models
                 && InstanceCode == other.InstanceCode;
         }
 
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
+            if (other is null)
+                return false;
             if (other is EOJ)
                 return Equals((EOJ)other);
             return false;
