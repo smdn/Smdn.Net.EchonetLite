@@ -9,6 +9,8 @@ using EchoDotNetLite.Enums;
 
 using NUnit.Framework;
 
+using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
+
 namespace EchoDotNetLite;
 
 partial class FrameSerializerTests {
@@ -300,7 +302,7 @@ partial class FrameSerializerTests {
     Assert.AreEqual(opc.Count, frameBytes[11], "Frame[11] OPC");
     Assert.AreEqual(opc[0].EPC, frameBytes[12], "Frame[12] OPC#0 EPC");
     Assert.AreEqual(opc[0].PDC, frameBytes[13], "Frame[13] OPC#0 PDC");
-    CollectionAssert.AreEqual(opc[0].EDT, frameBytes[14..], "Frame[14..] OPC#0 EDT");
+    Assert.That(frameBytes[14..], SequenceIs.EqualTo(opc[0].EDT), "Frame[14..] OPC#0 EDT");
   }
 
   [TestCase(ESV.SetI)]
@@ -338,11 +340,11 @@ partial class FrameSerializerTests {
     Assert.AreEqual(opc.Count, frameBytes[11], "Frame[11] OPC");
     Assert.AreEqual(opc[0].EPC, frameBytes[12], "Frame[12] OPC#0 EPC");
     Assert.AreEqual(opc[0].PDC, frameBytes[13], "Frame[13] OPC#0 PDC");
-    CollectionAssert.AreEqual(opc[0].EDT, frameBytes[14..16], "Frame[14..16] OPC#0 EDT");
+    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(opc[0].EDT), "Frame[14..16] OPC#0 EDT");
 
     Assert.AreEqual(opc[1].EPC, frameBytes[16], "Frame[16] OPC#1 EPC");
     Assert.AreEqual(opc[1].PDC, frameBytes[17], "Frame[17] OPC#1 PDC");
-    CollectionAssert.AreEqual(opc[1].EDT, frameBytes[18..21], "Frame[18..21] OPC#1 EDT");
+    Assert.That(frameBytes[18..21], SequenceIs.EqualTo(opc[1].EDT), "Frame[18..21] OPC#1 EDT");
   }
 
   [TestCase(ESV.SetI)]
@@ -405,12 +407,12 @@ partial class FrameSerializerTests {
     Assert.AreEqual(opcSet.Count, frameBytes[11], "Frame[11] OPCSet");
     Assert.AreEqual(opcSet[0].EPC, frameBytes[12], "Frame[12] OPCSet#0 EPC");
     Assert.AreEqual(opcSet[0].PDC, frameBytes[13], "Frame[13] OPCSet#0 PDC");
-    CollectionAssert.AreEqual(opcSet[0].EDT, frameBytes[14..18], "Frame[14..18] OPCSet#0 EDT");
+    Assert.That(frameBytes[14..18], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..18] OPCSet#0 EDT");
 
     Assert.AreEqual(opcGet.Count, frameBytes[18], "Frame[18] OPCGet");
     Assert.AreEqual(opcGet[0].EPC, frameBytes[19], "Frame[19] OPCGet#0 EPC");
     Assert.AreEqual(opcGet[0].PDC, frameBytes[20], "Frame[20] OPCGet#0 PDC");
-    CollectionAssert.AreEqual(opcGet[0].EDT, frameBytes[21..26], "Frame[21..26] OPCGet#0 EDT");
+    Assert.That(frameBytes[21..26], SequenceIs.EqualTo(opcGet[0].EDT), "Frame[21..26] OPCGet#0 EDT");
   }
 
   [TestCase(ESV.SetGet)]
@@ -457,15 +459,15 @@ partial class FrameSerializerTests {
     Assert.AreEqual(opcSet.Count, frameBytes[11], "Frame[11] OPCSet");
     Assert.AreEqual(opcSet[0].EPC, frameBytes[12], "Frame[12] OPCSet#0 EPC");
     Assert.AreEqual(opcSet[0].PDC, frameBytes[13], "Frame[13] OPCSet#0 PDC");
-    CollectionAssert.AreEqual(opcSet[0].EDT, frameBytes[14..16], "Frame[14..16] OPCSet#0 EDT");
+    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..16] OPCSet#0 EDT");
     Assert.AreEqual(opcSet[1].EPC, frameBytes[16], "Frame[16] OPCSet#1 EPC");
     Assert.AreEqual(opcSet[1].PDC, frameBytes[17], "Frame[17] OPCSet#1 PDC");
-    CollectionAssert.AreEqual(opcSet[1].EDT, frameBytes[18..21], "Frame[18..21] OPCSet#1 EDT");
+    Assert.That(frameBytes[18..21], SequenceIs.EqualTo(opcSet[1].EDT), "Frame[18..21] OPCSet#1 EDT");
 
     Assert.AreEqual(opcGet.Count, frameBytes[21], "Frame[21] OPCGet");
     Assert.AreEqual(opcGet[0].EPC, frameBytes[22], "Frame[22] OPCGet#0 EPC");
     Assert.AreEqual(opcGet[0].PDC, frameBytes[23], "Frame[23] OPCGet#0 PDC");
-    CollectionAssert.AreEqual(opcGet[0].EDT, frameBytes[24..28], "Frame[24..28] OPCGet#0 EDT");
+    Assert.That(frameBytes[24..28], SequenceIs.EqualTo(opcGet[0].EDT), "Frame[24..28] OPCGet#0 EDT");
   }
 
   [TestCase(ESV.SetGet)]
@@ -512,15 +514,15 @@ partial class FrameSerializerTests {
     Assert.AreEqual(opcSet.Count, frameBytes[11], "Frame[11] OPCSet");
     Assert.AreEqual(opcSet[0].EPC, frameBytes[12], "Frame[12] OPCSet#0 EPC");
     Assert.AreEqual(opcSet[0].PDC, frameBytes[13], "Frame[13] OPCSet#0 PDC");
-    CollectionAssert.AreEqual(opcSet[0].EDT, frameBytes[14..16], "Frame[14..16] OPCSet#0 EDT");
+    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..16] OPCSet#0 EDT");
 
     Assert.AreEqual(opcGet.Count, frameBytes[16], "Frame[16] OPCGet");
     Assert.AreEqual(opcGet[0].EPC, frameBytes[17], "Frame[17] OPCGet#0 EPC");
     Assert.AreEqual(opcGet[0].PDC, frameBytes[18], "Frame[18] OPCGet#0 PDC");
-    CollectionAssert.AreEqual(opcGet[0].EDT, frameBytes[19..22], "Frame[18..22] OPCGet#0 EDT");
+    Assert.That(frameBytes[19..22], SequenceIs.EqualTo(opcGet[0].EDT), "Frame[18..22] OPCGet#0 EDT");
     Assert.AreEqual(opcGet[1].EPC, frameBytes[22], "Frame[22] OPCGet#1 EPC");
     Assert.AreEqual(opcGet[1].PDC, frameBytes[23], "Frame[23] OPCGet#1 PDC");
-    CollectionAssert.AreEqual(opcGet[1].EDT, frameBytes[24..28], "Frame[24..28] OPCGet#1 EDT");
+    Assert.That(frameBytes[24..28], SequenceIs.EqualTo(opcGet[1].EDT), "Frame[24..28] OPCGet#1 EDT");
   }
 
   [Test]
@@ -566,7 +568,7 @@ partial class FrameSerializerTests {
     Assert.AreEqual(opcGet.Count, frameBytes[12], "Frame[12] OPCGet");
     Assert.AreEqual(opcGet[0].EPC, frameBytes[13], "Frame[13] OPCGet#0 EPC");
     Assert.AreEqual(opcGet[0].PDC, frameBytes[14], "Frame[14] OPCGet#0 PDC");
-    CollectionAssert.AreEqual(opcGet[0].EDT, frameBytes[15..20], "Frame[15..20] OPCGet#0 EDT");
+    Assert.That(frameBytes[15..20], SequenceIs.EqualTo(opcGet[0].EDT), "Frame[15..20] OPCGet#0 EDT");
   }
 
   [Test]
@@ -610,7 +612,7 @@ partial class FrameSerializerTests {
     Assert.AreEqual(opcSet.Count, frameBytes[11], "Frame[11] OPCSet");
     Assert.AreEqual(opcSet[0].EPC, frameBytes[12], "Frame[12] OPCSet#0 EPC");
     Assert.AreEqual(opcSet[0].PDC, frameBytes[13], "Frame[13] OPCSet#0 PDC");
-    CollectionAssert.AreEqual(opcSet[0].EDT, frameBytes[14..19], "Frame[14..19] OPCSet#0 EDT");
+    Assert.That(frameBytes[14..19], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..19] OPCSet#0 EDT");
 
     Assert.AreEqual(0, frameBytes[19], "Frame[19] OPCGet");
   }
