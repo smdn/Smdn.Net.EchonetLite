@@ -26,40 +26,20 @@ namespace EchoDotNetLite
                     if (frame.EDATA is not EDATA1 edata1)
                         throw new ArgumentException($"{nameof(EDATA1)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
 
-                    if (IsESVWriteOrReadService(edata1.ESV))
-                    {
-                        if (edata1.OPCSetList is null)
-                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCSetList)} can not be null for the write or read services.");
-                        if (edata1.OPCGetList is null)
-                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCGetList)} can not be null for the write or read services.");
-
-                        SerializeEchonetLiteFrameFormat1
-                        (
-                            buffer,
-                            frame.TID,
-                            edata1.SEOJ,
-                            edata1.DEOJ,
-                            edata1.ESV,
-                            edata1.OPCSetList,
-                            edata1.OPCGetList
-                        );
-                    }
-                    else
-                    {
-                        if (edata1.OPCList is null)
-                            throw new InvalidOperationException($"{nameof(EDATA1)}.{nameof(EDATA1.OPCList)} can not be null.");
-
-                        SerializeEchonetLiteFrameFormat1
-                        (
-                            buffer,
-                            frame.TID,
-                            edata1.SEOJ,
-                            edata1.DEOJ,
-                            edata1.ESV,
-                            edata1.OPCList,
-                            opcGetList: null
-                        );
-                    }
+#if !NET5_0_OR_GREATER // NotNullWhenAttribute
+#pragma warning disable CS8604
+#endif
+                    SerializeEchonetLiteFrameFormat1
+                    (
+                        buffer,
+                        frame.TID,
+                        edata1.SEOJ,
+                        edata1.DEOJ,
+                        edata1.ESV,
+                        edata1.IsWriteOrReadService ? edata1.OPCSetList : edata1.OPCList,
+                        edata1.IsWriteOrReadService ? edata1.OPCGetList : null
+                    );
+#pragma warning restore CS8604
 
                     break;
 
@@ -197,7 +177,7 @@ namespace EchoDotNetLite
             return false;
         }
 
-        private static bool IsESVWriteOrReadService(ESV esv)
+        internal static bool IsESVWriteOrReadService(ESV esv)
             => esv switch {
                 ESV.SetGet => true,
                 ESV.SetGet_Res => true,
@@ -212,16 +192,13 @@ namespace EchoDotNetLite
             if (bytes.Length < 7)
                 return false;
 
-            edata = new EDATA1
-            {
-                SEOJ = ReadEDATA1EOJ(bytes.Slice(0, 3)),
-                DEOJ = ReadEDATA1EOJ(bytes.Slice(3, 3)),
-                ESV = (ESV)bytes[6]
-            };
+            var seoj = ReadEDATA1EOJ(bytes.Slice(0, 3));
+            var deoj = ReadEDATA1EOJ(bytes.Slice(3, 3));
+            var esv = (ESV)bytes[6];
 
             bytes = bytes.Slice(7);
 
-            if (IsESVWriteOrReadService(edata.ESV))
+            if (IsESVWriteOrReadService(esv))
             {
                 //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
                 // OPCSet 処理プロパティ数(1B)
@@ -230,8 +207,6 @@ namespace EchoDotNetLite
                 // プロパティ値データ(PDCで指定)
                 if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcSetList, out var bytesReadForOPCSetList))
                     return false;
-
-                edata.OPCSetList = opcSetList;
 
                 bytes = bytes.Slice(bytesReadForOPCSetList);
 
@@ -242,7 +217,14 @@ namespace EchoDotNetLite
                 if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcGetList, out var bytesReadForOPCGetList))
                     return false;
 
-                edata.OPCGetList = opcGetList;
+                edata = new
+                (
+                    seoj,
+                    deoj,
+                    esv,
+                    opcSetList,
+                    opcGetList
+                );
 
                 bytes = bytes.Slice(bytesReadForOPCGetList);
             }
@@ -255,9 +237,15 @@ namespace EchoDotNetLite
                 if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcList, out var bytesRead))
                     return false;
 
-                edata.OPCList = opcList;
-
                 bytes = bytes.Slice(bytesRead);
+
+                edata = new
+                (
+                    seoj,
+                    deoj,
+                    esv,
+                    opcList
+                );
             }
 
             return true;

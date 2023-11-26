@@ -253,7 +253,7 @@ partial class FrameSerializerTests {
     Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
 
     Assert.IsNotNull(edata.OPCSetList, nameof(edata.OPCSetList));
-    Assert.AreEqual(2, edata.OPCSetList.Count, "OPCSet");
+    Assert.AreEqual(2, edata.OPCSetList!.Count, "OPCSet");
 
     Assert.AreEqual(0x10, edata.OPCSetList[0].EPC, "OPCSet #1 EPC");
     Assert.AreEqual(1, edata.OPCSetList[0].PDC, "OPCSet #1 PDC");
@@ -264,7 +264,7 @@ partial class FrameSerializerTests {
     Assert.That(edata.OPCSetList[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPCSet #2 EDT");
 
     Assert.IsNotNull(edata.OPCGetList, nameof(edata.OPCGetList));
-    Assert.AreEqual(2, edata.OPCGetList.Count, "OPCGet");
+    Assert.AreEqual(2, edata.OPCGetList!.Count, "OPCGet");
 
     Assert.AreEqual(0x30, edata.OPCGetList[0].EPC, "OPCGet #1 EPC");
     Assert.AreEqual(3, edata.OPCGetList[0].PDC, "OPCGet #1 PDC");
@@ -303,7 +303,7 @@ partial class FrameSerializerTests {
     Assert.IsNull(edata.OPCSetList, nameof(edata.OPCSetList));
 
     Assert.IsNotNull(edata.OPCList, nameof(edata.OPCList));
-    Assert.AreEqual(2, edata.OPCList.Count, "OPC");
+    Assert.AreEqual(2, edata.OPCList!.Count, "OPC");
 
     Assert.AreEqual(0x10, edata.OPCList[0].EPC, "OPC #1 EPC");
     Assert.AreEqual(1, edata.OPCList[0].PDC, "OPC #1 PDC");
@@ -338,10 +338,10 @@ partial class FrameSerializerTests {
     Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
 
     Assert.IsNotNull(edata.OPCSetList, nameof(edata.OPCSetList));
-    CollectionAssert.IsEmpty(edata.OPCSetList, nameof(edata.OPCSetList));
+    CollectionAssert.IsEmpty(edata.OPCSetList!, nameof(edata.OPCSetList));
 
     Assert.IsNotNull(edata.OPCGetList, nameof(edata.OPCGetList));
-    Assert.AreEqual(1, edata.OPCGetList.Count, "OPCGet");
+    Assert.AreEqual(1, edata.OPCGetList!.Count, "OPCGet");
 
     Assert.AreEqual(0x30, edata.OPCGetList[0].EPC, "OPCGet #1 EPC");
     Assert.AreEqual(3, edata.OPCGetList[0].PDC, "OPCGet #1 PDC");
@@ -370,7 +370,7 @@ partial class FrameSerializerTests {
     Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
 
     Assert.IsNotNull(edata.OPCSetList, nameof(edata.OPCSetList));
-    Assert.AreEqual(1, edata.OPCSetList.Count, "OPCSet");
+    Assert.AreEqual(1, edata.OPCSetList!.Count, "OPCSet");
 
     Assert.AreEqual(0x10, edata.OPCSetList[0].EPC, "OPCSet #1 EPC");
     Assert.AreEqual(1, edata.OPCSetList[0].PDC, "OPCSet #1 PDC");

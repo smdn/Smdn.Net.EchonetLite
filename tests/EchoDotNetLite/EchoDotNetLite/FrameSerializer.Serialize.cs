@@ -51,11 +51,7 @@ partial class FrameSerializerTests {
         ehd1: ehd1,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
-        }
+        edata: new EDATA1(default, default, default, new())
       )
     );
 
@@ -73,11 +69,7 @@ partial class FrameSerializerTests {
           ehd1: ehd1,
           ehd2: EHD2.Type1,
           tid: ZeroTID,
-          edata: new EDATA1() {
-            OPCList = new(),
-            OPCSetList = new(),
-            OPCGetList = new(),
-          }
+          edata: new EDATA1(default, default, default, new())
         )
       )
     );
@@ -87,11 +79,7 @@ partial class FrameSerializerTests {
   {
     yield return new object?[] {
       EHD2.Type1,
-      new EDATA1() {
-        OPCList = new(),
-        OPCGetList = new(),
-        OPCSetList = new(),
-      },
+      new EDATA1(default, default, default, new()),
       (byte)0x81
     };
 
@@ -129,11 +117,7 @@ partial class FrameSerializerTests {
           ehd1: EHD1.ECHONETLite,
           ehd2: ehd2,
           tid: ZeroTID,
-          edata: new EDATA1() {
-            OPCList = new(),
-            OPCSetList = new(),
-            OPCGetList = new(),
-          }
+          edata: new EDATA1(default, default, default, new())
         )
       )
     );
@@ -152,11 +136,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: tid,
-        edata: new EDATA1() {
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
-        }
+        edata: new EDATA1(default, default, default, new())
       )
     );
 
@@ -193,12 +173,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          SEOJ = seoj,
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
-        }
+        edata: new EDATA1(seoj: seoj, deoj: default, esv: default, opcList: new())
       )
     );
 
@@ -220,12 +195,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          DEOJ = deoj,
-          OPCList = new(),
-          OPCSetList = new(),
-          OPCGetList = new(),
-        }
+        edata: new EDATA1(seoj: default, deoj: deoj, esv: default, opcList: new())
       )
     );
 
@@ -259,11 +229,9 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          ESV = esv,
-          OPCList = new() { new PropertyRequest() },
-          OPCSetList = new() { new PropertyRequest() },
-          OPCGetList = new() { new PropertyRequest() },
+        edata: esv switch {
+          ESV.SetGet or ESV.SetGet_Res or ESV.SetGet_SNA => new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: new() { new() }, opcGetList: new() { new() }),
+          _ => new EDATA1(seoj: default, deoj: default, esv: esv, opcList: new())
         }
       )
     );
@@ -299,12 +267,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          ESV = esv,
-          OPCList = opc,
-          OPCSetList = null, // this must not be used
-          OPCGetList = null, // this must not be used
-        }
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcList: opc)
       )
     );
 
@@ -336,12 +299,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          ESV = esv,
-          OPCList = opc,
-          OPCSetList = null, // this must not be used
-          OPCGetList = null, // this must not be used
-        }
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcList: opc)
       )
     );
 
@@ -353,28 +311,6 @@ partial class FrameSerializerTests {
     Assert.AreEqual(opc[1].EPC, frameBytes[16], "Frame[16] OPC#1 EPC");
     Assert.AreEqual(opc[1].PDC, frameBytes[17], "Frame[17] OPC#1 PDC");
     Assert.That(frameBytes[18..21], SequenceIs.EqualTo(opc[1].EDT), "Frame[18..21] OPC#1 EDT");
-  }
-
-  [TestCase(ESV.SetI)]
-  [TestCase(ESV.Get)]
-  public void Serialize_EHD2Type1_EDATA1_OPCListNull(ESV esv)
-  {
-    Assert.Throws<InvalidOperationException>(
-      () => FrameSerializer.Serialize(
-        new Frame(
-          ehd1: EHD1.ECHONETLite,
-          ehd2: EHD2.Type1,
-          tid: ZeroTID,
-          edata: new EDATA1() {
-            ESV = esv,
-            OPCList = null, // can not be null
-            OPCSetList = null, // this must not be used
-            OPCGetList = null, // this must not be used
-          }
-        ),
-        PseudoBufferWriter.Instance
-      )
-    );
   }
 
   [TestCase(ESV.SetGet)]
@@ -402,12 +338,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = opcSet,
-          OPCGetList = opcGet,
-        }
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
     );
 
@@ -452,12 +383,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = opcSet,
-          OPCGetList = opcGet,
-        }
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
     );
 
@@ -505,12 +431,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = opcSet,
-          OPCGetList = opcGet,
-        }
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
     );
 
@@ -545,6 +466,7 @@ partial class FrameSerializerTests {
   private static void Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty(ESV esv)
   {
     var edtOPCGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
+    var opcSet = new List<PropertyRequest>(); // empty OPCSet
     var opcGet = new List<PropertyRequest>() {
       new(
         epc: 0xFF,
@@ -557,12 +479,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = new(), // empty OPCSet
-          OPCGetList = opcGet,
-        }
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
     );
 
@@ -597,18 +514,14 @@ partial class FrameSerializerTests {
         edt: edtOPCSet
       ),
     };
+    var opcGet = new List<PropertyRequest>(); // empty OPCGet
 
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1() {
-          ESV = esv,
-          OPCList = null, // this should not be used
-          OPCSetList = opcSet,
-          OPCGetList = new(), // empty OPCGet
-        }
+        edata: new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
     );
 
@@ -618,52 +531,6 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[14..19], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..19] OPCSet#0 EDT");
 
     Assert.AreEqual(0, frameBytes[19], "Frame[19] OPCGet");
-  }
-
-  [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
-  public void Serialize_EHD2Type1_EDATA1_OPCSetListNull(ESV esv)
-  {
-    Assert.Throws<InvalidOperationException>(
-      () => FrameSerializer.Serialize(
-        new Frame(
-          ehd1: EHD1.ECHONETLite,
-          ehd2: EHD2.Type1,
-          tid: ZeroTID,
-          edata: new EDATA1() {
-            ESV = esv,
-            OPCList = null, // this should not be used
-            OPCSetList = null, // can not be null
-            OPCGetList = new(), // empty OPCGet
-          }
-        ),
-        PseudoBufferWriter.Instance
-      )
-    );
-  }
-
-  [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
-  public void Serialize_EHD2Type1_EDATA1_OPCGetListNull(ESV esv)
-  {
-    Assert.Throws<InvalidOperationException>(
-      () => FrameSerializer.Serialize(
-        new Frame(
-          ehd1: EHD1.ECHONETLite,
-          ehd2: EHD2.Type1,
-          tid: ZeroTID,
-          edata: new EDATA1() {
-            ESV = esv,
-            OPCList = null, // this should not be used
-            OPCSetList = new(), // empty OPCGet
-            OPCGetList = null, // can not be null
-          }
-        ),
-        PseudoBufferWriter.Instance
-      )
-    );
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_EHD2Type2()
