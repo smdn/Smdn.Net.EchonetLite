@@ -85,9 +85,7 @@ partial class FrameSerializerTests {
 
     yield return new object?[] {
       EHD2.Type2,
-      new EDATA2() {
-        Message = Array.Empty<byte>()
-      },
+      new EDATA2(default),
       (byte)0x82
     };
   }
@@ -548,9 +546,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type2,
         tid: (ushort)0xBEAFu,
-        edata: new EDATA2() {
-          Message = edata
-        }
+        edata: new EDATA2(edata)
       )
     );
 
@@ -563,24 +559,5 @@ partial class FrameSerializerTests {
     Assert.AreEqual(BitConverter.IsLittleEndian ? 0xBE : 0xAF, frameBytes[3], "Frame[3] TID 2/2");
 
     CollectionAssert.AreEqual(edata, frameBytes[4..], "Frame[4..] EDATA");
-  }
-
-  [Test]
-  public void Serialize_EHD2Type2_EDATANull()
-  {
-    Assert.Throws<ArgumentException>(
-      () => FrameSerializer.Serialize(
-        new Frame(
-          ehd1: EHD1.ECHONETLite,
-          ehd2: EHD2.Type2,
-          tid: (ushort)0xBEAFu,
-          edata: new EDATA2() {
-            Message = null
-          }
-        ),
-        PseudoBufferWriter.Instance
-      ),
-      message: "EDATA can not be null."
-    );
   }
 }

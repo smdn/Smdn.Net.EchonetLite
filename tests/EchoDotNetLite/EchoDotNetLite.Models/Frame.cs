@@ -24,7 +24,7 @@ public class FrameTests {
 
   private static System.Collections.IEnumerable YieldTestCases_Ctor_EDATATypeMismatch()
   {
-    yield return new object?[] { EHD2.Type1, new EDATA2() };
+    yield return new object?[] { EHD2.Type1, new EDATA2(default) };
     yield return new object?[] { EHD2.Type1, new PseudoEDATA() };
     yield return new object?[] { EHD2.Type2, new EDATA1(default, default, default, new()) };
     yield return new object?[] { EHD2.Type2, new PseudoEDATA() };
@@ -44,7 +44,7 @@ public class FrameTests {
   [TestCase((EHD1)0xFF, "\"EHD1\":\"FF\"")]
   public void Serialize_EHD1(EHD1 ehd1, string expectedJsonFragment)
   {
-    var f = new Frame(ehd1, EHD2.Type2, (ushort)0x0000u, new EDATA2());
+    var f = new Frame(ehd1, EHD2.Type2, (ushort)0x0000u, new EDATA2(default));
 
     StringAssert.Contains(
       expectedJsonFragment,
@@ -66,7 +66,7 @@ public class FrameTests {
   [Test]
   public void Serialize_EHD2_Type2()
   {
-    var f = new Frame(EHD1.ECHONETLite, EHD2.Type2, (ushort)0x0000u, new EDATA2());
+    var f = new Frame(EHD1.ECHONETLite, EHD2.Type2, (ushort)0x0000u, new EDATA2(default));
 
     StringAssert.Contains(
       "\"EHD2\":\"82\"",
@@ -82,7 +82,7 @@ public class FrameTests {
   [TestCase((ushort)0xFFFFu, "\"TID\":\"FFFF\"")]
   public void Serialize_TID(ushort tid, string expectedJsonFragment)
   {
-    var f = new Frame(EHD1.ECHONETLite, EHD2.Type2, tid, new EDATA2());
+    var f = new Frame(EHD1.ECHONETLite, EHD2.Type2, tid, new EDATA2(default));
 
     StringAssert.Contains(
       expectedJsonFragment,

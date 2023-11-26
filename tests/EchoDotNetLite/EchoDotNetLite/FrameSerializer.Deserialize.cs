@@ -407,7 +407,7 @@ partial class FrameSerializerTests {
     var edata = (EDATA2)frame.EDATA!;
 
     Assert.IsNotNull(edata.Message, nameof(edata.Message));
-    CollectionAssert.AreEqual(expectedEDATA, edata.Message, nameof(edata.Message));
+    Assert.That(edata.Message, SequenceIs.EqualTo(expectedEDATA), nameof(edata.Message));
   }
 
   [Test]
@@ -423,6 +423,6 @@ partial class FrameSerializerTests {
     var edata = (EDATA2)frame.EDATA!;
 
     Assert.IsNotNull(edata.Message, nameof(edata.Message));
-    CollectionAssert.IsEmpty(edata.Message, nameof(edata.Message));
+    Assert.IsTrue(edata.Message.IsEmpty, nameof(edata.Message));
   }
 }

@@ -47,10 +47,7 @@ namespace EchoDotNetLite
                     if (frame.EDATA is not EDATA2 edata2)
                         throw new ArgumentException($"{nameof(EDATA2)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
 
-                    if (edata2.Message is null)
-                        throw new ArgumentException($"{nameof(EDATA2)} can not be null.", paramName: nameof(frame));
-
-                    SerializeEchonetLiteFrameFormat2(buffer, frame.TID, edata2.Message.AsSpan());
+                    SerializeEchonetLiteFrameFormat2(buffer, frame.TID, edata2.Message.Span);
 
                     break;
 
@@ -166,10 +163,10 @@ namespace EchoDotNetLite
                         ehd1,
                         ehd2,
                         tid,
-                        new EDATA2()
-                        {
-                            Message = edataSpan.ToArray() // TODO: reduce allocation
-                        }
+                        new EDATA2
+                        (
+                            edataSpan.ToArray() // TODO: reduce allocation
+                        )
                     );
                     return true;
             }
