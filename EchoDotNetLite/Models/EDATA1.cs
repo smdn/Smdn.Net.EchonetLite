@@ -15,7 +15,7 @@ namespace EchoDotNetLite.Models
     /// <summary>
     /// 電文形式 1（規定電文形式）
     /// </summary>
-    public class EDATA1 : IEDATA
+    public sealed class EDATA1 : IEDATA
     {
         /// <summary>
         /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EDATA1"/>を作成します。
