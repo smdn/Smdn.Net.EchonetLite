@@ -14,8 +14,6 @@ namespace EchoDotNetLite
     {
         public static void Serialize(Frame frame, IBufferWriter<byte> buffer)
         {
-            if (frame is null)
-                throw new ArgumentNullException(nameof(frame));
             if (buffer is null)
                 throw new ArgumentNullException(nameof(buffer));
 
@@ -150,9 +148,9 @@ namespace EchoDotNetLite
         }
 
 
-        public static bool TryDeserialize(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out Frame? frame)
+        public static bool TryDeserialize(ReadOnlySpan<byte> bytes, out Frame frame)
         {
-            frame = null;
+            frame = default;
 
             //ECHONETLiteフレームとしての最小長に満たない
             if (bytes.Length < 4)
@@ -162,41 +160,41 @@ namespace EchoDotNetLite
             if ((bytes[0] & 0xF0) != (byte)EHD1.ECHONETLite)
                 return false;
 
-            frame = new Frame
-            {
-                /// ECHONET Lite電文ヘッダー１(1B)
-                EHD1 = (EHD1)bytes[0],
-                /// ECHONET Lite電文ヘッダー２(1B)
-                EHD2 = (EHD2)bytes[1],
-                /// トランザクションID(2B)
-                TID = BitConverter.ToUInt16(bytes.Slice(2, 2)),
-            };
+            /// ECHONET Lite電文ヘッダー１(1B)
+            var ehd1 = (EHD1)bytes[0];
+            /// ECHONET Lite電文ヘッダー２(1B)
+            var ehd2 = (EHD2)bytes[1];
+            /// トランザクションID(2B)
+            var tid = BitConverter.ToUInt16(bytes.Slice(2, 2));
 
             /// ECHONET Liteデータ(残り全部)
             var edataSpan = bytes.Slice(4);
 
-            switch (frame.EHD2)
+            switch (ehd2)
             {
                 case EHD2.Type1:
                     if (TryReadEDATAType1(edataSpan, out var edata))
                     {
-                        frame.EDATA = edata;
-                    }
-                    else
-                    {
-                        return false;
+                        frame = new Frame(ehd1, ehd2, tid, edata);
+                        return true;
                     }
                     break;
 
                 case EHD2.Type2:
-                    frame.EDATA = new EDATA2()
-                    {
-                        Message = edataSpan.ToArray() // TODO: reduce allocation
-                    };
-                    break;
+                    frame = new Frame
+                    (
+                        ehd1,
+                        ehd2,
+                        tid,
+                        new EDATA2()
+                        {
+                            Message = edataSpan.ToArray() // TODO: reduce allocation
+                        }
+                    );
+                    return true;
             }
 
-            return true;
+            return false;
         }
 
         private static bool IsESVWriteOrReadService(ESV esv)

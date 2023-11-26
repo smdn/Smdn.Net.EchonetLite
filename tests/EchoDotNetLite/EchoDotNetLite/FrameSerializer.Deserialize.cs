@@ -51,11 +51,7 @@ partial class FrameSerializerTests {
   public void TryDeserialize_EHD1(byte[] input, bool expectAsEchonetLiteFrame)
   {
     if (expectAsEchonetLiteFrame) {
-      Frame? frame = null;
-
-      Assert.IsTrue(FrameSerializer.TryDeserialize(input, out frame));
-
-      Assert.IsNotNull(frame);
+      Assert.IsTrue(FrameSerializer.TryDeserialize(input, out _));
     }
     else {
       Assert.IsFalse(
@@ -65,16 +61,13 @@ partial class FrameSerializerTests {
     }
   }
 
-  [TestCase((byte)0x00, (EHD2)0x00)]
-  [TestCase((byte)0xFF, (EHD2)0xFF)]
-  public void TryDeserialize_EHD2_OtherThan1Or2(byte ehd2, EHD2 expectedEHD2)
+  [TestCase((byte)0x00)]
+  [TestCase((byte)0xFF)]
+  public void TryDeserialize_EHD2_OtherThan1Or2(byte ehd2)
   {
     var input = new byte[] { EHD1_ECHONETLite, ehd2, TID_ZERO_0, TID_ZERO_1 };
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
-
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.AreEqual(expectedEHD2, frame!.EHD2, nameof(frame.EHD2));
+    Assert.IsFalse(FrameSerializer.TryDeserialize(input, out _));
   }
 
   [TestCase((byte)0x00, (byte)0x00, (byte)0x00)]
@@ -115,7 +108,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA1)frame.EDATA;
+    var edata = (EDATA1)frame.EDATA!;
 
     Assert.AreEqual(seojClassGroupCode, edata.SEOJ.ClassGroupCode, nameof(edata.SEOJ.ClassGroupCode));
     Assert.AreEqual(seojClassCode, edata.SEOJ.ClassCode, nameof(edata.SEOJ.ClassCode));
@@ -160,7 +153,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA1)frame.EDATA;
+    var edata = (EDATA1)frame.EDATA!;
 
     Assert.AreEqual(deojClassGroupCode, edata.DEOJ.ClassGroupCode, nameof(edata.DEOJ.ClassGroupCode));
     Assert.AreEqual(deojClassCode, edata.DEOJ.ClassCode, nameof(edata.DEOJ.ClassCode));
@@ -216,7 +209,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA1)frame.EDATA;
+    var edata = (EDATA1)frame.EDATA!;
 
     Assert.AreEqual(expectedESV, edata.ESV, nameof(edata.ESV));
   }
@@ -255,7 +248,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA1)frame.EDATA;
+    var edata = (EDATA1)frame.EDATA!;
 
     Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
 
@@ -304,7 +297,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA1)frame.EDATA;
+    var edata = (EDATA1)frame.EDATA!;
 
     Assert.IsNull(edata.OPCGetList, nameof(edata.OPCGetList));
     Assert.IsNull(edata.OPCSetList, nameof(edata.OPCSetList));
@@ -340,7 +333,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA1)frame.EDATA;
+    var edata = (EDATA1)frame.EDATA!;
 
     Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
 
@@ -372,7 +365,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA1)frame.EDATA;
+    var edata = (EDATA1)frame.EDATA!;
 
     Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
 
@@ -411,7 +404,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA2>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA2)frame.EDATA;
+    var edata = (EDATA2)frame.EDATA!;
 
     Assert.IsNotNull(edata.Message, nameof(edata.Message));
     CollectionAssert.AreEqual(expectedEDATA, edata.Message, nameof(edata.Message));
@@ -427,7 +420,7 @@ partial class FrameSerializerTests {
     Assert.IsNotNull(frame, nameof(frame));
     Assert.IsInstanceOf<EDATA2>(frame!.EDATA, nameof(frame.EDATA));
 
-    var edata = (EDATA2)frame.EDATA;
+    var edata = (EDATA2)frame.EDATA!;
 
     Assert.IsNotNull(edata.Message, nameof(edata.Message));
     CollectionAssert.IsEmpty(edata.Message, nameof(edata.Message));
