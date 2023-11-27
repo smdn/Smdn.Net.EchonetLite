@@ -7,14 +7,14 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// ECHONET Lite SPECIFICATIONのバージョン
         /// </summary>
-        public string Version { get; set; }
+        public string Version { get; init; }
         /// <summary>
         /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
         /// </summary>
-        public string AppendixRelease { get; set; }
+        public string AppendixRelease { get; init; }
         /// <summary>
         /// プロパティのリスト
         /// </summary>
-        public List<EchoProperty> Properties { get; set; }
+        public List<EchoProperty> Properties { get; init; }
     }
 }

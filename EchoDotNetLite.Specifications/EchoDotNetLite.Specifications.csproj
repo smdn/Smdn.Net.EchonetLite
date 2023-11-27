@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\Common\Shim\System.Runtime.CompilerServices\IsExternalInit.cs"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <!--
       MasterDataの各JSONファイルをEmbeddedResourceとして含める
       このとき、LogicalNameはプロジェクトからの相対パスをスラッシュ区切りにしたものを使用する
