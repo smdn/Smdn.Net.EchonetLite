@@ -70,21 +70,21 @@ namespace EchoDotNetLite.Specifications
         /// </summary>
         public IEnumerable<EchoProperty> GetProperties
         {
-            get { return Properties.Where(p => p.Get); }
+            get { return Properties.Where(static p => p.Get); }
         }
         /// <summary>
         /// 仕様上定義済みのSETプロパティの一覧
         /// </summary>
         public IEnumerable<EchoProperty> SetProperties
         {
-            get { return Properties.Where(p => p.Set); }
+            get { return Properties.Where(static p => p.Set); }
         }
         /// <summary>
         /// 仕様上定義済みのANNOプロパティの一覧
         /// </summary>
         public IEnumerable<EchoProperty> AnnoProperties
         {
-            get { return Properties.Where(p => p.Anno); }
+            get { return Properties.Where(static p => p.Anno); }
         }
     }
 }
