@@ -45,16 +45,16 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// クラスグループコード
         /// </summary>
-        public EchoClassGroup ClassGroup { get; set; }
+        public EchoClassGroup ClassGroup { get; }
         /// <summary>
         /// クラスコード
         /// </summary>
-        public EchoClass Class { get; set; }
+        public EchoClass Class { get; }
 
         /// <summary>
         /// 仕様上定義済みのプロパティの一覧
         /// </summary>
-        internal List<EchoProperty> Properties { get; set; } = new List<EchoProperty>();
+        internal List<EchoProperty> Properties { get; } = new List<EchoProperty>();
 
         /// <summary>
         /// 仕様上定義済みのGETプロパティの一覧
