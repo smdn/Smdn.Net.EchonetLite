@@ -16,13 +16,18 @@ namespace EchoDotNetLite.Specifications
             {
                 ClassGroup = SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode);
             }
+
+            IReadOnlyList<EchoProperty> properties = null;
+
             if (ClassGroup != null)
             {
+                var props = new List<EchoProperty>();
+
                 //スーパークラスのプロパティを列挙
                 using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
                 {
                     var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
-                    Properties.AddRange(superClassProperties.Properties);
+                    props.AddRange(superClassProperties.Properties);
                 }
                 Class = ClassGroup.ClassList.FirstOrDefault(c => c.Status && c.ClassCode == classCode);
                 if (Class.Status)
@@ -36,11 +41,15 @@ namespace EchoDotNetLite.Specifications
                         if (stream is not null)
                         {
                             var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
-                            Properties.AddRange(classProperties.Properties);
+                            props.AddRange(classProperties.Properties);
                         }
                     }
                 }
+
+                properties = props;
             }
+
+            Properties = properties ?? Array.Empty<EchoProperty>();
         }
         /// <summary>
         /// クラスグループコード
@@ -54,7 +63,7 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// 仕様上定義済みのプロパティの一覧
         /// </summary>
-        internal List<EchoProperty> Properties { get; } = new List<EchoProperty>();
+        internal IReadOnlyList<EchoProperty> Properties { get; }
 
         /// <summary>
         /// 仕様上定義済みのGETプロパティの一覧

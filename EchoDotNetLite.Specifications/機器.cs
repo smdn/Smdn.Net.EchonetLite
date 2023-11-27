@@ -12,7 +12,7 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// 一覧
         /// </summary>
-        public static IEnumerable<IEchonetObject> クラス一覧 { get; } = new IEchonetObject[]
+        public static IReadOnlyList<IEchonetObject> クラス一覧 { get; } = new IEchonetObject[]
         {
             センサ関連機器.ガス漏れセンサ,
             センサ関連機器.防犯センサ,

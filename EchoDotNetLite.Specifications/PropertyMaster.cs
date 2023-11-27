@@ -15,6 +15,6 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// プロパティのリスト
         /// </summary>
-        public List<EchoProperty> Properties { get; init; }
+        public IReadOnlyList<EchoProperty> Properties { get; init; }
     }
 }

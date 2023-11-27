@@ -30,6 +30,6 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// クラスグループに属するクラスのリスト
         /// </summary>
-        public List<EchoClass> ClassList { get; init; }
+        public IReadOnlyList<EchoClass> ClassList { get; init; }
     }
 }

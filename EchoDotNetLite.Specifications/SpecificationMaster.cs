@@ -85,11 +85,11 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// プロファイルオブジェクト
         /// </summary>
-        public List<EchoClassGroup> プロファイル { get; private set; }
+        public IReadOnlyList<EchoClassGroup> プロファイル { get; private set; }
         /// <summary>
         /// 機器オブジェクト
         /// </summary>
-        public List<EchoClassGroup> 機器 { get; private set; }
+        public IReadOnlyList<EchoClassGroup> 機器 { get; private set; }
 
         private class SpecificationMasterJsonConverter : JsonConverter<SpecificationMaster>
         {

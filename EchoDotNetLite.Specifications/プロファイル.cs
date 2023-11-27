@@ -16,7 +16,7 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// クラス一覧
         /// </summary>
-        public static IEnumerable<IEchonetObject> クラス一覧 { get; } = new IEchonetObject[]
+        public static IReadOnlyList<IEchonetObject> クラス一覧 { get; } = new IEchonetObject[]
         {
             ノードプロファイル,
         };

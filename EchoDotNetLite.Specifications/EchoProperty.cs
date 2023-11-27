@@ -76,7 +76,7 @@ namespace EchoDotNetLite.Specifications
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         // MasterDataのJSONファイルでは、プロパティ名がOptionRequiredではなくOptionRequierdとなっていることに注意
         [JsonPropertyName("OptionRequierd")]
-        public List<ApplicationService> OptionRequired { get; init; }
+        public IReadOnlyList<ApplicationService> OptionRequired { get; init; }
         /// <summary>
         /// 備考
         /// </summary>
