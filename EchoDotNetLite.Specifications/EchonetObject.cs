@@ -16,13 +16,18 @@ namespace EchoDotNetLite.Specifications
             {
                 ClassGroup = SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode);
             }
+
+            IReadOnlyList<EchoProperty> properties = null;
+
             if (ClassGroup != null)
             {
+                var props = new List<EchoProperty>();
+
                 //スーパークラスのプロパティを列挙
                 using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
                 {
                     var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
-                    Properties.AddRange(superClassProperties.Properties);
+                    props.AddRange(superClassProperties.Properties);
                 }
                 Class = ClassGroup.ClassList.FirstOrDefault(c => c.Status && c.ClassCode == classCode);
                 if (Class.Status)
@@ -36,46 +41,50 @@ namespace EchoDotNetLite.Specifications
                         if (stream is not null)
                         {
                             var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
-                            Properties.AddRange(classProperties.Properties);
+                            props.AddRange(classProperties.Properties);
                         }
                     }
                 }
+
+                properties = props;
             }
+
+            Properties = properties ?? Array.Empty<EchoProperty>();
         }
         /// <summary>
         /// クラスグループコード
         /// </summary>
-        public EchoClassGroup ClassGroup { get; set; }
+        public EchoClassGroup ClassGroup { get; }
         /// <summary>
         /// クラスコード
         /// </summary>
-        public EchoClass Class { get; set; }
+        public EchoClass Class { get; }
 
         /// <summary>
         /// 仕様上定義済みのプロパティの一覧
         /// </summary>
-        internal List<EchoProperty> Properties { get; set; } = new List<EchoProperty>();
+        internal IReadOnlyList<EchoProperty> Properties { get; }
 
         /// <summary>
         /// 仕様上定義済みのGETプロパティの一覧
         /// </summary>
         public IEnumerable<EchoProperty> GetProperties
         {
-            get { return Properties.Where(p => p.Get); }
+            get { return Properties.Where(static p => p.Get); }
         }
         /// <summary>
         /// 仕様上定義済みのSETプロパティの一覧
         /// </summary>
         public IEnumerable<EchoProperty> SetProperties
         {
-            get { return Properties.Where(p => p.Set); }
+            get { return Properties.Where(static p => p.Set); }
         }
         /// <summary>
         /// 仕様上定義済みのANNOプロパティの一覧
         /// </summary>
         public IEnumerable<EchoProperty> AnnoProperties
         {
-            get { return Properties.Where(p => p.Anno); }
+            get { return Properties.Where(static p => p.Anno); }
         }
     }
 }

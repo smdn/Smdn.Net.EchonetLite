@@ -77,19 +77,19 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// ECHONET Lite SPECIFICATIONのバージョン
         /// </summary>
-        public string Version { get; set; }
+        public string Version { get; private set; }
         /// <summary>
         /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
         /// </summary>
-        public string AppendixRelease { get; set; }
+        public string AppendixRelease { get; private set; }
         /// <summary>
         /// プロファイルオブジェクト
         /// </summary>
-        public List<EchoClassGroup> プロファイル { get; set; }
+        public IReadOnlyList<EchoClassGroup> プロファイル { get; private set; }
         /// <summary>
         /// 機器オブジェクト
         /// </summary>
-        public List<EchoClassGroup> 機器 { get; set; }
+        public IReadOnlyList<EchoClassGroup> 機器 { get; private set; }
 
         private class SpecificationMasterJsonConverter : JsonConverter<SpecificationMaster>
         {
