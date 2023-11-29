@@ -162,6 +162,32 @@ public class EchoPropertyTests {
     }
   }
 
+  [Test]
+  public void HasUnit()
+  {
+    var obj = 機器.住宅設備関連機器.低圧スマート電力量メータ;
+
+    var epc8E = obj.GetProperties.First(static prop => prop.Code == 0x8E); // 製造年月日 Unit: ""
+
+    Assert.IsNull(epc8E.Unit, "EPC 8E");
+    Assert.IsFalse(epc8E.HasUnit, "EPC 8E");
+
+    var epcD3 = obj.GetProperties.First(static prop => prop.Code == 0xD3); // 係数 Unit: ""
+
+    Assert.IsNull(epcD3.Unit, "EPC D3");
+    Assert.IsFalse(epcD3.HasUnit, "EPC D3");
+
+    var epcE1 = obj.GetProperties.First(static prop => prop.Code == 0xE1); // 積算電力量単位 （正方向、逆方向計測値） Unit: "－"
+
+    Assert.IsNull(epcE1.Unit, "EPC E1");
+    Assert.IsFalse(epcE1.HasUnit, "EPC E1");
+
+    var epcE7 = obj.GetProperties.First(static prop => prop.Code == 0xE7); // 瞬時電力計測値 Unit: "W"
+
+    Assert.AreEqual("W", epcE7.Unit, "EPC E7");
+    Assert.IsTrue(epcE7.HasUnit, "EPC E7");
+  }
+
   private static System.Collections.IEnumerable YieldTestCases_Deserialize()
   {
     yield return new object?[] {
@@ -487,6 +513,7 @@ public class EchoPropertyTests {
 
     Assert.IsNotNull(p);
     Assert.AreEqual(expectedUnitString, p!.Unit, message: $"{testCaseName}; {nameof(p.Unit)}");
+    Assert.AreEqual(expectedHasUnit, p.HasUnit, message: $"{testCaseName}; {nameof(p.HasUnit)}");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_OptionRequired()

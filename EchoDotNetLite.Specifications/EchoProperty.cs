@@ -2,6 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Specifications
@@ -73,6 +76,16 @@ namespace EchoDotNetLite.Specifications
             OptionRequired = optionRequired ?? Array.Empty<ApplicationService>();
             Description = string.IsNullOrEmpty(description) ? null : description;
             Unit = string.IsNullOrEmpty(unit) ? null : unit;
+
+            if (string.IsNullOrEmpty(unit) || "－".Equals(Unit, StringComparison.Ordinal))
+            {
+                Unit = null;
+                HasUnit = false;
+            }
+            else
+            {
+                HasUnit = true;
+            }
         }
 
         /// <summary>
@@ -151,5 +164,14 @@ namespace EchoDotNetLite.Specifications
         /// 単位
         /// </summary>
         public string? Unit { get; }
+
+        /// <summary>
+        /// プロパティの値が単位を持つかどうか
+        /// </summary>
+        [JsonIgnore]
+#if NET5_0_OR_GREATER
+        [MemberNotNullWhen(true, nameof(Unit))]
+#endif
+        public bool HasUnit { get; }
     }
 }

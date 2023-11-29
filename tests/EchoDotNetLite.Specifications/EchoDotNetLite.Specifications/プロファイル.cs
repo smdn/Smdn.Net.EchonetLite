@@ -74,6 +74,7 @@ public class プロファイルTests {
     Assert.AreEqual("Version 情報", epc82.Name, nameof(epc82.Name));
     Assert.AreEqual("unsigned char×4", epc82.DataType, nameof(epc82.DataType));
     Assert.IsNull(epc82.Unit, nameof(epc82.Unit));
+    Assert.IsFalse(epc82.HasUnit, nameof(epc82.Unit));
 
     var epcD3 = プロファイル.ノードプロファイル.GetProperties.FirstOrDefault(static prop => prop.Code == 0xD3);
 
@@ -82,5 +83,6 @@ public class プロファイルTests {
     Assert.AreEqual("自ノードインスタンス数", epcD3!.Name, nameof(epcD3.Name));
     Assert.AreEqual("unsigned char×3", epcD3.DataType, nameof(epcD3.DataType));
     Assert.IsNull(epcD3.Unit, nameof(epcD3.Unit));
+    Assert.IsFalse(epcD3.HasUnit, nameof(epcD3.Unit));
   }
 }
