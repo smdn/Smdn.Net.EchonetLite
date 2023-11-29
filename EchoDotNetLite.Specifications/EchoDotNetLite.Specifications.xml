@@ -44,6 +44,17 @@
             クラス
             </summary>
         </member>
+        <member name="M:EchoDotNetLite.Specifications.EchoClass.#ctor(System.Boolean,System.Byte,System.String,System.String)">
+            <summary>
+            JSONデシリアライズ用のコンストラクタ
+            </summary>
+            <param name="status"><see cref="P:EchoDotNetLite.Specifications.EchoClass.Status"/>に設定する値。</param>
+            <param name="classCode"><see cref="P:EchoDotNetLite.Specifications.EchoClass.ClassCode"/>に設定する値。</param>
+            <param name="classNameOfficial"><see cref="P:EchoDotNetLite.Specifications.EchoClass.ClassNameOfficial"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            <param name="className"><see cref="P:EchoDotNetLite.Specifications.EchoClass.ClassName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            <exception cref="T:System.ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
+            <exception cref="T:System.ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
+        </member>
         <member name="P:EchoDotNetLite.Specifications.EchoClass.Status">
             <summary>
             詳細仕様有無
@@ -68,6 +79,18 @@
             <summary>
             クラスグループ
             </summary>
+        </member>
+        <member name="M:EchoDotNetLite.Specifications.EchoClassGroup.#ctor(System.Byte,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{EchoDotNetLite.Specifications.EchoClass})">
+            <summary>
+            JSONデシリアライズ用のコンストラクタ
+            </summary>
+            <param name="classGroupCode"><see cref="P:EchoDotNetLite.Specifications.EchoClassGroup.ClassGroupCode"/>に設定する値。</param>
+            <param name="classGroupNameOfficial"><see cref="P:EchoDotNetLite.Specifications.EchoClassGroup.ClassGroupNameOfficial"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            <param name="classGroupName"><see cref="P:EchoDotNetLite.Specifications.EchoClassGroup.ClassGroupName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            <param name="superClass"><see cref="P:EchoDotNetLite.Specifications.EchoClassGroup.SuperClass"/>に設定する値。　スーパークラスがない場合は<see langword="null"/>。　空の文字列は<see langword="null"/>として設定されます。</param>
+            <param name="classList"><see cref="P:EchoDotNetLite.Specifications.EchoClassGroup.ClassList"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="T:System.Collections.Generic.IReadOnlyList`1"/>を設定します。</param>
+            <exception cref="T:System.ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
+            <exception cref="T:System.ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         </member>
         <member name="P:EchoDotNetLite.Specifications.EchoClassGroup.ClassGroupCode">
             <summary>
@@ -128,6 +151,30 @@
             <summary>
             ECHONET Lite オブジェクトプロパティ
             </summary>
+        </member>
+        <member name="M:EchoDotNetLite.Specifications.EchoProperty.#ctor(System.String,System.Byte,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyList{EchoDotNetLite.Specifications.ApplicationService},System.String,System.String)">
+            <summary>
+            JSONデシリアライズ用のコンストラクタ
+            </summary>
+            <param name="name"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Name"/>に設定する非<see langword="null"/>の値。</param>
+            <param name="code"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Code"/>に設定する値。</param>
+            <param name="detail"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Detail"/>に設定する非<see langword="null"/>の値。</param>
+            <param name="value"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Value"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
+            <param name="dataType"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.DataType"/>に設定する非<see langword="null"/>の値。</param>
+            <param name="logicalDataType"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.LogicalDataType"/>に設定する非<see langword="null"/>の値。</param>
+            <param name="minSize"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.MinSize"/>に設定する値。</param>
+            <param name="maxSize"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.MaxSize"/>に設定する値。</param>
+            <param name="get"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Get"/>に設定する値。</param>
+            <param name="getRequired"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.GetRequired"/>に設定する値。</param>
+            <param name="set"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Set"/>に設定する値。</param>
+            <param name="setRequired"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.SetRequired"/>に設定する値。</param>
+            <param name="anno"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Anno"/>に設定する値。</param>
+            <param name="annoRequired"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.AnnoRequired"/>に設定する値。</param>
+            <param name="optionRequired"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.OptionRequired"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="T:System.Collections.Generic.IReadOnlyList`1"/>を設定します。</param>
+            <param name="description"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Description"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
+            <param name="unit"><see cref="P:EchoDotNetLite.Specifications.EchoProperty.Unit"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
+            <exception cref="T:System.ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
+            <exception cref="T:System.ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         </member>
         <member name="P:EchoDotNetLite.Specifications.EchoProperty.Name">
             <summary>
@@ -217,6 +264,11 @@
             単位
             </summary>
         </member>
+        <member name="P:EchoDotNetLite.Specifications.EchoProperty.HasUnit">
+            <summary>
+            プロパティの値が単位を持つかどうか
+            </summary>
+        </member>
         <member name="T:EchoDotNetLite.Specifications.IEchonetObject">
             <summary>
             ECHONET Lite オブジェクト
@@ -249,6 +301,16 @@
             仕様上定義済みのANNOプロパティの一覧
             </summary>
         </member>
+        <member name="M:EchoDotNetLite.Specifications.PropertyMaster.#ctor(System.String,System.String,System.Collections.Generic.IReadOnlyList{EchoDotNetLite.Specifications.EchoProperty})">
+            <summary>
+            JSONデシリアライズ用のコンストラクタ
+            </summary>
+            <param name="version"><see cref="P:EchoDotNetLite.Specifications.PropertyMaster.Version"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            <param name="appendixRelease"><see cref="P:EchoDotNetLite.Specifications.PropertyMaster.AppendixRelease"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            <param name="properties"><see cref="P:EchoDotNetLite.Specifications.PropertyMaster.Properties"/>に設定する非<see langword="null"/>の値。</param>
+            <exception cref="T:System.ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
+            <exception cref="T:System.ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
+        </member>
         <member name="P:EchoDotNetLite.Specifications.PropertyMaster.Version">
             <summary>
             ECHONET Lite SPECIFICATIONのバージョン
@@ -274,10 +336,16 @@
             シングルトンイスタンス
             </summary>
         </member>
-        <member name="M:EchoDotNetLite.Specifications.SpecificationMaster.#ctor">
+        <member name="M:EchoDotNetLite.Specifications.SpecificationMaster.#ctor(System.String,System.String,System.Collections.Generic.IReadOnlyList{EchoDotNetLite.Specifications.EchoClassGroup},System.Collections.Generic.IReadOnlyList{EchoDotNetLite.Specifications.EchoClassGroup})">
             <summary>
-            プライベートコンストラクタ
+            JSONデシリアライズ用のコンストラクタ
             </summary>
+            <param name="version"><see cref="P:EchoDotNetLite.Specifications.SpecificationMaster.Version"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            <param name="appendixRelease"><see cref="P:EchoDotNetLite.Specifications.SpecificationMaster.AppendixRelease"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            <param name="プロファイル"><see cref="P:EchoDotNetLite.Specifications.SpecificationMaster.プロファイル"/>に設定する非<see langword="null"/>の値。</param>
+            <param name="機器"><see cref="P:EchoDotNetLite.Specifications.SpecificationMaster.機器"/>に設定する非<see langword="null"/>の値。</param>
+            <exception cref="T:System.ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
+            <exception cref="T:System.ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         </member>
         <member name="M:EchoDotNetLite.Specifications.SpecificationMaster.GetInstance">
             <summary>
