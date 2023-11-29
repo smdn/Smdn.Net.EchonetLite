@@ -10,7 +10,7 @@ namespace EchoDotNetLite.Specifications
     /// <summary>
     /// クラスグループ
     /// </summary>
-    public class EchoClassGroup
+    public sealed class EchoClassGroup
     {
         /// <summary>
         /// JSONデシリアライズ用のコンストラクタ

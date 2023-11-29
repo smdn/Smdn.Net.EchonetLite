@@ -13,7 +13,7 @@ namespace EchoDotNetLite.Specifications
     /// <summary>
     /// ECHONET Lite オブジェクトプロパティ
     /// </summary>
-    public class EchoProperty
+    public sealed class EchoProperty
     {
         /// <summary>
         /// JSONデシリアライズ用のコンストラクタ

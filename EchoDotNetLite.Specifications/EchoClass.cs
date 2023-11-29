@@ -8,7 +8,7 @@ namespace EchoDotNetLite.Specifications
     /// <summary>
     /// クラス
     /// </summary>
-    public class EchoClass
+    public sealed class EchoClass
     {
         /// <summary>
         /// JSONデシリアライズ用のコンストラクタ
