@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 #if NET5_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -63,7 +61,6 @@ namespace EchoDotNetLite.Specifications
             return _Instance;
         }
 
-#nullable enable
         internal static readonly string SpecificationMasterDataLogicalRootName = "MasterData/";
 
         internal static Stream GetSpecificationMasterDataStream(string file)
@@ -84,7 +81,6 @@ namespace EchoDotNetLite.Specifications
 
             return Assembly.GetExecutingAssembly().GetManifestResourceStream(logicalName);
         }
-#nullable restore
 
         /// <summary>
         /// ECHONET Lite SPECIFICATIONのバージョン
