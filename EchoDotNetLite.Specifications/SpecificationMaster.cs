@@ -1,6 +1,9 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -27,7 +30,7 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// シングルトンイスタンス
         /// </summary>
-        private static SpecificationMaster _Instance;
+        private static SpecificationMaster? _Instance;
         /// <summary>
         /// プライベートコンストラクタ
         /// </summary>
@@ -43,9 +46,11 @@ namespace EchoDotNetLite.Specifications
         {
             if (_Instance == null)
             {
-                using (var stream = GetSpecificationMasterDataStream("SpecificationMaster.json"))
+                const string specificationMasterJsonFileName = "SpecificationMaster.json";
+
+                using (var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName))
                 {
-                    _Instance = JsonSerializer.Deserialize<SpecificationMaster>(stream, DeserializationOptions);
+                    _Instance = JsonSerializer.Deserialize<SpecificationMaster>(stream, DeserializationOptions) ?? throw new InvalidOperationException($"failed to deserialize {specificationMasterJsonFileName}");
                 }
             }
             return _Instance;
@@ -99,6 +104,9 @@ namespace EchoDotNetLite.Specifications
             private static Exception CreateUnexpectedPropertyTokenException(string propertyName)
                 => new JsonException($"could not read property '{propertyName}'");
 
+            private static Exception CreatePropertyCanNotBeNullException(string propertyName)
+                => new JsonException($"property '{propertyName}' can not be null");
+
             public override SpecificationMaster Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 var value = new SpecificationMaster();
@@ -122,7 +130,7 @@ namespace EchoDotNetLite.Specifications
                             if (!reader.Read())
                                 throw CreateUnexpectedPropertyTokenException(nameof(SpecificationMaster.Version));
 
-                            value.Version = reader.GetString();
+                            value.Version = reader.GetString() ?? throw CreatePropertyCanNotBeNullException(nameof(SpecificationMaster.Version));
 
                             break;
 
@@ -130,7 +138,7 @@ namespace EchoDotNetLite.Specifications
                             if (!reader.Read())
                                 throw CreateUnexpectedPropertyTokenException(nameof(SpecificationMaster.AppendixRelease));
 
-                            value.AppendixRelease = reader.GetString();
+                            value.AppendixRelease = reader.GetString() ?? throw CreatePropertyCanNotBeNullException(nameof(SpecificationMaster.AppendixRelease));
 
                             break;
 
@@ -138,7 +146,7 @@ namespace EchoDotNetLite.Specifications
                             if (!reader.Read())
                                 throw CreateUnexpectedPropertyTokenException(nameof(SpecificationMaster.プロファイル));
 
-                            value.プロファイル = JsonSerializer.Deserialize<List<EchoClassGroup>>(ref reader);
+                            value.プロファイル = JsonSerializer.Deserialize<List<EchoClassGroup>>(ref reader) ?? throw CreatePropertyCanNotBeNullException(nameof(SpecificationMaster.プロファイル));
 
                             break;
 
@@ -146,7 +154,7 @@ namespace EchoDotNetLite.Specifications
                             if (!reader.Read())
                                 throw CreateUnexpectedPropertyTokenException(nameof(SpecificationMaster.機器));
 
-                            value.機器 = JsonSerializer.Deserialize<List<EchoClassGroup>>(ref reader);
+                            value.機器 = JsonSerializer.Deserialize<List<EchoClassGroup>>(ref reader) ?? throw CreatePropertyCanNotBeNullException(nameof(SpecificationMaster.機器));
 
                             break;
 
