@@ -11,45 +11,40 @@ namespace EchoDotNetLite.Specifications
     {
         public EchonetObject(byte classGroupCode, byte classCode)
         {
-            ClassGroup = SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.ClassGroupCode == classGroupCode);
-            if (ClassGroup == null)
+            ClassGroup =
+               SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
+               SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
+               throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
+
+            var properties = new List<EchoProperty>();
+
+            //スーパークラスのプロパティを列挙
+            using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
             {
-                ClassGroup = SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode);
+                var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
+                properties.AddRange(superClassProperties.Properties);
             }
 
-            IReadOnlyList<EchoProperty> properties = null;
+            Class = ClassGroup.ClassList?.FirstOrDefault(c => c.Status && c.ClassCode == classCode)
+                ?? throw new ArgumentException($"unknown class: 0x{classCode:X2}");
 
-            if (ClassGroup != null)
+            if (Class.Status)
             {
-                var props = new List<EchoProperty>();
+                var classGroupDirectoryName = $"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}";
+                var classFileName = $"0x{Class.ClassCode:X2}-{Class.ClassName}.json";
 
-                //スーパークラスのプロパティを列挙
-                using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
+                //クラスのプロパティを列挙
+                using (var stream = SpecificationMaster.GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName))
                 {
-                    var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
-                    props.AddRange(superClassProperties.Properties);
-                }
-                Class = ClassGroup.ClassList.FirstOrDefault(c => c.Status && c.ClassCode == classCode);
-                if (Class.Status)
-                {
-                    var classGroupDirectoryName = $"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}";
-                    var classFileName = $"0x{Class.ClassCode:X2}-{Class.ClassName}.json";
-
-                    //クラスのプロパティを列挙
-                    using (var stream = SpecificationMaster.GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName))
+                    if (stream is not null)
                     {
-                        if (stream is not null)
-                        {
-                            var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream, SpecificationMaster.DeserializationOptions);
-                            props.AddRange(classProperties.Properties);
-                        }
+                        var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
+                        properties.AddRange(classProperties.Properties);
                     }
                 }
-
-                properties = props;
             }
 
-            Properties = properties ?? Array.Empty<EchoProperty>();
+            Properties = properties;
         }
         /// <summary>
         /// クラスグループコード

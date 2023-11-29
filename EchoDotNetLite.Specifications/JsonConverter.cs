@@ -19,6 +19,9 @@ namespace EchoDotNetLite.Specifications
 
             var str = reader.GetString();
 
+            if (str is null)
+                throw new JsonException("property value can not be null");
+
             if (!str.StartsWith(SingleByteHexStringPrefix, StringComparison.Ordinal))
                 throw new JsonException($"property value must have a prefix '{SingleByteHexStringPrefix}'");
 

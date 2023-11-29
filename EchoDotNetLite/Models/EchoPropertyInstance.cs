@@ -12,6 +12,28 @@ namespace EchoDotNetLite.Models
     /// </summary>
     public class EchoPropertyInstance
     {
+        internal static Specifications.EchoProperty GenerateUnknownProperty(byte epc)
+            => new Specifications.EchoProperty
+            (
+                code: epc,
+                name: "Unknown",
+                detail: "Unknown",
+                value: null,
+                dataType: "Unknown",
+                logicalDataType: "Unknown",
+                minSize: null,
+                maxSize: null,
+                get: false,
+                getRequired: false,
+                set: false,
+                setRequired: false,
+                anno: false,
+                annoRequired: false,
+                optionRequired: null,
+                description: null,
+                unit: null
+            );
+
         public EchoPropertyInstance(Specifications.EchoProperty spec)
         {
             Spec = spec;
@@ -21,10 +43,7 @@ namespace EchoDotNetLite.Models
             Spec = SpecificationUtil.FindProperty(classGroupCode, classCode, epc);
             if (Spec == null)
             {
-                Spec = new Specifications.EchoProperty()
-                {
-                    Code = epc,
-                };
+                Spec = GenerateUnknownProperty(epc);
             }
             Get = false;
             Set = false;

@@ -76,21 +76,21 @@ namespace EchoDotNetLite.Models
         {
             return new UnknownEchoObject()
             {
-                ClassGroup = new EchoClassGroup()
-                {
-                    ClassGroupCode = classGroupCode,
-                    ClassGroupName = "Unknown",
-                    ClassGroupNameOfficial = "Unknown",
-                    ClassList = new List<EchoClass>(),
-                    SuperClass = null,
-                },
-                Class = new EchoClass()
-                {
-                    ClassCode = classCode,
-                    ClassName = "Unknown",
-                    ClassNameOfficial = "Unknown",
-                    Status = false,
-                }
+                ClassGroup = new EchoClassGroup
+                (
+                    classGroupCode: classGroupCode,
+                    classGroupName: "Unknown",
+                    classGroupNameOfficial: "Unknown",
+                    classList: Array.Empty<EchoClass>(),
+                    superClass: null
+                ),
+                Class = new EchoClass
+                (
+                    classCode: classCode,
+                    className: "Unknown",
+                    classNameOfficial: "Unknown",
+                    status: false
+                )
             };
         }
         private class UnknownEchoObject : IEchonetObject
