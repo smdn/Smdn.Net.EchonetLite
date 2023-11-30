@@ -9,24 +9,27 @@ using System.Text;
 
 namespace EchoDotNetLite.Models
 {
+#nullable enable
     /// <summary>
     /// ECHONET Liteノード
     /// </summary>
-    public class EchoNode: INotifyCollectionChanged<EchoObjectInstance>
+    public sealed class EchoNode: INotifyCollectionChanged<EchoObjectInstance>
     {
-        public EchoNode()
+        public EchoNode(IPAddress address, EchoObjectInstance nodeProfile)
         {
+            Address = address ?? throw new ArgumentNullException(nameof(address));
+            NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
             Devices = new NotifyChangeCollection<EchoNode,EchoObjectInstance>(this);
         }
         /// <summary>
         /// 下位スタックのアドレス
         /// </summary>
-        public IPAddress Address { get; set;}
+        public IPAddress Address { get; }
 
         /// <summary>
         /// ノードプロファイルオブジェクト
         /// </summary>
-        public EchoObjectInstance NodeProfile { get; set; }
+        public EchoObjectInstance NodeProfile { get; }
 
         /// <summary>
         /// 機器オブジェクトのリスト
@@ -36,13 +39,14 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// イベント オブジェクトインスタンス増減通知
         /// </summary>
-        public event EventHandler<(CollectionChangeType, EchoObjectInstance)> OnCollectionChanged;
+        public event EventHandler<(CollectionChangeType, EchoObjectInstance)>? OnCollectionChanged;
 
-        public void RaiseCollectionChanged(CollectionChangeType type, EchoObjectInstance item)
+        void INotifyCollectionChanged<EchoObjectInstance>.RaiseCollectionChanged(CollectionChangeType type, EchoObjectInstance item)
         {
             OnCollectionChanged?.Invoke(this, (type, item));
         }
     }
+#nullable restore
 
 
     public static class SpecificationUtil

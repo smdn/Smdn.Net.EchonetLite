@@ -22,26 +22,22 @@ namespace EchoDotNetLite
         private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
         private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
-        public EchoClient(ILogger<EchoClient> logger, IEchonetLiteFrameHandler handler)
+        public EchoClient(ILogger<EchoClient> logger, IPAddress nodeAddress, IEchonetLiteFrameHandler handler)
         {
             _logger = logger;
             _echoFrameHandler = handler;
             _echoFrameHandler.DataReceived += ReceiveEvent;
-            SelfNode = new EchoNode()
-            {
-                NodeProfile = new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01),
-            };
+            SelfNode = new EchoNode
+            (
+                address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
+                nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
+            );
             NodeList = new List<EchoNode>();
             //自己消費用
             OnFrameReceived += ReceiveFrame;
         }
 
-        public void Initialize(IPAddress selfAddress)
-        {
-            SelfNode.Address = selfAddress;
-        }
-
-        public EchoNode SelfNode { get; set; }
+        public EchoNode SelfNode { get; }
 
         public List<EchoNode> NodeList { get; set; }
 
@@ -752,7 +748,7 @@ namespace EchoDotNetLite
 
 #nullable enable
         private static PropertyRequest ConvertToPropertyRequest(EchoPropertyInstance p)
-            => new(epc: p.Spec.Code, edt: p.Value);
+            => p.Value is null ? new(epc: p.Spec.Code) : new(epc: p.Spec.Code, edt: p.Value);
 
         private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchoPropertyInstance p)
             => new(epc: p.Spec.Code);
@@ -839,6 +835,13 @@ namespace EchoDotNetLite
             }
         }
 
+        private class PropertyCapability
+        {
+            public bool Anno { get; set; }
+            public bool Set { get; set; }
+            public bool Get { get; set; }
+        }
+
         private void プロパティマップ読み取り(EchoNode sourceNode, EchoObjectInstance device)
         {
             プロパティ値読み出し(SelfNode.NodeProfile, sourceNode, device
@@ -861,55 +864,70 @@ namespace EchoDotNetLite
                     return;
                 }
                 _logger.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
-                device.Properties.Clear();
+                var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
                 foreach (var pr in result.Result.Item2)
                 {
-                    //状変アナウンスプロパティマップ
-                    if (pr.EPC == 0x9D)
+                    switch (pr.EPC)
                     {
-                        var propertyMap = ParsePropertyMap(pr.EDT);
-                        foreach (var propertyCode in propertyMap)
+                        //状変アナウンスプロパティマップ
+                        case 0x9D:
                         {
-                            var property = device.Properties.FirstOrDefault(p => p.Spec.Code == propertyCode);
-                            if (property == null)
+                            var propertyMap = ParsePropertyMap(pr.EDT);
+                            foreach (var propertyCode in propertyMap)
                             {
-                                property = new EchoPropertyInstance(device.Spec.ClassGroup.ClassGroupCode, device.Spec.Class.ClassCode, propertyCode);
-                                device.Properties.Add(property);
+                                if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
+                                    cap.Anno = true;
+                                else
+                                    propertyCapabilityMap[propertyCode] = new() { Anno = true };
                             }
-                            property.Anno = true;
+                            break;
                         }
-                    }
-                    //Set プロパティマップ
-                    if (pr.EPC == 0x9E)
-                    {
-                        var propertyMap = ParsePropertyMap(pr.EDT);
-                        foreach (var propertyCode in propertyMap)
+                        //Set プロパティマップ
+                        case 0x9E:
                         {
-                            var property = device.Properties.FirstOrDefault(p => p.Spec.Code == propertyCode);
-                            if (property == null)
+                            var propertyMap = ParsePropertyMap(pr.EDT);
+                            foreach (var propertyCode in propertyMap)
                             {
-                                property = new EchoPropertyInstance(device.Spec.ClassGroup.ClassGroupCode, device.Spec.Class.ClassCode, propertyCode);
-                                device.Properties.Add(property);
+                                if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
+                                    cap.Set = true;
+                                else
+                                    propertyCapabilityMap[propertyCode] = new() { Set = true };
                             }
-                            property.Set = true;
+                            break;
                         }
-                    }
-                    //Get プロパティマップ
-                    if (pr.EPC == 0x9F)
-                    {
-                        var propertyMap = ParsePropertyMap(pr.EDT);
-                        foreach (var propertyCode in propertyMap)
+                        //Get プロパティマップ
+                        case 0x9F:
                         {
-                            var property = device.Properties.FirstOrDefault(p => p.Spec.Code == propertyCode);
-                            if (property == null)
+                            var propertyMap = ParsePropertyMap(pr.EDT);
+                            foreach (var propertyCode in propertyMap)
                             {
-                                property = new EchoPropertyInstance(device.Spec.ClassGroup.ClassGroupCode, device.Spec.Class.ClassCode, propertyCode);
-                                device.Properties.Add(property);
+                                if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
+                                    cap.Get = true;
+                                else
+                                    propertyCapabilityMap[propertyCode] = new() { Get = true };
                             }
-                            property.Get = true;
+                            break;
                         }
                     }
                 }
+
+                device.Properties.Clear();
+
+                foreach (var (code, caps) in propertyCapabilityMap)
+                {
+                    var property = new EchoPropertyInstance
+                    (
+                        device.Spec.ClassGroup.ClassGroupCode,
+                        device.Spec.Class.ClassCode,
+                        code,
+                        caps.Anno,
+                        caps.Set,
+                        caps.Get
+                    );
+
+                    device.Properties.Add(property);
+                }
+
                 var sb = new StringBuilder();
                 sb.AppendLine("------");
                 foreach (var temp in device.Properties)
@@ -991,11 +1009,11 @@ namespace EchoDotNetLite
                 if (sourceNode == null)
                 {
                     //ノードを生成
-                    sourceNode = new EchoNode()
-                    {
-                        Address = value.address,
-                        NodeProfile = new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01),
-                    };
+                    sourceNode = new EchoNode
+                    (
+                        address: value.address,
+                        nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
+                    );
                     NodeList.Add(sourceNode);
                     OnNodeJoined?.Invoke(this,sourceNode);
                 }
