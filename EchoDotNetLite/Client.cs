@@ -81,7 +81,7 @@ namespace EchoDotNetLite
                     classCode: Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
                     instanceCode: 0x01
                 ))
-                , new List<EchoPropertyInstance>() { property }
+                , Enumerable.Repeat(property, 1)
                 , cancellationToken
                 );
         }
@@ -89,12 +89,17 @@ namespace EchoDotNetLite
           CancellationToken cancellationToken = default
         )
         {
-            var a = new List<EchoPropertyInstance>() { new EchoPropertyInstance(
-                Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
-                0xD5//インスタンスリスト通知
-                )
-            };
+            var properties = Enumerable.Repeat
+            (
+                new EchoPropertyInstance
+                (
+                    Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
+                    Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
+                    0xD5//インスタンスリスト通知
+                ),
+                1
+            );
+
             await プロパティ値通知要求(
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
@@ -103,7 +108,7 @@ namespace EchoDotNetLite
                     classCode: Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
                     instanceCode: 0x01
                 ))
-                , a
+                , properties
                 , cancellationToken
                 );
         }
@@ -1144,7 +1149,7 @@ namespace EchoDotNetLite
                 return false;
             }
             bool hasError = false;
-            var opcList = new List<PropertyRequest>();
+            var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             foreach (var opc in edata.OPCList)
             {
                 var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
@@ -1200,7 +1205,7 @@ namespace EchoDotNetLite
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
             bool hasError = false;
-            var opcList = new List<PropertyRequest>();
+            var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             if (destObject == null)
             {
                 //DEOJがない場合、全OPCをそのまま返す
@@ -1281,7 +1286,7 @@ namespace EchoDotNetLite
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
             bool hasError = false;
-            var opcList = new List<PropertyRequest>();
+            var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             if (destObject == null)
             {
                 //DEOJがない場合、全OPCをそのまま返す
@@ -1364,8 +1369,8 @@ namespace EchoDotNetLite
                 throw new InvalidOperationException($"{nameof(edata.OPCGetList)} is null");
 
             bool hasError = false;
-            var opcSetList = new List<PropertyRequest>();
-            var opcGetList = new List<PropertyRequest>();
+            var opcSetList = new List<PropertyRequest>(capacity: edata.OPCSetList.Count);
+            var opcGetList = new List<PropertyRequest>(capacity: edata.OPCGetList.Count);
             if (destObject == null)
             {
                 //DEOJがない場合、全OPCをそのまま返す
@@ -1530,7 +1535,7 @@ namespace EchoDotNetLite
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
             bool hasError = false;
-            var opcList = new List<PropertyRequest>();
+            var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             if (destObject == null)
             {
                 //指定された DEOJ が存在しない場合には電文を廃棄する。
