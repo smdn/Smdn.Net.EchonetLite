@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using EchoDotNetLite.Enums;
+﻿using EchoDotNetLite.Enums;
 using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
@@ -104,5 +102,29 @@ namespace EchoDotNetLite.Models
         [MemberNotNullWhen(true, nameof(OPCSetList))]
 #endif
         public bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
+
+        public List<PropertyRequest> GetOPCList()
+        {
+            if (IsWriteOrReadService)
+                throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
+
+#if NET5_0_OR_GREATER
+            return OPCList;
+#else
+            return OPCList!;
+#endif
+        }
+
+        public (List<PropertyRequest>, List<PropertyRequest>) GetOPCSetGetList()
+        {
+            if (!IsWriteOrReadService)
+                throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
+
+#if NET5_0_OR_GREATER
+            return (OPCSetList, OPCGetList);
+#else
+            return (OPCSetList!, OPCGetList!);
+#endif
+        }
     }
 }
