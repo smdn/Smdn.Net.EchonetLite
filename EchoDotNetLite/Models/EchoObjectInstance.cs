@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace EchoDotNetLite.Models
     /// <summary>
     /// ECHONET Lite オブジェクトインスタンス
     /// </summary>
-    public class EchoObjectInstance: INotifyCollectionChanged<EchoPropertyInstance>
+    public sealed class EchoObjectInstance: INotifyCollectionChanged<EchoPropertyInstance>
     {
         /// <summary>
         /// デフォルトコンストラクタ
@@ -35,7 +36,7 @@ namespace EchoDotNetLite.Models
         /// <param name="instanceCode"></param>
         public EchoObjectInstance(IEchonetObject classObject,byte instanceCode)
         {
-            Spec = classObject;
+            Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
             InstanceCode = instanceCode;
             Properties = new NotifyChangeCollection<EchoObjectInstance,EchoPropertyInstance>(this);
             foreach (var prop in classObject.GetProperties)
@@ -69,7 +70,7 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// イベント プロパティインスタンス増減通知
         /// </summary>
-        public event EventHandler<(CollectionChangeType, EchoPropertyInstance)> OnCollectionChanged;
+        public event EventHandler<(CollectionChangeType, EchoPropertyInstance)>? OnCollectionChanged;
 
         public void RaiseCollectionChanged(CollectionChangeType type, EchoPropertyInstance item)
         {
@@ -79,17 +80,17 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// プロパティマップ取得状態
         /// </summary>
-        public bool IsPropertyMapGet { get; set; } = false;
+        public bool IsPropertyMapGet { get; internal set; } = false;
 
         /// <summary>
         /// クラスグループコード、クラスグループ名
         /// ECHONET機器オブジェクト詳細規定がある場合、詳細仕様
         /// </summary>
-        public Specifications.IEchonetObject Spec { get; set; }
+        public Specifications.IEchonetObject Spec { get; }
         /// <summary>
         /// インスタンスコード
         /// </summary>
-        public byte InstanceCode { get; set; }
+        public byte InstanceCode { get; }
 
         /// <summary>
         /// プロパティの一覧
