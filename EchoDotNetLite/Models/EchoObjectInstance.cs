@@ -72,7 +72,7 @@ namespace EchoDotNetLite.Models
         /// </summary>
         public event EventHandler<(CollectionChangeType, EchoPropertyInstance)>? OnCollectionChanged;
 
-        public void RaiseCollectionChanged(CollectionChangeType type, EchoPropertyInstance item)
+        void INotifyCollectionChanged<EchoPropertyInstance>.RaiseCollectionChanged(CollectionChangeType type, EchoPropertyInstance item)
         {
             OnCollectionChanged?.Invoke(this, (type, item));
         }
