@@ -8,12 +8,10 @@ using System.Threading.Tasks;
 namespace EchoDotNetLite
 {
 
-#nullable enable
     public interface IEchonetLiteFrameHandler
     {
         Task RequestAsync(IPAddress? address, ReadOnlyMemory<byte> request, CancellationToken cancellationToken);
 
         event EventHandler<(IPAddress Address, ReadOnlyMemory<byte> Data)> DataReceived;
     }
-#nullable restore
 }

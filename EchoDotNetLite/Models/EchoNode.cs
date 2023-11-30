@@ -9,7 +9,6 @@ using System.Text;
 
 namespace EchoDotNetLite.Models
 {
-#nullable enable
     /// <summary>
     /// ECHONET Liteノード
     /// </summary>
@@ -133,5 +132,4 @@ namespace EchoDotNetLite.Models
             return null;
         }
     }
-#nullable restore
 }

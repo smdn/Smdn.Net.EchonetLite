@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using EchoDotNetLite.Serialization;
+﻿using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;

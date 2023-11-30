@@ -1,5 +1,4 @@
-﻿#nullable enable
-using EchoDotNetLite.Common;
+﻿using EchoDotNetLite.Common;
 using EchoDotNetLite.Enums;
 using EchoDotNetLite.Models;
 using Microsoft.Extensions.Logging;

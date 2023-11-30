@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using EchoDotNetLite.Enums;
+﻿using EchoDotNetLite.Enums;
 using EchoDotNetLite.Models;
 using System;
 using System.Buffers;
