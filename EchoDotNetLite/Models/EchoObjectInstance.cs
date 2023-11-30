@@ -17,27 +17,14 @@ namespace EchoDotNetLite.Models
         /// デフォルトコンストラクタ
         /// </summary>
         public EchoObjectInstance(EOJ eoj)
+            : this
+            (
+                classObject:
+                    SpecificationUtil.FindClass(eoj.ClassGroupCode, eoj.ClassCode) ??
+                    SpecificationUtil.GenerateUnknownClass(eoj.ClassGroupCode, eoj.ClassCode),
+                instanceCode: eoj.InstanceCode
+            )
         {
-            IEchonetObject classObject = SpecificationUtil.FindClass(eoj.ClassGroupCode, eoj.ClassCode);
-            if (classObject == null)
-            {
-                classObject = SpecificationUtil.GenerateUnknownClass(eoj.ClassGroupCode, eoj.ClassCode);
-            }
-            Spec = classObject;
-            InstanceCode = eoj.InstanceCode;
-            Properties = new NotifyChangeCollection<EchoObjectInstance, EchoPropertyInstance>(this);
-            foreach (var prop in classObject.GetProperties)
-            {
-                Properties.Add(new EchoPropertyInstance(prop));
-            }
-            foreach (var prop in classObject.SetProperties)
-            {
-                Properties.Add(new EchoPropertyInstance(prop));
-            }
-            foreach (var prop in classObject.AnnoProperties)
-            {
-                Properties.Add(new EchoPropertyInstance(prop));
-            }
         }
 
         /// <summary>
