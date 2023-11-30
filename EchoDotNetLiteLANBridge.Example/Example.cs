@@ -83,11 +83,11 @@ namespace EchoDotNetLiteLANBridge.Example
             {
                 //エミュレーターはプロパティ値通知要求に応答しないので、
                 //ノードを手動で追加し、自ノードインスタンスリストSをプロパティ値読み出し する
-                var エミュレーターノード = new EchoNode()
-                {
-                    Address = IPAddress.Parse("192.168.11.11"),
-                    NodeProfile = new EchoObjectInstance(EchoDotNetLite.Specifications.プロファイル.ノードプロファイル, 0x01)
-                };
+                var エミュレーターノード = new EchoNode
+                (
+                    address: IPAddress.Parse("192.168.11.11"),
+                    nodeProfile: new EchoObjectInstance(EchoDotNetLite.Specifications.プロファイル.ノードプロファイル, 0x01)
+                );
                 echoClient.NodeList.Add(エミュレーターノード);
 
                 await echoClient.プロパティ値読み出し(

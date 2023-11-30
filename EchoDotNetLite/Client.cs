@@ -22,26 +22,22 @@ namespace EchoDotNetLite
         private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
         private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
-        public EchoClient(ILogger<EchoClient> logger, IEchonetLiteFrameHandler handler)
+        public EchoClient(ILogger<EchoClient> logger, IPAddress nodeAddress, IEchonetLiteFrameHandler handler)
         {
             _logger = logger;
             _echoFrameHandler = handler;
             _echoFrameHandler.DataReceived += ReceiveEvent;
-            SelfNode = new EchoNode()
-            {
-                NodeProfile = new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01),
-            };
+            SelfNode = new EchoNode
+            (
+                address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
+                nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
+            );
             NodeList = new List<EchoNode>();
             //自己消費用
             OnFrameReceived += ReceiveFrame;
         }
 
-        public void Initialize(IPAddress selfAddress)
-        {
-            SelfNode.Address = selfAddress;
-        }
-
-        public EchoNode SelfNode { get; set; }
+        public EchoNode SelfNode { get; }
 
         public List<EchoNode> NodeList { get; set; }
 
@@ -991,11 +987,11 @@ namespace EchoDotNetLite
                 if (sourceNode == null)
                 {
                     //ノードを生成
-                    sourceNode = new EchoNode()
-                    {
-                        Address = value.address,
-                        NodeProfile = new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01),
-                    };
+                    sourceNode = new EchoNode
+                    (
+                        address: value.address,
+                        nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
+                    );
                     NodeList.Add(sourceNode);
                     OnNodeJoined?.Invoke(this,sourceNode);
                 }

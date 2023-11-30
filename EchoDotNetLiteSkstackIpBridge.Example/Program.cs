@@ -67,7 +67,8 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                 //スキャン＆Join
                 if(skStackClient.ScanAndJoinAsync(BRouteId, BRoutePw).Result)
                 {
-                    serviceProvider.GetService<EchoClient>().Initialize(skStackClient.SelfIpaddr);
+                    // TODO: API has been changed, use EchoClient.ctor instead
+                    // serviceProvider.GetService<EchoClient>().Initialize(skStackClient.SelfIpaddr);
                     Task.Run(() => serviceProvider.GetService<Example>().ExecuteAsync());
                 }
                 Task.WaitAll(Task.Delay(-1));
