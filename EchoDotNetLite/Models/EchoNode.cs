@@ -48,7 +48,7 @@ namespace EchoDotNetLite.Models
     }
 
 
-    public static class SpecificationUtil
+    internal static class SpecificationUtil
     {
         public static Specifications.EchoProperty? FindProperty(byte classGroupCode, byte classCode, byte epc)
         {
