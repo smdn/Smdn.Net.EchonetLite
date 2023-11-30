@@ -1179,7 +1179,7 @@ namespace EchoDotNetLite
         {
             bool hasError = false;
             var opcList = new List<PropertyRequest>();
-            if (destObject != null)
+            if (destObject == null)
             {
                 //DEOJがない場合、全OPCをそのまま返す
                 hasError = true;
@@ -1257,7 +1257,7 @@ namespace EchoDotNetLite
         {
             bool hasError = false;
             var opcList = new List<PropertyRequest>();
-            if (destObject != null)
+            if (destObject == null)
             {
                 //DEOJがない場合、全OPCをそのまま返す
                 hasError = true;
@@ -1336,7 +1336,7 @@ namespace EchoDotNetLite
             bool hasError = false;
             var opcSetList = new List<PropertyRequest>();
             var opcGetList = new List<PropertyRequest>();
-            if (destObject != null)
+            if (destObject == null)
             {
                 //DEOJがない場合、全OPCをそのまま返す
                 hasError = true;
