@@ -1,4 +1,5 @@
-﻿using EchoDotNetLite.Common;
+﻿#nullable enable warnings
+using EchoDotNetLite.Common;
 using EchoDotNetLite.Enums;
 using EchoDotNetLite.Models;
 using Microsoft.Extensions.Logging;
@@ -186,14 +187,18 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if ((destinationNode!=null && !destinationNode.Address.Equals(value.address))
-                    || !(value.response.EDATA is EDATA1 edata)
-                    || edata.SEOJ != destinationObject.GetEOJ()
-                    || edata.ESV != ESV.SetI_SNA)
-                {
+                if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
                     return;
-                }
-                foreach (var prop in edata.OPCList)
+                if (value.response.EDATA is not EDATA1 edata)
+                    return;
+                if (destinationNode is not null && edata.SEOJ != destinationObject.GetEOJ())
+                    return;
+                if (edata.ESV != ESV.SetI_SNA)
+                    return;
+
+                var opcList = edata.GetOPCList();
+
+                foreach (var prop in opcList)
                 {
                     //一部成功した書き込みを反映
                     var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
@@ -203,7 +208,7 @@ namespace EchoDotNetLite
                         target.Value = properties.First(p => p.Spec.Code == prop.EPC).Value;
                     }
                 }
-                responseTCS.SetResult((false, edata.OPCList));
+                responseTCS.SetResult((false, opcList));
 
                 //TODO 一斉通知の不可応答の扱いが…
                 OnFrameReceived -= handler;
@@ -302,15 +307,18 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if ((destinationNode != null && !destinationNode.Address.Equals(value.address))
-                    || !(value.response.EDATA is EDATA1 edata)
-                    || edata.SEOJ != destinationObject.GetEOJ()
-                    || (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
-                    )
-                {
+                if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
                     return;
-                }
-                foreach (var prop in edata.OPCList)
+                if (value.response.EDATA is not EDATA1 edata)
+                    return;
+                if (destinationNode is not null && edata.SEOJ != destinationObject.GetEOJ())
+                    return;
+                if (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
+                    return;
+
+                var opcList = edata.GetOPCList();
+
+                foreach (var prop in opcList)
                 {
                     //成功した書き込みを反映
                     var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
@@ -320,7 +328,7 @@ namespace EchoDotNetLite
                         target.Value = properties.First(p => p.Spec.Code == prop.EPC).Value;
                     }
                 }
-                responseTCS.SetResult((edata.ESV == ESV.Set_Res, edata.OPCList));
+                responseTCS.SetResult((edata.ESV == ESV.Set_Res, opcList));
                 //TODO 一斉通知の応答の扱いが…
                 OnFrameReceived -= handler;
             };
@@ -412,15 +420,18 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if ((destinationNode != null && !destinationNode.Address.Equals(value.address))
-                    || !(value.response.EDATA is EDATA1 edata)
-                    || edata.SEOJ != destinationObject.GetEOJ()
-                    || (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
-                    )
-                {
+                if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
                     return;
-                }
-                foreach (var prop in edata.OPCList)
+                if (value.response.EDATA is not EDATA1 edata)
+                    return;
+                if (destinationNode is not null && edata.SEOJ != destinationObject.GetEOJ())
+                    return;
+                if (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
+                    return;
+
+                var opcList = edata.GetOPCList();
+
+                foreach (var prop in opcList)
                 {
                     //成功した読み込みを反映
                     var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
@@ -430,7 +441,7 @@ namespace EchoDotNetLite
                         target.Value = prop.EDT;
                     }
                 }
-                responseTCS.SetResult((edata.ESV == ESV.Get_Res, edata.OPCList));
+                responseTCS.SetResult((edata.ESV == ESV.Get_Res, opcList));
                 //TODO 一斉通知の応答の扱いが…
                 OnFrameReceived -= handler;
             };
@@ -526,15 +537,18 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if ((destinationNode != null && !destinationNode.Address.Equals(value.address))
-                    || !(value.response.EDATA is EDATA1 edata)
-                    || edata.SEOJ != destinationObject.GetEOJ()
-                    || (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
-                    )
-                {
+                if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
                     return;
-                }
-                foreach (var prop in edata.OPCSetList)
+                if (value.response.EDATA is not EDATA1 edata)
+                    return;
+                if (destinationNode is not null && edata.SEOJ != destinationObject.GetEOJ())
+                    return;
+                if (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
+                    return;
+
+                var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
+
+                foreach (var prop in opcSetList)
                 {
                     //成功した書き込みを反映
                     var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
@@ -544,7 +558,7 @@ namespace EchoDotNetLite
                         target.Value = propertiesSet.First(p => p.Spec.Code == prop.EPC).Value;
                     }
                 }
-                foreach (var prop in edata.OPCGetList)
+                foreach (var prop in opcGetList)
                 {
                     //成功した読み込みを反映
                     var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
@@ -554,7 +568,7 @@ namespace EchoDotNetLite
                         target.Value = prop.EDT;
                     }
                 }
-                responseTCS.SetResult((edata.ESV == ESV.SetGet_Res, edata.OPCSetList,edata.OPCGetList));
+                responseTCS.SetResult((edata.ESV == ESV.SetGet_Res, opcSetList, opcGetList));
                 //TODO 一斉通知の応答の扱いが…
                 OnFrameReceived -= handler;
             };
@@ -695,6 +709,9 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken)
         {
+            if (destinationNode is null)
+                throw new ArgumentNullException(nameof(destinationNode));
+
             var responseTCS = new TaskCompletionSource<List<PropertyRequest>>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object sender, (IPAddress address, Frame response) value) =>
@@ -706,15 +723,16 @@ namespace EchoDotNetLite
                     return;
                 }
 
-                if (!destinationNode.Address.Equals(value.address)
-                    || !(value.response.EDATA is EDATA1 edata)
-                    || edata.SEOJ != destinationObject.GetEOJ()
-                    || (edata.ESV != ESV.INFC_Res)
-                    )
-                {
+                if (!destinationNode.Address.Equals(value.address))
                     return;
-                }
-                responseTCS.SetResult(edata.OPCList);
+                if (value.response.EDATA is not EDATA1 edata)
+                    return;
+                if (edata.SEOJ != destinationObject.GetEOJ())
+                    return;
+                if (edata.ESV != ESV.INFC_Res)
+                    return;
+
+                responseTCS.SetResult(edata.GetOPCList());
                 OnFrameReceived -= handler;
             };
             OnFrameReceived += handler;
@@ -746,14 +764,14 @@ namespace EchoDotNetLite
             }
         }
 
-#nullable enable
+#nullable enable annotations
         private static PropertyRequest ConvertToPropertyRequest(EchoPropertyInstance p)
             => p.Value is null ? new(epc: p.Spec.Code) : new(epc: p.Spec.Code, edt: p.Value);
 
         private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchoPropertyInstance p)
             => new(epc: p.Spec.Code);
 
-        private void ReceiveEvent(object sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
+        private void ReceiveEvent(object? sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
             if (!FrameSerializer.TryDeserialize(value.data.Span, out var frame))
                 // ECHONETLiteフレームではないため無視
@@ -798,7 +816,8 @@ namespace EchoDotNetLite
                 requestSemaphore.Release();
             }
         }
-#nullable restore
+#nullable restore annotations
+#nullable enable warnings
 
         private void インスタンスリスト通知受信(EchoNode sourceNode, byte[] edt)
         {
@@ -1003,7 +1022,9 @@ namespace EchoDotNetLite
             if (value.frame.EHD1 == EHD1.ECHONETLite
                 && value.frame.EHD2 == EHD2.Type1)
             {
-                var edata = value.frame.EDATA as EDATA1;
+                if (value.frame.EDATA is not EDATA1 edata)
+                    throw new InvalidOperationException($"expected {nameof(EDATA1)}, but was {value.frame.EDATA?.GetType()}");
+
                 var sourceNode = NodeList.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
                 //未知のノードの場合
                 if (sourceNode == null)
@@ -1119,6 +1140,9 @@ namespace EchoDotNetLite
         /// <returns>true:成功</returns>
         private async Task<bool> プロパティ値書き込みサービス応答不要((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
         {
+            if (edata.OPCList is null)
+                throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
+
             if (destObject == null)
             {
                 //対象となるオブジェクト自体が存在しない場合には、「不可応答」も返さないものとする。
@@ -1130,8 +1154,8 @@ namespace EchoDotNetLite
             {
                 var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                 if (property == null
-                        || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-                        || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
+                        || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
+                        || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
                 {
                     hasError = true;
                     //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
@@ -1177,6 +1201,9 @@ namespace EchoDotNetLite
         /// <returns>true:成功</returns>
         private async Task<bool> プロパティ値書き込みサービス応答要((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
         {
+            if (edata.OPCList is null)
+                throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
+
             bool hasError = false;
             var opcList = new List<PropertyRequest>();
             if (destObject == null)
@@ -1191,8 +1218,8 @@ namespace EchoDotNetLite
                 {
                     var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
-                            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-                            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
+                            || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
+                            || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
                     {
                         hasError = true;
                         //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
@@ -1255,6 +1282,9 @@ namespace EchoDotNetLite
         /// <returns>true:成功</returns>
         private async Task<bool> プロパティ値読み出しサービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
         {
+            if (edata.OPCList is null)
+                throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
+
             bool hasError = false;
             var opcList = new List<PropertyRequest>();
             if (destObject == null)
@@ -1269,8 +1299,8 @@ namespace EchoDotNetLite
                 {
                     var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
-                            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-                            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
+                            || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
+                            || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
                     {
                         hasError = true;
                         //要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
@@ -1282,7 +1312,7 @@ namespace EchoDotNetLite
                     {
                         //要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
                         //EDT には読み出したプロパティ値を設定する
-                        opcList.Add(new(opc.EPC, property.Value));
+                        opcList.Add(new(opc.EPC, property.Value ?? throw new InvalidOperationException("property value is null")));
                     }
                 }
             }
@@ -1333,6 +1363,11 @@ namespace EchoDotNetLite
         /// <param name="destObject"></param>
         private async Task<bool> プロパティ値書き込み読み出しサービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
         {
+            if (edata.OPCSetList is null)
+                throw new InvalidOperationException($"{nameof(edata.OPCSetList)} is null");
+            if (edata.OPCGetList is null)
+                throw new InvalidOperationException($"{nameof(edata.OPCGetList)} is null");
+
             bool hasError = false;
             var opcSetList = new List<PropertyRequest>();
             var opcGetList = new List<PropertyRequest>();
@@ -1349,8 +1384,8 @@ namespace EchoDotNetLite
                 {
                     var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
-                            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-                            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
+                            || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
+                            || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
                     {
                         hasError = true;
                         //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
@@ -1369,8 +1404,8 @@ namespace EchoDotNetLite
                 {
                     var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
-                            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-                            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
+                            || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
+                            || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
                     {
                         hasError = true;
                         //要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
@@ -1382,7 +1417,7 @@ namespace EchoDotNetLite
                     {
                         //要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
                         //EDT には読み出したプロパティ値を設定する
-                        opcSetList.Add(new(opc.EPC, property.Value));
+                        opcSetList.Add(new(opc.EPC, property.Value ?? throw new InvalidOperationException("property value is null")));
                     }
                 }
             }
@@ -1436,6 +1471,9 @@ namespace EchoDotNetLite
         /// <returns></returns>
         private bool プロパティ値通知サービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
         {
+            if (edata.OPCList is null)
+                throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
+
             bool hasError = false;
             var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
             if (sourceObject == null)
@@ -1463,8 +1501,8 @@ namespace EchoDotNetLite
                     property = new EchoPropertyInstance(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
                     sourceObject.Properties.Add(property);
                 }
-                if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-                    || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
+                if ((property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
+                    || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
                 {
                     //スペック外なので、格納しない
                     hasError = true;
@@ -1493,6 +1531,9 @@ namespace EchoDotNetLite
         /// <returns></returns>
         private async Task<bool> プロパティ値通知応答要サービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode, EchoObjectInstance destObject)
         {
+            if (edata.OPCList is null)
+                throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
+
             bool hasError = false;
             var opcList = new List<PropertyRequest>();
             if (destObject == null)
@@ -1527,8 +1568,9 @@ namespace EchoDotNetLite
                     property = new EchoPropertyInstance(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
                     sourceObject.Properties.Add(property);
                 }
-                if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-                    || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
+
+                if ((property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
+                    || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
                 {
                     //スペック外なので、格納しない
                     hasError = true;
