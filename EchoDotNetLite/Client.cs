@@ -81,7 +81,7 @@ namespace EchoDotNetLite
                     classCode: Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
                     instanceCode: 0x01
                 ))
-                , new List<EchoPropertyInstance>() { property }
+                , Enumerable.Repeat(property, 1)
                 , cancellationToken
                 );
         }
@@ -89,12 +89,17 @@ namespace EchoDotNetLite
           CancellationToken cancellationToken = default
         )
         {
-            var a = new List<EchoPropertyInstance>() { new EchoPropertyInstance(
-                Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
-                0xD5//インスタンスリスト通知
-                )
-            };
+            var properties = Enumerable.Repeat
+            (
+                new EchoPropertyInstance
+                (
+                    Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
+                    Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
+                    0xD5//インスタンスリスト通知
+                ),
+                1
+            );
+
             await プロパティ値通知要求(
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
@@ -103,7 +108,7 @@ namespace EchoDotNetLite
                     classCode: Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
                     instanceCode: 0x01
                 ))
-                , a
+                , properties
                 , cancellationToken
                 );
         }
