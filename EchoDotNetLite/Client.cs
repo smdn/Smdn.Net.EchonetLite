@@ -1,4 +1,4 @@
-﻿#nullable enable warnings
+﻿#nullable enable
 using EchoDotNetLite.Common;
 using EchoDotNetLite.Enums;
 using EchoDotNetLite.Models;
@@ -42,9 +42,9 @@ namespace EchoDotNetLite
 
         public List<EchoNode> NodeList { get; set; }
 
-        public event EventHandler<(IPAddress, Frame)> OnFrameReceived;
+        public event EventHandler<(IPAddress, Frame)>? OnFrameReceived;
 
-        public event EventHandler<EchoNode> OnNodeJoined;
+        public event EventHandler<EchoNode>? OnNodeJoined;
 
         private ushort tid = 0;
         public ushort GetNewTid()
@@ -132,14 +132,14 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="timeout"></param>
         /// <returns>true:タイムアウトまでに不可応答なし,false:不可応答</returns>
-        public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み要求応答不要(
+        public async Task<(bool, List<PropertyRequest>?)> プロパティ値書き込み要求応答不要(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , int timeoutMilliseconds = 1000)
@@ -164,21 +164,21 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>true:タイムアウトまでに不可応答なし,false:不可応答</returns>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み要求応答不要(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken)
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object sender, (IPAddress address, Frame response) value) =>
+            handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -252,14 +252,14 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="timeoutMilliseconds"></param>
         /// <returns>true:成功の応答、false:不可応答</returns>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み応答要(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , int timeoutMilliseconds = 1000)
@@ -284,21 +284,21 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>true:成功の応答、false:不可応答</returns>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み応答要(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken)
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object sender, (IPAddress address, Frame response) value) =>
+            handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -365,14 +365,14 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="timeoutMilliseconds"></param>
         /// <returns>true:成功の応答、false:不可応答</returns>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値読み出し(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , int timeoutMilliseconds = 1000)
@@ -397,21 +397,21 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>true:成功の応答、false:不可応答</returns>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値読み出し(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken)
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object sender, (IPAddress address, Frame response) value) =>
+            handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -477,7 +477,7 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="propertiesSet"></param>
         /// <param name="propertiesGet"></param>
@@ -485,7 +485,7 @@ namespace EchoDotNetLite
         /// <returns>true:成功の応答、false:不可応答</returns></returns>
         public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> プロパティ値書き込み読み出し(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> propertiesSet
             , IEnumerable<EchoPropertyInstance> propertiesGet
@@ -512,7 +512,7 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="propertiesSet"></param>
         /// <param name="propertiesGet"></param>
@@ -520,7 +520,7 @@ namespace EchoDotNetLite
         /// <returns>true:成功の応答、false:不可応答</returns></returns>
         public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> プロパティ値書き込み読み出し(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> propertiesSet
             , IEnumerable<EchoPropertyInstance> propertiesGet
@@ -528,7 +528,7 @@ namespace EchoDotNetLite
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>, List<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object sender, (IPAddress address, Frame response) value) =>
+            handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -607,12 +607,12 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         public Task プロパティ値通知要求(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
@@ -636,13 +636,13 @@ namespace EchoDotNetLite
         /// 一斉通知可
         /// </summary>
         /// <param name="sourceObject"></param>
-        /// <param name="destinationNode">一斉通知の場合、NULL</param>
+        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="timeout"></param>
         public Task 自発プロパティ値通知(
             EchoObjectInstance sourceObject
-            , EchoNode destinationNode
+            , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
@@ -714,7 +714,7 @@ namespace EchoDotNetLite
 
             var responseTCS = new TaskCompletionSource<List<PropertyRequest>>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object sender, (IPAddress address, Frame response) value) =>
+            handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -764,7 +764,6 @@ namespace EchoDotNetLite
             }
         }
 
-#nullable enable annotations
         private static PropertyRequest ConvertToPropertyRequest(EchoPropertyInstance p)
             => p.Value is null ? new(epc: p.Spec.Code) : new(epc: p.Spec.Code, edt: p.Value);
 
@@ -816,8 +815,6 @@ namespace EchoDotNetLite
                 requestSemaphore.Release();
             }
         }
-#nullable restore annotations
-#nullable enable warnings
 
         private void インスタンスリスト通知受信(EchoNode sourceNode, byte[] edt)
         {
@@ -891,7 +888,7 @@ namespace EchoDotNetLite
                         //状変アナウンスプロパティマップ
                         case 0x9D:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT);
+                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -904,7 +901,7 @@ namespace EchoDotNetLite
                         //Set プロパティマップ
                         case 0x9E:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT);
+                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -917,7 +914,7 @@ namespace EchoDotNetLite
                         //Get プロパティマップ
                         case 0x9F:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT);
+                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -1017,7 +1014,7 @@ namespace EchoDotNetLite
             }
         }
 
-        private void ReceiveFrame(object sender, (IPAddress address, Frame frame) value)
+        private void ReceiveFrame(object? sender, (IPAddress address, Frame frame) value)
         {
             if (value.frame.EHD1 == EHD1.ECHONETLite
                 && value.frame.EHD2 == EHD2.Type1)
@@ -1038,7 +1035,7 @@ namespace EchoDotNetLite
                     NodeList.Add(sourceNode);
                     OnNodeJoined?.Invoke(this,sourceNode);
                 }
-                EchoObjectInstance destObject = null;
+                EchoObjectInstance? destObject = null;
                 //自ノードプロファイル宛てのリクエストの場合
                 if (SelfNode.NodeProfile.GetEOJ() == edata.DEOJ)
                 {
@@ -1046,10 +1043,9 @@ namespace EchoDotNetLite
                 }
                 else
                 {
-                    var device = SelfNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.DEOJ);
-                    destObject = device;
+                    destObject = SelfNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.DEOJ);
                 }
-                Task task = null;
+                Task? task = null;
 
                 switch (edata.ESV)
                 {
@@ -1136,9 +1132,9 @@ namespace EchoDotNetLite
         /// </summary>
         /// <param name="request"></param>
         /// <param name="edata"></param>
-        /// <param name="destObject"></param>
+        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>true:成功</returns>
-        private async Task<bool> プロパティ値書き込みサービス応答不要((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値書き込みサービス応答不要((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance? destObject)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
@@ -1197,9 +1193,9 @@ namespace EchoDotNetLite
         /// </summary>
         /// <param name="value"></param>
         /// <param name="edata"></param>
-        /// <param name="destObject"></param>
+        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>true:成功</returns>
-        private async Task<bool> プロパティ値書き込みサービス応答要((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値書き込みサービス応答要((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance? destObject)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
@@ -1278,9 +1274,9 @@ namespace EchoDotNetLite
         /// </summary>
         /// <param name="request"></param>
         /// <param name="edata"></param>
-        /// <param name="destObject"></param>
+        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>true:成功</returns>
-        private async Task<bool> プロパティ値読み出しサービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値読み出しサービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance? destObject)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
@@ -1360,8 +1356,8 @@ namespace EchoDotNetLite
         /// </summary>
         /// <param name="request"></param>
         /// <param name="edata"></param>
-        /// <param name="destObject"></param>
-        private async Task<bool> プロパティ値書き込み読み出しサービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance destObject)
+        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
+        private async Task<bool> プロパティ値書き込み読み出しサービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance? destObject)
         {
             if (edata.OPCSetList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCSetList)} is null");
@@ -1514,7 +1510,7 @@ namespace EchoDotNetLite
                     if (sourceNode.NodeProfile == sourceObject
                         && opc.EPC == 0xD5)
                     {
-                        インスタンスリスト通知受信(sourceNode, opc.EDT);
+                        インスタンスリスト通知受信(sourceNode, opc.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={opc.EPC:X2})"));
                     }
                 }
             }
@@ -1527,9 +1523,9 @@ namespace EchoDotNetLite
         /// <param name="request"></param>
         /// <param name="edata"></param>
         /// <param name="sourceNode"></param>
-        /// <param name="destObject"></param>
+        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns></returns>
-        private async Task<bool> プロパティ値通知応答要サービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode, EchoObjectInstance destObject)
+        private async Task<bool> プロパティ値通知応答要サービス((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode, EchoObjectInstance? destObject)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
@@ -1583,7 +1579,7 @@ namespace EchoDotNetLite
                     if (sourceNode.NodeProfile == sourceObject
                         && opc.EPC == 0xD5)
                     {
-                        インスタンスリスト通知受信(sourceNode, opc.EDT);
+                        インスタンスリスト通知受信(sourceNode, opc.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={opc.EPC:X2})"));
                     }
                 }
                 //EPC には通知時と同じプロパティコードを設定するが、
