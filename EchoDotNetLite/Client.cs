@@ -19,11 +19,11 @@ namespace EchoDotNetLite
     public class EchoClient
     {
         private readonly IEchonetLiteFrameHandler _echoFrameHandler;
-        private readonly ILogger _logger;
+        private readonly ILogger? _logger;
         private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
         private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
-        public EchoClient(ILogger<EchoClient> logger, IPAddress nodeAddress, IEchonetLiteFrameHandler handler)
+        public EchoClient(IPAddress nodeAddress, IEchonetLiteFrameHandler handler, ILogger<EchoClient>? logger = null)
         {
             _logger = logger;
             _echoFrameHandler = handler;
@@ -776,7 +776,7 @@ namespace EchoDotNetLite
                 // ECHONETLiteフレームではないため無視
                 return;
 
-            _logger.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
+            _logger?.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
 
             OnFrameReceived?.Invoke(this, (value.address, frame));
         }
@@ -789,7 +789,7 @@ namespace EchoDotNetLite
             {
                 writeFrame(requestFrameBuffer);
 
-                if (_logger.IsEnabled(LogLevel.Trace))
+                if (_logger is not null && _logger.IsEnabled(LogLevel.Trace))
                 {
                     if (FrameSerializer.TryDeserialize(requestFrameBuffer.WrittenSpan, out var frame))
                     {
@@ -818,7 +818,7 @@ namespace EchoDotNetLite
 
         private void インスタンスリスト通知受信(EchoNode sourceNode, byte[] edt)
         {
-            _logger.LogTrace("インスタンスリスト通知を受信しました");
+            _logger?.LogTrace("インスタンスリスト通知を受信しました");
             using (var ms = new MemoryStream(edt))
             using (var br = new BinaryReader(ms))
             {
@@ -839,14 +839,14 @@ namespace EchoDotNetLite
                     }
                     if (!device.IsPropertyMapGet)
                     {
-                        _logger.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
+                        _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
                         プロパティマップ読み取り(sourceNode, device);
                     }
                 }
             }
             if (!sourceNode.NodeProfile.IsPropertyMapGet)
             {
-                _logger.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
+                _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
                 プロパティマップ読み取り(sourceNode, sourceNode.NodeProfile);
             }
         }
@@ -870,16 +870,16 @@ namespace EchoDotNetLite
             {
                 if (!result.IsCompletedSuccessfully)
                 {
-                    _logger.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りがタイムアウトしました");
+                    _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りがタイムアウトしました");
                     return;
                 }
                 //不可応答は無視
                 if (!result.Result.Item1)
                 {
-                    _logger.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りで不可応答が返答されました");
+                    _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りで不可応答が返答されました");
                     return;
                 }
-                _logger.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
+                _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
                 var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
                 foreach (var pr in result.Result.Item2)
                 {
@@ -951,7 +951,7 @@ namespace EchoDotNetLite
                     sb.AppendFormat("\t{0}\r\n", temp.GetDebugString());
                 }
                 sb.AppendLine("------");
-                _logger.LogTrace(sb.ToString());
+                _logger?.LogTrace(sb.ToString());
                 device.IsPropertyMapGet = true;
             });
         }
@@ -1120,7 +1120,7 @@ namespace EchoDotNetLite
                 {
                     if (t.Exception != null)
                     {
-                        _logger.LogTrace(t.Exception, "Exception");
+                        _logger?.LogTrace(t.Exception, "Exception");
                     }
                 });
 
