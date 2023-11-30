@@ -46,29 +46,28 @@ namespace EchoDotNetLite.Models
             OnCollectionChanged?.Invoke(this, (type, item));
         }
     }
-#nullable restore
 
 
     public static class SpecificationUtil
     {
-        public static Specifications.EchoProperty FindProperty(byte classGroupCode, byte classCode, byte epc)
+        public static Specifications.EchoProperty? FindProperty(byte classGroupCode, byte classCode, byte epc)
         {
             var @class = FindClass(classGroupCode, classCode);
-            if (@class != null)
+            if (@class is not null)
             {
-                Specifications.EchoProperty property;
+                Specifications.EchoProperty? property;
                  property = @class.AnnoProperties.FirstOrDefault(p => p.Code == epc);
-                if (property != null)
+                if (property is not null)
                 {
                     return property;
                 }
                 property = @class.GetProperties.FirstOrDefault(p => p.Code == epc);
-                if (property != null)
+                if (property is not null)
                 {
                     return property;
                 }
                 property = @class.SetProperties.FirstOrDefault(p => p.Code == epc);
-                if (property != null)
+                if (property is not null)
                 {
                     return property;
                 }
@@ -78,9 +77,9 @@ namespace EchoDotNetLite.Models
 
         internal static IEchonetObject GenerateUnknownClass(byte classGroupCode, byte classCode)
         {
-            return new UnknownEchoObject()
-            {
-                ClassGroup = new EchoClassGroup
+            return new UnknownEchoObject
+            (
+                classGroup: new EchoClassGroup
                 (
                     classGroupCode: classGroupCode,
                     classGroupName: "Unknown",
@@ -88,19 +87,25 @@ namespace EchoDotNetLite.Models
                     classList: Array.Empty<EchoClass>(),
                     superClass: null
                 ),
-                Class = new EchoClass
+                @class: new EchoClass
                 (
                     classCode: classCode,
                     className: "Unknown",
                     classNameOfficial: "Unknown",
                     status: false
                 )
-            };
+            );
         }
         private class UnknownEchoObject : IEchonetObject
         {
-            public EchoClassGroup ClassGroup { get; set; }
-            public EchoClass Class { get; set; }
+            public UnknownEchoObject(EchoClassGroup classGroup, EchoClass @class)
+            {
+                ClassGroup = classGroup ?? throw new ArgumentNullException(nameof(classGroup));
+                Class = @class ?? throw new ArgumentNullException(nameof(@class));
+            }
+
+            public EchoClassGroup ClassGroup { get; }
+            public EchoClass Class { get; }
 
             public IEnumerable<EchoProperty> GetProperties => Enumerable.Empty<EchoProperty>();
 
@@ -109,7 +114,7 @@ namespace EchoDotNetLite.Models
             public IEnumerable<EchoProperty> AnnoProperties => Enumerable.Empty<EchoProperty>();
         }
 
-        public static Specifications.IEchonetObject FindClass(byte classGroupCode, byte classCode)
+        public static Specifications.IEchonetObject? FindClass(byte classGroupCode, byte classCode)
         {
             var profileClass = Specifications.プロファイル.クラス一覧.FirstOrDefault(
                                 g => g.ClassGroup.ClassGroupCode == classGroupCode
@@ -128,4 +133,5 @@ namespace EchoDotNetLite.Models
             return null;
         }
     }
+#nullable restore
 }
