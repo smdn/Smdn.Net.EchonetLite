@@ -101,21 +101,21 @@ namespace EchoDotNetLite.Models
         /// </summary>
         public IEnumerable<EchoPropertyInstance> GETProperties
         {
-            get { return Properties.Where(p => p.Spec.Get); }
+            get { return Properties.Where(static p => p.Spec.Get); }
         }
         /// <summary>
         /// SETプロパティの一覧
         /// </summary>
         public IEnumerable<EchoPropertyInstance> SETProperties
         {
-            get { return Properties.Where(p => p.Spec.Set); }
+            get { return Properties.Where(static p => p.Spec.Set); }
         }
         /// <summary>
         /// ANNOプロパティの一覧
         /// </summary>
         public IEnumerable<EchoPropertyInstance> ANNOProperties
         {
-            get { return Properties.Where(p => p.Spec.Anno); }
+            get { return Properties.Where(static p => p.Spec.Anno); }
         }
     }
 }
