@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +11,7 @@ namespace EchoDotNetLite.Common
     {
         public NotifyChangeCollection(TParent parentNode)
         {
-            ParentNode = parentNode;
+            ParentNode = parentNode ?? throw new ArgumentNullException(nameof(parentNode));
             InnerConnection = new List<TItem>();
         }
         private TParent ParentNode;
@@ -20,7 +22,7 @@ namespace EchoDotNetLite.Common
 
         public void Add(TItem item)
         {
-            InnerConnection.Add(item);
+            InnerConnection.Add(item ?? throw new ArgumentNullException(nameof(item)));
             ParentNode.RaiseCollectionChanged(CollectionChangeType.Add,item);
         }
 
@@ -36,11 +38,14 @@ namespace EchoDotNetLite.Common
 
         public bool Contains(TItem item)
         {
-            return InnerConnection.Contains(item);
+            return InnerConnection.Contains(item ?? throw new ArgumentNullException(nameof(item)));
         }
 
         public void CopyTo(TItem[] array, int arrayIndex)
         {
+            if (array is null)
+                throw new ArgumentNullException(nameof(array));
+
             InnerConnection.CopyTo(array, arrayIndex);
             foreach (var item in array)
             {
@@ -55,6 +60,9 @@ namespace EchoDotNetLite.Common
 
         public bool Remove(TItem item)
         {
+            if (item is null)
+                throw new ArgumentNullException(nameof(item));
+
             ParentNode.RaiseCollectionChanged(CollectionChangeType.Remove, item);
             return InnerConnection.Remove(item);
         }

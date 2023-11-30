@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -37,6 +39,9 @@ namespace EchoDotNetLite.Models
         /// <returns>バイト配列</returns>
         public static byte[] FromHexString(string str)
         {
+            if (str is null)
+                throw new ArgumentNullException(nameof(str));
+
             int length = str.Length / 2;
             byte[] bytes = new byte[length];
             int j = 0;
