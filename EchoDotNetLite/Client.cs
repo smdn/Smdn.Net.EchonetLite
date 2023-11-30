@@ -748,7 +748,7 @@ namespace EchoDotNetLite
 
 #nullable enable
         private static PropertyRequest ConvertToPropertyRequest(EchoPropertyInstance p)
-            => new(epc: p.Spec.Code, edt: p.Value);
+            => p.Value is null ? new(epc: p.Spec.Code) : new(epc: p.Spec.Code, edt: p.Value);
 
         private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchoPropertyInstance p)
             => new(epc: p.Spec.Code);
@@ -919,12 +919,11 @@ namespace EchoDotNetLite
                     (
                         device.Spec.ClassGroup.ClassGroupCode,
                         device.Spec.Class.ClassCode,
-                        code
+                        code,
+                        caps.Anno,
+                        caps.Set,
+                        caps.Get
                     );
-
-                    property.Anno = caps.Anno;
-                    property.Set = caps.Set;
-                    property.Get = caps.Get;
 
                     device.Properties.Add(property);
                 }
