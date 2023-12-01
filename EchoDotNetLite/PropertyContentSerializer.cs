@@ -202,38 +202,17 @@ public static class PropertyContentSerializer
             for (var i = 0; i < 16; i++)
             {
                 var propertyBits = content[i];
+                var lower = i;
 
-                if ((propertyBits & 0b10000000) == 0b10000000)
+                for (var j = 0; j < 8; j++)
                 {
-                    props.Add((byte)(0xF0 | (byte)i));
-                }
-                if ((propertyBits & 0b01000000) == 0b01000000)
-                {
-                    props.Add((byte)(0xE0 | (byte)i));
-                }
-                if ((propertyBits & 0b00100000) == 0b00100000)
-                {
-                    props.Add((byte)(0xD0 | (byte)i));
-                }
-                if ((propertyBits & 0b00010000) == 0b00010000)
-                {
-                    props.Add((byte)(0xC0 | (byte)i));
-                }
-                if ((propertyBits & 0b00001000) == 0b00001000)
-                {
-                    props.Add((byte)(0xB0 | (byte)i));
-                }
-                if ((propertyBits & 0b00000100) == 0b00000100)
-                {
-                    props.Add((byte)(0xA0 | (byte)i));
-                }
-                if ((propertyBits & 0b00000010) == 0b00000010)
-                {
-                    props.Add((byte)(0x90 | (byte)i));
-                }
-                if ((propertyBits & 0b00000001) == 0b00000001)
-                {
-                    props.Add((byte)(0x80 | (byte)i));
+                    var upper = 0x80 + 0x10 * j;
+                    var bitMask = 1 << j;
+
+                    if ((propertyBits & bitMask) != 0)
+                    {
+                        props.Add((byte)(upper | lower));
+                    }
                 }
             }
         }
