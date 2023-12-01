@@ -57,22 +57,18 @@ namespace EchoDotNetLite
         {
             //インスタンスリスト通知プロパティ
             var property = SelfNode.NodeProfile.ANNOProperties.First(p => p.Spec.Code == 0xD5);
-            using (var ms = new MemoryStream())
-            using (var bw = new BinaryWriter(ms))
-            {
-                //1 ﾊﾞｲﾄ目：通報インスタンス数 
-                bw.Write((byte)SelfNode.Devices.Count);
-                //2～253 ﾊﾞｲﾄ目：ECHONET オブジェクトコード（EOJ3 バイト）を列挙。
-                foreach (var device in SelfNode.Devices)
-                {
-                    var eoj = device.GetEOJ();
-                    bw.Write(eoj.ClassGroupCode);
-                    bw.Write(eoj.ClassCode);
-                    bw.Write(eoj.InstanceCode);
-                }
-                //インスタンスリスト通知
-                property.Value = ms.ToArray();
-            }
+            var contentsOfProperty = new byte[253]; // インスタンスリスト通知 0xD5 unsigned char×(MAX)253
+
+            _ = PropertyContentSerializer.TrySerializeInstanceListNotification
+            (
+                SelfNode.Devices.Select(static o => o.GetEOJ()),
+                contentsOfProperty,
+                out _
+            );
+
+            //インスタンスリスト通知
+            property.Value = contentsOfProperty;
+
             await 自発プロパティ値通知(
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
@@ -820,34 +816,28 @@ namespace EchoDotNetLite
             }
         }
 
-        private void インスタンスリスト通知受信(EchoNode sourceNode, byte[] edt)
+        private void インスタンスリスト通知受信(EchoNode sourceNode, ReadOnlySpan<byte> edt)
         {
             _logger?.LogTrace("インスタンスリスト通知を受信しました");
-            using (var ms = new MemoryStream(edt))
-            using (var br = new BinaryReader(ms))
+
+            if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt, out var instanceList))
+                return; // XXX
+
+            foreach (var eoj in instanceList)
             {
-                var count = br.ReadByte();
-                for(int i = 0; i < count; i++)
+                var device = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == eoj);
+                if (device == null)
                 {
-                    var eoj = new EOJ
-                    (
-                        classGroupCode: br.ReadByte(),
-                        classCode: br.ReadByte(),
-                        instanceCode: br.ReadByte()
-                    );
-                    var device = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == eoj);
-                    if (device == null)
-                    {
-                        device = new EchoObjectInstance(eoj);
-                        sourceNode.Devices.Add(device);
-                    }
-                    if (!device.IsPropertyMapGet)
-                    {
-                        _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
-                        プロパティマップ読み取り(sourceNode, device);
-                    }
+                    device = new EchoObjectInstance(eoj);
+                    sourceNode.Devices.Add(device);
+                }
+                if (!device.IsPropertyMapGet)
+                {
+                    _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
+                    プロパティマップ読み取り(sourceNode, device);
                 }
             }
+
             if (!sourceNode.NodeProfile.IsPropertyMapGet)
             {
                 _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
