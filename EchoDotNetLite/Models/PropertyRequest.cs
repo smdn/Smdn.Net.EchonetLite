@@ -18,7 +18,7 @@ namespace EchoDotNetLite.Models
         public PropertyRequest(byte epc)
         {
             EPC = epc;
-            EDT = null;
+            EDT = ReadOnlyMemory<byte>.Empty;
         }
 
         /// <summary>
@@ -29,12 +29,9 @@ namespace EchoDotNetLite.Models
         /// </remarks>
         /// <param name="epc"><see cref="EPC"/>に指定する値。</param>
         /// <param name="edt"><see cref="EDT"/>に指定する値。</param>
-        /// <exception cref="ArgumentNullException"><paramref name="edt"/>が<see langword="null"/>です。</exception>
         /// <exception cref="ArgumentException"><paramref name="edt"/>の長さが、255を超えています。</exception>
-        public PropertyRequest(byte epc, byte[] edt)
+        public PropertyRequest(byte epc, ReadOnlyMemory<byte> edt)
         {
-            if (edt is null)
-                throw new ArgumentNullException(nameof(edt));
             if (byte.MaxValue < edt.Length)
                 throw new ArgumentException(message: "The length of the EDT exceeds the maximum allowed by the specification.", nameof(edt));
 
@@ -51,11 +48,11 @@ namespace EchoDotNetLite.Models
         /// EDTのバイト数(1B)
         /// </summary>
         [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-        public byte PDC => EDT is null ? (byte)0 : (byte)EDT.Length;
+        public byte PDC => (byte)EDT.Length;
         /// <summary>
         /// プロパティ値データ(PDCで指定)
         /// </summary>
         [JsonConverter(typeof(ByteSequenceJsonConverter))]
-        public byte[]? EDT { get; } // TODO: use ReadOnlyMemory<byte> or fixed length array
+        public ReadOnlyMemory<byte> EDT { get; }
     }
 }

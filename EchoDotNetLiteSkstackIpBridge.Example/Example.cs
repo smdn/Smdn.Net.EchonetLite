@@ -67,11 +67,11 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
             }
         }
 
-        private void LogEchoPropertyValueChanged(object sender, byte[] e)
+        private void LogEchoPropertyValueChanged(object sender, ReadOnlyMemory<byte> e)
         {
             if (sender is EchoPropertyInstance echoPropertyInstance)
             {
-                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e)}");
+                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e.Span)}");
             }
         }
 
@@ -129,8 +129,8 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                             var 現在時刻設定 = properties.First(p => p.Spec.Name == "現在時刻設定");
                             var 現在年月日設定 = properties.First(p => p.Spec.Name == "現在年月日設定");
 
-                            _logger.LogDebug($"瞬時電力計測値:{EndianBitConverter.BigEndian.ToInt32(瞬時電力計測値.Value,0)}W");
-                            _logger.LogDebug($"瞬時電流計測値: R相{EndianBitConverter.BigEndian.ToInt16(瞬時電流計測値.Value, 0) * 0.1}A,T相{EndianBitConverter.BigEndian.ToInt16(瞬時電流計測値.Value, 2) * 0.1}A");
+                            _logger.LogDebug($"瞬時電力計測値:{EndianBitConverter.BigEndian.ToInt32(瞬時電力計測値.ValueSpan.ToArray(),0)}W");
+                            _logger.LogDebug($"瞬時電流計測値: R相{EndianBitConverter.BigEndian.ToInt16(瞬時電流計測値.ValueSpan.ToArray(), 0) * 0.1}A,T相{EndianBitConverter.BigEndian.ToInt16(瞬時電流計測値.ValueSpan.ToArray(), 2) * 0.1}A");
                         });
                     }
                     finally

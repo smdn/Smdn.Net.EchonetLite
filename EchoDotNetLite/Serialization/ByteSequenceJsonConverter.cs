@@ -7,19 +7,13 @@ using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Serialization;
 
-internal sealed class ByteSequenceJsonConverter : JsonConverter<byte[]>
+internal sealed class ByteSequenceJsonConverter : JsonConverter<ReadOnlyMemory<byte>>
 {
-    public override byte[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ReadOnlyMemory<byte> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         => throw new NotSupportedException();
 
-    public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, ReadOnlyMemory<byte> value, JsonSerializerOptions options)
     {
-        if (value is null)
-        {
-            writer.WriteNullValue();
-            return;
-        }
-
         if (value.Length == 0)
         {
             writer.WriteStringValue(string.Empty);
@@ -27,11 +21,12 @@ internal sealed class ByteSequenceJsonConverter : JsonConverter<byte[]>
         }
 
         var sb = new StringBuilder(capacity: value.Length * 2);
+        var span = value.Span;
 
-        for (var i = 0; i < value.Length; i++)
+        for (var i = 0; i < span.Length; i++)
         {
-            sb.Append(Hexadecimals.ToHexChar(value[i] >> 4));
-            sb.Append(Hexadecimals.ToHexChar(value[i] & 0xF));
+            sb.Append(Hexadecimals.ToHexChar(span[i] >> 4));
+            sb.Append(Hexadecimals.ToHexChar(span[i] & 0xF));
         }
 
         writer.WriteStringValue(sb.ToString());

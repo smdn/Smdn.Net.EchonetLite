@@ -383,7 +383,7 @@ namespace EchoDotNetLite
                     // プロパティ値データ(PDCで指定)
                     var edtSpan = buffer.GetSpan(prp.PDC);
 
-                    prp.EDT.AsSpan().CopyTo(edtSpan);
+                    prp.EDT.Span.CopyTo(edtSpan);
 
                     buffer.Advance(prp.PDC);
                 }
