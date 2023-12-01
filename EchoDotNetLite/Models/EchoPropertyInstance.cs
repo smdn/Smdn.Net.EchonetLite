@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -119,25 +120,72 @@ namespace EchoDotNetLite.Models
         /// </summary>
         public bool Anno { get; }
 
-        private byte[]? _Value;
+        private readonly ArrayBufferWriter<byte> _value = new(initialCapacity: 8); // TODO: best initial capacity
+
         /// <summary>
-        /// プロパティ値
+        /// プロパティ値を表す<see cref="ReadOnlyMemory{byte}"/>を取得します。
         /// </summary>
-        public byte[]? Value
-        {
-            get => _Value;
-            set
-            {
-                //TODO とりあえず変更がなくてもイベントを起こす
-                ValueChanged?.Invoke(this, value);
-                if (value == _Value)
-                    return;
-                _Value = value;
-            }
-        }
+        public ReadOnlyMemory<byte> ValueMemory => _value.WrittenMemory;
+
+        /// <summary>
+        /// プロパティ値を表す<see cref="ReadOnlySpan{byte}"/>を取得します。
+        /// </summary>
+        public ReadOnlySpan<byte> ValueSpan => _value.WrittenSpan;
+
         /// <summary>
         /// プロパティ値変更イベント
         /// </summary>
-        public event EventHandler<byte[]?>? ValueChanged;
+        public event EventHandler<ReadOnlyMemory<byte>>? ValueChanged;
+
+        /// <summary>
+        /// プロパティ値を設定します。
+        /// </summary>
+        /// <remarks>
+        /// プロパティ値の設定が行われたあと、イベント<see cref="ValueChanged"/>が発生します。
+        /// </remarks>
+        /// <param name="newValue">プロパティ値として設定する値を表す<see cref="ReadOnlySpan{byte}"/>。</param>
+        /// <seealso cref="ValueChanged"/>
+        public void SetValue(ReadOnlySpan<byte> newValue)
+        {
+#if NET8_0_OR_GREATER
+            _value.ResetWrittenCount();
+#else
+            _value.Clear();
+#endif
+
+            _value.Write(newValue);
+
+            //TODO とりあえず変更がなくてもイベントを起こす
+            ValueChanged?.Invoke(this, _value.WrittenMemory);
+        }
+
+        /// <summary>
+        /// プロパティ値を書き込みます。
+        /// </summary>
+        /// <remarks>
+        /// プロパティ値の設定が行われたあと、イベント<see cref="ValueChanged"/>が発生します。
+        /// </remarks>
+        /// <param name="write">
+        /// プロパティ値を書き込むための<see cref="Action{IBufferWriter{byte}}"/>デリゲート。
+        /// 引数で渡される<see cref="IBufferWriter{byte}"/>を介してプロパティ値として設定する内容を書き込んでください。
+        /// </param>
+        /// <exception cref="ArgumentNullException"><paramref name="write"/>が<see langword="null"/>です。</exception>
+        /// <seealso cref="ValueChanged"/>
+        public void WriteValue(Action<IBufferWriter<byte>> write)
+        {
+            if (write is null)
+                throw new ArgumentNullException(nameof(write));
+
+#if NET8_0_OR_GREATER
+            _value.ResetWrittenCount();
+#else
+            _value.Clear();
+#endif
+
+            write(_value);
+
+            //TODO とりあえず変更がなくてもイベントを起こす
+            ValueChanged?.Invoke(this, _value.WrittenMemory);
+        }
     }
 }

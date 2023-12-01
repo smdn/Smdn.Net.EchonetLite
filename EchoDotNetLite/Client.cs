@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -57,22 +56,21 @@ namespace EchoDotNetLite
         {
             //インスタンスリスト通知プロパティ
             var property = SelfNode.NodeProfile.ANNOProperties.First(p => p.Spec.Code == 0xD5);
-            using (var ms = new MemoryStream())
-            using (var bw = new BinaryWriter(ms))
-            {
-                //1 ﾊﾞｲﾄ目：通報インスタンス数 
-                bw.Write((byte)SelfNode.Devices.Count);
-                //2～253 ﾊﾞｲﾄ目：ECHONET オブジェクトコード（EOJ3 バイト）を列挙。
-                foreach (var device in SelfNode.Devices)
-                {
-                    var eoj = device.GetEOJ();
-                    bw.Write(eoj.ClassGroupCode);
-                    bw.Write(eoj.ClassCode);
-                    bw.Write(eoj.InstanceCode);
-                }
-                //インスタンスリスト通知
-                property.Value = ms.ToArray();
-            }
+
+            property.WriteValue(writer => {
+                var contents = writer.GetSpan(253); // インスタンスリスト通知 0xD5 unsigned char×(MAX)253
+
+                _ = PropertyContentSerializer.TrySerializeInstanceListNotification
+                (
+                    SelfNode.Devices.Select(static o => o.GetEOJ()),
+                    contents,
+                    out var bytesWritten
+                );
+
+                writer.Advance(bytesWritten);
+            });
+
+            //インスタンスリスト通知
             await 自発プロパティ値通知(
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
@@ -209,7 +207,7 @@ namespace EchoDotNetLite
                     if (prop.PDC == 0x00)
                     {
                         //書き込み成功
-                        target.Value = properties.First(p => p.Spec.Code == prop.EPC).Value;
+                        target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
                     }
                 }
                 responseTCS.SetResult((false, opcList));
@@ -244,7 +242,7 @@ namespace EchoDotNetLite
                 {
                     var target = destinationObject.Properties.First(p => p.Spec.Code == prop.Spec.Code);
                     //成功した書き込みを反映(全部OK)
-                    target.Value = prop.Value;
+                    target.SetValue(prop.ValueSpan);
                 }
                 OnFrameReceived -= handler;
 
@@ -329,7 +327,7 @@ namespace EchoDotNetLite
                     if(prop.PDC == 0x00)
                     {
                         //書き込み成功
-                        target.Value = properties.First(p => p.Spec.Code == prop.EPC).Value;
+                        target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
                     }
                 }
                 responseTCS.SetResult((edata.ESV == ESV.Set_Res, opcList));
@@ -442,7 +440,7 @@ namespace EchoDotNetLite
                     if (prop.PDC != 0x00)
                     {
                         //読み込み成功
-                        target.Value = prop.EDT;
+                        target.SetValue(prop.EDT.Span);
                     }
                 }
                 responseTCS.SetResult((edata.ESV == ESV.Get_Res, opcList));
@@ -559,7 +557,7 @@ namespace EchoDotNetLite
                     if (prop.PDC == 0x00)
                     {
                         //書き込み成功
-                        target.Value = propertiesSet.First(p => p.Spec.Code == prop.EPC).Value;
+                        target.SetValue(propertiesSet.First(p => p.Spec.Code == prop.EPC).ValueSpan);
                     }
                 }
                 foreach (var prop in opcGetList)
@@ -569,7 +567,7 @@ namespace EchoDotNetLite
                     if (prop.PDC != 0x00)
                     {
                         //読み込み成功
-                        target.Value = prop.EDT;
+                        target.SetValue(prop.EDT.Span);
                     }
                 }
                 responseTCS.SetResult((edata.ESV == ESV.SetGet_Res, opcSetList, opcGetList));
@@ -769,7 +767,7 @@ namespace EchoDotNetLite
         }
 
         private static PropertyRequest ConvertToPropertyRequest(EchoPropertyInstance p)
-            => p.Value is null ? new(epc: p.Spec.Code) : new(epc: p.Spec.Code, edt: p.Value);
+            => new(epc: p.Spec.Code, edt: p.ValueMemory);
 
         private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchoPropertyInstance p)
             => new(epc: p.Spec.Code);
@@ -820,34 +818,28 @@ namespace EchoDotNetLite
             }
         }
 
-        private void インスタンスリスト通知受信(EchoNode sourceNode, byte[] edt)
+        private void インスタンスリスト通知受信(EchoNode sourceNode, ReadOnlySpan<byte> edt)
         {
             _logger?.LogTrace("インスタンスリスト通知を受信しました");
-            using (var ms = new MemoryStream(edt))
-            using (var br = new BinaryReader(ms))
+
+            if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt, out var instanceList))
+                return; // XXX
+
+            foreach (var eoj in instanceList)
             {
-                var count = br.ReadByte();
-                for(int i = 0; i < count; i++)
+                var device = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == eoj);
+                if (device == null)
                 {
-                    var eoj = new EOJ
-                    (
-                        classGroupCode: br.ReadByte(),
-                        classCode: br.ReadByte(),
-                        instanceCode: br.ReadByte()
-                    );
-                    var device = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == eoj);
-                    if (device == null)
-                    {
-                        device = new EchoObjectInstance(eoj);
-                        sourceNode.Devices.Add(device);
-                    }
-                    if (!device.IsPropertyMapGet)
-                    {
-                        _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
-                        プロパティマップ読み取り(sourceNode, device);
-                    }
+                    device = new EchoObjectInstance(eoj);
+                    sourceNode.Devices.Add(device);
+                }
+                if (!device.IsPropertyMapGet)
+                {
+                    _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
+                    プロパティマップ読み取り(sourceNode, device);
                 }
             }
+
             if (!sourceNode.NodeProfile.IsPropertyMapGet)
             {
                 _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
@@ -892,7 +884,9 @@ namespace EchoDotNetLite
                         //状変アナウンスプロパティマップ
                         case 0x9D:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
+                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
+                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -905,7 +899,9 @@ namespace EchoDotNetLite
                         //Set プロパティマップ
                         case 0x9E:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
+                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
+                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -918,7 +914,9 @@ namespace EchoDotNetLite
                         //Get プロパティマップ
                         case 0x9F:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
+                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
+                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -958,64 +956,6 @@ namespace EchoDotNetLite
                 _logger?.LogTrace(sb.ToString());
                 device.IsPropertyMapGet = true;
             });
-        }
-
-        public static List<byte> ParsePropertyMap(byte[] value)
-        {
-            using (var ms = new MemoryStream(value))
-            using (var br = new BinaryReader(ms))
-            {
-                var epcList = new List<byte>();
-                var count = br.ReadByte();
-                if (count < 0x10)
-                {
-                    //パターン1
-                    for (var i = 0; i < count; i++)
-                    {
-                        epcList.Add(br.ReadByte());
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < 16; i++)
-                    {
-                        var flag = br.ReadByte();
-                        if ((flag & 0b10000000) == 0b10000000)
-                        {
-                            epcList.Add((byte)(0xF0 | (byte)i));
-                        }
-                        if ((flag & 0b01000000) == 0b01000000)
-                        {
-                            epcList.Add((byte)(0xE0 | (byte)i));
-                        }
-                        if ((flag & 0b00100000) == 0b00100000)
-                        {
-                            epcList.Add((byte)(0xD0 | (byte)i));
-                        }
-                        if ((flag & 0b00010000) == 0b00010000)
-                        {
-                            epcList.Add((byte)(0xC0 | (byte)i));
-                        }
-                        if ((flag & 0b00001000) == 0b00001000)
-                        {
-                            epcList.Add((byte)(0xB0 | (byte)i));
-                        }
-                        if ((flag & 0b00000100) == 0b00000100)
-                        {
-                            epcList.Add((byte)(0xA0 | (byte)i));
-                        }
-                        if ((flag & 0b00000010) == 0b00000010)
-                        {
-                            epcList.Add((byte)(0x90 | (byte)i));
-                        }
-                        if ((flag & 0b00000001) == 0b00000001)
-                        {
-                            epcList.Add((byte)(0x80 | (byte)i));
-                        }
-                    }
-                }
-                return epcList;
-            }
         }
 
         private void ReceiveFrame(object? sender, (IPAddress address, Frame frame) value)
@@ -1154,8 +1094,8 @@ namespace EchoDotNetLite
             {
                 var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                 if (property == null
-                        || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
-                        || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
+                        || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
+                        || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
                 {
                     hasError = true;
                     //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
@@ -1165,7 +1105,7 @@ namespace EchoDotNetLite
                 else
                 {
                     //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-                    property.Value = opc.EDT;
+                    property.SetValue(opc.EDT.Span);
 
                     opcList.Add(new(opc.EPC));
                 }
@@ -1218,8 +1158,8 @@ namespace EchoDotNetLite
                 {
                     var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
-                            || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
-                            || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
+                            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
+                            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
                     {
                         hasError = true;
                         //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
@@ -1229,7 +1169,7 @@ namespace EchoDotNetLite
                     else
                     {
                         //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-                        property.Value = opc.EDT;
+                        property.SetValue(opc.EDT.Span);
 
                         opcList.Add(new(opc.EPC));
                     }
@@ -1299,8 +1239,8 @@ namespace EchoDotNetLite
                 {
                     var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
-                            || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
-                            || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
+                            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
+                            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
                     {
                         hasError = true;
                         //要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
@@ -1312,7 +1252,7 @@ namespace EchoDotNetLite
                     {
                         //要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
                         //EDT には読み出したプロパティ値を設定する
-                        opcList.Add(new(opc.EPC, property.Value ?? throw new InvalidOperationException("property value is null")));
+                        opcList.Add(new(opc.EPC, property.ValueMemory));
                     }
                 }
             }
@@ -1384,8 +1324,8 @@ namespace EchoDotNetLite
                 {
                     var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
-                            || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
-                            || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
+                            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
+                            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
                     {
                         hasError = true;
                         //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
@@ -1395,7 +1335,7 @@ namespace EchoDotNetLite
                     else
                     {
                         //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-                        property.Value = opc.EDT;
+                        property.SetValue(opc.EDT.Span);
 
                         opcSetList.Add(new(opc.EPC));
                     }
@@ -1404,8 +1344,8 @@ namespace EchoDotNetLite
                 {
                     var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
-                            || (property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
-                            || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
+                            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
+                            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
                     {
                         hasError = true;
                         //要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
@@ -1417,7 +1357,7 @@ namespace EchoDotNetLite
                     {
                         //要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
                         //EDT には読み出したプロパティ値を設定する
-                        opcSetList.Add(new(opc.EPC, property.Value ?? throw new InvalidOperationException("property value is null")));
+                        opcSetList.Add(new(opc.EPC, property.ValueMemory));
                     }
                 }
             }
@@ -1501,20 +1441,20 @@ namespace EchoDotNetLite
                     property = new EchoPropertyInstance(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
                     sourceObject.Properties.Add(property);
                 }
-                if ((property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
-                    || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
+                if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
+                    || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
                 {
                     //スペック外なので、格納しない
                     hasError = true;
                 }
                 else
                 {
-                    property.Value = opc.EDT;
+                    property.SetValue(opc.EDT.Span);
                     //ノードプロファイルのインスタンスリスト通知の場合
                     if (sourceNode.NodeProfile == sourceObject
                         && opc.EPC == 0xD5)
                     {
-                        インスタンスリスト通知受信(sourceNode, opc.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={opc.EPC:X2})"));
+                        インスタンスリスト通知受信(sourceNode, opc.EDT.Span);
                     }
                 }
             }
@@ -1569,8 +1509,8 @@ namespace EchoDotNetLite
                     sourceObject.Properties.Add(property);
                 }
 
-                if ((property.Spec.MaxSize != null && opc.EDT is not null && opc.EDT.Length > property.Spec.MaxSize)
-                    || (property.Spec.MinSize != null && opc.EDT is not null && opc.EDT.Length < property.Spec.MinSize))
+                if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
+                    || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
                 {
                     //スペック外なので、格納しない
                     hasError = true;
@@ -1578,12 +1518,12 @@ namespace EchoDotNetLite
                 }
                 else
                 {
-                    property.Value = opc.EDT;
+                    property.SetValue(opc.EDT.Span);
                     //ノードプロファイルのインスタンスリスト通知の場合
                     if (sourceNode.NodeProfile == sourceObject
                         && opc.EPC == 0xD5)
                     {
-                        インスタンスリスト通知受信(sourceNode, opc.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={opc.EPC:X2})"));
+                        インスタンスリスト通知受信(sourceNode, opc.EDT.Span);
                     }
                 }
                 //EPC には通知時と同じプロパティコードを設定するが、

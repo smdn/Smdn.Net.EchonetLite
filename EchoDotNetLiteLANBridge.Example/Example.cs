@@ -69,13 +69,15 @@ namespace EchoDotNetLiteLANBridge.Example
             }
         }
 
-        private void LogEchoPropertyValueChanged(object sender, byte[] e)
+        private void LogEchoPropertyValueChanged(object sender, ReadOnlyMemory<byte> e)
         {
             if (sender is EchoPropertyInstance echoPropertyInstance)
             {
-                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e)}");
+                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e.Span)}");
             }
         }
+
+        private delegate void インスタンスリスト通知受信(EchoNode sourceNode, ReadOnlySpan<byte> edt);
 
         public async Task ExecuteAsync()
         {
@@ -99,8 +101,9 @@ namespace EchoDotNetLiteLANBridge.Example
 
                 //インスタンスリスト通知受信を自ノードインスタンスリストSの値で、Reflectionを使って呼び出す
                 var method = echoClient.GetType().GetMethod("インスタンスリスト通知受信", BindingFlags.Instance | BindingFlags.NonPublic);
-                method.Invoke(echoClient, new object[]{エミュレーターノード,
-                    エミュレーターノード.NodeProfile.GETProperties.First(p => p.Spec.Code == 0xD6).Value });
+                var methodDelegate = method.CreateDelegate<インスタンスリスト通知受信>(echoClient);
+                methodDelegate(エミュレーターノード,
+                    エミュレーターノード.NodeProfile.GETProperties.First(p => p.Spec.Code == 0xD6).ValueSpan);
 
                 _logger.LogDebug("プロパティマップ読み込み完了まで待機");
                 while (!エミュレーターノード.Devices.All(d=>d.IsPropertyMapGet))
@@ -121,18 +124,18 @@ namespace EchoDotNetLiteLANBridge.Example
                     sb.AppendLine($"{device.Spec.Class.ClassNameOfficial}");
                     foreach(var prop in device.GETProperties)
                     {
-                        sb.AppendLine($"\t0x{prop.Spec.Code:X2} {prop.Spec.Name}\t{BytesConvert.ToHexString(prop.Value)}");
+                        sb.AppendLine($"\t0x{prop.Spec.Code:X2} {prop.Spec.Name}\t{BytesConvert.ToHexString(prop.ValueSpan)}");
                     }
                     _logger.LogInformation(sb.ToString());
                 }
 
                 var HomeAirConditioner = エミュレーターノード.Devices.Where(d => d.Spec.ClassGroup.ClassGroupCode == 0x01 && d.Spec.Class.ClassCode == 0x30).First();
-                HomeAirConditioner.SETProperties.First(p => p.Spec.Code == 0x80).Value = new byte[] { 0x30 };//0x80電源,0x30 ON
+                HomeAirConditioner.SETProperties.First(p => p.Spec.Code == 0x80).SetValue(new byte[] { 0x30 });//0x80電源,0x30 ON
                 await echoClient.プロパティ値書き込み応答要(
                     echoClient.SelfNode.NodeProfile//ノードプロファイルから
                     , エミュレーターノード
                     , HomeAirConditioner
-                    , HomeAirConditioner.SETProperties.Where(p=>p.Spec.Code== 0x80) 
+                    , HomeAirConditioner.SETProperties.Where(p=>p.Spec.Code== 0x80)
                     );
                 while (true)
                 {
