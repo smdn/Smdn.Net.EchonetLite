@@ -161,5 +161,74 @@ public partial class PropertyContentSerializerTests {
   {
     Assert.IsFalse(PropertyContentSerializer.TryDeserializeInstanceListNotification(content.AsSpan(), out _));
   }
+
+  [Test]
+  public void TryDeserializePropertyMap_NotationType1()
+  {
+    Assert.IsTrue(
+      PropertyContentSerializer.TryDeserializePropertyMap(
+        new byte[] { 0x0A, 0x80, 0x81, 0x82, 0x83, 0x88, 0x8A, 0x9D, 0x9E, 0x9F, 0xE0 }.AsSpan(),
+        out var propertyMap
+      )
+    );
+
+    Assert.IsNotNull(propertyMap, nameof(propertyMap));
+    Assert.AreEqual(10, propertyMap!.Count, nameof(propertyMap));
+    CollectionAssert.AreEqual(
+      new byte[] { 0x80, 0x81, 0x82, 0x83, 0x88, 0x8A, 0x9D, 0x9E, 0x9F, 0xE0 },
+      propertyMap,
+      nameof(propertyMap)
+    );
+  }
+
+  [Test]
+  public void TryDeserializePropertyMap_NotationType1_ContentTooShort()
+  {
+    Assert.IsFalse(PropertyContentSerializer.TryDeserializePropertyMap(new byte[] { 0x01 }.AsSpan(), out _), "case #1");
+    Assert.IsFalse(PropertyContentSerializer.TryDeserializePropertyMap(new byte[] { 0x02, 0x80 }.AsSpan(), out _), "case #2");
+    Assert.IsFalse(PropertyContentSerializer.TryDeserializePropertyMap(new byte[] { 0x0F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D }.AsSpan(), out _), "case #3");
+  }
+
+  [Test]
+  public void TryDeserializePropertyMap_NotationType2()
+  {
+    Assert.IsTrue(
+      PropertyContentSerializer.TryDeserializePropertyMap(
+        new byte[] { 0x16, 0x0B, 0x01, 0x01, 0x09, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03 }.AsSpan(),
+        out var propertyMap
+      )
+    );
+
+    Assert.IsNotNull(propertyMap, nameof(propertyMap));
+    Assert.AreEqual(22, propertyMap!.Count, nameof(propertyMap));
+    CollectionAssert.AreEquivalent(
+      new byte[] { 0x80, 0x81, 0x82, 0x83, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F, 0xB0, 0xB3 },
+      propertyMap,
+      nameof(propertyMap)
+    );
+  }
+
+  [Test]
+  public void TryDeserializePropertyMap_NotationType2_ContentTooShort()
+  {
+    Assert.IsFalse(PropertyContentSerializer.TryDeserializePropertyMap(new byte[] { (byte)16 }.AsSpan(), out _), "case #1");
+    Assert.IsFalse(PropertyContentSerializer.TryDeserializePropertyMap(new byte[] { (byte)16, 0x00 }.AsSpan(), out _), "case #2");
+    Assert.IsFalse(PropertyContentSerializer.TryDeserializePropertyMap(new byte[] { (byte)16, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E }.AsSpan(), out _), "case #3");
+  }
+
+  [Test]
+  public void TryDeserializePropertyMap_NoProperties()
+  {
+    Assert.IsTrue(
+      PropertyContentSerializer.TryDeserializePropertyMap(
+        new byte[] { 0x00 /* count = 0 */ }.AsSpan(),
+        out var propertyMap
+      )
+    );
+
+    Assert.IsNotNull(propertyMap, nameof(propertyMap));
+    Assert.AreEqual(0, propertyMap!.Count, nameof(propertyMap));
+    CollectionAssert.IsEmpty(propertyMap, nameof(propertyMap));
+  }
 }
 

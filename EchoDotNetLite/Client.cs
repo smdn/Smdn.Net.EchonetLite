@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -882,7 +881,11 @@ namespace EchoDotNetLite
                         //状変アナウンスプロパティマップ
                         case 0x9D:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
+                            if (pr.EDT is null)
+                                throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})");
+                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT, out var propertyMap))
+                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -895,7 +898,11 @@ namespace EchoDotNetLite
                         //Set プロパティマップ
                         case 0x9E:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
+                            if (pr.EDT is null)
+                                throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})");
+                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT, out var propertyMap))
+                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -908,7 +915,11 @@ namespace EchoDotNetLite
                         //Get プロパティマップ
                         case 0x9F:
                         {
-                            var propertyMap = ParsePropertyMap(pr.EDT ?? throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})"));
+                            if (pr.EDT is null)
+                                throw new InvalidOperationException($"EDT is null (EPC={pr.EPC:X2})");
+                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT, out var propertyMap))
+                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+
                             foreach (var propertyCode in propertyMap)
                             {
                                 if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
@@ -948,64 +959,6 @@ namespace EchoDotNetLite
                 _logger?.LogTrace(sb.ToString());
                 device.IsPropertyMapGet = true;
             });
-        }
-
-        public static List<byte> ParsePropertyMap(byte[] value)
-        {
-            using (var ms = new MemoryStream(value))
-            using (var br = new BinaryReader(ms))
-            {
-                var epcList = new List<byte>();
-                var count = br.ReadByte();
-                if (count < 0x10)
-                {
-                    //パターン1
-                    for (var i = 0; i < count; i++)
-                    {
-                        epcList.Add(br.ReadByte());
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < 16; i++)
-                    {
-                        var flag = br.ReadByte();
-                        if ((flag & 0b10000000) == 0b10000000)
-                        {
-                            epcList.Add((byte)(0xF0 | (byte)i));
-                        }
-                        if ((flag & 0b01000000) == 0b01000000)
-                        {
-                            epcList.Add((byte)(0xE0 | (byte)i));
-                        }
-                        if ((flag & 0b00100000) == 0b00100000)
-                        {
-                            epcList.Add((byte)(0xD0 | (byte)i));
-                        }
-                        if ((flag & 0b00010000) == 0b00010000)
-                        {
-                            epcList.Add((byte)(0xC0 | (byte)i));
-                        }
-                        if ((flag & 0b00001000) == 0b00001000)
-                        {
-                            epcList.Add((byte)(0xB0 | (byte)i));
-                        }
-                        if ((flag & 0b00000100) == 0b00000100)
-                        {
-                            epcList.Add((byte)(0xA0 | (byte)i));
-                        }
-                        if ((flag & 0b00000010) == 0b00000010)
-                        {
-                            epcList.Add((byte)(0x90 | (byte)i));
-                        }
-                        if ((flag & 0b00000001) == 0b00000001)
-                        {
-                            epcList.Add((byte)(0x80 | (byte)i));
-                        }
-                    }
-                }
-                return epcList;
-            }
         }
 
         private void ReceiveFrame(object? sender, (IPAddress address, Frame frame) value)
