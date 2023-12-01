@@ -946,14 +946,18 @@ namespace EchoDotNetLite
                     device.Properties.Add(property);
                 }
 
-                var sb = new StringBuilder();
-                sb.AppendLine("------");
-                foreach (var temp in device.Properties)
+                if (_logger is not null)
                 {
-                    sb.AppendFormat("\t{0}\r\n", temp.GetDebugString());
+                    var sb = new StringBuilder();
+                    sb.AppendLine("------");
+                    foreach (var temp in device.Properties)
+                    {
+                        sb.AppendFormat("\t{0}\r\n", temp.GetDebugString());
+                    }
+                    sb.AppendLine("------");
+                    _logger.LogTrace(sb.ToString());
                 }
-                sb.AppendLine("------");
-                _logger?.LogTrace(sb.ToString());
+
                 device.IsPropertyMapGet = true;
             });
         }
