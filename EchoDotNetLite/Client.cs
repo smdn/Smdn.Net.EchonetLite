@@ -37,14 +37,14 @@ namespace EchoDotNetLite
                 address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
                 nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
             );
-            NodeList = new List<EchoNode>();
+            Nodes = new List<EchoNode>();
             //自己消費用
             FrameReceived += ProcessReceivedFrame;
         }
 
         public EchoNode SelfNode { get; }
 
-        public List<EchoNode> NodeList { get; set; }
+        public List<EchoNode> Nodes { get; set; }
 
         /// <summary>
         /// 新しいECHONET Lite ノードが発見されたときに発生するイベント。
@@ -999,7 +999,7 @@ namespace EchoDotNetLite
                 if (value.frame.EDATA is not EDATA1 edata)
                     throw new InvalidOperationException($"expected {nameof(EDATA1)}, but was {value.frame.EDATA?.GetType()}");
 
-                var sourceNode = NodeList.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
+                var sourceNode = Nodes.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
                 //未知のノードの場合
                 if (sourceNode == null)
                 {
@@ -1009,7 +1009,7 @@ namespace EchoDotNetLite
                         address: value.address,
                         nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
                     );
-                    NodeList.Add(sourceNode);
+                    Nodes.Add(sourceNode);
                     NodeJoined?.Invoke(this,sourceNode);
                 }
                 EchoObjectInstance? destObject = null;

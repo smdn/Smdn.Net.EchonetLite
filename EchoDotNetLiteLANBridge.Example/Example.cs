@@ -90,7 +90,7 @@ namespace EchoDotNetLiteLANBridge.Example
                     address: IPAddress.Parse("192.168.11.11"),
                     nodeProfile: new EchoObjectInstance(EchoDotNetLite.Specifications.プロファイル.ノードプロファイル, 0x01)
                 );
-                echoClient.NodeList.Add(エミュレーターノード);
+                echoClient.Nodes.Add(エミュレーターノード);
 
                 await echoClient.プロパティ値読み出し(
                     echoClient.SelfNode.NodeProfile//ノードプロファイルから
