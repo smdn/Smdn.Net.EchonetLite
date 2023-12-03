@@ -58,7 +58,7 @@ namespace EchoDotNetLite
             return ++tid;
         }
 
-        public async Task インスタンスリスト通知Async(
+        public async ValueTask インスタンスリスト通知Async(
           CancellationToken cancellationToken = default
         )
         {
@@ -91,7 +91,7 @@ namespace EchoDotNetLite
                 , cancellationToken
                 );
         }
-        public async Task インスタンスリスト通知要求Async(
+        public async ValueTask インスタンスリスト通知要求Async(
           CancellationToken cancellationToken = default
         )
         {
@@ -625,7 +625,7 @@ namespace EchoDotNetLite
         /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
-        public Task プロパティ値通知要求(
+        public ValueTask プロパティ値通知要求(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
@@ -655,7 +655,7 @@ namespace EchoDotNetLite
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="timeout"></param>
-        public Task 自発プロパティ値通知(
+        public ValueTask 自発プロパティ値通知(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
@@ -817,8 +817,8 @@ namespace EchoDotNetLite
         /// 呼び出し元は、送信するECHONET Lite フレームを、引数として渡される<see cref="IBufferWriter{byte}"/>に書き込む必要があります。
         /// </param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
-        /// <returns>非同期の操作を表す<see cref="Task"/>。</returns>
-        private async Task SendFrameAsync(IPAddress? address, Action<IBufferWriter<byte>> writeFrame, CancellationToken cancellationToken)
+        /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
+        private async ValueTask SendFrameAsync(IPAddress? address, Action<IBufferWriter<byte>> writeFrame, CancellationToken cancellationToken)
         {
             await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
