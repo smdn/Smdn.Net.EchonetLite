@@ -156,13 +156,15 @@ namespace EchoDotNetLite
             using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
 
             try {
-                return await プロパティ値書き込み要求応答不要(
+                var processedProperties = await プロパティ値書き込み要求応答不要(
                     sourceObject,
                     destinationNode,
                     destinationObject,
                     properties,
                     cts.Token
                 ).ConfigureAwait(false);
+
+                return (false, processedProperties);
             }
             catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
                 return (true, null);
@@ -177,15 +179,18 @@ namespace EchoDotNetLite
         /// <param name="destinationObject"></param>
         /// <param name="properties"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns>true:タイムアウトまでに不可応答なし,false:不可応答</returns>
-        public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み要求応答不要(
+        /// <returns>
+        /// 非同期の操作を表す<see cref="Task{List{PropertyRequest}}"/>。
+        /// 書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// </returns>
+        public async Task<List<PropertyRequest>> プロパティ値書き込み要求応答不要(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken)
         {
-            var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
+            var responseTCS = new TaskCompletionSource<List<PropertyRequest>>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
@@ -217,7 +222,7 @@ namespace EchoDotNetLite
                         target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
                     }
                 }
-                responseTCS.SetResult((false, opcList));
+                responseTCS.SetResult(opcList);
 
                 //TODO 一斉通知の不可応答の扱いが…
                 FrameReceived -= handler;
