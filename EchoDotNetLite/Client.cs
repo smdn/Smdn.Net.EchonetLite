@@ -21,6 +21,12 @@ namespace EchoDotNetLite
         private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
         private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
+        /// <summary>
+        /// <see cref="IEchonetLiteFrameHandler.DataReceived"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
+        /// ECHONET Lite ノードに対して送信されてくる要求を処理するほか、他ノードに対する要求への応答を待機する場合にも使用する。
+        /// </summary>
+        private event EventHandler<(IPAddress, Frame)>? FrameReceived;
+
         public EchoClient(IPAddress nodeAddress, IEchonetLiteFrameHandler handler, ILogger<EchoClient>? logger = null)
         {
             _logger = logger;
@@ -33,14 +39,12 @@ namespace EchoDotNetLite
             );
             NodeList = new List<EchoNode>();
             //自己消費用
-            OnFrameReceived += ReceiveFrame;
+            FrameReceived += ReceiveFrame;
         }
 
         public EchoNode SelfNode { get; }
 
         public List<EchoNode> NodeList { get; set; }
-
-        public event EventHandler<(IPAddress, Frame)>? OnFrameReceived;
 
         public event EventHandler<EchoNode>? OnNodeJoined;
 
@@ -185,7 +189,7 @@ namespace EchoDotNetLite
                 if (cancellationToken.IsCancellationRequested)
                 {
                     _ = responseTCS.TrySetCanceled(cancellationToken);
-                    OnFrameReceived -= handler;
+                    FrameReceived -= handler;
                     return;
                 }
 
@@ -213,9 +217,9 @@ namespace EchoDotNetLite
                 responseTCS.SetResult((false, opcList));
 
                 //TODO 一斉通知の不可応答の扱いが…
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
             };
-            OnFrameReceived += handler;
+            FrameReceived += handler;
 
             await RequestAsync
             (
@@ -244,7 +248,7 @@ namespace EchoDotNetLite
                     //成功した書き込みを反映(全部OK)
                     target.SetValue(prop.ValueSpan);
                 }
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
 
                 throw;
             }
@@ -305,7 +309,7 @@ namespace EchoDotNetLite
                 if (cancellationToken.IsCancellationRequested)
                 {
                     _ = responseTCS.TrySetCanceled(cancellationToken);
-                    OnFrameReceived -= handler;
+                    FrameReceived -= handler;
                     return;
                 }
 
@@ -332,9 +336,9 @@ namespace EchoDotNetLite
                 }
                 responseTCS.SetResult((edata.ESV == ESV.Set_Res, opcList));
                 //TODO 一斉通知の応答の扱いが…
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
             };
-            OnFrameReceived += handler;
+            FrameReceived += handler;
 
             await RequestAsync
             (
@@ -357,7 +361,7 @@ namespace EchoDotNetLite
                 }
             }
             catch {
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
 
                 throw;
             }
@@ -418,7 +422,7 @@ namespace EchoDotNetLite
                 if (cancellationToken.IsCancellationRequested)
                 {
                     _ = responseTCS.TrySetCanceled(cancellationToken);
-                    OnFrameReceived -= handler;
+                    FrameReceived -= handler;
                     return;
                 }
 
@@ -445,9 +449,9 @@ namespace EchoDotNetLite
                 }
                 responseTCS.SetResult((edata.ESV == ESV.Get_Res, opcList));
                 //TODO 一斉通知の応答の扱いが…
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
             };
-            OnFrameReceived += handler;
+            FrameReceived += handler;
 
             await RequestAsync
             (
@@ -470,7 +474,7 @@ namespace EchoDotNetLite
                 }
             }
             catch {
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
 
                 throw;
             }
@@ -535,7 +539,7 @@ namespace EchoDotNetLite
                 if (cancellationToken.IsCancellationRequested)
                 {
                     _ = responseTCS.TrySetCanceled(cancellationToken);
-                    OnFrameReceived -= handler;
+                    FrameReceived -= handler;
                     return;
                 }
 
@@ -572,9 +576,9 @@ namespace EchoDotNetLite
                 }
                 responseTCS.SetResult((edata.ESV == ESV.SetGet_Res, opcSetList, opcGetList));
                 //TODO 一斉通知の応答の扱いが…
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
             };
-            OnFrameReceived += handler;
+            FrameReceived += handler;
 
             await RequestAsync
             (
@@ -598,7 +602,7 @@ namespace EchoDotNetLite
                 }
             }
             catch {
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
 
                 throw;
             }
@@ -721,7 +725,7 @@ namespace EchoDotNetLite
                 if (cancellationToken.IsCancellationRequested)
                 {
                     _ = responseTCS.TrySetCanceled(cancellationToken);
-                    OnFrameReceived -= handler;
+                    FrameReceived -= handler;
                     return;
                 }
 
@@ -735,9 +739,9 @@ namespace EchoDotNetLite
                     return;
 
                 responseTCS.SetResult(edata.GetOPCList());
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
             };
-            OnFrameReceived += handler;
+            FrameReceived += handler;
 
             await RequestAsync
             (
@@ -760,7 +764,7 @@ namespace EchoDotNetLite
                 }
             }
             catch {
-                OnFrameReceived -= handler;
+                FrameReceived -= handler;
 
                 throw;
             }
@@ -780,7 +784,7 @@ namespace EchoDotNetLite
 
             _logger?.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
 
-            OnFrameReceived?.Invoke(this, (value.address, frame));
+            FrameReceived?.Invoke(this, (value.address, frame));
         }
 
         private async Task RequestAsync(IPAddress? address, Action<IBufferWriter<byte>> writeFrame, CancellationToken cancellationToken)
