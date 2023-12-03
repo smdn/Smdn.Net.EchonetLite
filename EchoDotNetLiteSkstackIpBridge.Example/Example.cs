@@ -99,7 +99,7 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                 //まとめてもできるけど、大量に指定するとこけるのでプロパティ毎に
                 foreach (var prop in echoClient.Nodes.First().Devices.First().GETProperties)
                 {
-                    await echoClient.プロパティ値読み出し(
+                    await echoClient.プロパティ値読み出しAsync(
                         echoClient.SelfNode.Devices.First(),//コントローラー
                         node,device,new EchoPropertyInstance[] { prop }
                         , 5 * 1000);
@@ -114,7 +114,7 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                     {
                         timer.Stop();
                         Task.Run(() =>
-                            echoClient.プロパティ値読み出し(
+                            echoClient.プロパティ値読み出しAsync(
                                 echoClient.SelfNode.Devices.First(),//コントローラー
                                 node,device, properties
                                 , 20 * 1000)

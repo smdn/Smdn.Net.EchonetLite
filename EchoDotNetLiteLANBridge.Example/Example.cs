@@ -92,7 +92,7 @@ namespace EchoDotNetLiteLANBridge.Example
                 );
                 echoClient.Nodes.Add(エミュレーターノード);
 
-                await echoClient.プロパティ値読み出し(
+                await echoClient.プロパティ値読み出しAsync(
                     echoClient.SelfNode.NodeProfile//ノードプロファイルから
                     , エミュレーターノード
                     , エミュレーターノード.NodeProfile
@@ -113,7 +113,7 @@ namespace EchoDotNetLiteLANBridge.Example
 
                 foreach(var device in エミュレーターノード.Devices)
                 {
-                    await echoClient.プロパティ値読み出し(
+                    await echoClient.プロパティ値読み出しAsync(
                         echoClient.SelfNode.Devices.First()//コントローラーから
                         , エミュレーターノード
                         , device
@@ -131,7 +131,7 @@ namespace EchoDotNetLiteLANBridge.Example
 
                 var HomeAirConditioner = エミュレーターノード.Devices.Where(d => d.Spec.ClassGroup.ClassGroupCode == 0x01 && d.Spec.Class.ClassCode == 0x30).First();
                 HomeAirConditioner.SETProperties.First(p => p.Spec.Code == 0x80).SetValue(new byte[] { 0x30 });//0x80電源,0x30 ON
-                await echoClient.プロパティ値書き込み応答要(
+                await echoClient.プロパティ値書き込み応答要Async(
                     echoClient.SelfNode.NodeProfile//ノードプロファイルから
                     , エミュレーターノード
                     , HomeAirConditioner
