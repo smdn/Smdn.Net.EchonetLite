@@ -46,7 +46,10 @@ namespace EchoDotNetLite
 
         public List<EchoNode> NodeList { get; set; }
 
-        public event EventHandler<EchoNode>? OnNodeJoined;
+        /// <summary>
+        /// 新しいECHONET Lite ノードが発見されたときに発生するイベント。
+        /// </summary>
+        public event EventHandler<EchoNode>? NodeJoined;
 
         private ushort tid = 0;
         public ushort GetNewTid()
@@ -1007,7 +1010,7 @@ namespace EchoDotNetLite
                         nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
                     );
                     NodeList.Add(sourceNode);
-                    OnNodeJoined?.Invoke(this,sourceNode);
+                    NodeJoined?.Invoke(this,sourceNode);
                 }
                 EchoObjectInstance? destObject = null;
                 //自ノードプロファイル宛てのリクエストの場合

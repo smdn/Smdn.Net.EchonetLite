@@ -21,7 +21,7 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
         {
             _logger = logger;
             this.echoClient = echoClient;
-            this.echoClient.OnNodeJoined += LogNodeJoined;
+            this.echoClient.NodeJoined += LogNodeJoined;
 
             //コントローラとしてふるまう
             this.echoClient.SelfNode.Devices.Add(
