@@ -230,7 +230,7 @@ namespace EchoDotNetLite
             };
             FrameReceived += handler;
 
-            await RequestAsync
+            await SendFrameAsync
             (
                 destinationNode?.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -349,7 +349,7 @@ namespace EchoDotNetLite
             };
             FrameReceived += handler;
 
-            await RequestAsync
+            await SendFrameAsync
             (
                 destinationNode?.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -462,7 +462,7 @@ namespace EchoDotNetLite
             };
             FrameReceived += handler;
 
-            await RequestAsync
+            await SendFrameAsync
             (
                 destinationNode?.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -589,7 +589,7 @@ namespace EchoDotNetLite
             };
             FrameReceived += handler;
 
-            await RequestAsync
+            await SendFrameAsync
             (
                 destinationNode?.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -631,7 +631,7 @@ namespace EchoDotNetLite
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
-            => RequestAsync
+            => SendFrameAsync
             (
                 destinationNode?.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -661,7 +661,7 @@ namespace EchoDotNetLite
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
-            => RequestAsync
+            => SendFrameAsync
             (
                 destinationNode?.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -752,7 +752,7 @@ namespace EchoDotNetLite
             };
             FrameReceived += handler;
 
-            await RequestAsync
+            await SendFrameAsync
             (
                 destinationNode.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -808,7 +808,17 @@ namespace EchoDotNetLite
             FrameReceived?.Invoke(this, (value.address, frame));
         }
 
-        private async Task RequestAsync(IPAddress? address, Action<IBufferWriter<byte>> writeFrame, CancellationToken cancellationToken)
+        /// <summary>
+        /// ECHONET Lite フレームを送信します。
+        /// </summary>
+        /// <param name="address">送信先となるECHONET Lite ノードの<see cref="IPAddress"/>。</param>
+        /// <param name="writeFrame">
+        /// 送信するECHONET Lite フレームをバッファへ書き込むための<see cref="Action{IBufferWriter{byte}}"/>デリゲート。
+        /// 呼び出し元は、送信するECHONET Lite フレームを、引数として渡される<see cref="IBufferWriter{byte}"/>に書き込む必要があります。
+        /// </param>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
+        /// <returns>非同期の操作を表す<see cref="Task"/>。</returns>
+        private async Task SendFrameAsync(IPAddress? address, Action<IBufferWriter<byte>> writeFrame, CancellationToken cancellationToken)
         {
             await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -1151,7 +1161,7 @@ namespace EchoDotNetLite
             }
             if (hasError)
             {
-                await RequestAsync
+                await SendFrameAsync
                 (
                     request.address,
                     buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -1216,7 +1226,7 @@ namespace EchoDotNetLite
             }
             if (hasError)
             {
-                await RequestAsync
+                await SendFrameAsync
                 (
                     request.address,
                     buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -1234,7 +1244,7 @@ namespace EchoDotNetLite
                 return false;
             }
 
-            await RequestAsync
+            await SendFrameAsync
             (
                 request.address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -1297,7 +1307,7 @@ namespace EchoDotNetLite
             }
             if (hasError)
             {
-                await RequestAsync
+                await SendFrameAsync
                 (
                     request.address,
                     buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -1315,7 +1325,7 @@ namespace EchoDotNetLite
                 return false;
             }
 
-            await RequestAsync
+            await SendFrameAsync
             (
                 request.address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -1402,7 +1412,7 @@ namespace EchoDotNetLite
             }
             if (hasError)
             {
-                await RequestAsync
+                await SendFrameAsync
                 (
                     request.address,
                     buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -1421,7 +1431,7 @@ namespace EchoDotNetLite
                 return false;
             }
 
-            await RequestAsync
+            await SendFrameAsync
             (
                 request.address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -1571,7 +1581,7 @@ namespace EchoDotNetLite
             }
             if (destObject != null)
             {
-                await RequestAsync
+                await SendFrameAsync
                 (
                     request.address,
                     buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
