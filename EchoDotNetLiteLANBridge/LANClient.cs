@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace EchoDotNetLiteLANBridge
 {
-    public class LANClient : IEchonetLiteFrameHandler, IDisposable
+    public class LANClient : IEchonetLiteHandler, IDisposable
     {
         private readonly UdpClient receiveUdpClient;
         private readonly ILogger _logger;
@@ -45,7 +45,7 @@ namespace EchoDotNetLiteLANBridge
                             continue;
                         }
                         _logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address} {BytesConvert.ToHexString(receivedResults.Buffer)}");
-                        DataReceived?.Invoke(this, (receivedResults.RemoteEndPoint.Address, receivedResults.Buffer.AsMemory()));
+                        Received?.Invoke(this, (receivedResults.RemoteEndPoint.Address, receivedResults.Buffer.AsMemory()));
                     }
                 }
                 catch (System.ObjectDisposedException)
@@ -59,7 +59,7 @@ namespace EchoDotNetLiteLANBridge
             });
         }
 
-        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)> DataReceived;
+        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)> Received;
 
         public void Dispose()
         {
@@ -75,7 +75,7 @@ namespace EchoDotNetLiteLANBridge
         }
 
 #nullable enable
-        public async Task RequestAsync(IPAddress? address, ReadOnlyMemory<byte> request, CancellationToken cancellationToken)
+        public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             IPEndPoint remote;
             if (address == null)
@@ -87,7 +87,7 @@ namespace EchoDotNetLiteLANBridge
                 remote = new IPEndPoint(address, DefaultUdpPort);
             }
 
-            _logger.LogDebug($"UDP送信:{remote.Address} {BytesConvert.ToHexString(request.Span)}");
+            _logger.LogDebug($"UDP送信:{remote.Address} {BytesConvert.ToHexString(data.Span)}");
 
             var sendUdpClient = new UdpClient()
             {
@@ -95,9 +95,9 @@ namespace EchoDotNetLiteLANBridge
             };
             sendUdpClient.Connect(remote);
 #if NET6_0_OR_GREATER
-            await sendUdpClient.SendAsync(request, cancellationToken);
+            await sendUdpClient.SendAsync(data, cancellationToken);
 #else
-            await sendUdpClient.SendAsync(request.ToArray(), request.Length);
+            await sendUdpClient.SendAsync(data.ToArray(), data.Length);
 #endif
             sendUdpClient.Close();
         }

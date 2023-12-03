@@ -16,24 +16,24 @@ namespace EchoDotNetLite
 {
     public class EchoClient
     {
-        private readonly IEchonetLiteFrameHandler _echoFrameHandler;
+        private readonly IEchonetLiteHandler _echonetLiteHandler;
         private readonly ILogger? _logger;
         private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
         private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         /// <summary>
-        /// <see cref="IEchonetLiteFrameHandler.DataReceived"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
+        /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
         /// ECHONET Lite ノードに対して送信されてくる要求を処理するほか、他ノードに対する要求への応答を待機する場合にも使用する。
         /// </summary>
         private event EventHandler<(IPAddress, Frame)>? FrameReceived;
 
         private ushort tid;
 
-        public EchoClient(IPAddress nodeAddress, IEchonetLiteFrameHandler handler, ILogger<EchoClient>? logger = null)
+        public EchoClient(IPAddress nodeAddress, IEchonetLiteHandler echonetLiteHandler, ILogger<EchoClient>? logger = null)
         {
             _logger = logger;
-            _echoFrameHandler = handler;
-            _echoFrameHandler.DataReceived += EchonetDataReceived;
+            _echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
+            _echonetLiteHandler.Received += EchonetDataReceived;
             SelfNode = new EchoNode
             (
                 address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
@@ -786,7 +786,7 @@ namespace EchoDotNetLite
             => new(epc: p.Spec.Code);
 
         /// <summary>
-        /// イベント<see cref="IEchonetLiteFrameHandler.DataReceived"/>をハンドルするメソッドを実装します。
+        /// イベント<see cref="IEchonetLiteHandler.Received"/>をハンドルするメソッドを実装します。
         /// </summary>
         /// <remarks>
         /// 受信したデータがECHONET Lite フレームの場合は、イベント<see cref="FrameReceived"/>をトリガします。
@@ -811,7 +811,7 @@ namespace EchoDotNetLite
         /// <summary>
         /// ECHONET Lite フレームを送信します。
         /// </summary>
-        /// <param name="address">送信先となるECHONET Lite ノードの<see cref="IPAddress"/>。</param>
+        /// <param name="address">送信先となるECHONET Lite ノードの<see cref="IPAddress"/>。　<see langword="null"/>の場合は、サブネット内のすべてのノードに対して一斉同報送信を行います。</param>
         /// <param name="writeFrame">
         /// 送信するECHONET Lite フレームをバッファへ書き込むための<see cref="Action{IBufferWriter{byte}}"/>デリゲート。
         /// 呼び出し元は、送信するECHONET Lite フレームを、引数として渡される<see cref="IBufferWriter{byte}"/>に書き込む必要があります。
@@ -840,7 +840,7 @@ namespace EchoDotNetLite
 #endif
                 }
 
-                await _echoFrameHandler.RequestAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken);
+                await _echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken);
             }
             finally {
                 // reset written count to reuse the buffer for the next write

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace EchoDotNetLiteSkstackIpBridge
 {
-    public class SkstackIpPANAClient : IEchonetLiteFrameHandler, IDisposable
+    public class SkstackIpPANAClient : IEchonetLiteHandler, IDisposable
     {
         private readonly ILogger _logger;
         private readonly SKDevice SKDevice;
@@ -101,15 +101,15 @@ namespace EchoDotNetLiteSkstackIpBridge
             }
         }
 
-        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)> DataReceived;
+        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)> Received;
 
         public void ReceivedERXUDP(object sender, ERXUDP erxudp)
         {
-            DataReceived?.Invoke(this, (IPAddress.Parse(erxudp.Sender), BytesConvert.FromHexString(erxudp.Data)));
+            Received?.Invoke(this, (IPAddress.Parse(erxudp.Sender), BytesConvert.FromHexString(erxudp.Data)));
         }
 
 #nullable enable
-        public async Task RequestAsync(IPAddress? address, ReadOnlyMemory<byte> request,CancellationToken cancellationToken)
+        public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data,CancellationToken cancellationToken)
         {
             if (address == null)
             {
@@ -120,7 +120,7 @@ namespace EchoDotNetLiteSkstackIpBridge
                 address.ToString(),
                 "0E1A",
                 SKSendToSec.SecOrNotTransfer,
-                request.ToArray()); // TODO: support sending ReadOnlyMemory<byte>
+                data.ToArray()); // TODO: support sending ReadOnlyMemory<byte>
         }
 #nullable restore
 
