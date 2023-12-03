@@ -27,6 +27,8 @@ namespace EchoDotNetLite
         /// </summary>
         private event EventHandler<(IPAddress, Frame)>? FrameReceived;
 
+        private ushort tid;
+
         public EchoClient(IPAddress nodeAddress, IEchonetLiteFrameHandler handler, ILogger<EchoClient>? logger = null)
         {
             _logger = logger;
@@ -51,8 +53,7 @@ namespace EchoDotNetLite
         /// </summary>
         public event EventHandler<EchoNode>? NodeJoined;
 
-        private ushort tid = 0;
-        public ushort GetNewTid()
+        private ushort GetNewTid()
         {
             return ++tid;
         }
