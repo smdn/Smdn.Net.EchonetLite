@@ -189,7 +189,7 @@ namespace EchoDotNetLite
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
-            , CancellationToken cancellationToken)
+            , CancellationToken cancellationToken) // 同名メソッドのtimeoutMillisecondsも省略可能なので、cancellationTokenを省略可能にすると、オーバーロード呼び出しを区別できなくなる
         {
             var responseTCS = new TaskCompletionSource<List<PropertyRequest>>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
@@ -309,7 +309,7 @@ namespace EchoDotNetLite
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
-            , CancellationToken cancellationToken)
+            , CancellationToken cancellationToken) // 同名メソッドのtimeoutMillisecondsも省略可能なので、cancellationTokenを省略可能にすると、オーバーロード呼び出しを区別できなくなる
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
@@ -422,7 +422,7 @@ namespace EchoDotNetLite
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
-            , CancellationToken cancellationToken)
+            , CancellationToken cancellationToken) // 同名メソッドのtimeoutMillisecondsも省略可能なので、cancellationTokenを省略可能にすると、オーバーロード呼び出しを区別できなくなる
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
@@ -539,7 +539,7 @@ namespace EchoDotNetLite
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> propertiesSet
             , IEnumerable<EchoPropertyInstance> propertiesGet
-            , CancellationToken cancellationToken)
+            , CancellationToken cancellationToken) // 同名メソッドのtimeoutMillisecondsも省略可能なので、cancellationTokenを省略可能にすると、オーバーロード呼び出しを区別できなくなる
         {
             var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>, List<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
@@ -722,7 +722,7 @@ namespace EchoDotNetLite
             , EchoNode destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
-            , CancellationToken cancellationToken)
+            , CancellationToken cancellationToken = default)
         {
             if (destinationNode is null)
                 throw new ArgumentNullException(nameof(destinationNode));
