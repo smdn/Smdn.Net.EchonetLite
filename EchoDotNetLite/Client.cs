@@ -31,7 +31,7 @@ namespace EchoDotNetLite
         {
             _logger = logger;
             _echoFrameHandler = handler;
-            _echoFrameHandler.DataReceived += ReceiveEvent;
+            _echoFrameHandler.DataReceived += EchonetDataReceived;
             SelfNode = new EchoNode
             (
                 address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
@@ -776,7 +776,19 @@ namespace EchoDotNetLite
         private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchoPropertyInstance p)
             => new(epc: p.Spec.Code);
 
-        private void ReceiveEvent(object? sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
+        /// <summary>
+        /// イベント<see cref="IEchonetLiteFrameHandler.DataReceived"/>をハンドルするメソッドを実装します。
+        /// </summary>
+        /// <remarks>
+        /// 受信したデータがECHONET Lite フレームの場合は、イベント<see cref="FrameReceived"/>をトリガします。
+        /// それ以外の場合は、無視して処理を中断します。
+        /// </remarks>
+        /// <param name="sender">イベントのソース。</param>
+        /// <param name="value">
+        /// イベントデータを格納している<see cref="ValueTuple{IPAddress,ReadOnlyMemory{byte}}"/>。
+        /// データの送信元を表す<see cref="IPAddress"/>と、受信したデータを表す<see cref="ReadOnlyMemory{byte}"/>を保持します。
+        /// </param>
+        private void EchonetDataReceived(object? sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
             if (!FrameSerializer.TryDeserialize(value.data.Span, out var frame))
                 // ECHONETLiteフレームではないため無視
