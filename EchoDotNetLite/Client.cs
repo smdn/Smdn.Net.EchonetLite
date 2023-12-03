@@ -44,7 +44,7 @@ namespace EchoDotNetLite
 
         public EchoNode SelfNode { get; }
 
-        public List<EchoNode> Nodes { get; set; }
+        public ICollection<EchoNode> Nodes { get; }
 
         /// <summary>
         /// 新しいECHONET Lite ノードが発見されたときに発生するイベント。
