@@ -183,7 +183,7 @@ namespace EchoDotNetLite
                 ))
                 , Enumerable.Repeat(property, 1)
                 , cancellationToken
-                );
+                ).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -220,7 +220,7 @@ namespace EchoDotNetLite
                 ))
                 , properties
                 , cancellationToken
-                );
+                ).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -304,7 +304,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException ex) when (cancellationToken.Equals(ex.CancellationToken)) {
@@ -401,7 +401,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch {
@@ -492,7 +492,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch {
@@ -596,7 +596,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch {
@@ -754,7 +754,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch {
@@ -828,7 +828,7 @@ namespace EchoDotNetLite
 #endif
                 }
 
-                await _echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken);
+                await _echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
             }
             finally {
                 // reset written count to reuse the buffer for the next write
@@ -846,11 +846,11 @@ namespace EchoDotNetLite
         /// </summary>
         /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
         /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{byte}"/>。</param>
-        private void インスタンスリスト通知受信(EchoNode sourceNode, ReadOnlySpan<byte> edt)
+        private async ValueTask インスタンスリスト通知受信Async(EchoNode sourceNode, ReadOnlyMemory<byte> edt)
         {
             _logger?.LogTrace("インスタンスリスト通知を受信しました");
 
-            if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt, out var instanceList))
+            if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt.Span, out var instanceList))
                 return; // XXX
 
             foreach (var eoj in instanceList)
@@ -864,14 +864,14 @@ namespace EchoDotNetLite
                 if (!device.IsPropertyMapGet)
                 {
                     _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
-                    プロパティマップ読み取り(sourceNode, device);
+                    await プロパティマップ読み取りAsync(sourceNode, device).ConfigureAwait(false);
                 }
             }
 
             if (!sourceNode.NodeProfile.IsPropertyMapGet)
             {
                 _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
-                プロパティマップ読み取り(sourceNode, sourceNode.NodeProfile);
+                await プロパティマップ読み取りAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
             }
         }
 
@@ -889,112 +889,126 @@ namespace EchoDotNetLite
         /// <param name="sourceNode">対象のECHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
         /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
         /// <exception cref="InvalidOperationException">受信したEDTは無効なプロパティマップです。</exception>
-        private void プロパティマップ読み取り(EchoNode sourceNode, EchoObjectInstance device)
+        private async ValueTask プロパティマップ読み取りAsync(EchoNode sourceNode, EchoObjectInstance device)
         {
-            プロパティ値読み出し(SelfNode.NodeProfile, sourceNode, device
-                    , device.Properties.Where(p =>
+            using var ctsTimeout = CreateTimeoutCancellationTokenSource(20_000);
+
+            bool result;
+            IReadOnlyCollection<PropertyRequest> props;
+
+            try
+            {
+                (result, props) = await PerformPropertyValueReadRequestAsync
+                (
+                    sourceObject: SelfNode.NodeProfile,
+                    destinationNode: sourceNode,
+                    destinationObject: device,
+                    properties: device.Properties.Where(static p =>
                         p.Spec.Code == 0x9D //状変アナウンスプロパティマップ
                         || p.Spec.Code == 0x9E //Set プロパティマップ
                         || p.Spec.Code == 0x9F //Get プロパティマップ
-                    ),20000
-            ).ContinueWith((result) =>
+                    ),
+                    cancellationToken: ctsTimeout.Token
+                ).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (ctsTimeout.Token.Equals(ex.CancellationToken))
             {
-                if (!result.IsCompletedSuccessfully)
+                _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りがタイムアウトしました");
+                return;
+            }
+
+            //不可応答は無視
+            if (!result)
+            {
+                _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りで不可応答が返答されました");
+                return;
+            }
+
+            _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
+
+            var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
+            foreach (var pr in props)
+            {
+                switch (pr.EPC)
                 {
-                    _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りがタイムアウトしました");
-                    return;
-                }
-                //不可応答は無視
-                if (!result.Result.Item1)
-                {
-                    _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りで不可応答が返答されました");
-                    return;
-                }
-                _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
-                var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
-                foreach (var pr in result.Result.Item2)
-                {
-                    switch (pr.EPC)
+                    //状変アナウンスプロパティマップ
+                    case 0x9D:
                     {
-                        //状変アナウンスプロパティマップ
-                        case 0x9D:
-                        {
-                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
-                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+                        if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
+                            throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
 
-                            foreach (var propertyCode in propertyMap)
-                            {
-                                if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
-                                    cap.Anno = true;
-                                else
-                                    propertyCapabilityMap[propertyCode] = new() { Anno = true };
-                            }
-                            break;
-                        }
-                        //Set プロパティマップ
-                        case 0x9E:
+                        foreach (var propertyCode in propertyMap)
                         {
-                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
-                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
-
-                            foreach (var propertyCode in propertyMap)
-                            {
-                                if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
-                                    cap.Set = true;
-                                else
-                                    propertyCapabilityMap[propertyCode] = new() { Set = true };
-                            }
-                            break;
+                            if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
+                                cap.Anno = true;
+                            else
+                                propertyCapabilityMap[propertyCode] = new() { Anno = true };
                         }
-                        //Get プロパティマップ
-                        case 0x9F:
+                        break;
+                    }
+                    //Set プロパティマップ
+                    case 0x9E:
+                    {
+                        if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
+                            throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+
+                        foreach (var propertyCode in propertyMap)
                         {
-                            if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
-                                throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
-
-                            foreach (var propertyCode in propertyMap)
-                            {
-                                if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
-                                    cap.Get = true;
-                                else
-                                    propertyCapabilityMap[propertyCode] = new() { Get = true };
-                            }
-                            break;
+                            if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
+                                cap.Set = true;
+                            else
+                                propertyCapabilityMap[propertyCode] = new() { Set = true };
                         }
+                        break;
+                    }
+                    //Get プロパティマップ
+                    case 0x9F:
+                    {
+                        if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
+                            throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+
+                        foreach (var propertyCode in propertyMap)
+                        {
+                            if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
+                                cap.Get = true;
+                            else
+                                propertyCapabilityMap[propertyCode] = new() { Get = true };
+                        }
+                        break;
                     }
                 }
+            }
 
-                device.Properties.Clear();
+            device.Properties.Clear();
 
-                foreach (var (code, caps) in propertyCapabilityMap)
+            foreach (var (code, caps) in propertyCapabilityMap)
+            {
+                var property = new EchoPropertyInstance
+                (
+                    device.Spec.ClassGroup.ClassGroupCode,
+                    device.Spec.Class.ClassCode,
+                    code,
+                    caps.Anno,
+                    caps.Set,
+                    caps.Get
+                );
+
+                device.Properties.Add(property);
+            }
+
+            if (_logger is not null)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("------");
+                foreach (var temp in device.Properties)
                 {
-                    var property = new EchoPropertyInstance
-                    (
-                        device.Spec.ClassGroup.ClassGroupCode,
-                        device.Spec.Class.ClassCode,
-                        code,
-                        caps.Anno,
-                        caps.Set,
-                        caps.Get
-                    );
-
-                    device.Properties.Add(property);
+                    sb.AppendFormat("\t{0}\r\n", temp.GetDebugString());
                 }
+                sb.AppendLine("------");
+                _logger.LogTrace(sb.ToString());
+            }
 
-                if (_logger is not null)
-                {
-                    var sb = new StringBuilder();
-                    sb.AppendLine("------");
-                    foreach (var temp in device.Properties)
-                    {
-                        sb.AppendFormat("\t{0}\r\n", temp.GetDebugString());
-                    }
-                    sb.AppendLine("------");
-                    _logger.LogTrace(sb.ToString());
-                }
-
-                device.IsPropertyMapGet = true;
-            });
+            device.IsPropertyMapGet = true;
         }
 
         /// <summary>
@@ -1528,7 +1542,7 @@ namespace EchoDotNetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
         /// </seealso>
-        private bool プロパティ値通知サービスAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
+        private async Task<bool> プロパティ値通知サービスAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
@@ -1573,7 +1587,7 @@ namespace EchoDotNetLite
                     if (sourceNode.NodeProfile == sourceObject
                         && opc.EPC == 0xD5)
                     {
-                        インスタンスリスト通知受信(sourceNode, opc.EDT.Span);
+                        await インスタンスリスト通知受信Async(sourceNode, opc.EDT).ConfigureAwait(false);
                     }
                 }
             }
@@ -1655,7 +1669,7 @@ namespace EchoDotNetLite
                     if (sourceNode.NodeProfile == sourceObject
                         && opc.EPC == 0xD5)
                     {
-                        インスタンスリスト通知受信(sourceNode, opc.EDT.Span);
+                        await インスタンスリスト通知受信Async(sourceNode, opc.EDT).ConfigureAwait(false);
                     }
                 }
                 //EPC には通知時と同じプロパティコードを設定するが、
