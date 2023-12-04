@@ -89,7 +89,7 @@ namespace EchoDotNetLite
                 ).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                throw new TimeoutException($"'{nameof(プロパティ値書き込み応答要Async)}'が指定されたタイムアウト時間を超過しました", ex);
+                throw new TimeoutException($"'{nameof(プロパティ値書き込み応答要)}'が指定されたタイムアウト時間を超過しました", ex);
             }
         }
 
@@ -114,7 +114,7 @@ namespace EchoDotNetLite
                 ).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                throw new TimeoutException($"'{nameof(プロパティ値読み出しAsync)}'が指定されたタイムアウト時間を超過しました", ex);
+                throw new TimeoutException($"'{nameof(プロパティ値読み出し)}'が指定されたタイムアウト時間を超過しました", ex);
             }
         }
 
@@ -141,7 +141,7 @@ namespace EchoDotNetLite
                 ).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                throw new TimeoutException($"'{nameof(プロパティ値書き込み読み出しAsync)}'が指定されたタイムアウト時間を超過しました", ex);
+                throw new TimeoutException($"'{nameof(プロパティ値書き込み読み出し)}'が指定されたタイムアウト時間を超過しました", ex);
             }
         }
 
@@ -196,7 +196,7 @@ namespace EchoDotNetLite
                 ).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                throw new TimeoutException($"'{nameof(プロパティ値通知応答要Async)}'が指定されたタイムアウト時間を超過しました", ex);
+                throw new TimeoutException($"'{nameof(プロパティ値通知応答要)}'が指定されたタイムアウト時間を超過しました", ex);
             }
         }
     }
