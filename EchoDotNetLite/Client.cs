@@ -121,6 +121,12 @@ namespace EchoDotNetLite
             }
         }
 
+        protected void ThrowIfDisposed()
+        {
+            if (_echonetLiteHandler is null)
+                throw new ObjectDisposedException(GetType().FullName);
+        }
+
         private ushort GetNewTid()
         {
             return ++tid;
@@ -886,8 +892,11 @@ namespace EchoDotNetLite
         /// </param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
         /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
+        /// <exception cref="ObjectDisposedException">オブジェクトはすでに破棄されています。</exception>
         private async ValueTask SendFrameAsync(IPAddress? address, Action<IBufferWriter<byte>> writeFrame, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
