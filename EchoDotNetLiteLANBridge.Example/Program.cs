@@ -40,7 +40,7 @@ namespace EchoDotNetLiteLANBridge.Example
                 .CreateLogger<Example>();
 
             var lanClient = serviceProvider.GetService<LANClient>();
-            serviceCollection.AddSingleton<IEchonetLiteFrameHandler, LANClient>(f => lanClient);
+            serviceCollection.AddSingleton<IEchonetLiteHandler, LANClient>(f => lanClient);
             serviceCollection.AddSingleton<EchoClient>();
             serviceProvider = serviceCollection.BuildServiceProvider();
             try
