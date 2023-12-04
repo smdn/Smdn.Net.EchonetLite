@@ -841,6 +841,11 @@ namespace EchoDotNetLite
             }
         }
 
+        /// <summary>
+        /// インスタンスリスト通知受信時の処理を行います。
+        /// </summary>
+        /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
+        /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{byte}"/>。</param>
         private void インスタンスリスト通知受信(EchoNode sourceNode, ReadOnlySpan<byte> edt)
         {
             _logger?.LogTrace("インスタンスリスト通知を受信しました");
@@ -877,6 +882,13 @@ namespace EchoDotNetLite
             public bool Get { get; set; }
         }
 
+        /// <summary>
+        /// 指定されたECHONET Lite オブジェクトに対して、ECHONETプロパティ「状変アナウンスプロパティマップ」(EPC <c>0x9D</c>)・
+        /// 「Set プロパティマップ」(EPC <c>0x9E</c>)・「Get プロパティマップ」(EPC <c>0x9F</c>)の読み出しを行います。
+        /// </summary>
+        /// <param name="sourceNode">対象のECHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
+        /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <exception cref="InvalidOperationException">受信したEDTは無効なプロパティマップです。</exception>
         private void プロパティマップ読み取り(EchoNode sourceNode, EchoObjectInstance device)
         {
             プロパティ値読み出し(SelfNode.NodeProfile, sourceNode, device
