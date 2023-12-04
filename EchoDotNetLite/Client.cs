@@ -41,6 +41,17 @@ namespace EchoDotNetLite
         {
         }
 
+        /// <summary>
+        /// <see cref="EchoClient"/>クラスのインスタンスを初期化します。
+        /// </summary>
+        /// <param name="nodeAddress">自ノードのアドレスを表す<see cref="IPAddress"/>。</param>
+        /// <param name="echonetLiteHandler">このインスタンスがECHONET Lite フレームを送受信するために使用する<see cref="IEchonetLiteHandler"/>。</param>
+        /// <param name="shouldDisposeEchonetLiteHandler">オブジェクトが破棄される際に、<paramref name="echonetLiteHandler"/>も破棄するかどうかを表す値。</param>
+        /// <param name="logger">このインスタンスの動作を記録する<see cref="ILogger{EchoClient}"/>。</param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="nodeAddress"/>が<see langword="null"/>です。
+        /// あるいは、<paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
+        /// </exception>
         public EchoClient
         (
             IPAddress nodeAddress,
@@ -132,6 +143,15 @@ namespace EchoDotNetLite
             return ++tid;
         }
 
+        /// <summary>
+        /// インスタンスリスト通知を行います。
+        /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)を設定し、ECHONET Lite サービス「INF:プロパティ値通知」(ESV <c>0x73</c>)を送信します。
+        /// </summary>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+        /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．３．１ ECHONET Lite ノードスタート時の基本シーケンス
+        /// </seealso>
         public async ValueTask インスタンスリスト通知Async(
           CancellationToken cancellationToken = default
         )
@@ -165,6 +185,16 @@ namespace EchoDotNetLite
                 , cancellationToken
                 );
         }
+
+        /// <summary>
+        /// インスタンスリスト通知要求を行います。
+        /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)に対するECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を送信します。
+        /// </summary>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+        /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
+        /// </seealso>
         public async ValueTask インスタンスリスト通知要求Async(
           CancellationToken cancellationToken = default
         )
@@ -212,15 +242,13 @@ namespace EchoDotNetLite
             return new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
         }
 
-        /// <summary>
-        /// 一斉通知可
-        /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="timeout"></param>
-        /// <returns>true:タイムアウトまでに不可応答なし,false:不可応答</returns>
+        /// <inheritdoc cref="プロパティ値書き込み要求応答不要Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
+        /// <returns>
+        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest}}}"/>。
+        /// タイムアウトまでに不可応答(SetI_SNA <c>0x50</c>)がなかった場合は<see langword="true"/>、不可応答による応答があった場合は<see langword="false"/>を返します。
+        /// また、書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// </returns>
         public async Task<(bool, List<PropertyRequest>?)> プロパティ値書き込み要求応答不要Async(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -247,17 +275,23 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// 一斉通知可
+        /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を行います。　このサービスは一斉同報が可能です。
         /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchoNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+        /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
         /// <returns>
         /// 非同期の操作を表す<see cref="Task{List{PropertyRequest}}"/>。
         /// 書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
         /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
+        /// </seealso>
         public async Task<List<PropertyRequest>> プロパティ値書き込み要求応答不要Async(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -337,15 +371,8 @@ namespace EchoDotNetLite
             }
         }
 
-        /// <summary>
-        /// 一斉通知可
-        /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="timeoutMilliseconds"></param>
-        /// <returns>true:成功の応答、false:不可応答</returns>
+        /// <inheritdoc cref="プロパティ値書き込み応答要Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み応答要Async(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -370,14 +397,24 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// 一斉通知可
+        /// ECHONET Lite サービス「SetC:プロパティ値書き込み要求（応答要）」(ESV <c>0x61</c>)を行います。　このサービスは一斉同報が可能です。
         /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>true:成功の応答、false:不可応答</returns>
+        /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchoNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+        /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
+        /// <returns>
+        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest}}}"/>。
+        /// 成功応答(Set_Res <c>0x71</c>)の場合は<see langword="true"/>、不可応答(SetC_SNA <c>0x51</c>)その他の場合は<see langword="false"/>を返します。
+        /// また、書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
+        /// </seealso>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み応答要Async(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -450,15 +487,8 @@ namespace EchoDotNetLite
             }
         }
 
-        /// <summary>
-        /// 一斉通知可
-        /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="timeoutMilliseconds"></param>
-        /// <returns>true:成功の応答、false:不可応答</returns>
+        /// <inheritdoc cref="プロパティ値読み出しAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値読み出しAsync(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -483,14 +513,24 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// 一斉通知可
+        /// ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。　このサービスは一斉同報が可能です。
         /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>true:成功の応答、false:不可応答</returns>
+        /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchoNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+        /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
+        /// <returns>
+        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest}}}"/>。
+        /// 成功応答(Get_Res <c>0x72</c>)の場合は<see langword="true"/>、不可応答(Get_SNA <c>0x52</c>)その他の場合は<see langword="false"/>を返します。
+        /// また、書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
+        /// </seealso>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値読み出しAsync(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -562,16 +602,9 @@ namespace EchoDotNetLite
                 throw;
             }
         }
-        /// <summary>
-        /// 一斉通知可
-        /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="propertiesSet"></param>
-        /// <param name="propertiesGet"></param>
-        /// <param name="timeoutMilliseconds"></param>
-        /// <returns>true:成功の応答、false:不可応答</returns></returns>
+
+        /// <inheritdoc cref="プロパティ値書き込み読み出しAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> プロパティ値書き込み読み出しAsync(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -598,15 +631,25 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// 一斉通知可
+        /// ECHONET Lite サービス「SetGet:プロパティ値書き込み・読み出し要求」(ESV <c>0x6E</c>)を行います。　このサービスは一斉同報が可能です。
         /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="propertiesSet"></param>
-        /// <param name="propertiesGet"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>true:成功の応答、false:不可応答</returns></returns>
+        /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchoNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+        /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="propertiesSet">書き込み対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
+        /// <param name="propertiesGet">読み出し対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
+        /// <returns>
+        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest},List{PropertyRequest}}}"/>。
+        /// 成功応答(SetGet_Res <c>0x7E</c>)の場合は<see langword="true"/>、不可応答(SetGet_SNA <c>0x5E</c>)その他の場合は<see langword="false"/>を返します。
+        /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="List{PropertyRequest}"/>で返します。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+        /// </seealso>
         public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> プロパティ値書き込み読み出しAsync(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -693,12 +736,22 @@ namespace EchoDotNetLite
 
 
         /// <summary>
-        /// 一斉通知可
+        /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を行います。　このサービスは一斉同報が可能です。
         /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
+        /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchoNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+        /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+        /// <returns>
+        /// 非同期の操作を表す<see cref="ValueTask"/>。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
+        /// </seealso>
         public ValueTask プロパティ値通知要求Async(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -722,13 +775,22 @@ namespace EchoDotNetLite
 
 
         /// <summary>
-        /// 一斉通知可
+        /// ECHONET Lite サービス「INF:プロパティ値通知」(ESV <c>0x73</c>)を行います。　このサービスは個別通知・一斉同報通知ともに可能です。
         /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"><see langword="null"/>の場合、一斉通知を行います。</param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="timeout"></param>
+        /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchoNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+        /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+        /// <returns>
+        /// 非同期の操作を表す<see cref="ValueTask"/>。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
+        /// </seealso>
         public ValueTask 自発プロパティ値通知Async(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -750,15 +812,8 @@ namespace EchoDotNetLite
                 cancellationToken
             );
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"></param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="timeoutMilliseconds"></param>
-        /// <returns>成功の応答</returns>
+        /// <inheritdoc cref="プロパティ値通知応答要Async(EchoObjectInstance, EchoNode, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         public async Task<List<PropertyRequest>> プロパティ値通知応答要Async(
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
@@ -783,14 +838,23 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        ///
+        /// ECHONET Lite サービス「INFC:プロパティ値通知（応答要）」(ESV <c>0x74</c>)を行います。　このサービスは個別通知のみ可能です。
         /// </summary>
-        /// <param name="sourceObject"></param>
-        /// <param name="destinationNode"></param>
-        /// <param name="destinationObject"></param>
-        /// <param name="properties"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>成功の応答</returns>
+        /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
+        /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
+        /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
+        /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+        /// <returns>
+        /// 非同期の操作を表す<see cref="Task{List{PropertyRequest}}"/>。
+        /// 通知に成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
+        /// </seealso>
         public async Task<List<PropertyRequest>> プロパティ値通知応答要Async(
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
@@ -1198,12 +1262,25 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
+        /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を処理します。
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="edata"></param>
-        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
-        /// <returns>true:成功</returns>
+        /// <param name="request">
+        /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
+        /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
+        /// </param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
+        /// <returns>
+        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
+        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
+        /// </seealso>
         private async Task<bool> プロパティ値書き込みサービス応答不要Async((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance? destObject)
         {
             if (edata.OPCList is null)
@@ -1259,12 +1336,25 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
+        /// ECHONET Lite サービス「SetC:プロパティ値書き込み要求（応答要）」(ESV <c>0x61</c>)を処理します。
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="edata"></param>
-        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
-        /// <returns>true:成功</returns>
+        /// <param name="request">
+        /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
+        /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
+        /// </param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
+        /// <returns>
+        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
+        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
+        /// </seealso>
         private async Task<bool> プロパティ値書き込みサービス応答要Async((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance? destObject)
         {
             if (edata.OPCList is null)
@@ -1340,12 +1430,25 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
+        /// ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を処理します。
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="edata"></param>
-        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
-        /// <returns>true:成功</returns>
+        /// <param name="request">
+        /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
+        /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
+        /// </param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
+        /// <returns>
+        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
+        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
+        /// </seealso>
         private async Task<bool> プロパティ値読み出しサービスAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance? destObject)
         {
             if (edata.OPCList is null)
@@ -1421,12 +1524,28 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
-        /// 本実装は書き込み後、読み込む
+        /// ECHONET Lite サービス「SetGet:プロパティ値書き込み・読み出し要求」(ESV <c>0x6E</c>)を処理します。
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="edata"></param>
-        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
+        /// <remarks>
+        /// 本実装は書き込み後、読み込む
+        /// </remarks>
+        /// <param name="request">
+        /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
+        /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
+        /// </param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
+        /// <returns>
+        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
+        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+        /// </seealso>
         private async Task<bool> プロパティ値書き込み読み出しサービスAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchoObjectInstance? destObject)
         {
             if (edata.OPCSetList is null)
@@ -1528,13 +1647,28 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
-        /// 自発なので、0x73のみ。
+        /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を処理します。
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="edata"></param>
-        /// <param name="sourceNode"></param>
-        /// <returns></returns>
+        /// <remarks>
+        /// 自発なので、0x73のみ。
+        /// </remarks>
+        /// <param name="request">
+        /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
+        /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
+        /// </param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
+        /// <returns>
+        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
+        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
+        /// </seealso>
         private bool プロパティ値通知サービスAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
         {
             if (edata.OPCList is null)
@@ -1588,13 +1722,26 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
+        /// ECHONET Lite サービス「INFC:プロパティ値通知（応答要）」(ESV <c>0x74</c>)を処理します。
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="edata"></param>
-        /// <param name="sourceNode"></param>
-        /// <param name="destObject">対象オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
-        /// <returns></returns>
+        /// <param name="request">
+        /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
+        /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
+        /// </param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
+        /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
+        /// <returns>
+        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
+        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
+        /// </returns>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+        /// </seealso>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
+        /// </seealso>
         private async Task<bool> プロパティ値通知応答要サービスAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode, EchoObjectInstance? destObject)
         {
             if (edata.OPCList is null)
