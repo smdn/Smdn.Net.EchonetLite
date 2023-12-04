@@ -17,6 +17,14 @@ namespace EchoDotNetLite
             remove => NodeJoined -= value;
         }
 
+        /// <inheritdoc cref="PerformInstanceListNotificationAsync(CancellationToken)"/>
+        public async Task インスタンスリスト通知Async()
+            => await PerformInstanceListNotificationAsync().ConfigureAwait(false);
+
+        /// <inheritdoc cref="PerformInstanceListNotificationRequestAsync(CancellationToken)"/>
+        public async Task インスタンスリスト通知要求Async()
+            => await PerformInstanceListNotificationRequestAsync().ConfigureAwait(false);
+
         /// <summary>
         /// 指定された時間でタイムアウトする<see cref="CancellationTokenSource"/>を作成します。
         /// </summary>
@@ -36,7 +44,7 @@ namespace EchoDotNetLite
             return new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
         }
 
-        /// <inheritdoc cref="プロパティ値書き込み要求応答不要Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <inheritdoc cref="PerformPropertyValueWriteRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         /// <returns>
         /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest}}}"/>。
@@ -53,7 +61,7 @@ namespace EchoDotNetLite
             using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
 
             try {
-                var processedProperties = await プロパティ値書き込み要求応答不要Async(
+                var processedProperties = await PerformPropertyValueWriteRequestAsync(
                     sourceObject,
                     destinationNode,
                     destinationObject,
@@ -68,7 +76,7 @@ namespace EchoDotNetLite
             }
         }
 
-        /// <inheritdoc cref="プロパティ値書き込み応答要Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <inheritdoc cref="PerformPropertyValueWriteRequestResponseRequiredAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み応答要(
             EchoObjectInstance sourceObject
@@ -80,7 +88,7 @@ namespace EchoDotNetLite
             using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
 
             try {
-                return await プロパティ値書き込み応答要Async(
+                return await PerformPropertyValueWriteRequestResponseRequiredAsync(
                     sourceObject,
                     destinationNode,
                     destinationObject,
@@ -93,7 +101,7 @@ namespace EchoDotNetLite
             }
         }
 
-        /// <inheritdoc cref="プロパティ値読み出しAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <inheritdoc cref="PerformPropertyValueReadRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         public async Task<(bool, List<PropertyRequest>)> プロパティ値読み出し(
             EchoObjectInstance sourceObject
@@ -105,7 +113,7 @@ namespace EchoDotNetLite
             using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
 
             try {
-                return await プロパティ値読み出しAsync(
+                return await PerformPropertyValueReadRequestAsync(
                     sourceObject,
                     destinationNode,
                     destinationObject,
@@ -118,7 +126,7 @@ namespace EchoDotNetLite
             }
         }
 
-        /// <inheritdoc cref="プロパティ値書き込み読み出しAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <inheritdoc cref="PerformPropertyValueWriteReadRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> プロパティ値書き込み読み出し(
             EchoObjectInstance sourceObject
@@ -131,7 +139,7 @@ namespace EchoDotNetLite
             using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
 
             try {
-                return await プロパティ値書き込み読み出しAsync(
+                return await PerformPropertyValueWriteReadRequestAsync(
                     sourceObject,
                     destinationNode,
                     destinationObject,
@@ -145,13 +153,13 @@ namespace EchoDotNetLite
             }
         }
 
-        /// <inheritdoc cref="プロパティ値通知要求Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <inheritdoc cref="PerformPropertyValueNotificationRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         public async Task プロパティ値通知要求(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties)
-            => await プロパティ値通知要求Async
+            => await PerformPropertyValueNotificationRequestAsync
             (
                 sourceObject,
                 destinationNode,
@@ -166,7 +174,7 @@ namespace EchoDotNetLite
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties)
-            => await 自発プロパティ値通知Async
+            => await PerformPropertyValueNotificationAsync
             (
                 sourceObject,
                 destinationNode,
@@ -175,7 +183,7 @@ namespace EchoDotNetLite
                 cancellationToken: default
             ).ConfigureAwait(false);
 
-        /// <inheritdoc cref="プロパティ値通知応答要Async(EchoObjectInstance, EchoNode, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <inheritdoc cref="PerformPropertyValueNotificationResponseRequiredAsync(EchoObjectInstance, EchoNode, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         public async Task<List<PropertyRequest>> プロパティ値通知応答要(
             EchoObjectInstance sourceObject
@@ -187,7 +195,7 @@ namespace EchoDotNetLite
             using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
 
             try {
-                return await プロパティ値通知応答要Async(
+                return await PerformPropertyValueNotificationResponseRequiredAsync(
                     sourceObject,
                     destinationNode,
                     destinationObject,
