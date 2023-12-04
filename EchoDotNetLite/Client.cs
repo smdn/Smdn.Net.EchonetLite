@@ -183,7 +183,7 @@ namespace EchoDotNetLite
                 ))
                 , Enumerable.Repeat(property, 1)
                 , cancellationToken
-                );
+                ).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -220,7 +220,7 @@ namespace EchoDotNetLite
                 ))
                 , properties
                 , cancellationToken
-                );
+                ).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -304,7 +304,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException ex) when (cancellationToken.Equals(ex.CancellationToken)) {
@@ -401,7 +401,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch {
@@ -492,7 +492,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch {
@@ -596,7 +596,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch {
@@ -754,7 +754,7 @@ namespace EchoDotNetLite
 
             try {
                 using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task;
+                    return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
             catch {
@@ -828,7 +828,7 @@ namespace EchoDotNetLite
 #endif
                 }
 
-                await _echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken);
+                await _echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
             }
             finally {
                 // reset written count to reuse the buffer for the next write
