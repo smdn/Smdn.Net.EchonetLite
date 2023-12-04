@@ -21,7 +21,7 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
         {
             _logger = logger;
             this.echoClient = echoClient;
-            this.echoClient.NodeJoined += LogNodeJoined;
+            this.echoClient.OnNodeJoined += LogNodeJoined;
 
             //コントローラとしてふるまう
             this.echoClient.SelfNode.Devices.Add(
@@ -85,21 +85,21 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
 
                 await Task.Delay(2 * 1000);
                 _logger.LogDebug("プロパティマップ読み込み完了まで待機");
-                while (echoClient.Nodes.FirstOrDefault()?.Devices?.FirstOrDefault() == null
-                        || !echoClient.Nodes.First().Devices.First().IsPropertyMapGet)
+                while (echoClient.NodeList?.FirstOrDefault()?.Devices?.FirstOrDefault() == null
+                        || !echoClient.NodeList.First().Devices.First().IsPropertyMapGet)
                 {
                     await Task.Delay(2 * 1000);
                 }
 
                 //Bルートなので、低圧スマート電力量メータ以外のデバイスは存在しない前提
-                var node = echoClient.Nodes.First();
+                var node = echoClient.NodeList.First();
                 var device = node.Devices.First();
 
                 _logger.LogDebug("デバイスのGET対応プロパティの値をすべて取得");
                 //まとめてもできるけど、大量に指定するとこけるのでプロパティ毎に
-                foreach (var prop in echoClient.Nodes.First().Devices.First().GETProperties)
+                foreach (var prop in echoClient.NodeList.First().Devices.First().GETProperties)
                 {
-                    await echoClient.プロパティ値読み出しAsync(
+                    await echoClient.プロパティ値読み出し(
                         echoClient.SelfNode.Devices.First(),//コントローラー
                         node,device,new EchoPropertyInstance[] { prop }
                         , 5 * 1000);
@@ -114,7 +114,7 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                     {
                         timer.Stop();
                         Task.Run(() =>
-                            echoClient.プロパティ値読み出しAsync(
+                            echoClient.プロパティ値読み出し(
                                 echoClient.SelfNode.Devices.First(),//コントローラー
                                 node,device, properties
                                 , 20 * 1000)

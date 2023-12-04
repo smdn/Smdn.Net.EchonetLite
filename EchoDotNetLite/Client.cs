@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace EchoDotNetLite
 {
-    public class EchoClient : IDisposable, IAsyncDisposable
+    public partial class EchoClient : IDisposable, IAsyncDisposable
     {
         private readonly bool shouldDisposeEchonetLiteHandler;
         private IEchonetLiteHandler _echonetLiteHandler; // null if disposed
@@ -224,57 +224,6 @@ namespace EchoDotNetLite
         }
 
         /// <summary>
-        /// 指定された時間でタイムアウトする<see cref="CancellationTokenSource"/>を作成します。
-        /// </summary>
-        /// <param name="timeoutMilliseconds">
-        /// ミリ秒単位でのタイムアウト時間。
-        /// 値が<see cref="Timeout.Infinite"/>に等しい場合は、タイムアウトしない<see cref="CancellationTokenSource"/>を返します。
-        /// </param>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeoutMilliseconds"/>に負の値を指定することはできません。</exception>
-        private static CancellationTokenSource CreateTimeoutCancellationTokenSource(int timeoutMilliseconds)
-        {
-            if (0 > timeoutMilliseconds)
-                throw new ArgumentOutOfRangeException("タイムアウト時間に負の値を指定することはできません。", nameof(timeoutMilliseconds));
-
-            if (timeoutMilliseconds == Timeout.Infinite)
-                return new CancellationTokenSource();
-
-            return new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
-        }
-
-        /// <inheritdoc cref="プロパティ値書き込み要求応答不要Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
-        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest}}}"/>。
-        /// タイムアウトまでに不可応答(SetI_SNA <c>0x50</c>)がなかった場合は<see langword="true"/>、不可応答による応答があった場合は<see langword="false"/>を返します。
-        /// また、書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
-        /// </returns>
-        public async Task<(bool, List<PropertyRequest>?)> プロパティ値書き込み要求応答不要Async(
-            EchoObjectInstance sourceObject
-            , EchoNode? destinationNode
-            , EchoObjectInstance destinationObject
-            , IEnumerable<EchoPropertyInstance> properties
-            , int timeoutMilliseconds = 1000)
-        {
-            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
-
-            try {
-                var processedProperties = await プロパティ値書き込み要求応答不要Async(
-                    sourceObject,
-                    destinationNode,
-                    destinationObject,
-                    properties,
-                    cts.Token
-                ).ConfigureAwait(false);
-
-                return (false, processedProperties);
-            }
-            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                return (true, null);
-            }
-        }
-
-        /// <summary>
         /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を行います。　このサービスは一斉同報が可能です。
         /// </summary>
         /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
@@ -371,31 +320,6 @@ namespace EchoDotNetLite
             }
         }
 
-        /// <inheritdoc cref="プロパティ値書き込み応答要Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
-        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み応答要Async(
-            EchoObjectInstance sourceObject
-            , EchoNode? destinationNode
-            , EchoObjectInstance destinationObject
-            , IEnumerable<EchoPropertyInstance> properties
-            , int timeoutMilliseconds = 1000)
-        {
-            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
-
-            try {
-                return await プロパティ値書き込み応答要Async(
-                    sourceObject,
-                    destinationNode,
-                    destinationObject,
-                    properties,
-                    cts.Token
-                ).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                throw new TimeoutException($"'{nameof(プロパティ値書き込み応答要Async)}'が指定されたタイムアウト時間を超過しました", ex);
-            }
-        }
-
         /// <summary>
         /// ECHONET Lite サービス「SetC:プロパティ値書き込み要求（応答要）」(ESV <c>0x61</c>)を行います。　このサービスは一斉同報が可能です。
         /// </summary>
@@ -487,31 +411,6 @@ namespace EchoDotNetLite
             }
         }
 
-        /// <inheritdoc cref="プロパティ値読み出しAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
-        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        public async Task<(bool, List<PropertyRequest>)> プロパティ値読み出しAsync(
-            EchoObjectInstance sourceObject
-            , EchoNode? destinationNode
-            , EchoObjectInstance destinationObject
-            , IEnumerable<EchoPropertyInstance> properties
-            , int timeoutMilliseconds = 1000)
-        {
-            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
-
-            try {
-                return await プロパティ値読み出しAsync(
-                    sourceObject,
-                    destinationNode,
-                    destinationObject,
-                    properties,
-                    cts.Token
-                ).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                throw new TimeoutException($"'{nameof(プロパティ値読み出しAsync)}'が指定されたタイムアウト時間を超過しました", ex);
-            }
-        }
-
         /// <summary>
         /// ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。　このサービスは一斉同報が可能です。
         /// </summary>
@@ -600,33 +499,6 @@ namespace EchoDotNetLite
                 FrameReceived -= handler;
 
                 throw;
-            }
-        }
-
-        /// <inheritdoc cref="プロパティ値書き込み読み出しAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
-        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> プロパティ値書き込み読み出しAsync(
-            EchoObjectInstance sourceObject
-            , EchoNode? destinationNode
-            , EchoObjectInstance destinationObject
-            , IEnumerable<EchoPropertyInstance> propertiesSet
-            , IEnumerable<EchoPropertyInstance> propertiesGet
-            , int timeoutMilliseconds = 1000)
-        {
-            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
-
-            try {
-                return await プロパティ値書き込み読み出しAsync(
-                    sourceObject,
-                    destinationNode,
-                    destinationObject,
-                    propertiesSet,
-                    propertiesGet,
-                    cts.Token
-                ).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                throw new TimeoutException($"'{nameof(プロパティ値書き込み読み出しAsync)}'が指定されたタイムアウト時間を超過しました", ex);
             }
         }
 
@@ -811,31 +683,6 @@ namespace EchoDotNetLite
                 ),
                 cancellationToken
             );
-
-        /// <inheritdoc cref="プロパティ値通知応答要Async(EchoObjectInstance, EchoNode, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
-        /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        public async Task<List<PropertyRequest>> プロパティ値通知応答要Async(
-            EchoObjectInstance sourceObject
-            , EchoNode destinationNode
-            , EchoObjectInstance destinationObject
-            , IEnumerable<EchoPropertyInstance> properties
-            , int timeoutMilliseconds = 1000)
-        {
-            using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
-
-            try {
-                return await プロパティ値通知応答要Async(
-                    sourceObject,
-                    destinationNode,
-                    destinationObject,
-                    properties,
-                    cts.Token
-                ).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException ex) when (cts.Token.Equals(ex.CancellationToken)) {
-                throw new TimeoutException($"'{nameof(プロパティ値通知応答要Async)}'が指定されたタイムアウト時間を超過しました", ex);
-            }
-        }
 
         /// <summary>
         /// ECHONET Lite サービス「INFC:プロパティ値通知（応答要）」(ESV <c>0x74</c>)を行います。　このサービスは個別通知のみ可能です。
@@ -1032,7 +879,7 @@ namespace EchoDotNetLite
 
         private void プロパティマップ読み取り(EchoNode sourceNode, EchoObjectInstance device)
         {
-            プロパティ値読み出しAsync(SelfNode.NodeProfile, sourceNode, device
+            プロパティ値読み出し(SelfNode.NodeProfile, sourceNode, device
                     , device.Properties.Where(p =>
                         p.Spec.Code == 0x9D //状変アナウンスプロパティマップ
                         || p.Spec.Code == 0x9E //Set プロパティマップ
