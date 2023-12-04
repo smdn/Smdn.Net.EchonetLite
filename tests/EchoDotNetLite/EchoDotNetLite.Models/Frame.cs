@@ -26,7 +26,7 @@ public class FrameTests {
   {
     yield return new object?[] { EHD2.Type1, new EDATA2(default) };
     yield return new object?[] { EHD2.Type1, new PseudoEDATA() };
-    yield return new object?[] { EHD2.Type2, new EDATA1(default, default, default, new()) };
+    yield return new object?[] { EHD2.Type2, new EDATA1(default, default, default, Array.Empty<PropertyRequest>()) };
     yield return new object?[] { EHD2.Type2, new PseudoEDATA() };
   }
 
@@ -55,7 +55,7 @@ public class FrameTests {
   [Test]
   public void Serialize_EHD2_Type1()
   {
-    var f = new Frame(EHD1.ECHONETLite, EHD2.Type1, (ushort)0x0000u, new EDATA1(default, default, default, new()));
+    var f = new Frame(EHD1.ECHONETLite, EHD2.Type1, (ushort)0x0000u, new EDATA1(default, default, default, Array.Empty<PropertyRequest>()));
 
     StringAssert.Contains(
       "\"EHD2\":\"81\"",

@@ -30,7 +30,7 @@ namespace EchoDotNetLite.Models
         /// この場合、<see cref="OPCSetList"/>および<see cref="OPCGetList"/>を指定する必要があります。
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="opcList"/>が<see langword="null"/>です。</exception>
-        public EDATA1(EOJ seoj, EOJ deoj, ESV esv, List<PropertyRequest> opcList)
+        public EDATA1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcList)
         {
             if (FrameSerializer.IsESVWriteOrReadService(esv))
                 throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGet_Res)}, or {nameof(ESV.SetGet_SNA)}.", paramName: nameof(esv));
@@ -56,7 +56,7 @@ namespace EchoDotNetLite.Models
         /// この場合、<see cref="OPCList"/>のみを指定する必要があります。
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="opcSetList"/>もしくは<paramref name="opcGetList"/>が<see langword="null"/>です。</exception>
-        public EDATA1(EOJ seoj, EOJ deoj, ESV esv, List<PropertyRequest> opcSetList, List<PropertyRequest> opcGetList)
+        public EDATA1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcSetList, IReadOnlyCollection<PropertyRequest> opcGetList)
         {
             if (!FrameSerializer.IsESVWriteOrReadService(esv))
                 throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGet_Res)}, or {nameof(ESV.SetGet_SNA)}.", paramName: nameof(esv));
@@ -83,17 +83,17 @@ namespace EchoDotNetLite.Models
         [JsonConverter(typeof(SingleByteJsonConverterFactory))]
         public ESV ESV { get; }
 
-        public List<PropertyRequest>? OPCList { get; }
+        public IReadOnlyCollection<PropertyRequest>? OPCList { get; }
         /// <summary>
         /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
         /// のみ使用
         /// </summary>
-        public List<PropertyRequest>? OPCGetList { get; }
+        public IReadOnlyCollection<PropertyRequest>? OPCGetList { get; }
         /// <summary>
         /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
         /// のみ使用
         /// </summary>
-        public List<PropertyRequest>? OPCSetList { get; }
+        public IReadOnlyCollection<PropertyRequest>? OPCSetList { get; }
 
         [JsonIgnore]
 #if NET5_0_OR_GREATER
@@ -103,7 +103,7 @@ namespace EchoDotNetLite.Models
 #endif
         public bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
 
-        public List<PropertyRequest> GetOPCList()
+        public IReadOnlyCollection<PropertyRequest> GetOPCList()
         {
             if (IsWriteOrReadService)
                 throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
@@ -115,7 +115,7 @@ namespace EchoDotNetLite.Models
 #endif
         }
 
-        public (List<PropertyRequest>, List<PropertyRequest>) GetOPCSetGetList()
+        public (IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>) GetOPCSetGetList()
         {
             if (!IsWriteOrReadService)
                 throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");

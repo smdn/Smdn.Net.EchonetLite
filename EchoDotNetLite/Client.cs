@@ -232,8 +232,8 @@ namespace EchoDotNetLite
         /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{List{PropertyRequest}}"/>。
-        /// 書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// 非同期の操作を表す<see cref="Task{IReadOnlyCollection{PropertyRequest}}"/>。
+        /// 書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
@@ -241,14 +241,14 @@ namespace EchoDotNetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
         /// </seealso>
-        public async Task<List<PropertyRequest>> PerformPropertyValueWriteRequestAsync(
+        public async Task<IReadOnlyCollection<PropertyRequest>> PerformPropertyValueWriteRequestAsync(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
         {
-            var responseTCS = new TaskCompletionSource<List<PropertyRequest>>();
+            var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
@@ -329,9 +329,9 @@ namespace EchoDotNetLite
         /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest}}}"/>。
+        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,IReadOnlyCollection{PropertyRequest}}}"/>。
         /// 成功応答(Set_Res <c>0x71</c>)の場合は<see langword="true"/>、不可応答(SetC_SNA <c>0x51</c>)その他の場合は<see langword="false"/>を返します。
-        /// また、書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
@@ -339,14 +339,14 @@ namespace EchoDotNetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
         /// </seealso>
-        public async Task<(bool, List<PropertyRequest>)> PerformPropertyValueWriteRequestResponseRequiredAsync(
+        public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueWriteRequestResponseRequiredAsync(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
         {
-            var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
+            var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
@@ -420,9 +420,9 @@ namespace EchoDotNetLite
         /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest}}}"/>。
+        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,IReadOnlyCollection{PropertyRequest}}}"/>。
         /// 成功応答(Get_Res <c>0x72</c>)の場合は<see langword="true"/>、不可応答(Get_SNA <c>0x52</c>)その他の場合は<see langword="false"/>を返します。
-        /// また、書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
@@ -430,14 +430,14 @@ namespace EchoDotNetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
         /// </seealso>
-        public async Task<(bool, List<PropertyRequest>)> PerformPropertyValueReadRequestAsync(
+        public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueReadRequestAsync(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
         {
-            var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>)>();
+            var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
@@ -512,9 +512,9 @@ namespace EchoDotNetLite
         /// <param name="propertiesGet">読み出し対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest},List{PropertyRequest}}}"/>。
+        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,IReadOnlyCollection{PropertyRequest},IReadOnlyCollection{PropertyRequest}}}"/>。
         /// 成功応答(SetGet_Res <c>0x7E</c>)の場合は<see langword="true"/>、不可応答(SetGet_SNA <c>0x5E</c>)その他の場合は<see langword="false"/>を返します。
-        /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="List{PropertyRequest}"/>で返します。
+        /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
@@ -522,7 +522,7 @@ namespace EchoDotNetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
         /// </seealso>
-        public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> PerformPropertyValueWriteReadRequestAsync(
+        public async Task<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueWriteReadRequestAsync(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
@@ -530,7 +530,7 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> propertiesGet
             , CancellationToken cancellationToken = default)
         {
-            var responseTCS = new TaskCompletionSource<(bool, List<PropertyRequest>, List<PropertyRequest>)>();
+            var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
@@ -693,8 +693,8 @@ namespace EchoDotNetLite
         /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{List{PropertyRequest}}"/>。
-        /// 通知に成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// 非同期の操作を表す<see cref="Task{IReadOnlyCollection{PropertyRequest}}"/>。
+        /// 通知に成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
@@ -702,7 +702,7 @@ namespace EchoDotNetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
         /// </seealso>
-        public async Task<List<PropertyRequest>> PerformPropertyValueNotificationResponseRequiredAsync(
+        public async Task<IReadOnlyCollection<PropertyRequest>> PerformPropertyValueNotificationResponseRequiredAsync(
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
             , EchoObjectInstance destinationObject
@@ -712,7 +712,7 @@ namespace EchoDotNetLite
             if (destinationNode is null)
                 throw new ArgumentNullException(nameof(destinationNode));
 
-            var responseTCS = new TaskCompletionSource<List<PropertyRequest>>();
+            var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {

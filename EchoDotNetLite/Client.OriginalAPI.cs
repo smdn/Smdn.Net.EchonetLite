@@ -47,11 +47,11 @@ namespace EchoDotNetLite
         /// <inheritdoc cref="PerformPropertyValueWriteRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,List{PropertyRequest}}}"/>。
+        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,IReadOnlyCollection{PropertyRequest}}}"/>。
         /// タイムアウトまでに不可応答(SetI_SNA <c>0x50</c>)がなかった場合は<see langword="true"/>、不可応答による応答があった場合は<see langword="false"/>を返します。
-        /// また、書き込みに成功したプロパティを<see cref="List{PropertyRequest}"/>で返します。
+        /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
-        public async Task<(bool, List<PropertyRequest>?)> プロパティ値書き込み要求応答不要(
+        public async Task<(bool, IReadOnlyCollection<PropertyRequest>?)> プロパティ値書き込み要求応答不要(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
@@ -78,7 +78,7 @@ namespace EchoDotNetLite
 
         /// <inheritdoc cref="PerformPropertyValueWriteRequestResponseRequiredAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        public async Task<(bool, List<PropertyRequest>)> プロパティ値書き込み応答要(
+        public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> プロパティ値書き込み応答要(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
@@ -103,7 +103,7 @@ namespace EchoDotNetLite
 
         /// <inheritdoc cref="PerformPropertyValueReadRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        public async Task<(bool, List<PropertyRequest>)> プロパティ値読み出し(
+        public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> プロパティ値読み出し(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
@@ -128,7 +128,7 @@ namespace EchoDotNetLite
 
         /// <inheritdoc cref="PerformPropertyValueWriteReadRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        public async Task<(bool, List<PropertyRequest>, List<PropertyRequest>)> プロパティ値書き込み読み出し(
+        public async Task<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)> プロパティ値書き込み読み出し(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
             , EchoObjectInstance destinationObject
@@ -185,7 +185,7 @@ namespace EchoDotNetLite
 
         /// <inheritdoc cref="PerformPropertyValueNotificationResponseRequiredAsync(EchoObjectInstance, EchoNode, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
-        public async Task<List<PropertyRequest>> プロパティ値通知応答要(
+        public async Task<IReadOnlyCollection<PropertyRequest>> プロパティ値通知応答要(
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
             , EchoObjectInstance destinationObject

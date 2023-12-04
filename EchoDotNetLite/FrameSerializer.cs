@@ -263,7 +263,7 @@ namespace EchoDotNetLite
 
         private static bool TryReadEDATA1ProcessingTargetProperties(
           ReadOnlySpan<byte> bytes,
-          [NotNullWhen(true)] out List<PropertyRequest>? processingTargetProperties,
+          [NotNullWhen(true)] out IReadOnlyCollection<PropertyRequest>? processingTargetProperties,
           out int bytesRead
         )
         {
@@ -281,8 +281,7 @@ namespace EchoDotNetLite
             // OPCSet 処理プロパティ数(1B)
             // OPCGet 処理プロパティ数(1B)
             var opc = bytes[0];
-
-            processingTargetProperties = new List<PropertyRequest>(capacity: opc);
+            var props = new List<PropertyRequest>(capacity: opc);
 
             bytes = bytes.Slice(1);
 
@@ -306,17 +305,18 @@ namespace EchoDotNetLite
                     // プロパティ値データ(PDCで指定)
                     var edt = bytes.Slice(0, pdc).ToArray(); // TODO: reduce allocation
 
-                    processingTargetProperties.Add(new(epc, edt));
+                    props.Add(new(epc, edt));
 
                     bytes = bytes.Slice(pdc);
                 }
                 else
                 {
-                    processingTargetProperties.Add(new(epc));
+                    props.Add(new(epc));
                 }
             }
 
             bytesRead = initialLength - bytes.Length;
+            processingTargetProperties = props;
 
             return true;
         }

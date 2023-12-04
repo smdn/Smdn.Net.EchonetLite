@@ -51,7 +51,7 @@ partial class FrameSerializerTests {
         ehd1: ehd1,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1(default, default, default, new())
+        edata: new EDATA1(default, default, default, Array.Empty<PropertyRequest>())
       )
     );
 
@@ -69,7 +69,7 @@ partial class FrameSerializerTests {
           ehd1: ehd1,
           ehd2: EHD2.Type1,
           tid: ZeroTID,
-          edata: new EDATA1(default, default, default, new())
+          edata: new EDATA1(default, default, default, Array.Empty<PropertyRequest>())
         )
       )
     );
@@ -79,7 +79,7 @@ partial class FrameSerializerTests {
   {
     yield return new object?[] {
       EHD2.Type1,
-      new EDATA1(default, default, default, new()),
+      new EDATA1(default, default, default, Array.Empty<PropertyRequest>()),
       (byte)0x81
     };
 
@@ -115,7 +115,7 @@ partial class FrameSerializerTests {
           ehd1: EHD1.ECHONETLite,
           ehd2: ehd2,
           tid: ZeroTID,
-          edata: new EDATA1(default, default, default, new())
+          edata: new EDATA1(default, default, default, Array.Empty<PropertyRequest>())
         )
       )
     );
@@ -134,7 +134,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: tid,
-        edata: new EDATA1(default, default, default, new())
+        edata: new EDATA1(default, default, default, Array.Empty<PropertyRequest>())
       )
     );
 
@@ -171,7 +171,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1(seoj: seoj, deoj: default, esv: default, opcList: new())
+        edata: new EDATA1(seoj: seoj, deoj: default, esv: default, opcList: Array.Empty<PropertyRequest>())
       )
     );
 
@@ -193,7 +193,7 @@ partial class FrameSerializerTests {
         ehd1: EHD1.ECHONETLite,
         ehd2: EHD2.Type1,
         tid: ZeroTID,
-        edata: new EDATA1(seoj: default, deoj: deoj, esv: default, opcList: new())
+        edata: new EDATA1(seoj: default, deoj: deoj, esv: default, opcList: Array.Empty<PropertyRequest>())
       )
     );
 
@@ -228,8 +228,8 @@ partial class FrameSerializerTests {
         ehd2: EHD2.Type1,
         tid: ZeroTID,
         edata: esv switch {
-          ESV.SetGet or ESV.SetGet_Res or ESV.SetGet_SNA => new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: new() { new() }, opcGetList: new() { new() }),
-          _ => new EDATA1(seoj: default, deoj: default, esv: esv, opcList: new())
+          ESV.SetGet or ESV.SetGet_Res or ESV.SetGet_SNA => new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: new List<PropertyRequest>() { new() }, opcGetList: new List<PropertyRequest>() { new() }),
+          _ => new EDATA1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>())
         }
       )
     );
