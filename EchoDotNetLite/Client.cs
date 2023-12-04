@@ -14,9 +14,10 @@ using System.Threading.Tasks;
 
 namespace EchoDotNetLite
 {
-    public class EchoClient
+    public class EchoClient : IDisposable, IAsyncDisposable
     {
-        private readonly IEchonetLiteHandler _echonetLiteHandler;
+        private readonly bool shouldDisposeEchonetLiteHandler;
+        private IEchonetLiteHandler _echonetLiteHandler; // null if disposed
         private readonly ILogger? _logger;
         private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
         private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
@@ -30,8 +31,26 @@ namespace EchoDotNetLite
         private ushort tid;
 
         public EchoClient(IPAddress nodeAddress, IEchonetLiteHandler echonetLiteHandler, ILogger<EchoClient>? logger = null)
+            : this
+            (
+                nodeAddress: nodeAddress,
+                echonetLiteHandler: echonetLiteHandler,
+                shouldDisposeEchonetLiteHandler: false,
+                logger: logger
+            )
+        {
+        }
+
+        public EchoClient
+        (
+            IPAddress nodeAddress,
+            IEchonetLiteHandler echonetLiteHandler,
+            bool shouldDisposeEchonetLiteHandler,
+            ILogger<EchoClient>? logger
+        )
         {
             _logger = logger;
+            this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
             _echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
             _echonetLiteHandler.Received += EchonetDataReceived;
             SelfNode = new EchoNode
@@ -52,6 +71,55 @@ namespace EchoDotNetLite
         /// 新しいECHONET Lite ノードが発見されたときに発生するイベント。
         /// </summary>
         public event EventHandler<EchoNode>? NodeJoined;
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore().ConfigureAwait(false);
+
+            Dispose(disposing: false);
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                FrameReceived = null; // unsubscribe
+
+                if (_echonetLiteHandler is not null)
+                {
+                    _echonetLiteHandler.Received -= EchonetDataReceived;
+
+                    if (shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IDisposable disposableEchonetLiteHandler)
+                        disposableEchonetLiteHandler.Dispose();
+
+                    _echonetLiteHandler = null!;
+                }
+            }
+        }
+
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            FrameReceived = null; // unsubscribe
+
+            if (_echonetLiteHandler is not null)
+            {
+                _echonetLiteHandler.Received -= EchonetDataReceived;
+
+                if (shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IAsyncDisposable disposableEchonetLiteHandler)
+                    await disposableEchonetLiteHandler.DisposeAsync().ConfigureAwait(false);
+
+                _echonetLiteHandler = null!;
+            }
+        }
 
         private ushort GetNewTid()
         {
