@@ -98,23 +98,26 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// GETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> GETProperties
-        {
-            get { return Properties.Where(static p => p.Spec.Get); }
-        }
+        public IEnumerable<EchoPropertyInstance> GetProperties => Properties.Where(static p => p.Spec.Get);
+
+        [Obsolete($"Use {nameof(GetProperties)} instead.")]
+        public IEnumerable<EchoPropertyInstance> GETProperties => GetProperties;
+
         /// <summary>
         /// SETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> SETProperties
-        {
-            get { return Properties.Where(static p => p.Spec.Set); }
-        }
+        public IEnumerable<EchoPropertyInstance> SetProperties => Properties.Where(static p => p.Spec.Set);
+
+        [Obsolete($"Use {nameof(SetProperties)} instead.")]
+        public IEnumerable<EchoPropertyInstance> SETProperties => SetProperties;
+
         /// <summary>
         /// ANNOプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> ANNOProperties
-        {
-            get { return Properties.Where(static p => p.Spec.Anno); }
-        }
+        public IEnumerable<EchoPropertyInstance> AnnoProperties => Properties.Where(static p => p.Spec.Anno);
+
+        [Obsolete($"Use {nameof(AnnoProperties)} instead.")]
+        public IEnumerable<EchoPropertyInstance> ANNOProperties => AnnoProperties;
+
     }
 }

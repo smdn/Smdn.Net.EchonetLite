@@ -205,7 +205,7 @@ namespace EchoDotNetLite
         )
         {
             //インスタンスリスト通知プロパティ
-            var property = SelfNode.NodeProfile.ANNOProperties.First(p => p.Spec.Code == 0xD5);
+            var property = SelfNode.NodeProfile.AnnoProperties.First(p => p.Spec.Code == 0xD5);
 
             property.WriteValue(writer => {
                 var contents = writer.GetSpan(253); // インスタンスリスト通知 0xD5 unsigned char×(MAX)253
@@ -1348,7 +1348,7 @@ namespace EchoDotNetLite
             var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             foreach (var opc in edata.OPCList)
             {
-                var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                 if (property == null
                         || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                         || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1426,7 +1426,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCList)
                 {
-                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                    var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1521,7 +1521,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCList)
                 {
-                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                    var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1623,7 +1623,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCSetList)
                 {
-                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                    var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1643,7 +1643,7 @@ namespace EchoDotNetLite
                 }
                 foreach (var opc in edata.OPCGetList)
                 {
-                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                    var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
