@@ -1203,11 +1203,13 @@ namespace EchoDotNetLite
         /// <exception cref="InvalidOperationException">電文形式 1（規定電文形式）を期待しましたが、<see cref="EDATA1"/>を取得できませんでした。</exception>
         private void HandleFrameReceived(object? sender, (IPAddress address, Frame frame) value)
         {
-            if (value.frame.EHD1 == EHD1.ECHONETLite
-                && value.frame.EHD2 == EHD2.Type1)
-            {
-                if (value.frame.EDATA is not EDATA1 edata)
-                    throw new InvalidOperationException($"expected {nameof(EDATA1)}, but was {value.frame.EDATA?.GetType()}");
+            if (value.frame.EHD1 != EHD1.ECHONETLite)
+                return;
+            if (value.frame.EHD2 != EHD2.Type1)
+                return;
+
+            if (value.frame.EDATA is not EDATA1 edata)
+                throw new InvalidOperationException($"expected {nameof(EDATA1)}, but was {value.frame.EDATA?.GetType()}");
 
                 var sourceNode = Nodes.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
                 //未知のノードの場合
@@ -1234,84 +1236,80 @@ namespace EchoDotNetLite
                 }
                 Task? task = null;
 
-                switch (edata.ESV)
-                {
-                    case ESV.SetI://プロパティ値書き込み要求（応答不要）
-                        //あれば、書き込んでおわり
-                        //なければ、プロパティ値書き込み要求不可応答 SetI_SNA
-                        task = Task.Run(() => HandlePropertyValueWriteRequestAsync(value, edata, destObject));
-                        break;
-                    case ESV.SetC://プロパティ値書き込み要求（応答要）
-                        //あれば、書き込んで プロパティ値書き込み応答 Set_Res
-                        //なければ、プロパティ値書き込み要求不可応答 SetC_SNA
-                        task = Task.Run(() => HandlePropertyValueWriteRequestResponseRequiredAsync(value, edata, destObject));
-                        break;
-                    case ESV.Get://プロパティ値読み出し要求
-                        //あれば、プロパティ値読み出し応答 Get_Res
-                        //なければ、プロパティ値読み出し不可応答 Get_SNA
-                        task = Task.Run(() => HandlePropertyValueReadRequest(value, edata, destObject));
-                        break;
-                    case ESV.INF_REQ://プロパティ値通知要求
-                        //あれば、プロパティ値通知 INF
-                        //なければ、プロパティ値通知不可応答 INF_SNA
-                        break;
-                    case ESV.SetGet: //プロパティ値書き込み・読み出し要求
-                        //あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
-                        //なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
-                        task = Task.Run(() => HandlePropertyValueWriteReadRequestAsync(value, edata, destObject));
-                        break;
-                    case ESV.INF: //プロパティ値通知 
-                        //プロパティ値通知要求 INF_REQのレスポンス
-                        //または、自発的な通知のケースがある。
-                        //なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
-                        task = Task.Run(() => HandlePropertyValueNotificationRequestAsync(value, edata, sourceNode));
-                        break;
-                    case ESV.INFC: //プロパティ値通知（応答要）
-                        //プロパティ値通知応答 INFC_Res
-                        task = Task.Run(() => HandlePropertyValueNotificationResponseRequiredAsync(value, edata, sourceNode, destObject));
-                        break;
+            switch (edata.ESV)
+            {
+                case ESV.SetI://プロパティ値書き込み要求（応答不要）
+                    //あれば、書き込んでおわり
+                    //なければ、プロパティ値書き込み要求不可応答 SetI_SNA
+                    task = Task.Run(() => HandlePropertyValueWriteRequestAsync(value, edata, destObject));
+                    break;
+                case ESV.SetC://プロパティ値書き込み要求（応答要）
+                    //あれば、書き込んで プロパティ値書き込み応答 Set_Res
+                    //なければ、プロパティ値書き込み要求不可応答 SetC_SNA
+                    task = Task.Run(() => HandlePropertyValueWriteRequestResponseRequiredAsync(value, edata, destObject));
+                    break;
+                case ESV.Get://プロパティ値読み出し要求
+                    //あれば、プロパティ値読み出し応答 Get_Res
+                    //なければ、プロパティ値読み出し不可応答 Get_SNA
+                    task = Task.Run(() => HandlePropertyValueReadRequest(value, edata, destObject));
+                    break;
+                case ESV.INF_REQ://プロパティ値通知要求
+                    //あれば、プロパティ値通知 INF
+                    //なければ、プロパティ値通知不可応答 INF_SNA
+                    break;
+                case ESV.SetGet: //プロパティ値書き込み・読み出し要求
+                    //あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
+                    //なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
+                    task = Task.Run(() => HandlePropertyValueWriteReadRequestAsync(value, edata, destObject));
+                    break;
+                case ESV.INF: //プロパティ値通知
+                    //プロパティ値通知要求 INF_REQのレスポンス
+                    //または、自発的な通知のケースがある。
+                    //なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
+                    task = Task.Run(() => HandlePropertyValueNotificationRequestAsync(value, edata, sourceNode));
+                    break;
+                case ESV.INFC: //プロパティ値通知（応答要）
+                    //プロパティ値通知応答 INFC_Res
+                    task = Task.Run(() => HandlePropertyValueNotificationResponseRequiredAsync(value, edata, sourceNode, destObject));
+                    break;
 
-                    case ESV.SetI_SNA: //プロパティ値書き込み要求不可応答
-                        //プロパティ値書き込み要求（応答不要）SetIのレスポンスなので、要求送信(SETI)のハンドラで対処
-                        break;
+                case ESV.SetI_SNA: //プロパティ値書き込み要求不可応答
+                    //プロパティ値書き込み要求（応答不要）SetIのレスポンスなので、要求送信(SETI)のハンドラで対処
+                    break;
 
-                    case ESV.Set_Res: //プロパティ値書き込み応答
-                                      //プロパティ値書き込み要求（応答要） SetC のレスポンスなので、要求送信(SETC)のハンドラで対処
-                    case ESV.SetC_SNA: //プロパティ値書き込み要求不可応答
-                        //プロパティ値書き込み要求（応答要） SetCのレスポンスなので、要求送信(SETC)のハンドラで対処
-                        break;
+                case ESV.Set_Res: //プロパティ値書き込み応答
+                case ESV.SetC_SNA: //プロパティ値書き込み要求不可応答
+                    //プロパティ値書き込み要求（応答要） SetCのレスポンスなので、要求送信(SETC)のハンドラで対処
+                    break;
 
-                    case ESV.Get_Res: //プロパティ値読み出し応答 
-                                      //プロパティ値読み出し要求 Getのレスポンスなので、要求送信(GET)のハンドラで対処
-                    case ESV.Get_SNA: //プロパティ値読み出し不可応答
-                        //プロパティ値読み出し要求 Getのレスポンスなので、要求送信(GET)のハンドラで対処
-                        break;
+                case ESV.Get_Res: //プロパティ値読み出し応答
+                case ESV.Get_SNA: //プロパティ値読み出し不可応答
+                    //プロパティ値読み出し要求 Getのレスポンスなので、要求送信(GET)のハンドラで対処
+                    break;
 
-                    case ESV.INFC_Res: //プロパティ値通知応答
-                        //プロパティ値通知（応答要） INFCのレスポンスなので、要求送信(INFC)のハンドラで対処
-                        break;
+                case ESV.INFC_Res: //プロパティ値通知応答
+                    //プロパティ値通知（応答要） INFCのレスポンスなので、要求送信(INFC)のハンドラで対処
+                    break;
 
-                    case ESV.INF_SNA: //プロパティ値通知不可応答
-                        //プロパティ値通知要求 INF_REQ のレスポンスなので、要求送信(INF_REQ)のハンドラで対処
-                        break;
+                case ESV.INF_SNA: //プロパティ値通知不可応答
+                    //プロパティ値通知要求 INF_REQ のレスポンスなので、要求送信(INF_REQ)のハンドラで対処
+                    break;
 
-                    case ESV.SetGet_Res://プロパティ値書き込み・読み出し応答
-                                        //プロパティ値書き込み・読み出し要求 SetGetのレスポンスなので、要求送信(SETGET)のハンドラで対処
-                    case ESV.SetGet_SNA: //プロパティ値書き込み・読み出し不可応答
-                        //プロパティ値書き込み・読み出し要求 SetGet のレスポンスなので、要求送信(SETGET)のハンドラで対処
-                        break;
-                    default:
-                        break;
-                }
-                task?.ContinueWith((t) =>
-                {
-                    if (t.Exception != null)
-                    {
-                        _logger?.LogTrace(t.Exception, "Exception");
-                    }
-                });
-
+                case ESV.SetGet_Res://プロパティ値書き込み・読み出し応答
+                case ESV.SetGet_SNA: //プロパティ値書き込み・読み出し不可応答
+                    //プロパティ値書き込み・読み出し要求 SetGet のレスポンスなので、要求送信(SETGET)のハンドラで対処
+                    break;
+                default:
+                    break;
             }
+
+            task?.ContinueWith((t) =>
+            {
+                if (t.Exception != null)
+                {
+                    _logger?.LogTrace(t.Exception, "Exception");
+                }
+            });
         }
 
         /// <summary>
