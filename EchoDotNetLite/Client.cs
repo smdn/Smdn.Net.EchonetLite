@@ -1343,7 +1343,8 @@ namespace EchoDotNetLite
                 //対象となるオブジェクト自体が存在しない場合には、「不可応答」も返さないものとする。
                 return false;
             }
-            bool hasError = false;
+
+            var hasError = false;
             var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             foreach (var opc in edata.OPCList)
             {
@@ -1413,7 +1414,7 @@ namespace EchoDotNetLite
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
-            bool hasError = false;
+            var hasError = false;
             var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             if (destObject == null)
             {
@@ -1508,7 +1509,7 @@ namespace EchoDotNetLite
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
-            bool hasError = false;
+            var hasError = false;
             var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             if (destObject == null)
             {
@@ -1608,7 +1609,7 @@ namespace EchoDotNetLite
             if (edata.OPCGetList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCGetList)} is null");
 
-            bool hasError = false;
+            var hasError = false;
             var opcSetList = new List<PropertyRequest>(capacity: edata.OPCSetList.Count);
             var opcGetList = new List<PropertyRequest>(capacity: edata.OPCGetList.Count);
             if (destObject == null)
@@ -1730,7 +1731,7 @@ namespace EchoDotNetLite
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
-            bool hasError = false;
+            var hasError = false;
             var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
             if (sourceObject == null)
             {
@@ -1804,7 +1805,7 @@ namespace EchoDotNetLite
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
-            bool hasError = false;
+            var hasError = false;
             var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             if (destObject == null)
             {
