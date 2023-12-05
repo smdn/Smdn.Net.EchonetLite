@@ -87,7 +87,7 @@ namespace EchoDotNetLite
             );
             Nodes = new List<EchoNode>();
             //自己消費用
-            FrameReceived += ProcessReceivedFrame;
+            FrameReceived += HandleFrameReceived;
         }
 
         /// <summary>
@@ -1163,7 +1163,7 @@ namespace EchoDotNetLite
         /// ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
         /// <exception cref="InvalidOperationException">電文形式 1（規定電文形式）を期待しましたが、<see cref="EDATA1"/>を取得できませんでした。</exception>
-        private void ProcessReceivedFrame(object? sender, (IPAddress address, Frame frame) value)
+        private void HandleFrameReceived(object? sender, (IPAddress address, Frame frame) value)
         {
             if (value.frame.EHD1 == EHD1.ECHONETLite
                 && value.frame.EHD2 == EHD2.Type1)
