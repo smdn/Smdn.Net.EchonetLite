@@ -312,39 +312,46 @@ namespace EchoDotNetLite
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
-                if (cancellationToken.IsCancellationRequested)
+                try
                 {
-                    _ = responseTCS.TrySetCanceled(cancellationToken);
-                    FrameReceived -= handler;
-                    return;
-                }
-
-                if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
-                    return;
-                if (value.response.EDATA is not EDATA1 edata)
-                    return;
-                if (edata.SEOJ != destinationObject.GetEOJ())
-                    return;
-                if (edata.ESV != ESV.SetI_SNA)
-                    return;
-
-                var opcList = edata.GetOPCList();
-
-                foreach (var prop in opcList)
-                {
-                    //一部成功した書き込みを反映
-                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-                    if (prop.PDC == 0x00)
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        //書き込み成功
-                        target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
+                        _ = responseTCS.TrySetCanceled(cancellationToken);
+                        return;
                     }
-                }
-                responseTCS.SetResult(opcList);
 
-                //TODO 一斉通知の不可応答の扱いが…
-                FrameReceived -= handler;
+                    if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
+                        return;
+                    if (value.response.EDATA is not EDATA1 edata)
+                        return;
+                    if (edata.SEOJ != destinationObject.GetEOJ())
+                        return;
+                    if (edata.ESV != ESV.SetI_SNA)
+                        return;
+
+                    var opcList = edata.GetOPCList();
+
+                    foreach (var prop in opcList)
+                    {
+                        //一部成功した書き込みを反映
+                        var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+                        if (prop.PDC == 0x00)
+                        {
+                            //書き込み成功
+                            target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
+                        }
+                    }
+
+                    responseTCS.SetResult(opcList);
+
+                    //TODO 一斉通知の不可応答の扱いが…
+                }
+                finally
+                {
+                    FrameReceived -= handler;
+                }
             };
+
             FrameReceived += handler;
 
             await SendFrameAsync
@@ -367,13 +374,17 @@ namespace EchoDotNetLite
                     return await responseTCS.Task.ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex) when (cancellationToken.Equals(ex.CancellationToken)) {
-                foreach (var prop in properties)
+            catch (Exception ex) {
+                if (ex is OperationCanceledException exOperationCanceled && cancellationToken.Equals(exOperationCanceled.CancellationToken))
                 {
-                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.Spec.Code);
-                    //成功した書き込みを反映(全部OK)
-                    target.SetValue(prop.ValueSpan);
+                    foreach (var prop in properties)
+                    {
+                        var target = destinationObject.Properties.First(p => p.Spec.Code == prop.Spec.Code);
+                        //成功した書き込みを反映(全部OK)
+                        target.SetValue(prop.ValueSpan);
+                    }
                 }
+
                 FrameReceived -= handler;
 
                 throw;
@@ -422,37 +433,43 @@ namespace EchoDotNetLite
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
-                if (cancellationToken.IsCancellationRequested)
+                try
                 {
-                    _ = responseTCS.TrySetCanceled(cancellationToken);
-                    FrameReceived -= handler;
-                    return;
-                }
-
-                if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
-                    return;
-                if (value.response.EDATA is not EDATA1 edata)
-                    return;
-                if (edata.SEOJ != destinationObject.GetEOJ())
-                    return;
-                if (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
-                    return;
-
-                var opcList = edata.GetOPCList();
-
-                foreach (var prop in opcList)
-                {
-                    //成功した書き込みを反映
-                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-                    if(prop.PDC == 0x00)
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        //書き込み成功
-                        target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
+                        _ = responseTCS.TrySetCanceled(cancellationToken);
+                        return;
                     }
+
+                    if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
+                        return;
+                    if (value.response.EDATA is not EDATA1 edata)
+                        return;
+                    if (edata.SEOJ != destinationObject.GetEOJ())
+                        return;
+                    if (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
+                        return;
+
+                    var opcList = edata.GetOPCList();
+
+                    foreach (var prop in opcList)
+                    {
+                        //成功した書き込みを反映
+                        var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+                        if(prop.PDC == 0x00)
+                        {
+                            //書き込み成功
+                            target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
+                        }
+                    }
+                    responseTCS.SetResult((edata.ESV == ESV.Set_Res, opcList));
+
+                    //TODO 一斉通知の応答の扱いが…
                 }
-                responseTCS.SetResult((edata.ESV == ESV.Set_Res, opcList));
-                //TODO 一斉通知の応答の扱いが…
-                FrameReceived -= handler;
+                finally
+                {
+                    FrameReceived -= handler;
+                }
             };
             FrameReceived += handler;
 
@@ -525,38 +542,45 @@ namespace EchoDotNetLite
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
-                if (cancellationToken.IsCancellationRequested)
+                try
                 {
-                    _ = responseTCS.TrySetCanceled(cancellationToken);
-                    FrameReceived -= handler;
-                    return;
-                }
-
-                if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
-                    return;
-                if (value.response.EDATA is not EDATA1 edata)
-                    return;
-                if (edata.SEOJ != destinationObject.GetEOJ())
-                    return;
-                if (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
-                    return;
-
-                var opcList = edata.GetOPCList();
-
-                foreach (var prop in opcList)
-                {
-                    //成功した読み込みを反映
-                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-                    if (prop.PDC != 0x00)
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        //読み込み成功
-                        target.SetValue(prop.EDT.Span);
+                        _ = responseTCS.TrySetCanceled(cancellationToken);
+                        return;
                     }
+
+                    if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
+                        return;
+                    if (value.response.EDATA is not EDATA1 edata)
+                        return;
+                    if (edata.SEOJ != destinationObject.GetEOJ())
+                        return;
+                    if (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
+                        return;
+
+                    var opcList = edata.GetOPCList();
+
+                    foreach (var prop in opcList)
+                    {
+                        //成功した読み込みを反映
+                        var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+                        if (prop.PDC != 0x00)
+                        {
+                            //読み込み成功
+                            target.SetValue(prop.EDT.Span);
+                        }
+                    }
+                    responseTCS.SetResult((edata.ESV == ESV.Get_Res, opcList));
+
+                    //TODO 一斉通知の応答の扱いが…
                 }
-                responseTCS.SetResult((edata.ESV == ESV.Get_Res, opcList));
-                //TODO 一斉通知の応答の扱いが…
-                FrameReceived -= handler;
+                finally
+                {
+                    FrameReceived -= handler;
+                }
             };
+
             FrameReceived += handler;
 
             await SendFrameAsync
@@ -633,48 +657,55 @@ namespace EchoDotNetLite
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
-                if (cancellationToken.IsCancellationRequested)
+                try
                 {
-                    _ = responseTCS.TrySetCanceled(cancellationToken);
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        _ = responseTCS.TrySetCanceled(cancellationToken);
+                        return;
+                    }
+
+                    if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
+                        return;
+                    if (value.response.EDATA is not EDATA1 edata)
+                        return;
+                    if (edata.SEOJ != destinationObject.GetEOJ())
+                        return;
+                    if (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
+                        return;
+
+                    var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
+
+                    foreach (var prop in opcSetList)
+                    {
+                        //成功した書き込みを反映
+                        var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+                        if (prop.PDC == 0x00)
+                        {
+                            //書き込み成功
+                            target.SetValue(propertiesSet.First(p => p.Spec.Code == prop.EPC).ValueSpan);
+                        }
+                    }
+                    foreach (var prop in opcGetList)
+                    {
+                        //成功した読み込みを反映
+                        var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+                        if (prop.PDC != 0x00)
+                        {
+                            //読み込み成功
+                            target.SetValue(prop.EDT.Span);
+                        }
+                    }
+                    responseTCS.SetResult((edata.ESV == ESV.SetGet_Res, opcSetList, opcGetList));
+
+                    //TODO 一斉通知の応答の扱いが…
+                }
+                finally
+                {
                     FrameReceived -= handler;
-                    return;
                 }
-
-                if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
-                    return;
-                if (value.response.EDATA is not EDATA1 edata)
-                    return;
-                if (edata.SEOJ != destinationObject.GetEOJ())
-                    return;
-                if (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
-                    return;
-
-                var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
-
-                foreach (var prop in opcSetList)
-                {
-                    //成功した書き込みを反映
-                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-                    if (prop.PDC == 0x00)
-                    {
-                        //書き込み成功
-                        target.SetValue(propertiesSet.First(p => p.Spec.Code == prop.EPC).ValueSpan);
-                    }
-                }
-                foreach (var prop in opcGetList)
-                {
-                    //成功した読み込みを反映
-                    var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-                    if (prop.PDC != 0x00)
-                    {
-                        //読み込み成功
-                        target.SetValue(prop.EDT.Span);
-                    }
-                }
-                responseTCS.SetResult((edata.ESV == ESV.SetGet_Res, opcSetList, opcGetList));
-                //TODO 一斉通知の応答の扱いが…
-                FrameReceived -= handler;
             };
+
             FrameReceived += handler;
 
             await SendFrameAsync
@@ -855,25 +886,31 @@ namespace EchoDotNetLite
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
             {
-                if (cancellationToken.IsCancellationRequested)
+                try
                 {
-                    _ = responseTCS.TrySetCanceled(cancellationToken);
-                    FrameReceived -= handler;
-                    return;
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        _ = responseTCS.TrySetCanceled(cancellationToken);
+                        return;
+                    }
+
+                    if (!destinationNode.Address.Equals(value.address))
+                        return;
+                    if (value.response.EDATA is not EDATA1 edata)
+                        return;
+                    if (edata.SEOJ != destinationObject.GetEOJ())
+                        return;
+                    if (edata.ESV != ESV.INFC_Res)
+                        return;
+
+                    responseTCS.SetResult(edata.GetOPCList());
                 }
-
-                if (!destinationNode.Address.Equals(value.address))
-                    return;
-                if (value.response.EDATA is not EDATA1 edata)
-                    return;
-                if (edata.SEOJ != destinationObject.GetEOJ())
-                    return;
-                if (edata.ESV != ESV.INFC_Res)
-                    return;
-
-                responseTCS.SetResult(edata.GetOPCList());
-                FrameReceived -= handler;
+                finally
+                {
+                    FrameReceived -= handler;
+                }
             };
+
             FrameReceived += handler;
 
             await SendFrameAsync
