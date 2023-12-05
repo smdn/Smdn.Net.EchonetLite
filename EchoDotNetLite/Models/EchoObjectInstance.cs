@@ -75,7 +75,10 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// プロパティマップ取得状態
         /// </summary>
-        public bool IsPropertyMapGet { get; internal set; } = false;
+        public bool HasPropertyMapAcquired { get; internal set; } = false;
+
+        [Obsolete($"Use {nameof(HasPropertyMapAcquired)} instead.")]
+        public bool IsPropertyMapGet => HasPropertyMapAcquired;
 
         /// <summary>
         /// クラスグループコード、クラスグループ名

@@ -1024,7 +1024,7 @@ namespace EchoDotNetLite
         /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
         /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{byte}"/>。</param>
         /// <seealso cref="PerformInstanceListNotificationAsync"/>
-        /// <seealso cref="QueryPropertyMapsAsync"/>
+        /// <seealso cref="AcquirePropertyMapsAsync"/>
         private async ValueTask HandleInstanceListNotificationReceivedAsync(EchoNode sourceNode, ReadOnlyMemory<byte> edt)
         {
             _logger?.LogTrace("インスタンスリスト通知を受信しました");
@@ -1040,17 +1040,17 @@ namespace EchoDotNetLite
                     device = new EchoObjectInstance(eoj);
                     sourceNode.Devices.Add(device);
                 }
-                if (!device.IsPropertyMapGet)
+                if (!device.HasPropertyMapAcquired)
                 {
                     _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
-                    await QueryPropertyMapsAsync(sourceNode, device).ConfigureAwait(false);
+                    await AcquirePropertyMapsAsync(sourceNode, device).ConfigureAwait(false);
                 }
             }
 
-            if (!sourceNode.NodeProfile.IsPropertyMapGet)
+            if (!sourceNode.NodeProfile.HasPropertyMapAcquired)
             {
                 _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
-                await QueryPropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
+                await AcquirePropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
             }
         }
 
@@ -1069,7 +1069,7 @@ namespace EchoDotNetLite
         /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
         /// <exception cref="InvalidOperationException">受信したEDTは無効なプロパティマップです。</exception>
         /// <seealso cref="HandleInstanceListNotificationReceivedAsync"/>
-        private async ValueTask QueryPropertyMapsAsync(EchoNode sourceNode, EchoObjectInstance device)
+        private async ValueTask AcquirePropertyMapsAsync(EchoNode sourceNode, EchoObjectInstance device)
         {
             using var ctsTimeout = CreateTimeoutCancellationTokenSource(20_000);
 
@@ -1188,7 +1188,7 @@ namespace EchoDotNetLite
                 _logger.LogTrace(sb.ToString());
             }
 
-            device.IsPropertyMapGet = true;
+            device.HasPropertyMapAcquired = true;
         }
 
         /// <summary>
