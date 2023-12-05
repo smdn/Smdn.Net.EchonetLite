@@ -309,8 +309,8 @@ namespace EchoDotNetLite
                 throw new ArgumentNullException(nameof(properties));
 
             var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
-            var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object? sender, (IPAddress address, Frame response) value) =>
+
+            void HandleFrameSetISNA(object? _, (IPAddress address, Frame response) value)
             {
                 try
                 {
@@ -348,11 +348,11 @@ namespace EchoDotNetLite
                 }
                 finally
                 {
-                    FrameReceived -= handler;
+                    FrameReceived -= HandleFrameSetISNA;
                 }
             };
 
-            FrameReceived += handler;
+            FrameReceived += HandleFrameSetISNA;
 
             await SendFrameAsync
             (
@@ -385,7 +385,7 @@ namespace EchoDotNetLite
                     }
                 }
 
-                FrameReceived -= handler;
+                FrameReceived -= HandleFrameSetISNA;
 
                 throw;
             }
@@ -430,8 +430,8 @@ namespace EchoDotNetLite
                 throw new ArgumentNullException(nameof(properties));
 
             var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
-            var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object? sender, (IPAddress address, Frame response) value) =>
+
+            void HandleFrameSetResOrSetCSNA(object? _, (IPAddress address, Frame response) value)
             {
                 try
                 {
@@ -468,10 +468,11 @@ namespace EchoDotNetLite
                 }
                 finally
                 {
-                    FrameReceived -= handler;
+                    FrameReceived -= HandleFrameSetResOrSetCSNA;
                 }
             };
-            FrameReceived += handler;
+
+            FrameReceived += HandleFrameSetResOrSetCSNA;
 
             await SendFrameAsync
             (
@@ -494,7 +495,7 @@ namespace EchoDotNetLite
                 }
             }
             catch {
-                FrameReceived -= handler;
+                FrameReceived -= HandleFrameSetResOrSetCSNA;
 
                 throw;
             }
@@ -539,8 +540,8 @@ namespace EchoDotNetLite
                 throw new ArgumentNullException(nameof(properties));
 
             var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
-            var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object? sender, (IPAddress address, Frame response) value) =>
+
+            void HandleFrameGetResOrGetSNA(object? _, (IPAddress address, Frame response) value)
             {
                 try
                 {
@@ -577,11 +578,11 @@ namespace EchoDotNetLite
                 }
                 finally
                 {
-                    FrameReceived -= handler;
+                    FrameReceived -= HandleFrameGetResOrGetSNA;
                 }
             };
 
-            FrameReceived += handler;
+            FrameReceived += HandleFrameGetResOrGetSNA;
 
             await SendFrameAsync
             (
@@ -604,7 +605,7 @@ namespace EchoDotNetLite
                 }
             }
             catch {
-                FrameReceived -= handler;
+                FrameReceived -= HandleFrameGetResOrGetSNA;
 
                 throw;
             }
@@ -654,8 +655,8 @@ namespace EchoDotNetLite
                 throw new ArgumentNullException(nameof(propertiesGet));
 
             var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)>();
-            var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object? sender, (IPAddress address, Frame response) value) =>
+
+            void HandleFrameSetGetResOrSetGetSNA(object? _, (IPAddress address, Frame response) value)
             {
                 try
                 {
@@ -702,11 +703,11 @@ namespace EchoDotNetLite
                 }
                 finally
                 {
-                    FrameReceived -= handler;
+                    FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
                 }
             };
 
-            FrameReceived += handler;
+            FrameReceived += HandleFrameSetGetResOrSetGetSNA;
 
             await SendFrameAsync
             (
@@ -730,7 +731,7 @@ namespace EchoDotNetLite
                 }
             }
             catch {
-                FrameReceived -= handler;
+                FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
 
                 throw;
             }
@@ -883,8 +884,8 @@ namespace EchoDotNetLite
                 throw new ArgumentNullException(nameof(properties));
 
             var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
-            var handler = default(EventHandler<(IPAddress, Frame)>);
-            handler += (object? sender, (IPAddress address, Frame response) value) =>
+
+            void HandleFrameINFCRes(object? _, (IPAddress address, Frame response) value)
             {
                 try
                 {
@@ -907,11 +908,11 @@ namespace EchoDotNetLite
                 }
                 finally
                 {
-                    FrameReceived -= handler;
+                    FrameReceived -= HandleFrameINFCRes;
                 }
             };
 
-            FrameReceived += handler;
+            FrameReceived += HandleFrameINFCRes;
 
             await SendFrameAsync
             (
@@ -934,7 +935,7 @@ namespace EchoDotNetLite
                 }
             }
             catch {
-                FrameReceived -= handler;
+                FrameReceived -= HandleFrameINFCRes;
 
                 throw;
             }
