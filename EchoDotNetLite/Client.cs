@@ -212,7 +212,7 @@ namespace EchoDotNetLite
 
                 _ = PropertyContentSerializer.TrySerializeInstanceListNotification
                 (
-                    SelfNode.Devices.Select(static o => o.GetEOJ()),
+                    SelfNode.Devices.Select(static o => o.EOJ),
                     contents,
                     out var bytesWritten
                 );
@@ -324,7 +324,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.SetI_SNA)
                         return;
@@ -361,8 +361,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.SetI,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
@@ -445,7 +445,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
                         return;
@@ -481,8 +481,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.SetC,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
@@ -555,7 +555,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
                         return;
@@ -591,8 +591,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.Get,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
                 ),
@@ -670,7 +670,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
                         return;
@@ -716,8 +716,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.SetGet,
                     opcListOrOpcSetList: propertiesSet.Select(ConvertToPropertyRequest),
                     opcGetList: propertiesGet.Select(ConvertToPropertyRequestExceptValueData)
@@ -781,8 +781,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.INF_REQ,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
                 ),
@@ -834,8 +834,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.INF,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
@@ -899,7 +899,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.INFC_Res)
                         return;
@@ -921,8 +921,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.INFC,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
@@ -1034,7 +1034,7 @@ namespace EchoDotNetLite
 
             foreach (var eoj in instanceList)
             {
-                var device = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == eoj);
+                var device = sourceNode.Devices.FirstOrDefault(d => d.EOJ == eoj);
                 if (device == null)
                 {
                     device = new EchoObjectInstance(eoj);
@@ -1226,13 +1226,13 @@ namespace EchoDotNetLite
                 }
                 EchoObjectInstance? destObject = null;
                 //自ノードプロファイル宛てのリクエストの場合
-                if (SelfNode.NodeProfile.GetEOJ() == edata.DEOJ)
+                if (SelfNode.NodeProfile.EOJ == edata.DEOJ)
                 {
                     destObject = SelfNode.NodeProfile;
                 }
                 else
                 {
-                    destObject = SelfNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.DEOJ);
+                    destObject = SelfNode.Devices.FirstOrDefault(d => d.EOJ == edata.DEOJ);
                 }
                 Task? task = null;
 
@@ -1732,11 +1732,11 @@ namespace EchoDotNetLite
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
             var hasError = false;
-            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
+            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
             if (sourceObject == null)
             {
                 //ノードプロファイルからの通知の場合
-                if (sourceNode.NodeProfile.GetEOJ() == edata.SEOJ)
+                if (sourceNode.NodeProfile.EOJ == edata.SEOJ)
                 {
                     sourceObject = sourceNode.NodeProfile;
                 }
@@ -1813,11 +1813,11 @@ namespace EchoDotNetLite
                 //"けどこっそり保持する"
                 hasError = true;
             }
-            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
+            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
             if (sourceObject == null)
             {
                 //ノードプロファイルからの通知の場合
-                if (sourceNode.NodeProfile.GetEOJ() == edata.SEOJ)
+                if (sourceNode.NodeProfile.EOJ == edata.SEOJ)
                 {
                     sourceObject = sourceNode.NodeProfile;
                 }

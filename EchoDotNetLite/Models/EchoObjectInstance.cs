@@ -55,16 +55,12 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// EOJ
         /// </summary>
-        /// <returns></returns>
-        public EOJ GetEOJ()
-        {
-            return new EOJ
-            (
-                classGroupCode: Spec.ClassGroup.ClassGroupCode,
-                classCode: Spec.Class.ClassCode,
-                instanceCode: InstanceCode
-            );
-        }
+        public EOJ EOJ => new
+        (
+            classGroupCode: Spec.ClassGroup.ClassGroupCode,
+            classCode: Spec.Class.ClassCode,
+            instanceCode: InstanceCode
+        );
 
         /// <summary>
         /// イベント プロパティインスタンス増減通知
