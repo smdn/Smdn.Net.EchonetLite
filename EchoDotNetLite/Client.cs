@@ -16,7 +16,7 @@ namespace EchoDotNetLite
 {
     public partial class EchoClient : IDisposable, IAsyncDisposable
     {
-        private readonly bool shouldDisposeEchonetLiteHandler;
+        private readonly bool _shouldDisposeEchonetLiteHandler;
         private IEchonetLiteHandler _echonetLiteHandler; // null if disposed
         private readonly ILogger? _logger;
 
@@ -24,13 +24,13 @@ namespace EchoDotNetLite
         /// 送信するECHONET Lite フレームを書き込むバッファ。
         /// <see cref="_echonetLiteHandler"/>によって送信する内容を書き込むために使用する。
         /// </summary>
-        private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
+        private readonly ArrayBufferWriter<byte> _requestFrameBuffer = new(initialCapacity: 0x100);
 
         /// <summary>
         /// ECHONET Lite フレームのリクエスト送信時の排他区間を定義するセマフォ。
-        /// <see cref="requestFrameBuffer"/>への書き込み、および<see cref="_echonetLiteHandler"/>による送信を排他制御するために使用する。
+        /// <see cref="_requestFrameBuffer"/>への書き込み、および<see cref="_echonetLiteHandler"/>による送信を排他制御するために使用する。
         /// </summary>
-        private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+        private readonly SemaphoreSlim _requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         /// <summary>
         /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
@@ -77,7 +77,7 @@ namespace EchoDotNetLite
         )
         {
             _logger = logger;
-            this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
+            _shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
             _echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
             _echonetLiteHandler.Received += EchonetDataReceived;
             SelfNode = new EchoNode
@@ -145,7 +145,7 @@ namespace EchoDotNetLite
                 {
                     _echonetLiteHandler.Received -= EchonetDataReceived;
 
-                    if (shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IDisposable disposableEchonetLiteHandler)
+                    if (_shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IDisposable disposableEchonetLiteHandler)
                         disposableEchonetLiteHandler.Dispose();
 
                     _echonetLiteHandler = null!;
@@ -165,7 +165,7 @@ namespace EchoDotNetLite
             {
                 _echonetLiteHandler.Received -= EchonetDataReceived;
 
-                if (shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IAsyncDisposable disposableEchonetLiteHandler)
+                if (_shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IAsyncDisposable disposableEchonetLiteHandler)
                     await disposableEchonetLiteHandler.DisposeAsync().ConfigureAwait(false);
 
                 _echonetLiteHandler = null!;
@@ -856,15 +856,15 @@ namespace EchoDotNetLite
         {
             ThrowIfDisposed();
 
-            await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                writeFrame(requestFrameBuffer);
+                writeFrame(_requestFrameBuffer);
 
                 if (_logger is not null && _logger.IsEnabled(LogLevel.Trace))
                 {
-                    if (FrameSerializer.TryDeserialize(requestFrameBuffer.WrittenSpan, out var frame))
+                    if (FrameSerializer.TryDeserialize(_requestFrameBuffer.WrittenSpan, out var frame))
                     {
                         _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
                     }
@@ -876,16 +876,16 @@ namespace EchoDotNetLite
 #endif
                 }
 
-                await _echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
+                await _echonetLiteHandler.SendAsync(address, _requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
             }
             finally {
                 // reset written count to reuse the buffer for the next write
 #if NET8_0_OR_GREATER
-                requestFrameBuffer.ResetWrittenCount();
+                _requestFrameBuffer.ResetWrittenCount();
 #else
-                requestFrameBuffer.Clear();
+                _requestFrameBuffer.Clear();
 #endif
-                requestSemaphore.Release();
+                _requestSemaphore.Release();
             }
         }
 
