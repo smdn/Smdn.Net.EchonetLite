@@ -19,7 +19,17 @@ namespace EchoDotNetLite
         private readonly bool shouldDisposeEchonetLiteHandler;
         private IEchonetLiteHandler _echonetLiteHandler; // null if disposed
         private readonly ILogger? _logger;
+
+        /// <summary>
+        /// 送信するECHONET Lite フレームを書き込むバッファ。
+        /// <see cref="_echonetLiteHandler"/>によって送信する内容を書き込むために使用する。
+        /// </summary>
         private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
+
+        /// <summary>
+        /// ECHONET Lite フレームのリクエスト送信時の排他区間を定義するセマフォ。
+        /// <see cref="requestFrameBuffer"/>への書き込み、および<see cref="_echonetLiteHandler"/>による送信を排他制御するために使用する。
+        /// </summary>
         private readonly SemaphoreSlim requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         /// <summary>
@@ -30,7 +40,13 @@ namespace EchoDotNetLite
 
         private ushort tid;
 
-        public EchoClient(IPAddress nodeAddress, IEchonetLiteHandler echonetLiteHandler, ILogger<EchoClient>? logger = null)
+        /// <inheritdoc cref="EchoClient(IPAddress, IEchonetLiteHandler, bool, ILogger{EchoClient})"/>
+        public EchoClient
+        (
+            IPAddress nodeAddress,
+            IEchonetLiteHandler echonetLiteHandler,
+            ILogger<EchoClient>? logger = null
+        )
             : this
             (
                 nodeAddress: nodeAddress,
@@ -74,8 +90,14 @@ namespace EchoDotNetLite
             FrameReceived += ProcessReceivedFrame;
         }
 
+        /// <summary>
+        /// 現在の<see cref="EchoClient"/>インスタンスが扱う自ノードを表す<see cref="SelfNode"/>。
+        /// </summary>
         public EchoNode SelfNode { get; }
 
+        /// <summary>
+        /// 既知のECHONET Lite ノードのコレクションを表す<see cref="ICollection{EchoNode}"/>。
+        /// </summary>
         public ICollection<EchoNode> Nodes { get; }
 
         /// <summary>
@@ -83,6 +105,9 @@ namespace EchoDotNetLite
         /// </summary>
         public event EventHandler<EchoNode>? NodeJoined;
 
+        /// <summary>
+        /// 現在の<see cref="EchoClient"/>インスタンスによって使用されているリソースを解放して、インスタンスを破棄します。
+        /// </summary>
         public void Dispose()
         {
             Dispose(disposing: true);
@@ -90,6 +115,10 @@ namespace EchoDotNetLite
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// 現在の<see cref="EchoClient"/>インスタンスによって使用されているリソースを非同期に解放して、インスタンスを破棄します。
+        /// </summary>
+        /// <returns>非同期の破棄操作を表す<see cref="ValueTask"/>。</returns>
         public async ValueTask DisposeAsync()
         {
             await DisposeAsyncCore().ConfigureAwait(false);
@@ -99,6 +128,13 @@ namespace EchoDotNetLite
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// 現在の<see cref="EchoClient"/>インスタンスが使用しているアンマネージド リソースを解放します。　オプションで、マネージド リソースも解放します。
+        /// </summary>
+        /// <param name="disposing">
+        /// マネージド リソースとアンマネージド リソースの両方を解放する場合は<see langword="true"/>。
+        /// アンマネージド リソースだけを解放する場合は<see langword="false"/>。
+        /// </param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -117,6 +153,10 @@ namespace EchoDotNetLite
             }
         }
 
+        /// <summary>
+        /// 管理対象リソースの非同期の解放、リリース、またはリセットに関連付けられているアプリケーション定義のタスクを実行します。
+        /// </summary>
+        /// <returns>非同期の破棄操作を表す<see cref="ValueTask"/>。</returns>
         protected virtual async ValueTask DisposeAsyncCore()
         {
             FrameReceived = null; // unsubscribe
@@ -132,12 +172,20 @@ namespace EchoDotNetLite
             }
         }
 
+        /// <summary>
+        /// 現在の<see cref="EchoClient"/>インスタンスが破棄されている場合に、<see cref="ObjectDisposedException"/>をスローします。
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">現在のインスタンスはすでに破棄されています。</exception>
         protected void ThrowIfDisposed()
         {
             if (_echonetLiteHandler is null)
                 throw new ObjectDisposedException(GetType().FullName);
         }
 
+        /// <summary>
+        /// ECHONET Lite フレームの新しいトランザクションID(TID)を生成して取得します。
+        /// </summary>
+        /// <returns>新しいトランザクションID。</returns>
         private ushort GetNewTid()
         {
             return ++tid;
