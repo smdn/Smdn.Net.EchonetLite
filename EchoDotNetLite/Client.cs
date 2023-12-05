@@ -283,6 +283,11 @@ namespace EchoDotNetLite
         /// 非同期の操作を表す<see cref="Task{IReadOnlyCollection{PropertyRequest}}"/>。
         /// 書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="properties"/>が<see langword="null"/>です。
+        /// </exception>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
         /// </seealso>
@@ -296,6 +301,13 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
         {
+            if (sourceObject is null)
+                throw new ArgumentNullException(nameof(sourceObject));
+            if (destinationObject is null)
+                throw new ArgumentNullException(nameof(destinationObject));
+            if (properties is null)
+                throw new ArgumentNullException(nameof(properties));
+
             var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
@@ -311,7 +323,7 @@ namespace EchoDotNetLite
                     return;
                 if (value.response.EDATA is not EDATA1 edata)
                     return;
-                if (destinationNode is not null && edata.SEOJ != destinationObject.GetEOJ())
+                if (edata.SEOJ != destinationObject.GetEOJ())
                     return;
                 if (edata.ESV != ESV.SetI_SNA)
                     return;
@@ -381,6 +393,11 @@ namespace EchoDotNetLite
         /// 成功応答(Set_Res <c>0x71</c>)の場合は<see langword="true"/>、不可応答(SetC_SNA <c>0x51</c>)その他の場合は<see langword="false"/>を返します。
         /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="properties"/>が<see langword="null"/>です。
+        /// </exception>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
         /// </seealso>
@@ -394,6 +411,13 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
         {
+            if (sourceObject is null)
+                throw new ArgumentNullException(nameof(sourceObject));
+            if (destinationObject is null)
+                throw new ArgumentNullException(nameof(destinationObject));
+            if (properties is null)
+                throw new ArgumentNullException(nameof(properties));
+
             var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
@@ -409,7 +433,7 @@ namespace EchoDotNetLite
                     return;
                 if (value.response.EDATA is not EDATA1 edata)
                     return;
-                if (destinationNode is not null && edata.SEOJ != destinationObject.GetEOJ())
+                if (edata.SEOJ != destinationObject.GetEOJ())
                     return;
                 if (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
                     return;
@@ -472,6 +496,11 @@ namespace EchoDotNetLite
         /// 成功応答(Get_Res <c>0x72</c>)の場合は<see langword="true"/>、不可応答(Get_SNA <c>0x52</c>)その他の場合は<see langword="false"/>を返します。
         /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="properties"/>が<see langword="null"/>です。
+        /// </exception>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
         /// </seealso>
@@ -485,6 +514,13 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
         {
+            if (sourceObject is null)
+                throw new ArgumentNullException(nameof(sourceObject));
+            if (destinationObject is null)
+                throw new ArgumentNullException(nameof(destinationObject));
+            if (properties is null)
+                throw new ArgumentNullException(nameof(properties));
+
             var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
@@ -500,7 +536,7 @@ namespace EchoDotNetLite
                     return;
                 if (value.response.EDATA is not EDATA1 edata)
                     return;
-                if (destinationNode is not null && edata.SEOJ != destinationObject.GetEOJ())
+                if (edata.SEOJ != destinationObject.GetEOJ())
                     return;
                 if (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
                     return;
@@ -564,6 +600,12 @@ namespace EchoDotNetLite
         /// 成功応答(SetGet_Res <c>0x7E</c>)の場合は<see langword="true"/>、不可応答(SetGet_SNA <c>0x5E</c>)その他の場合は<see langword="false"/>を返します。
         /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="propertiesSet"/>が<see langword="null"/>です。
+        /// または、<paramref name="propertiesGet"/>が<see langword="null"/>です。
+        /// </exception>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
         /// </seealso>
@@ -578,6 +620,15 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> propertiesGet
             , CancellationToken cancellationToken = default)
         {
+            if (sourceObject is null)
+                throw new ArgumentNullException(nameof(sourceObject));
+            if (destinationObject is null)
+                throw new ArgumentNullException(nameof(destinationObject));
+            if (propertiesSet is null)
+                throw new ArgumentNullException(nameof(propertiesSet));
+            if (propertiesGet is null)
+                throw new ArgumentNullException(nameof(propertiesGet));
+
             var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
             handler += (object? sender, (IPAddress address, Frame response) value) =>
@@ -593,7 +644,7 @@ namespace EchoDotNetLite
                     return;
                 if (value.response.EDATA is not EDATA1 edata)
                     return;
-                if (destinationNode is not null && edata.SEOJ != destinationObject.GetEOJ())
+                if (edata.SEOJ != destinationObject.GetEOJ())
                     return;
                 if (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
                     return;
@@ -666,6 +717,11 @@ namespace EchoDotNetLite
         /// <returns>
         /// 非同期の操作を表す<see cref="ValueTask"/>。
         /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="properties"/>が<see langword="null"/>です。
+        /// </exception>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
         /// </seealso>
@@ -678,7 +734,15 @@ namespace EchoDotNetLite
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
-            => SendFrameAsync
+        {
+            if (sourceObject is null)
+                throw new ArgumentNullException(nameof(sourceObject));
+            if (destinationObject is null)
+                throw new ArgumentNullException(nameof(destinationObject));
+            if (properties is null)
+                throw new ArgumentNullException(nameof(properties));
+
+            return SendFrameAsync
             (
                 destinationNode?.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -692,6 +756,7 @@ namespace EchoDotNetLite
                 ),
                 cancellationToken
             );
+        }
 
 
         /// <summary>
@@ -705,6 +770,11 @@ namespace EchoDotNetLite
         /// <returns>
         /// 非同期の操作を表す<see cref="ValueTask"/>。
         /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="properties"/>が<see langword="null"/>です。
+        /// </exception>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
         /// </seealso>
@@ -717,7 +787,15 @@ namespace EchoDotNetLite
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
-            => SendFrameAsync
+        {
+            if (sourceObject is null)
+                throw new ArgumentNullException(nameof(sourceObject));
+            if (destinationObject is null)
+                throw new ArgumentNullException(nameof(destinationObject));
+            if (properties is null)
+                throw new ArgumentNullException(nameof(properties));
+
+            return SendFrameAsync
             (
                 destinationNode?.Address,
                 buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
@@ -731,6 +809,7 @@ namespace EchoDotNetLite
                 ),
                 cancellationToken
             );
+        }
 
         /// <summary>
         /// ECHONET Lite サービス「INFC:プロパティ値通知（応答要）」(ESV <c>0x74</c>)を行います。　このサービスは個別通知のみ可能です。
@@ -744,6 +823,12 @@ namespace EchoDotNetLite
         /// 非同期の操作を表す<see cref="Task{IReadOnlyCollection{PropertyRequest}}"/>。
         /// 通知に成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="destinationNode"/>が<see langword="null"/>です。
+        /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+        /// または、<paramref name="properties"/>が<see langword="null"/>です。
+        /// </exception>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
         /// </seealso>
@@ -757,8 +842,14 @@ namespace EchoDotNetLite
             , IEnumerable<EchoPropertyInstance> properties
             , CancellationToken cancellationToken = default)
         {
+            if (sourceObject is null)
+                throw new ArgumentNullException(nameof(sourceObject));
             if (destinationNode is null)
                 throw new ArgumentNullException(nameof(destinationNode));
+            if (destinationObject is null)
+                throw new ArgumentNullException(nameof(destinationObject));
+            if (properties is null)
+                throw new ArgumentNullException(nameof(properties));
 
             var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
             var handler = default(EventHandler<(IPAddress, Frame)>);
