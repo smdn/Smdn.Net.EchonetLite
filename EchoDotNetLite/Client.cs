@@ -370,9 +370,9 @@ namespace EchoDotNetLite
             ).ConfigureAwait(false);
 
             try {
-                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task.ConfigureAwait(false);
-                }
+                using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
+
+                return await responseTCS.Task.ConfigureAwait(false);
             }
             catch (Exception ex) {
                 if (ex is OperationCanceledException exOperationCanceled && cancellationToken.Equals(exOperationCanceled.CancellationToken))
@@ -490,9 +490,9 @@ namespace EchoDotNetLite
             ).ConfigureAwait(false);
 
             try {
-                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task.ConfigureAwait(false);
-                }
+                using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
+
+                return await responseTCS.Task.ConfigureAwait(false);
             }
             catch {
                 FrameReceived -= HandleFrameSetResOrSetCSNA;
@@ -600,9 +600,9 @@ namespace EchoDotNetLite
             ).ConfigureAwait(false);
 
             try {
-                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task.ConfigureAwait(false);
-                }
+                using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
+
+                return await responseTCS.Task.ConfigureAwait(false);
             }
             catch {
                 FrameReceived -= HandleFrameGetResOrGetSNA;
@@ -726,9 +726,9 @@ namespace EchoDotNetLite
             ).ConfigureAwait(false);
 
             try {
-                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task.ConfigureAwait(false);
-                }
+                using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
+
+                return await responseTCS.Task.ConfigureAwait(false);
             }
             catch {
                 FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
@@ -930,9 +930,9 @@ namespace EchoDotNetLite
             ).ConfigureAwait(false);
 
             try {
-                using (cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken))) {
-                    return await responseTCS.Task.ConfigureAwait(false);
-                }
+                using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
+
+                return await responseTCS.Task.ConfigureAwait(false);
             }
             catch {
                 FrameReceived -= HandleFrameINFCRes;
