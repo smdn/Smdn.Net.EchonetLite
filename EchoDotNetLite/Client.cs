@@ -987,7 +987,7 @@ namespace EchoDotNetLite
         /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{byte}"/>。</param>
         /// <seealso cref="PerformInstanceListNotificationAsync"/>
         /// <seealso cref="QueryPropertyMapsAsync"/>
-        private async ValueTask Handle HandleInstanceListNotificationReceivedAsync(EchoNode sourceNode, ReadOnlyMemory<byte> edt)
+        private async ValueTask HandleInstanceListNotificationReceivedAsync(EchoNode sourceNode, ReadOnlyMemory<byte> edt)
         {
             _logger?.LogTrace("インスタンスリスト通知を受信しました");
 
