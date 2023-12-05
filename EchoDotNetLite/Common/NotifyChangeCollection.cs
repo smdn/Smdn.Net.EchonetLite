@@ -5,7 +5,7 @@ using System.Text;
 
 namespace EchoDotNetLite.Common
 {
-    internal class NotifyChangeCollection<TParent, TItem> : ICollection<TItem> where TParent : INotifyCollectionChanged<TItem>
+    internal class NotifyChangeCollection<TParent, TItem> : ICollection<TItem>, IReadOnlyCollection<TItem> where TParent : INotifyCollectionChanged<TItem>
     {
         public NotifyChangeCollection(TParent parentNode)
         {

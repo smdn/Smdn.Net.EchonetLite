@@ -205,14 +205,14 @@ namespace EchoDotNetLite
         )
         {
             //インスタンスリスト通知プロパティ
-            var property = SelfNode.NodeProfile.ANNOProperties.First(p => p.Spec.Code == 0xD5);
+            var property = SelfNode.NodeProfile.AnnoProperties.First(p => p.Spec.Code == 0xD5);
 
             property.WriteValue(writer => {
                 var contents = writer.GetSpan(253); // インスタンスリスト通知 0xD5 unsigned char×(MAX)253
 
                 _ = PropertyContentSerializer.TrySerializeInstanceListNotification
                 (
-                    SelfNode.Devices.Select(static o => o.GetEOJ()),
+                    SelfNode.Devices.Select(static o => o.EOJ),
                     contents,
                     out var bytesWritten
                 );
@@ -324,7 +324,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.SetI_SNA)
                         return;
@@ -361,8 +361,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.SetI,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
@@ -445,7 +445,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
                         return;
@@ -481,8 +481,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.SetC,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
@@ -555,7 +555,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
                         return;
@@ -591,8 +591,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.Get,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
                 ),
@@ -670,7 +670,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
                         return;
@@ -716,8 +716,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.SetGet,
                     opcListOrOpcSetList: propertiesSet.Select(ConvertToPropertyRequest),
                     opcGetList: propertiesGet.Select(ConvertToPropertyRequestExceptValueData)
@@ -781,8 +781,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.INF_REQ,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
                 ),
@@ -834,8 +834,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.INF,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
@@ -899,7 +899,7 @@ namespace EchoDotNetLite
                         return;
                     if (value.response.EDATA is not EDATA1 edata)
                         return;
-                    if (edata.SEOJ != destinationObject.GetEOJ())
+                    if (edata.SEOJ != destinationObject.EOJ)
                         return;
                     if (edata.ESV != ESV.INFC_Res)
                         return;
@@ -921,8 +921,8 @@ namespace EchoDotNetLite
                 (
                     buffer: buffer,
                     tid: GetNewTid(),
-                    sourceObject: sourceObject.GetEOJ(),
-                    destinationObject: destinationObject.GetEOJ(),
+                    sourceObject: sourceObject.EOJ,
+                    destinationObject: destinationObject.EOJ,
                     esv: ESV.INFC,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
@@ -1024,7 +1024,7 @@ namespace EchoDotNetLite
         /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
         /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{byte}"/>。</param>
         /// <seealso cref="PerformInstanceListNotificationAsync"/>
-        /// <seealso cref="QueryPropertyMapsAsync"/>
+        /// <seealso cref="AcquirePropertyMapsAsync"/>
         private async ValueTask HandleInstanceListNotificationReceivedAsync(EchoNode sourceNode, ReadOnlyMemory<byte> edt)
         {
             _logger?.LogTrace("インスタンスリスト通知を受信しました");
@@ -1034,23 +1034,23 @@ namespace EchoDotNetLite
 
             foreach (var eoj in instanceList)
             {
-                var device = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == eoj);
+                var device = sourceNode.Devices.FirstOrDefault(d => d.EOJ == eoj);
                 if (device == null)
                 {
                     device = new EchoObjectInstance(eoj);
                     sourceNode.Devices.Add(device);
                 }
-                if (!device.IsPropertyMapGet)
+                if (!device.HasPropertyMapAcquired)
                 {
                     _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
-                    await QueryPropertyMapsAsync(sourceNode, device).ConfigureAwait(false);
+                    await AcquirePropertyMapsAsync(sourceNode, device).ConfigureAwait(false);
                 }
             }
 
-            if (!sourceNode.NodeProfile.IsPropertyMapGet)
+            if (!sourceNode.NodeProfile.HasPropertyMapAcquired)
             {
                 _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
-                await QueryPropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
+                await AcquirePropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
             }
         }
 
@@ -1069,7 +1069,7 @@ namespace EchoDotNetLite
         /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。</param>
         /// <exception cref="InvalidOperationException">受信したEDTは無効なプロパティマップです。</exception>
         /// <seealso cref="HandleInstanceListNotificationReceivedAsync"/>
-        private async ValueTask QueryPropertyMapsAsync(EchoNode sourceNode, EchoObjectInstance device)
+        private async ValueTask AcquirePropertyMapsAsync(EchoNode sourceNode, EchoObjectInstance device)
         {
             using var ctsTimeout = CreateTimeoutCancellationTokenSource(20_000);
 
@@ -1159,22 +1159,26 @@ namespace EchoDotNetLite
                 }
             }
 
-            device.Properties.Clear();
-
-            foreach (var (code, caps) in propertyCapabilityMap)
-            {
-                var property = new EchoPropertyInstance
+            device.ResetProperties
+            (
+                propertyCapabilityMap.Select
                 (
-                    device.Spec.ClassGroup.ClassGroupCode,
-                    device.Spec.Class.ClassCode,
-                    code,
-                    caps.Anno,
-                    caps.Set,
-                    caps.Get
-                );
+                    map =>
+                    {
+                        var (code, caps) = map;
 
-                device.Properties.Add(property);
-            }
+                        return new EchoPropertyInstance
+                        (
+                            device.Spec.ClassGroup.ClassGroupCode,
+                            device.Spec.Class.ClassCode,
+                            code,
+                            caps.Anno,
+                            caps.Set,
+                            caps.Get
+                        );
+                    }
+                )
+            );
 
             if (_logger is not null)
             {
@@ -1188,7 +1192,7 @@ namespace EchoDotNetLite
                 _logger.LogTrace(sb.ToString());
             }
 
-            device.IsPropertyMapGet = true;
+            device.HasPropertyMapAcquired = true;
         }
 
         /// <summary>
@@ -1226,13 +1230,13 @@ namespace EchoDotNetLite
                 }
                 EchoObjectInstance? destObject = null;
                 //自ノードプロファイル宛てのリクエストの場合
-                if (SelfNode.NodeProfile.GetEOJ() == edata.DEOJ)
+                if (SelfNode.NodeProfile.EOJ == edata.DEOJ)
                 {
                     destObject = SelfNode.NodeProfile;
                 }
                 else
                 {
-                    destObject = SelfNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.DEOJ);
+                    destObject = SelfNode.Devices.FirstOrDefault(d => d.EOJ == edata.DEOJ);
                 }
                 Task? task = null;
 
@@ -1348,7 +1352,7 @@ namespace EchoDotNetLite
             var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
             foreach (var opc in edata.OPCList)
             {
-                var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                 if (property == null
                         || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                         || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1426,7 +1430,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCList)
                 {
-                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                    var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1521,7 +1525,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCList)
                 {
-                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                    var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1623,7 +1627,7 @@ namespace EchoDotNetLite
             {
                 foreach (var opc in edata.OPCSetList)
                 {
-                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                    var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1643,7 +1647,7 @@ namespace EchoDotNetLite
                 }
                 foreach (var opc in edata.OPCGetList)
                 {
-                    var property = destObject.SETProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+                    var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
                     if (property == null
                             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                             || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1732,11 +1736,11 @@ namespace EchoDotNetLite
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
             var hasError = false;
-            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
+            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
             if (sourceObject == null)
             {
                 //ノードプロファイルからの通知の場合
-                if (sourceNode.NodeProfile.GetEOJ() == edata.SEOJ)
+                if (sourceNode.NodeProfile.EOJ == edata.SEOJ)
                 {
                     sourceObject = sourceNode.NodeProfile;
                 }
@@ -1756,7 +1760,7 @@ namespace EchoDotNetLite
                     //未知のプロパティ
                     //新規作成
                     property = new EchoPropertyInstance(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
-                    sourceObject.Properties.Add(property);
+                    sourceObject.AddProperty(property);
                 }
                 if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                     || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1813,11 +1817,11 @@ namespace EchoDotNetLite
                 //"けどこっそり保持する"
                 hasError = true;
             }
-            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.GetEOJ() == edata.SEOJ);
+            var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
             if (sourceObject == null)
             {
                 //ノードプロファイルからの通知の場合
-                if (sourceNode.NodeProfile.GetEOJ() == edata.SEOJ)
+                if (sourceNode.NodeProfile.EOJ == edata.SEOJ)
                 {
                     sourceObject = sourceNode.NodeProfile;
                 }
@@ -1837,7 +1841,7 @@ namespace EchoDotNetLite
                     //未知のプロパティ
                     //新規作成
                     property = new EchoPropertyInstance(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
-                    sourceObject.Properties.Add(property);
+                    sourceObject.AddProperty(property);
                 }
 
                 if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)

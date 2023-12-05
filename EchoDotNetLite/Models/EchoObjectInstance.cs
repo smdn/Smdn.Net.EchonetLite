@@ -37,34 +37,45 @@ namespace EchoDotNetLite.Models
         {
             Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
             InstanceCode = instanceCode;
-            Properties = new NotifyChangeCollection<EchoObjectInstance,EchoPropertyInstance>(this);
+
+            properties = new(this);
+
             foreach (var prop in classObject.GetProperties)
             {
-                Properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new EchoPropertyInstance(prop));
             }
             foreach (var prop in classObject.SetProperties)
             {
-                Properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new EchoPropertyInstance(prop));
             }
             foreach (var prop in classObject.AnnoProperties)
             {
-                Properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new EchoPropertyInstance(prop));
+            }
+        }
+
+        internal void AddProperty(EchoPropertyInstance prop)
+            => properties.Add(prop);
+
+        internal void ResetProperties(IEnumerable<EchoPropertyInstance> props)
+        {
+            properties.Clear();
+
+            foreach (var prop in props)
+            {
+                properties.Add(prop);
             }
         }
 
         /// <summary>
         /// EOJ
         /// </summary>
-        /// <returns></returns>
-        public EOJ GetEOJ()
-        {
-            return new EOJ
-            (
-                classGroupCode: Spec.ClassGroup.ClassGroupCode,
-                classCode: Spec.Class.ClassCode,
-                instanceCode: InstanceCode
-            );
-        }
+        public EOJ EOJ => new
+        (
+            classGroupCode: Spec.ClassGroup.ClassGroupCode,
+            classCode: Spec.Class.ClassCode,
+            instanceCode: InstanceCode
+        );
 
         /// <summary>
         /// イベント プロパティインスタンス増減通知
@@ -79,7 +90,10 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// プロパティマップ取得状態
         /// </summary>
-        public bool IsPropertyMapGet { get; internal set; } = false;
+        public bool HasPropertyMapAcquired { get; internal set; } = false;
+
+        [Obsolete($"Use {nameof(HasPropertyMapAcquired)} instead.")]
+        public bool IsPropertyMapGet => HasPropertyMapAcquired;
 
         /// <summary>
         /// クラスグループコード、クラスグループ名
@@ -94,28 +108,33 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// プロパティの一覧
         /// </summary>
-        public ICollection<EchoPropertyInstance> Properties { get; }
+        public IReadOnlyCollection<EchoPropertyInstance> Properties => properties;
+
+        private readonly NotifyChangeCollection<EchoObjectInstance, EchoPropertyInstance> properties;
 
         /// <summary>
         /// GETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> GETProperties
-        {
-            get { return Properties.Where(static p => p.Spec.Get); }
-        }
+        public IEnumerable<EchoPropertyInstance> GetProperties => Properties.Where(static p => p.Spec.Get);
+
+        [Obsolete($"Use {nameof(GetProperties)} instead.")]
+        public IEnumerable<EchoPropertyInstance> GETProperties => GetProperties;
+
         /// <summary>
         /// SETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> SETProperties
-        {
-            get { return Properties.Where(static p => p.Spec.Set); }
-        }
+        public IEnumerable<EchoPropertyInstance> SetProperties => Properties.Where(static p => p.Spec.Set);
+
+        [Obsolete($"Use {nameof(SetProperties)} instead.")]
+        public IEnumerable<EchoPropertyInstance> SETProperties => SetProperties;
+
         /// <summary>
         /// ANNOプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> ANNOProperties
-        {
-            get { return Properties.Where(static p => p.Spec.Anno); }
-        }
+        public IEnumerable<EchoPropertyInstance> AnnoProperties => Properties.Where(static p => p.Spec.Anno);
+
+        [Obsolete($"Use {nameof(AnnoProperties)} instead.")]
+        public IEnumerable<EchoPropertyInstance> ANNOProperties => AnnoProperties;
+
     }
 }
