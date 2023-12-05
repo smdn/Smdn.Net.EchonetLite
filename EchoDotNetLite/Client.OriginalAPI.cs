@@ -10,18 +10,22 @@ namespace EchoDotNetLite
 {
     partial class EchoClient
     {
+        [Obsolete($"Use {nameof(Nodes)} instead.")]
         public ICollection<EchoNode> NodeList => Nodes;
 
+        [Obsolete($"Use {nameof(OnNodeJoined)} instead.")]
         public event EventHandler<EchoNode>? OnNodeJoined {
             add => NodeJoined += value;
             remove => NodeJoined -= value;
         }
 
         /// <inheritdoc cref="PerformInstanceListNotificationAsync(CancellationToken)"/>
+        [Obsolete($"Use {nameof(PerformInstanceListNotificationAsync)} instead.")]
         public async Task インスタンスリスト通知Async()
             => await PerformInstanceListNotificationAsync().ConfigureAwait(false);
 
         /// <inheritdoc cref="PerformInstanceListNotificationRequestAsync(CancellationToken)"/>
+        [Obsolete($"Use {nameof(PerformInstanceListNotificationRequestAsync)} instead.")]
         public async Task インスタンスリスト通知要求Async()
             => await PerformInstanceListNotificationRequestAsync().ConfigureAwait(false);
 
@@ -51,6 +55,7 @@ namespace EchoDotNetLite
         /// タイムアウトまでに不可応答(SetI_SNA <c>0x50</c>)がなかった場合は<see langword="true"/>、不可応答による応答があった場合は<see langword="false"/>を返します。
         /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
+        [Obsolete($"Use {nameof(PerformPropertyValueWriteRequestAsync)} instead.")]
         public async Task<(bool, IReadOnlyCollection<PropertyRequest>?)> プロパティ値書き込み要求応答不要(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -78,6 +83,7 @@ namespace EchoDotNetLite
 
         /// <inheritdoc cref="PerformPropertyValueWriteRequestResponseRequiredAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
+        [Obsolete($"Use {nameof(PerformPropertyValueWriteRequestResponseRequiredAsync)} instead.")]
         public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> プロパティ値書き込み応答要(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -103,6 +109,7 @@ namespace EchoDotNetLite
 
         /// <inheritdoc cref="PerformPropertyValueReadRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
+        [Obsolete($"Use {nameof(PerformPropertyValueReadRequestAsync)} instead.")]
         public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> プロパティ値読み出し(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -128,6 +135,7 @@ namespace EchoDotNetLite
 
         /// <inheritdoc cref="PerformPropertyValueWriteReadRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
+        [Obsolete($"Use {nameof(PerformPropertyValueWriteReadRequestAsync)} instead.")]
         public async Task<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)> プロパティ値書き込み読み出し(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -154,6 +162,7 @@ namespace EchoDotNetLite
         }
 
         /// <inheritdoc cref="PerformPropertyValueNotificationRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        [Obsolete($"Use {nameof(PerformPropertyValueNotificationRequestAsync)} instead.")]
         public async Task プロパティ値通知要求(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -169,6 +178,7 @@ namespace EchoDotNetLite
             ).ConfigureAwait(false);
 
         /// <inheritdoc cref="自発プロパティ値通知Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        [Obsolete($"Use {nameof(PerformPropertyValueNotificationAsync)} instead.")]
         public async Task 自発プロパティ値通知(
             EchoObjectInstance sourceObject
             , EchoNode? destinationNode
@@ -185,6 +195,7 @@ namespace EchoDotNetLite
 
         /// <inheritdoc cref="PerformPropertyValueNotificationResponseRequiredAsync(EchoObjectInstance, EchoNode, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
+        [Obsolete($"Use {nameof(PerformPropertyValueNotificationResponseRequiredAsync)} instead.")]
         public async Task<IReadOnlyCollection<PropertyRequest>> プロパティ値通知応答要(
             EchoObjectInstance sourceObject
             , EchoNode destinationNode
