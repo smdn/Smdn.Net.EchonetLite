@@ -1159,22 +1159,26 @@ namespace EchoDotNetLite
                 }
             }
 
-            device.Properties.Clear();
-
-            foreach (var (code, caps) in propertyCapabilityMap)
-            {
-                var property = new EchoPropertyInstance
+            device.ResetProperties
+            (
+                propertyCapabilityMap.Select
                 (
-                    device.Spec.ClassGroup.ClassGroupCode,
-                    device.Spec.Class.ClassCode,
-                    code,
-                    caps.Anno,
-                    caps.Set,
-                    caps.Get
-                );
+                    map =>
+                    {
+                        var (code, caps) = map;
 
-                device.Properties.Add(property);
-            }
+                        return new EchoPropertyInstance
+                        (
+                            device.Spec.ClassGroup.ClassGroupCode,
+                            device.Spec.Class.ClassCode,
+                            code,
+                            caps.Anno,
+                            caps.Set,
+                            caps.Get
+                        );
+                    }
+                )
+            );
 
             if (_logger is not null)
             {
@@ -1756,7 +1760,7 @@ namespace EchoDotNetLite
                     //未知のプロパティ
                     //新規作成
                     property = new EchoPropertyInstance(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
-                    sourceObject.Properties.Add(property);
+                    sourceObject.AddProperty(property);
                 }
                 if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
                     || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
@@ -1837,7 +1841,7 @@ namespace EchoDotNetLite
                     //未知のプロパティ
                     //新規作成
                     property = new EchoPropertyInstance(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
-                    sourceObject.Properties.Add(property);
+                    sourceObject.AddProperty(property);
                 }
 
                 if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)

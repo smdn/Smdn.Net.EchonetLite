@@ -37,18 +37,33 @@ namespace EchoDotNetLite.Models
         {
             Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
             InstanceCode = instanceCode;
-            Properties = new NotifyChangeCollection<EchoObjectInstance,EchoPropertyInstance>(this);
+
+            properties = new(this);
+
             foreach (var prop in classObject.GetProperties)
             {
-                Properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new EchoPropertyInstance(prop));
             }
             foreach (var prop in classObject.SetProperties)
             {
-                Properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new EchoPropertyInstance(prop));
             }
             foreach (var prop in classObject.AnnoProperties)
             {
-                Properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new EchoPropertyInstance(prop));
+            }
+        }
+
+        internal void AddProperty(EchoPropertyInstance prop)
+            => properties.Add(prop);
+
+        internal void ResetProperties(IEnumerable<EchoPropertyInstance> props)
+        {
+            properties.Clear();
+
+            foreach (var prop in props)
+            {
+                properties.Add(prop);
             }
         }
 
@@ -93,7 +108,9 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// プロパティの一覧
         /// </summary>
-        public ICollection<EchoPropertyInstance> Properties { get; }
+        public IReadOnlyCollection<EchoPropertyInstance> Properties => properties;
+
+        private readonly NotifyChangeCollection<EchoObjectInstance, EchoPropertyInstance> properties;
 
         /// <summary>
         /// GETプロパティの一覧
