@@ -3,6 +3,8 @@ using EchoDotNetLite.Specifications;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -12,14 +14,34 @@ namespace EchoDotNetLite.Models
     /// <summary>
     /// ECHONET Liteノード
     /// </summary>
-    public sealed class EchoNode: INotifyCollectionChanged<EchoObjectInstance>
+    public sealed class EchoNode
     {
         public EchoNode(IPAddress address, EchoObjectInstance nodeProfile)
         {
             Address = address ?? throw new ArgumentNullException(nameof(address));
             NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
-            Devices = new NotifyChangeCollection<EchoNode,EchoObjectInstance>(this);
+
+            var devices = new ObservableCollection<EchoObjectInstance>();
+
+            devices.CollectionChanged += (_, e) => OnDevicesChanged(e);
+
+            Devices = devices;
         }
+
+        private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
+        {
+            var handler = OnCollectionChanged;
+
+            if (handler is null)
+                return;
+
+            if (e.TryGetAddedItem<EchoObjectInstance>(out var addedObject))
+                handler(this, (CollectionChangeType.Add, addedObject));
+
+            if (e.TryGetRemovedItem<EchoObjectInstance>(out var removedObject))
+                handler(this, (CollectionChangeType.Remove, removedObject));
+        }
+
         /// <summary>
         /// 下位スタックのアドレス
         /// </summary>
@@ -39,11 +61,6 @@ namespace EchoDotNetLite.Models
         /// イベント オブジェクトインスタンス増減通知
         /// </summary>
         public event EventHandler<(CollectionChangeType, EchoObjectInstance)>? OnCollectionChanged;
-
-        void INotifyCollectionChanged<EchoObjectInstance>.RaiseCollectionChanged(CollectionChangeType type, EchoObjectInstance item)
-        {
-            OnCollectionChanged?.Invoke(this, (type, item));
-        }
     }
 
 

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using EchoDotNetLite.Common;
@@ -11,7 +13,7 @@ namespace EchoDotNetLite.Models
     /// <summary>
     /// ECHONET Lite オブジェクトインスタンス
     /// </summary>
-    public sealed class EchoObjectInstance: INotifyCollectionChanged<EchoPropertyInstance>
+    public sealed class EchoObjectInstance
     {
         /// <summary>
         /// デフォルトコンストラクタ
@@ -38,7 +40,7 @@ namespace EchoDotNetLite.Models
             Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
             InstanceCode = instanceCode;
 
-            properties = new(this);
+            properties = new();
 
             foreach (var prop in classObject.GetProperties)
             {
@@ -52,6 +54,22 @@ namespace EchoDotNetLite.Models
             {
                 properties.Add(new EchoPropertyInstance(prop));
             }
+
+            properties.CollectionChanged += (_, e) => OnPropertiesChanged(e);
+        }
+
+        private void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
+        {
+            var handler = OnCollectionChanged;
+
+            if (handler is null)
+                return;
+
+            if (e.TryGetAddedItem<EchoPropertyInstance>(out var addedProperty))
+                handler(this, (CollectionChangeType.Add, addedProperty));
+
+            if (e.TryGetRemovedItem<EchoPropertyInstance>(out var removedProperty))
+                handler(this, (CollectionChangeType.Remove, removedProperty));
         }
 
         internal void AddProperty(EchoPropertyInstance prop)
@@ -82,10 +100,6 @@ namespace EchoDotNetLite.Models
         /// </summary>
         public event EventHandler<(CollectionChangeType, EchoPropertyInstance)>? OnCollectionChanged;
 
-        void INotifyCollectionChanged<EchoPropertyInstance>.RaiseCollectionChanged(CollectionChangeType type, EchoPropertyInstance item)
-        {
-            OnCollectionChanged?.Invoke(this, (type, item));
-        }
 
         /// <summary>
         /// プロパティマップ取得状態
@@ -110,7 +124,7 @@ namespace EchoDotNetLite.Models
         /// </summary>
         public IReadOnlyCollection<EchoPropertyInstance> Properties => properties;
 
-        private readonly NotifyChangeCollection<EchoObjectInstance, EchoPropertyInstance> properties;
+        private readonly ObservableCollection<EchoPropertyInstance> properties;
 
         /// <summary>
         /// GETプロパティの一覧
