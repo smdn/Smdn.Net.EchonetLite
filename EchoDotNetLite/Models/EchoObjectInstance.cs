@@ -60,6 +60,9 @@ namespace EchoDotNetLite.Models
 
         private void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
         {
+            PropertiesChanged?.Invoke(this, e);
+
+            // translate event args to raise obsolete OnCollectionChanged event
             var handler = OnCollectionChanged;
 
             if (handler is null)
@@ -96,10 +99,20 @@ namespace EchoDotNetLite.Models
         );
 
         /// <summary>
-        /// イベント プロパティインスタンス増減通知
+        /// プロパティの一覧<see cref="Properties"/>に変更があったときに発生するイベント。
         /// </summary>
-        public event EventHandler<(CollectionChangeType, EchoPropertyInstance)>? OnCollectionChanged;
+        /// <remarks>
+        /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)などによって
+        /// 現在のオブジェクトにECHONET Lite プロパティが追加・削除された際にイベントが発生します。
+        /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
+        /// </remarks>
+        public event NotifyCollectionChangedEventHandler? PropertiesChanged;
 
+        /// <summary>
+        /// イベント オブジェクトインスタンス増減通知
+        /// </summary>
+        [Obsolete($"Use {nameof(PropertiesChanged)} instead.")]
+        public event EventHandler<(CollectionChangeType, EchoPropertyInstance)>? OnCollectionChanged;
 
         /// <summary>
         /// プロパティマップ取得状態

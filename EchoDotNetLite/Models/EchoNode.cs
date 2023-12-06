@@ -30,6 +30,9 @@ namespace EchoDotNetLite.Models
 
         private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
         {
+            DevicesChanged?.Invoke(this, e);
+
+            // translate event args to raise obsolete OnCollectionChanged event
             var handler = OnCollectionChanged;
 
             if (handler is null)
@@ -58,8 +61,18 @@ namespace EchoDotNetLite.Models
         public ICollection<EchoObjectInstance> Devices { get;  }
 
         /// <summary>
+        /// 機器オブジェクトのリスト<see cref="Devices"/>に変更があったときに発生するイベント。
+        /// </summary>
+        /// <remarks>
+        /// 現在のノードにECHONET Lite オブジェクトが追加・削除された際にイベントが発生します。
+        /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
+        /// </remarks>
+        public event NotifyCollectionChangedEventHandler? DevicesChanged;
+
+        /// <summary>
         /// イベント オブジェクトインスタンス増減通知
         /// </summary>
+        [Obsolete($"Use {nameof(DevicesChanged)} instead.")]
         public event EventHandler<(CollectionChangeType, EchoObjectInstance)>? OnCollectionChanged;
     }
 
