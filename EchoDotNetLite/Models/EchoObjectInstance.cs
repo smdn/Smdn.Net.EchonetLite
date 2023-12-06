@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using EchoDotNetLite.Common;
@@ -11,7 +13,7 @@ namespace EchoDotNetLite.Models
     /// <summary>
     /// ECHONET Lite オブジェクトインスタンス
     /// </summary>
-    public sealed class EchoObjectInstance: INotifyCollectionChanged<EchoPropertyInstance>
+    public sealed class EchoObjectInstance
     {
         /// <summary>
         /// デフォルトコンストラクタ
@@ -38,7 +40,7 @@ namespace EchoDotNetLite.Models
             Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
             InstanceCode = instanceCode;
 
-            properties = new(this);
+            properties = new();
 
             foreach (var prop in classObject.GetProperties)
             {
@@ -52,6 +54,25 @@ namespace EchoDotNetLite.Models
             {
                 properties.Add(new EchoPropertyInstance(prop));
             }
+
+            properties.CollectionChanged += (_, e) => OnPropertiesChanged(e);
+        }
+
+        private void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
+        {
+            PropertiesChanged?.Invoke(this, e);
+
+            // translate event args to raise obsolete OnCollectionChanged event
+            var handler = OnCollectionChanged;
+
+            if (handler is null)
+                return;
+
+            if (e.TryGetAddedItem<EchoPropertyInstance>(out var addedProperty))
+                handler(this, (CollectionChangeType.Add, addedProperty));
+
+            if (e.TryGetRemovedItem<EchoPropertyInstance>(out var removedProperty))
+                handler(this, (CollectionChangeType.Remove, removedProperty));
         }
 
         internal void AddProperty(EchoPropertyInstance prop)
@@ -78,14 +99,20 @@ namespace EchoDotNetLite.Models
         );
 
         /// <summary>
-        /// イベント プロパティインスタンス増減通知
+        /// プロパティの一覧<see cref="Properties"/>に変更があったときに発生するイベント。
         /// </summary>
-        public event EventHandler<(CollectionChangeType, EchoPropertyInstance)>? OnCollectionChanged;
+        /// <remarks>
+        /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)などによって
+        /// 現在のオブジェクトにECHONET Lite プロパティが追加・削除された際にイベントが発生します。
+        /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
+        /// </remarks>
+        public event NotifyCollectionChangedEventHandler? PropertiesChanged;
 
-        void INotifyCollectionChanged<EchoPropertyInstance>.RaiseCollectionChanged(CollectionChangeType type, EchoPropertyInstance item)
-        {
-            OnCollectionChanged?.Invoke(this, (type, item));
-        }
+        /// <summary>
+        /// イベント オブジェクトインスタンス増減通知
+        /// </summary>
+        [Obsolete($"Use {nameof(PropertiesChanged)} instead.")]
+        public event EventHandler<(CollectionChangeType, EchoPropertyInstance)>? OnCollectionChanged;
 
         /// <summary>
         /// プロパティマップ取得状態
@@ -110,7 +137,7 @@ namespace EchoDotNetLite.Models
         /// </summary>
         public IReadOnlyCollection<EchoPropertyInstance> Properties => properties;
 
-        private readonly NotifyChangeCollection<EchoObjectInstance, EchoPropertyInstance> properties;
+        private readonly ObservableCollection<EchoPropertyInstance> properties;
 
         /// <summary>
         /// GETプロパティの一覧
