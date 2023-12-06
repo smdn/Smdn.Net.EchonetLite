@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EchoDotNetLite.Models
+namespace EchoDotNetLiteLANBridge
 {
     /// <summary>
     /// バイト配列-16進数ユーティリティ

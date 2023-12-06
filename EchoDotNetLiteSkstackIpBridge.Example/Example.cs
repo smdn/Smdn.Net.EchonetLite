@@ -2,6 +2,7 @@
 using EchoDotNetLite;
 using EchoDotNetLite.Common;
 using EchoDotNetLite.Models;
+using SkstackIpDotNet;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -71,7 +72,7 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
         {
             if (sender is EchoPropertyInstance echoPropertyInstance)
             {
-                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e.Span)}");
+                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e.ToArray())}");
             }
         }
 
