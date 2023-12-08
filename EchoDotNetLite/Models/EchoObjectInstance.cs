@@ -117,6 +117,8 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// プロパティマップ取得状態
         /// </summary>
+        /// <seealso cref="EchoClient.PropertyMapAcquiring"/>
+        /// <seealso cref="EchoClient.PropertyMapAcquired"/>
         public bool HasPropertyMapAcquired { get; internal set; } = false;
 
         [Obsolete($"Use {nameof(HasPropertyMapAcquired)} instead.")]

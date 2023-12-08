@@ -1032,6 +1032,10 @@ namespace EchoDotNetLite
             if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt.Span, out var instanceList))
                 return; // XXX
 
+            OnInstanceListUpdating(sourceNode);
+
+            var instances = new List<EchoObjectInstance>(capacity: instanceList.Count);
+
             foreach (var eoj in instanceList)
             {
                 var device = sourceNode.Devices.FirstOrDefault(d => d.EOJ == eoj);
@@ -1040,6 +1044,14 @@ namespace EchoDotNetLite
                     device = new EchoObjectInstance(eoj);
                     sourceNode.Devices.Add(device);
                 }
+
+                instances.Add(device);
+            }
+
+            OnInstanceListPropertyMapAcquiring(sourceNode, instances);
+
+            foreach (var device in instances)
+            {
                 if (!device.HasPropertyMapAcquired)
                 {
                     _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
@@ -1052,6 +1064,8 @@ namespace EchoDotNetLite
                 _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
                 await AcquirePropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
             }
+
+            OnInstanceListUpdated(sourceNode, instances);
         }
 
         private class PropertyCapability
@@ -1071,6 +1085,8 @@ namespace EchoDotNetLite
         /// <seealso cref="HandleInstanceListNotificationReceivedAsync"/>
         private async ValueTask AcquirePropertyMapsAsync(EchoNode sourceNode, EchoObjectInstance device)
         {
+            OnPropertyMapAcquiring(sourceNode, device); // TODO: support setting cancel and timeout
+
             using var ctsTimeout = CreateTimeoutCancellationTokenSource(20_000);
 
             bool result;
@@ -1193,6 +1209,8 @@ namespace EchoDotNetLite
             }
 
             device.HasPropertyMapAcquired = true;
+
+            OnPropertyMapAcquired(sourceNode, device);
         }
 
         /// <summary>
