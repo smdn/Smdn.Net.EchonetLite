@@ -59,7 +59,7 @@ namespace EchoDotNetLiteLANBridge.Example
             {
                 case CollectionChangeType.Add:
                     _logger.LogTrace($"EchoProperty Add {e.instance.GetDebugString()}");
-                    e.instance.ValueChanged += LogEchoPropertyValueChanged;
+                    e.instance.ValueSet += LogEchoPropertyValueChanged;
                     break;
                 case CollectionChangeType.Remove:
                     _logger.LogTrace($"EchoProperty Remove {e.instance.GetDebugString()}");
