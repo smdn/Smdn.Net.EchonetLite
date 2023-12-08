@@ -1085,6 +1085,8 @@ namespace EchoDotNetLite
         /// <seealso cref="HandleInstanceListNotificationReceivedAsync"/>
         private async ValueTask AcquirePropertyMapsAsync(EchoNode sourceNode, EchoObjectInstance device)
         {
+            OnPropertyMapAcquiring(sourceNode, device); // TODO: support setting cancel and timeout
+
             using var ctsTimeout = CreateTimeoutCancellationTokenSource(20_000);
 
             bool result;
@@ -1207,6 +1209,8 @@ namespace EchoDotNetLite
             }
 
             device.HasPropertyMapAcquired = true;
+
+            OnPropertyMapAcquired(sourceNode, device);
         }
 
         /// <summary>
