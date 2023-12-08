@@ -50,44 +50,44 @@ public class EchoPropertyInstanceTests {
   public void SetValue(byte[] newValue)
   {
     var p = CreateProperty();
-    var countOfValueChanged = 0;
+    var countOfValueSet = 0;
     var resetValue = new byte[] { 0xFF };
 
-    p.ValueChanged += (sender, val) => {
+    p.ValueSet += (sender, val) => {
       Assert.AreSame(sender, p, nameof(p));
-      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val), $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}");
+      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val), $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}");
 
       Assert.That(
         val,
         SequenceIs.EqualTo(
-          countOfValueChanged switch {
+          countOfValueSet switch {
             0 or 2 => newValue.AsMemory(),
             1 => resetValue.AsMemory(),
             _ => throw new InvalidOperationException("unexpected event")
           }
         ),
-        $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}"
+        $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}"
       );
 
-      countOfValueChanged++;
+      countOfValueSet++;
     };
 
     p.SetValue(newValue);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.SetValue} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.SetValue} #1");
-    Assert.AreEqual(1, countOfValueChanged, $"{nameof(countOfValueChanged)} after {p.SetValue} #1");
+    Assert.AreEqual(1, countOfValueSet, $"{nameof(countOfValueSet)} after {p.SetValue} #1");
 
     // reset
     p.SetValue(resetValue);
-    Assert.AreEqual(2, countOfValueChanged, $"{nameof(countOfValueChanged)} after {p.SetValue} #2");
+    Assert.AreEqual(2, countOfValueSet, $"{nameof(countOfValueSet)} after {p.SetValue} #2");
 
     // set again
     p.SetValue(newValue);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.SetValue} #3");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.SetValue} #3");
-    Assert.AreEqual(3, countOfValueChanged, $"{nameof(countOfValueChanged)} after {p.SetValue} #3");
+    Assert.AreEqual(3, countOfValueSet, $"{nameof(countOfValueSet)} after {p.SetValue} #3");
   }
 
   [Test]
@@ -110,44 +110,44 @@ public class EchoPropertyInstanceTests {
   public void WriteValue(byte[] newValue)
   {
     var p = CreateProperty();
-    var countOfValueChanged = 0;
+    var countOfValueSet = 0;
     var resetValue = new byte[] { 0xFF };
 
-    p.ValueChanged += (sender, val) => {
+    p.ValueSet += (sender, val) => {
       Assert.AreSame(sender, p, nameof(p));
-      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val), $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}");
+      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val), $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}");
 
       Assert.That(
         val,
         SequenceIs.EqualTo(
-          countOfValueChanged switch {
+          countOfValueSet switch {
             0 or 2 => newValue.AsMemory(),
             1 => resetValue.AsMemory(),
             _ => throw new InvalidOperationException("unexpected event")
           }
         ),
-        $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}"
+        $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}"
       );
 
-      countOfValueChanged++;
+      countOfValueSet++;
     };
 
     p.WriteValue(writer => writer.Write(newValue.AsSpan()));
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.WriteValue} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.WriteValue} #1");
-    Assert.AreEqual(1, countOfValueChanged, $"{nameof(countOfValueChanged)} after {p.WriteValue} #1");
+    Assert.AreEqual(1, countOfValueSet, $"{nameof(countOfValueSet)} after {p.WriteValue} #1");
 
     // reset
     p.SetValue(resetValue);
-    Assert.AreEqual(2, countOfValueChanged, $"{nameof(countOfValueChanged)} after {p.WriteValue} #2");
+    Assert.AreEqual(2, countOfValueSet, $"{nameof(countOfValueSet)} after {p.WriteValue} #2");
 
     // write again
     p.WriteValue(writer => writer.Write(newValue.AsSpan()));
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.WriteValue} #3");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.WriteValue} #3");
-    Assert.AreEqual(3, countOfValueChanged, $"{nameof(countOfValueChanged)} after {p.WriteValue} #3");
+    Assert.AreEqual(3, countOfValueSet, $"{nameof(countOfValueSet)} after {p.WriteValue} #3");
   }
 
 }

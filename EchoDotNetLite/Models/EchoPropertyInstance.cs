@@ -135,16 +135,20 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// プロパティ値変更イベント
         /// </summary>
-        public event EventHandler<ReadOnlyMemory<byte>>? ValueChanged;
+        /// <remarks>
+        /// このイベントは、プロパティ値の設定が行われる場合に発生します。
+        /// このイベントは、設定される値が以前と同じ値の場合でも発生します。
+        /// </remarks>
+        public event EventHandler<ReadOnlyMemory<byte>>? ValueSet;
 
         /// <summary>
         /// プロパティ値を設定します。
         /// </summary>
         /// <remarks>
-        /// プロパティ値の設定が行われたあと、イベント<see cref="ValueChanged"/>が発生します。
+        /// プロパティ値の設定が行われたあと、イベント<see cref="ValueSet"/>が発生します。
         /// </remarks>
         /// <param name="newValue">プロパティ値として設定する値を表す<see cref="ReadOnlySpan{byte}"/>。</param>
-        /// <seealso cref="ValueChanged"/>
+        /// <seealso cref="ValueSet"/>
         public void SetValue(ReadOnlySpan<byte> newValue)
         {
 #if NET8_0_OR_GREATER
@@ -156,21 +160,21 @@ namespace EchoDotNetLite.Models
             _value.Write(newValue);
 
             //TODO とりあえず変更がなくてもイベントを起こす
-            ValueChanged?.Invoke(this, _value.WrittenMemory);
+            ValueSet?.Invoke(this, _value.WrittenMemory);
         }
 
         /// <summary>
         /// プロパティ値を書き込みます。
         /// </summary>
         /// <remarks>
-        /// プロパティ値の設定が行われたあと、イベント<see cref="ValueChanged"/>が発生します。
+        /// プロパティ値の設定が行われたあと、イベント<see cref="ValueSet"/>が発生します。
         /// </remarks>
         /// <param name="write">
         /// プロパティ値を書き込むための<see cref="Action{IBufferWriter{byte}}"/>デリゲート。
         /// 引数で渡される<see cref="IBufferWriter{byte}"/>を介してプロパティ値として設定する内容を書き込んでください。
         /// </param>
         /// <exception cref="ArgumentNullException"><paramref name="write"/>が<see langword="null"/>です。</exception>
-        /// <seealso cref="ValueChanged"/>
+        /// <seealso cref="ValueSet"/>
         public void WriteValue(Action<IBufferWriter<byte>> write)
         {
             if (write is null)
@@ -185,7 +189,7 @@ namespace EchoDotNetLite.Models
             write(_value);
 
             //TODO とりあえず変更がなくてもイベントを起こす
-            ValueChanged?.Invoke(this, _value.WrittenMemory);
+            ValueSet?.Invoke(this, _value.WrittenMemory);
         }
     }
 }
