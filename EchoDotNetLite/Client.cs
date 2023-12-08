@@ -338,7 +338,7 @@ namespace EchoDotNetLite
                         if (prop.PDC == 0x00)
                         {
                             //書き込み成功
-                            target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
+                            target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueMemory);
                         }
                     }
 
@@ -381,7 +381,7 @@ namespace EchoDotNetLite
                     {
                         var target = destinationObject.Properties.First(p => p.Spec.Code == prop.Spec.Code);
                         //成功した書き込みを反映(全部OK)
-                        target.SetValue(prop.ValueSpan);
+                        target.SetValue(prop.ValueMemory);
                     }
                 }
 
@@ -459,7 +459,7 @@ namespace EchoDotNetLite
                         if(prop.PDC == 0x00)
                         {
                             //書き込み成功
-                            target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueSpan);
+                            target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueMemory);
                         }
                     }
                     responseTCS.SetResult((edata.ESV == ESV.Set_Res, opcList));
@@ -569,7 +569,7 @@ namespace EchoDotNetLite
                         if (prop.PDC != 0x00)
                         {
                             //読み込み成功
-                            target.SetValue(prop.EDT.Span);
+                            target.SetValue(prop.EDT);
                         }
                     }
                     responseTCS.SetResult((edata.ESV == ESV.Get_Res, opcList));
@@ -684,7 +684,7 @@ namespace EchoDotNetLite
                         if (prop.PDC == 0x00)
                         {
                             //書き込み成功
-                            target.SetValue(propertiesSet.First(p => p.Spec.Code == prop.EPC).ValueSpan);
+                            target.SetValue(propertiesSet.First(p => p.Spec.Code == prop.EPC).ValueMemory);
                         }
                     }
                     foreach (var prop in opcGetList)
@@ -694,7 +694,7 @@ namespace EchoDotNetLite
                         if (prop.PDC != 0x00)
                         {
                             //読み込み成功
-                            target.SetValue(prop.EDT.Span);
+                            target.SetValue(prop.EDT);
                         }
                     }
                     responseTCS.SetResult((edata.ESV == ESV.SetGet_Res, opcSetList, opcGetList));
@@ -1365,7 +1365,7 @@ namespace EchoDotNetLite
                 else
                 {
                     //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-                    property.SetValue(opc.EDT.Span);
+                    property.SetValue(opc.EDT);
 
                     opcList.Add(new(opc.EPC));
                 }
@@ -1443,7 +1443,7 @@ namespace EchoDotNetLite
                     else
                     {
                         //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-                        property.SetValue(opc.EDT.Span);
+                        property.SetValue(opc.EDT);
 
                         opcList.Add(new(opc.EPC));
                     }
@@ -1640,7 +1640,7 @@ namespace EchoDotNetLite
                     else
                     {
                         //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-                        property.SetValue(opc.EDT.Span);
+                        property.SetValue(opc.EDT);
 
                         opcSetList.Add(new(opc.EPC));
                     }
@@ -1770,7 +1770,7 @@ namespace EchoDotNetLite
                 }
                 else
                 {
-                    property.SetValue(opc.EDT.Span);
+                    property.SetValue(opc.EDT);
                     //ノードプロファイルのインスタンスリスト通知の場合
                     if (sourceNode.NodeProfile == sourceObject
                         && opc.EPC == 0xD5)
@@ -1853,7 +1853,7 @@ namespace EchoDotNetLite
                 }
                 else
                 {
-                    property.SetValue(opc.EDT.Span);
+                    property.SetValue(opc.EDT);
                     //ノードプロファイルのインスタンスリスト通知の場合
                     if (sourceNode.NodeProfile == sourceObject
                         && opc.EPC == 0xD5)
