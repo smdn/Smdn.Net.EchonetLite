@@ -1,4 +1,6 @@
-﻿namespace SkstackIpDotNet.Commands
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+namespace SkstackIpDotNet.Commands
 {
 
     /// <summary>

@@ -1,4 +1,6 @@
-﻿using SkstackIpDotNet.Responses;
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+using SkstackIpDotNet.Responses;
 using System;
 using System.IO;
 using System.Text;

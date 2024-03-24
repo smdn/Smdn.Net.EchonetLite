@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+using Newtonsoft.Json;
 
 namespace EchoDotNetLite.Specifications
 {

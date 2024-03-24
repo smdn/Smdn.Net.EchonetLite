@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+using System.Collections.Generic;
 
 namespace SkstackIpDotNet.Responses
 {

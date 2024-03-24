@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+using System.Text;
 
 namespace SkstackIpDotNet.Commands
 {
