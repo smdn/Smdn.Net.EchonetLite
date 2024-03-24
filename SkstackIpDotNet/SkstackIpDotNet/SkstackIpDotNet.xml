@@ -31,7 +31,7 @@
             ネイバーキャッシュがすでに一杯の場合は最も古いエントリーが削除され、ここで指定した IPアドレスが登録されます。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKAddNbrCommand.#ctor(SkstackIp.Commands.SKAddNbrCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKAddNbrCommand.#ctor(SkstackIpDotNet.Commands.SKAddNbrCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -54,7 +54,7 @@
             すでに切断初折が実行中の場合、本コマンドを発行すると FAIL ER10 になります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKCloseCommand.#ctor(SkstackIp.Commands.SKCloseCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKCloseCommand.#ctor(SkstackIpDotNet.Commands.SKCloseCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -79,7 +79,7 @@
             指定可能な待ち受け数とポート番号の初期値はリリースノートをご参照ください
              </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKConnectCommand.#ctor(SkstackIp.Commands.SKConnectCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKConnectCommand.#ctor(SkstackIpDotNet.Commands.SKConnectCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -137,7 +137,7 @@
              １つのデバイスとの接続が成立すると、他デバイスからの新規の接続を受け付けなくなります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKJoinCommand.#ctor(SkstackIp.Commands.SKJoinCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKJoinCommand.#ctor(SkstackIpDotNet.Commands.SKJoinCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -176,7 +176,7 @@
             Echo reply を受信すると EPONG イベントで通知されます。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKPingCommand.#ctor(SkstackIp.Commands.SKPingCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKPingCommand.#ctor(SkstackIpDotNet.Commands.SKPingCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -193,7 +193,7 @@
             登録数が上限の場合、FAIL ER10 が戻ります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKRegDevCommand.#ctor(SkstackIp.Commands.SKRegDevCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKRegDevCommand.#ctor(SkstackIpDotNet.Commands.SKRegDevCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -236,7 +236,7 @@
             指定した IP アドレスのエントリーをネイバーテーブル、ネイバーキャッシュから強制的に削除します。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKRmDevCommand.#ctor(SkstackIp.Commands.SKRmDevCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKRmDevCommand.#ctor(SkstackIpDotNet.Commands.SKRmDevCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -268,7 +268,7 @@
             MODE に 3 を指定すると、拡張ビーコン要求に Information Element を含めません。コーディネータは拡張ビーコンを応答します
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKScanCommand.#ctor(SkstackIp.Commands.SKScanCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKScanCommand.#ctor(SkstackIpDotNet.Commands.SKScanCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -305,7 +305,7 @@
             本コマンドによるセキュリティ設定は送信時に適用されるものです。受信時は、受信した MACフレームの内容により必要な復号化が行われます。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKSecEnableCommand.#ctor(SkstackIp.Commands.SKSecEnableCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKSecEnableCommand.#ctor(SkstackIpDotNet.Commands.SKSecEnableCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -347,7 +347,7 @@
             受信側では、受信データの 16 進数 ASCII 表現で表示されます。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKSendCommand.#ctor(SkstackIp.Commands.SKSendCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKSendCommand.#ctor(SkstackIpDotNet.Commands.SKSendCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -382,7 +382,7 @@
             7) データ部の入力はエコーバックされません。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKSendToCommand.#ctor(SkstackIp.Commands.SKSendToCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKSendToCommand.#ctor(SkstackIpDotNet.Commands.SKSendToCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -431,7 +431,7 @@
             登録に成功するとカレントキーインデックスが指定したINDEXに切り替わります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKSetKeyCommand.#ctor(SkstackIp.Commands.SKSetKeyCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKSetKeyCommand.#ctor(SkstackIpDotNet.Commands.SKSetKeyCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -457,7 +457,7 @@
             またKEYが 32 文字（１６バイト）に足りない場合は、不足分が不定値になります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKSetPskCommand.#ctor(SkstackIp.Commands.SKSetPskCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKSetPskCommand.#ctor(SkstackIpDotNet.Commands.SKSetPskCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -480,7 +480,7 @@
             ＊）PWDの文字数が指定したLENに足りない場合、不足分は不定値になります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKSetPwdCommand.#ctor(SkstackIp.Commands.SKSetPwdCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKSetPwdCommand.#ctor(SkstackIpDotNet.Commands.SKSetPwdCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -503,7 +503,7 @@
             ＊）IDは ASCII 32 文字必要で、足りない場合、不足分が不定値になります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKSetRBIDCommand.#ctor(SkstackIp.Commands.SKSetRBIDCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKSetRBIDCommand.#ctor(SkstackIpDotNet.Commands.SKSetRBIDCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -522,7 +522,7 @@
             値の場合は ESREG イベントで通知されます。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKSregCommand.#ctor(SkstackIp.Commands.SKSregCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKSregCommand.#ctor(SkstackIpDotNet.Commands.SKSregCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -565,7 +565,7 @@
             設定したポートは、SKSAVE コマンドで保存した後、電源再投入時にオートロード機能でロードした場合に有効になります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKTcpPortCommand.#ctor(SkstackIp.Commands.SKTcpPortCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKTcpPortCommand.#ctor(SkstackIpDotNet.Commands.SKTcpPortCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -602,7 +602,7 @@
             設定したポートは、SKSAVE コマンドで保存した後、電源再投入時にオートロード機能でロードした場合に有効になります。
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.Commands.SKUdpPortCommand.#ctor(SkstackIp.Commands.SKUdpPortCommand.Input)">
+        <member name="M:SkstackIpDotNet.Commands.SKUdpPortCommand.#ctor(SkstackIpDotNet.Commands.SKUdpPortCommand.Input)">
             <summary>
             コンストラクタ
             </summary>
@@ -863,6 +863,7 @@
             デフォルトコンストラクタ
             </summary>
             <param name="response">レスポンス平文</param>
+            
         </member>
         <member name="M:SkstackIpDotNet.ReceiveData.ToString">
             <summary>
@@ -1229,9 +1230,15 @@
             SK コマンドのデバイス
             </summary>
         </member>
-        <member name="M:SkstackIpDotNet.SKDevice.#ctor(System.String,System.Int32,System.Int32,RJCP.IO.Ports.Parity,RJCP.IO.Ports.StopBits)">
+        <member name="M:SkstackIpDotNet.SKDevice.#ctor(Microsoft.Extensions.Logging.ILogger{SkstackIpDotNet.SKDevice})">
             <summary>
             コンストラクタ
+            </summary>
+            <param name="logger">logger</param>
+        </member>
+        <member name="M:SkstackIpDotNet.SKDevice.Open(System.String,System.Int32,System.Int32,System.IO.Ports.Parity,System.IO.Ports.StopBits)">
+            <summary>
+            接続を開きます
             </summary>
             <param name="port">The name of the COM port, such as "COM1" or "COM33".</param>
             <param name="baud">The baud rate that is passed to the underlying driver.</param>
@@ -1241,11 +1248,6 @@
             </param>
             <param name="parity">The parity for the data stream.</param>
             <param name="stopbits">Number of stop bits.</param>
-        </member>
-        <member name="M:SkstackIpDotNet.SKDevice.Open">
-            <summary>
-            接続を開きます
-            </summary>
         </member>
         <member name="M:SkstackIpDotNet.SKDevice.Close">
             <summary>
@@ -1541,7 +1543,7 @@
             </param>
             <returns>OKorFAIL</returns>
         </member>
-        <member name="M:SkstackIpDotNet.SKDevice.SKSendToAsync(System.String,System.String,System.String,SkstackIp.SKSendToSec,System.Byte[])">
+        <member name="M:SkstackIpDotNet.SKDevice.SKSendToAsync(System.String,System.String,System.String,SkstackIpDotNet.SKSendToSec,System.Byte[])">
             <summary>
             指定した宛先に UDP でデータを送信します。
             SKSENDTO コマンドは以下の形式で正確に指定する必要があります。

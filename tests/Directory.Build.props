@@ -1,0 +1,36 @@
+<!--
+SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Project>
+  <PropertyGroup>
+    <!-- default project configurations -->
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- code analysis defaults -->
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisModeDesign>None</AnalysisModeDesign>
+    <AnalysisModeDocumentation>None</AnalysisModeDocumentation>
+    <AnalysisModeGlobalization>Recommended</AnalysisModeGlobalization>
+    <AnalysisModeInteroperability>Recommended</AnalysisModeInteroperability>
+    <AnalysisModeMaintainability>Recommended</AnalysisModeMaintainability>
+    <AnalysisModeNaming>None</AnalysisModeNaming>
+    <AnalysisModePerformance>None</AnalysisModePerformance>
+    <AnalysisModeSingleFile>None</AnalysisModeSingleFile>
+    <AnalysisModeReliability>Recommended</AnalysisModeReliability>
+    <AnalysisModeSecurity>Recommended</AnalysisModeSecurity>
+    <AnalysisModeStyle>Recommended</AnalysisModeStyle>
+    <AnalysisModeUsage>None</AnalysisModeUsage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0"/>
+  </ItemGroup>
+</Project>

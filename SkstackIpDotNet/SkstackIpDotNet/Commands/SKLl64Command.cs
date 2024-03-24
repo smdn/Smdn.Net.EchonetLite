@@ -36,7 +36,7 @@ namespace SkstackIpDotNet.Commands
             public string Addr64 { get; set; }
         }
 
-        public override void ReceiveHandler(object sendor, string eventRow)
+        public override void ReceiveHandler(object sender, string eventRow)
         {
             if (HasEchoback)
             {
@@ -48,7 +48,7 @@ namespace SkstackIpDotNet.Commands
                 //エコーバックが無い場合で、<IPADDR><CRLF>として解釈できる行の場合は、それをもって結果を確定する
                 TaskCompletionSource.SetResult(new SKLL64(eventRow));
             }
-            base.ReceiveHandler(sendor, eventRow);
+            base.ReceiveHandler(sender, eventRow);
         }
     }
 }

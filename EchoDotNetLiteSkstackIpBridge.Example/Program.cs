@@ -6,7 +6,6 @@ using EchoDotNetLite.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SkstackIpDotNet;
 using System;
 using System.IO.Ports;
@@ -50,7 +49,7 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                 .CreateLogger<Example>();
 
             var skStackClient = serviceProvider.GetService<SkstackIpPANAClient>();
-            serviceCollection.AddSingleton<IPANAClient, SkstackIpPANAClient>(f=>skStackClient);
+            serviceCollection.AddSingleton<IEchonetLiteHandler, SkstackIpPANAClient>(f=>skStackClient);
             serviceCollection.AddSingleton<EchoClient>();
             serviceProvider = serviceCollection.BuildServiceProvider();
             var configuration = serviceProvider.GetService<IConfigurationRoot>();
@@ -70,7 +69,8 @@ namespace EchoDotNetLiteSkstackIpBridge.Example
                 //スキャン＆Join
                 if(skStackClient.ScanAndJoinAsync(BRouteId, BRoutePw).Result)
                 {
-                    serviceProvider.GetService<EchoClient>().Initialize(skStackClient.SelfIpaddr);
+                    // TODO: API has been changed, use EchoClient.ctor instead
+                    // serviceProvider.GetService<EchoClient>().Initialize(skStackClient.SelfIpaddr);
                     Task.Run(() => serviceProvider.GetService<Example>().ExecuteAsync());
                 }
                 Task.WaitAll(Task.Delay(-1));

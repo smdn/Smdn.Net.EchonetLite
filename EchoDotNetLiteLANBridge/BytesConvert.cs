@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EchoDotNetLite.Models
+namespace EchoDotNetLiteLANBridge
 {
     /// <summary>
     /// バイト配列-16進数ユーティリティ
@@ -16,15 +16,16 @@ namespace EchoDotNetLite.Models
         /// </summary>
         /// <param name="bytes">バイト配列</param>
         /// <returns>16進数文字列</returns>
-        public static string ToHexString(byte[] bytes)
+        public static string ToHexString(ReadOnlySpan<byte> bytes)
         {
-            if (bytes == null)
+            if (bytes.IsEmpty)
             {
                 return string.Empty;
             }
             StringBuilder sb = new StringBuilder(bytes.Length * 2);
-            foreach (byte b in bytes)
+            for (var i = 0; i < bytes.Length; i++)
             {
+                var b = bytes[i];
                 if (b < 16) sb.Append('0'); // 二桁になるよう0を追加
                 sb.Append(Convert.ToString(b, 16));
             }
@@ -38,6 +39,9 @@ namespace EchoDotNetLite.Models
         /// <returns>バイト配列</returns>
         public static byte[] FromHexString(string str)
         {
+            if (str is null)
+                throw new ArgumentNullException(nameof(str));
+
             int length = str.Length / 2;
             byte[] bytes = new byte[length];
             int j = 0;

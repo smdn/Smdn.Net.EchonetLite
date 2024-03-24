@@ -25,9 +25,9 @@ namespace SkstackIpDotNet.Commands
         bool isEventStart = false;
         List<string> eventBuffer = null;
         BaseTableResponse response = null;
-        public override void ReceiveHandler(object sendor, string eventRow)
+        public override void ReceiveHandler(object sender, string eventRow)
         {
-            base.ReceiveHandler(sendor, eventRow);
+            base.ReceiveHandler(sender, eventRow);
             if (eventRow.StartsWith("OK"))
             {
                 isResponseCommandEndReceived = true;
