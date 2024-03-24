@@ -1,4 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System.Collections.Generic;
 
@@ -13,12 +14,12 @@ namespace EchoDotNetLite.Specifications
         /// クラスグループ情報
         /// クラスグループコード
         /// </summary>
-        EchoClassGroup ClassGroup { get; set; }
+        EchoClassGroup ClassGroup { get; }
         /// <summary>
         /// クラス情報
         /// クラスコード
         /// </summary>
-        EchoClass Class { get; set; }
+        EchoClass Class { get; }
         /// <summary>
         /// 仕様上定義済みのGETプロパティの一覧
         /// </summary>

@@ -1,40 +1,48 @@
-﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using EchoDotNetLite.Enums;
-using Newtonsoft.Json;
+using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Models
 {
     /// <summary>
     /// ECHONET オブジェクト（EOJ）
     /// </summary>
-    public struct EOJ:IEquatable<EOJ>
+    public readonly struct EOJ:IEquatable<EOJ>
     {
+        /// <summary>
+        /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
+        /// </summary>
+        /// <param name="classGroupCode"><see cref="ClassGroupCode"/>に指定する値。</param>
+        /// <param name="classCode"><see cref="ClassCode"/>に指定する値。</param>
+        /// <param name="instanceCode"><see cref="InstanceCode"/>に指定する値。</param>
+        public EOJ(byte classGroupCode, byte classCode, byte instanceCode)
+        {
+            ClassGroupCode = classGroupCode;
+            ClassCode = classCode;
+            InstanceCode = instanceCode;
+        }
+
         /// <summary>
         /// クラスグループコード
         /// </summary>
-        [JsonIgnore]
-        public byte ClassGroupCode { get; set; }
-        [JsonProperty("ClassGroupCode")]
-        public string _ClassGroupCode { get { return $"{ClassGroupCode:X2}"; } }
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
+        public byte ClassGroupCode { get; }
         /// <summary>
         /// クラスクラスコード
         /// </summary>
-        [JsonIgnore]
-        public byte ClassCode { get; set; }
-        [JsonProperty("ClassCode")]
-        public string _ClassCode { get { return $"{ClassCode:X2}"; } }
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
+        public byte ClassCode { get; }
         /// <summary>
         /// インスタンスコード
         /// </summary>
-        [JsonIgnore]
-        public byte InstanceCode { get; set; }
-        [JsonProperty("InstanceCode")]
-        public string _InstanceCode { get { return $"{InstanceCode:X2}"; } }
-
+        [JsonConverter(typeof(SingleByteJsonConverterFactory))]
+        public byte InstanceCode { get; }
 
         public bool Equals(EOJ other)
         {
@@ -43,8 +51,10 @@ namespace EchoDotNetLite.Models
                 && InstanceCode == other.InstanceCode;
         }
 
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
+            if (other is null)
+                return false;
             if (other is EOJ)
                 return Equals((EOJ)other);
             return false;

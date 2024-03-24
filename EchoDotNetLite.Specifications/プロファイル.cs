@@ -1,4 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System.Collections.Generic;
 
@@ -13,12 +14,12 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// 0xF0 ノードプロファイル
         /// </summary>
-        public static IEchonetObject ノードプロファイル = new EchonetObject(0x0E, 0xF0);
+        public static IEchonetObject ノードプロファイル { get; } = new EchonetObject(0x0E, 0xF0);
 
         /// <summary>
         /// クラス一覧
         /// </summary>
-        public static IEnumerable<IEchonetObject> クラス一覧 = new List<IEchonetObject>()
+        public static IReadOnlyList<IEchonetObject> クラス一覧 { get; } = new IEchonetObject[]
         {
             ノードプロファイル,
         };

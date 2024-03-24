@@ -2,19 +2,20 @@
 // SPDX-License-Identifier: MIT
 using EchoDotNetLite;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SkstackIpDotNet;
 using SkstackIpDotNet.Events;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EchoDotNetLiteSkstackIpBridge
 {
-    public class SkstackIpPANAClient : IPANAClient, IDisposable
+    public class SkstackIpPANAClient : IEchonetLiteHandler, IDisposable
     {
         private readonly ILogger _logger;
         private readonly SKDevice SKDevice;
@@ -30,13 +31,13 @@ namespace EchoDotNetLiteSkstackIpBridge
             _logger.LogDebug($"Bridge Open port:{port},baud:{baud},data:{data},parity:{parity},stopbits:{stopbits}");
             SKDevice.Open(port, baud, data, parity, stopbits);
             var info = await SKDevice.SKInfoAsync();
-            SelfIpaddr = info.IPAddress;
+            SelfIpaddr = IPAddress.Parse(info.IPAddress);
         }
 
-        public string BroadcastIpaddr { get; set; }
+        public IPAddress BroadcastIpaddr { get; set; }
 
-        public string SmartMaterIpaddr { get; set; }
-        public string SelfIpaddr { get; set; }
+        public IPAddress SmartMeterIpaddr { get; set; }
+        public IPAddress SelfIpaddr { get; set; }
 
         public async Task<bool> ScanAndJoinAsync(string bRouteId, string bRoutePassword)
         {
@@ -68,8 +69,8 @@ namespace EchoDotNetLiteSkstackIpBridge
             await SKDevice.SKSRegAsync("S3", pan.PanID);
             var skll64 = await SKDevice.SKLl64Async(pan.Addr);
             //TODO Bルートの一斉同報の宛先ってスマートメーターだけ…?
-            BroadcastIpaddr = skll64.Ipaddr;
-            SmartMaterIpaddr = skll64.Ipaddr;
+            BroadcastIpaddr = IPAddress.Parse(skll64.Ipaddr);
+            SmartMeterIpaddr = IPAddress.Parse(skll64.Ipaddr);
             var joinTCS = new TaskCompletionSource<bool>();
             var joinEvent = default(EventHandler<EVENT>);
             joinEvent += (sender, e) =>
@@ -89,7 +90,7 @@ namespace EchoDotNetLiteSkstackIpBridge
             };
             SKDevice.OnEVENTReceived += joinEvent;
             _logger.LogDebug($"PANA接続シーケンス開始");
-            await SKDevice.SKJoinAsync(SmartMaterIpaddr);
+            await SKDevice.SKJoinAsync(SmartMeterIpaddr.ToString());
             if (await Task.WhenAny(joinTCS.Task, Task.Delay(30*1000)) == joinTCS.Task)
             {
                 return await joinTCS.Task;
@@ -98,19 +99,19 @@ namespace EchoDotNetLiteSkstackIpBridge
             {
                 _logger.LogDebug($"PANA接続シーケンス タイムアウト");
                 SKDevice.OnEVENTReceived -= joinEvent;
-                throw new Exception("Time has expired");
+                throw new TimeoutException("PANA接続シーケンスがタイムアウトしました");
             }
         }
 
-        public event EventHandler<(string,byte[])> OnEventReceived;
+        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)> Received;
 
-        public void ReceivedERXUDP(object sendor, ERXUDP erxudp)
+        public void ReceivedERXUDP(object sender, ERXUDP erxudp)
         {
-            OnEventReceived?.Invoke(this, (erxudp.Sender, BytesConvert.FromHexString(erxudp.Data)));
+            Received?.Invoke(this, (IPAddress.Parse(erxudp.Sender), BytesConvert.FromHexString(erxudp.Data)));
         }
 
-
-        public async Task RequestAsync(string address,byte[] request)
+#nullable enable
+        public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data,CancellationToken cancellationToken)
         {
             if (address == null)
             {
@@ -118,12 +119,12 @@ namespace EchoDotNetLiteSkstackIpBridge
             }
             await SKDevice.SKSendToAsync(
                 "1",
-                address,
+                address.ToString(),
                 "0E1A",
                 SKSendToSec.SecOrNotTransfer,
-                request);
+                data.ToArray()); // TODO: support sending ReadOnlyMemory<byte>
         }
-
+#nullable restore
 
         public void Close()
         {

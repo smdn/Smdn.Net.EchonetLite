@@ -1,11 +1,12 @@
-﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 
 namespace EchoDotNetLite.Specifications
 {
@@ -13,68 +14,75 @@ namespace EchoDotNetLite.Specifications
     {
         public EchonetObject(byte classGroupCode, byte classCode)
         {
-            ClassGroup = SpecificationMaster.GetInstance().プロファイル.Where(p => p.ClassGroupCode == classGroupCode).FirstOrDefault();
-            if (ClassGroup == null)
+            ClassGroup =
+               SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
+               SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
+               throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
+
+            var properties = new List<EchoProperty>();
+
+            //スーパークラスのプロパティを列挙
+            using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
             {
-                ClassGroup = SpecificationMaster.GetInstance().機器.Where(p => p.ClassGroupCode == classGroupCode).FirstOrDefault();
+                var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
+                properties.AddRange(superClassProperties.Properties);
             }
-            if (ClassGroup != null)
+
+            Class = ClassGroup.ClassList?.FirstOrDefault(c => c.Status && c.ClassCode == classCode)
+                ?? throw new ArgumentException($"unknown class: 0x{classCode:X2}");
+
+            if (Class.Status)
             {
-                //スーパークラスのプロパティを列挙
-                
-                var superClassFilePath = Path.Combine(SpecificationMaster.GetSpecificationMasterDataDirectory(), $"{ClassGroup.SuperClass}.json");
-                if (File.Exists(superClassFilePath))
+                var classGroupDirectoryName = $"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}";
+                var classFileName = $"0x{Class.ClassCode:X2}-{Class.ClassName}.json";
+
+                //クラスのプロパティを列挙
+                using (var stream = SpecificationMaster.GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName))
                 {
-                    var superClassProperties = JsonConvert.DeserializeObject<PropertyMaster>(File.ReadAllText(superClassFilePath, new UTF8Encoding(false)));
-                    Properties.AddRange(superClassProperties.Properties);
-                }
-                Class = ClassGroup.ClassList.Where(c => c.Status && c.ClassCode == classCode).FirstOrDefault();
-                if (Class.Status)
-                {
-                    var classFilePath = Path.Combine(SpecificationMaster.GetSpecificationMasterDataDirectory(),$"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}", $"0x{Class.ClassCode:X2}-{Class.ClassName}.json");
-                    if (File.Exists(classFilePath))
+                    if (stream is not null)
                     {
-                        //クラスのプロパティを列挙
-                        var classProperties = JsonConvert.DeserializeObject<PropertyMaster>(File.ReadAllText(classFilePath, new UTF8Encoding(false)));
-                        Properties.AddRange(classProperties.Properties);
+                        var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
+                        properties.AddRange(classProperties.Properties);
                     }
                 }
             }
+
+            Properties = properties;
         }
         /// <summary>
         /// クラスグループコード
         /// </summary>
-        public EchoClassGroup ClassGroup { get; set; }
+        public EchoClassGroup ClassGroup { get; }
         /// <summary>
         /// クラスコード
         /// </summary>
-        public EchoClass Class { get; set; }
+        public EchoClass Class { get; }
 
         /// <summary>
         /// 仕様上定義済みのプロパティの一覧
         /// </summary>
-        internal List<EchoProperty> Properties { get; set; } = new List<EchoProperty>();
+        internal IReadOnlyList<EchoProperty> Properties { get; }
 
         /// <summary>
         /// 仕様上定義済みのGETプロパティの一覧
         /// </summary>
         public IEnumerable<EchoProperty> GetProperties
         {
-            get { return Properties.Where(p => p.Get); }
+            get { return Properties.Where(static p => p.Get); }
         }
         /// <summary>
         /// 仕様上定義済みのSETプロパティの一覧
         /// </summary>
         public IEnumerable<EchoProperty> SetProperties
         {
-            get { return Properties.Where(p => p.Set); }
+            get { return Properties.Where(static p => p.Set); }
         }
         /// <summary>
         /// 仕様上定義済みのANNOプロパティの一覧
         /// </summary>
         public IEnumerable<EchoProperty> AnnoProperties
         {
-            get { return Properties.Where(p => p.Anno); }
+            get { return Properties.Where(static p => p.Anno); }
         }
     }
 }

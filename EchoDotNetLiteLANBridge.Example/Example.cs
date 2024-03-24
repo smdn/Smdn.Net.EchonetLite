@@ -5,10 +5,10 @@ using EchoDotNetLite;
 using EchoDotNetLite.Common;
 using EchoDotNetLite.Models;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,7 +61,7 @@ namespace EchoDotNetLiteLANBridge.Example
             {
                 case CollectionChangeType.Add:
                     _logger.LogTrace($"EchoProperty Add {e.instance.GetDebugString()}");
-                    e.instance.ValueChanged += LogEchoPropertyValueChanged;
+                    e.instance.ValueSet += LogEchoPropertyValueChanged;
                     break;
                 case CollectionChangeType.Remove:
                     _logger.LogTrace($"EchoProperty Remove {e.instance.GetDebugString()}");
@@ -71,13 +71,15 @@ namespace EchoDotNetLiteLANBridge.Example
             }
         }
 
-        private void LogEchoPropertyValueChanged(object sender, byte[] e)
+        private void LogEchoPropertyValueChanged(object sender, ReadOnlyMemory<byte> e)
         {
             if (sender is EchoPropertyInstance echoPropertyInstance)
             {
-                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e)}");
+                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e.Span)}");
             }
         }
+
+        private delegate void インスタンスリスト通知受信(EchoNode sourceNode, ReadOnlySpan<byte> edt);
 
         public async Task ExecuteAsync()
         {
@@ -85,11 +87,11 @@ namespace EchoDotNetLiteLANBridge.Example
             {
                 //エミュレーターはプロパティ値通知要求に応答しないので、
                 //ノードを手動で追加し、自ノードインスタンスリストSをプロパティ値読み出し する
-                var エミュレーターノード = new EchoNode()
-                {
-                    Address = "192.168.11.11",
-                    NodeProfile = new EchoObjectInstance(EchoDotNetLite.Specifications.プロファイル.ノードプロファイル, 0x01)
-                };
+                var エミュレーターノード = new EchoNode
+                (
+                    address: IPAddress.Parse("192.168.11.11"),
+                    nodeProfile: new EchoObjectInstance(EchoDotNetLite.Specifications.プロファイル.ノードプロファイル, 0x01)
+                );
                 echoClient.NodeList.Add(エミュレーターノード);
 
                 await echoClient.プロパティ値読み出し(
@@ -101,8 +103,9 @@ namespace EchoDotNetLiteLANBridge.Example
 
                 //インスタンスリスト通知受信を自ノードインスタンスリストSの値で、Reflectionを使って呼び出す
                 var method = echoClient.GetType().GetMethod("インスタンスリスト通知受信", BindingFlags.Instance | BindingFlags.NonPublic);
-                method.Invoke(echoClient, new object[]{エミュレーターノード,
-                    エミュレーターノード.NodeProfile.GETProperties.Where(p => p.Spec.Code == 0xD6).First().Value });
+                var methodDelegate = method.CreateDelegate<インスタンスリスト通知受信>(echoClient);
+                methodDelegate(エミュレーターノード,
+                    エミュレーターノード.NodeProfile.GETProperties.First(p => p.Spec.Code == 0xD6).ValueSpan);
 
                 _logger.LogDebug("プロパティマップ読み込み完了まで待機");
                 while (!エミュレーターノード.Devices.All(d=>d.IsPropertyMapGet))
@@ -123,18 +126,18 @@ namespace EchoDotNetLiteLANBridge.Example
                     sb.AppendLine($"{device.Spec.Class.ClassNameOfficial}");
                     foreach(var prop in device.GETProperties)
                     {
-                        sb.AppendLine($"\t0x{prop.Spec.Code:X2} {prop.Spec.Name}\t{BytesConvert.ToHexString(prop.Value)}");
+                        sb.AppendLine($"\t0x{prop.Spec.Code:X2} {prop.Spec.Name}\t{BytesConvert.ToHexString(prop.ValueSpan)}");
                     }
                     _logger.LogInformation(sb.ToString());
                 }
 
                 var HomeAirConditioner = エミュレーターノード.Devices.Where(d => d.Spec.ClassGroup.ClassGroupCode == 0x01 && d.Spec.Class.ClassCode == 0x30).First();
-                HomeAirConditioner.SETProperties.Where(p => p.Spec.Code == 0x80).First().Value = new byte[] { 0x30 };//0x80電源,0x30 ON
+                HomeAirConditioner.SETProperties.First(p => p.Spec.Code == 0x80).SetValue(new byte[] { 0x30 });//0x80電源,0x30 ON
                 await echoClient.プロパティ値書き込み応答要(
                     echoClient.SelfNode.NodeProfile//ノードプロファイルから
                     , エミュレーターノード
                     , HomeAirConditioner
-                    , HomeAirConditioner.SETProperties.Where(p=>p.Spec.Code== 0x80) 
+                    , HomeAirConditioner.SETProperties.Where(p=>p.Spec.Code== 0x80)
                     );
                 while (true)
                 {
