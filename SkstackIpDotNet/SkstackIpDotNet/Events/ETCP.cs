@@ -1,4 +1,6 @@
-﻿namespace SkstackIpDotNet.Events
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+namespace SkstackIpDotNet.Events
 {
     /// <summary>
     /// TCP の接続、切断処理が発生すると通知されます。

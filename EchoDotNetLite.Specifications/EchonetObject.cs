@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;

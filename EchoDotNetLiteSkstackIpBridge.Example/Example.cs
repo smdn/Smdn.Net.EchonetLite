@@ -1,4 +1,6 @@
-﻿using BitConverter;
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+using BitConverter;
 using EchoDotNetLite;
 using EchoDotNetLite.Common;
 using EchoDotNetLite.Models;

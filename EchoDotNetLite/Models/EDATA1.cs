@@ -1,4 +1,6 @@
-﻿using EchoDotNetLite.Enums;
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+using EchoDotNetLite.Enums;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,6 @@
-﻿using EchoDotNetLite.Models;
+﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-License-Identifier: MIT
+using EchoDotNetLite.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
