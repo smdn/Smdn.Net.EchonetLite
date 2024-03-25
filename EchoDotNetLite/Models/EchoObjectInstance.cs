@@ -65,6 +65,7 @@ namespace EchoDotNetLite.Models
         {
             PropertiesChanged?.Invoke(this, e);
 
+#pragma warning disable CS0618
             // translate event args to raise obsolete OnCollectionChanged event
             var handler = OnCollectionChanged;
 
@@ -76,6 +77,7 @@ namespace EchoDotNetLite.Models
 
             if (e.TryGetRemovedItem<EchoPropertyInstance>(out var removedProperty))
                 handler(this, (CollectionChangeType.Remove, removedProperty));
+#pragma warning restore CS0618
         }
 
         internal void AddProperty(EchoPropertyInstance prop)

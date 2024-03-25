@@ -36,6 +36,7 @@ namespace EchoDotNetLite.Models
             DevicesChanged?.Invoke(this, e);
 
             // translate event args to raise obsolete OnCollectionChanged event
+#pragma warning disable CS0618
             var handler = OnCollectionChanged;
 
             if (handler is null)
@@ -46,6 +47,7 @@ namespace EchoDotNetLite.Models
 
             if (e.TryGetRemovedItem<EchoObjectInstance>(out var removedObject))
                 handler(this, (CollectionChangeType.Remove, removedObject));
+#pragma warning restore CS0618
         }
 
         /// <summary>
