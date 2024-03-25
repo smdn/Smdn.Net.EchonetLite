@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +48,7 @@ namespace EchoDotNetLiteLANBridge
                             //ブロードキャストを自分で受信(無視)
                             continue;
                         }
-                        _logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address} {BytesConvert.ToHexString(receivedResults.Buffer)}");
+                        _logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address} {BitConverter.ToString(receivedResults.Buffer)}");
                         Received?.Invoke(this, (receivedResults.RemoteEndPoint.Address, receivedResults.Buffer.AsMemory()));
                     }
                 }
@@ -90,7 +91,18 @@ namespace EchoDotNetLiteLANBridge
                 remote = new IPEndPoint(address, DefaultUdpPort);
             }
 
-            _logger.LogDebug($"UDP送信:{remote.Address} {BytesConvert.ToHexString(data.Span)}");
+#if NET5_0_OR_GREATER
+            _logger.LogDebug($"UDP送信:{remote.Address} {Convert.ToHexString(data.Span)}");
+#else
+            if (MemoryMarshal.TryGetArray(data, out var segment))
+            {
+                _logger.LogDebug($"UDP送信:{remote.Address} {BitConverter.ToString(segment.Array!, segment.Offset, segment.Count)}");
+            }
+            else
+            {
+                _logger.LogDebug($"UDP送信:{remote.Address} {BitConverter.ToString(data.ToArray())}");
+            }
+#endif
 
             var sendUdpClient = new UdpClient()
             {
