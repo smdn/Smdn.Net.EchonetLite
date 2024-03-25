@@ -14,11 +14,10 @@ EchoDotNetLiteは、ECHONET Liteやその周辺の規格/仕様を.NETで実装�
 |プロジェクト名|概要|備考|
 |--|--|--|
 |SkstackIpDotNet|SKSTACK-IPのAPIラッパーライブラリ<br>RL7023 Stick-D/IPSに付属のSKコマンドリファレンスマニュアル`SKSTACK-IP(Single-hop Edition) Version 1.2.1a`をもとに全コマンドを実装|Bルートで使用しないコマンドのテスト不足<br>一部レスポンス解析未実装<br>|
-|EchoDotNetLite|ECHONET Lite 通信ミドルウェアライブラリ<br>ECHONET Lite規格書 Ver.1.13をもとに全サービスを実装|Bルートで使用しないサービスのテスト不足<br>|
+|EchoDotNetLite|ECHONET Lite 通信ミドルウェアライブラリ<br>ECHONET Lite規格書 Ver.1.13をもとに全サービスを実装<br><br>EchoDotNetLiteといわゆるLANのブリッジクラス`UdpEchonetLiteHandler`も含む|Bルートで使用しないサービスのテスト不足<br>|
 |EchoDotNetLite.Specifications|ECHONET機器オブジェクト詳細規定の定義<br>JSONファイル、およびそれを読み取るクラス郡<br>APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）をもとに生成|APPENDIXからJSONへの変換過程で脱字等が発生している可能性あり|
 |EchoDotNetLiteSkstackIpBridge|EchoDotNetLiteとSkStackIPのブリッジクラス||
 |EchoDotNetLiteSkstackIpBridge.Example|低圧スマート電力量メータ(Bルート)のコントローラー実装例 コンソールアプリケーション||
-|EchoDotNetLiteLANBridge|EchoDotNetLiteといわゆるLANのブリッジクラス|Wi-SUN HANとは異なる|
 |EchoDotNetLiteLANBridge.Example|LAN経由で家電を操作する、コントローラー実装例<br>コンソールアプリケーション<br>MoekadenRoomでサポートする機器オブジェクトとの相互通信を実装(EchoDotNetLiteの実装確認が目的)||
 
 

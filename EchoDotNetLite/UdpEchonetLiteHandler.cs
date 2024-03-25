@@ -9,17 +9,18 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace EchoDotNetLiteLANBridge
 {
-    public class LANClient : IEchonetLiteHandler, IDisposable
+    public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable
     {
         private readonly UdpClient receiveUdpClient;
         private readonly ILogger _logger;
         private const int DefaultUdpPort = 3610;
-        public LANClient(ILogger<LANClient> logger)
+        public UdpEchonetLiteHandler(ILogger<UdpEchonetLiteHandler> logger)
         {
             var selfAddresses = NetworkInterface.GetAllNetworkInterfaces().SelectMany(ni => ni.GetIPProperties().UnicastAddresses.Select(ua => ua.Address));
             _logger = logger;
@@ -47,7 +48,7 @@ namespace EchoDotNetLiteLANBridge
                             //ブロードキャストを自分で受信(無視)
                             continue;
                         }
-                        _logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address} {BytesConvert.ToHexString(receivedResults.Buffer)}");
+                        _logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address} {BitConverter.ToString(receivedResults.Buffer)}");
                         Received?.Invoke(this, (receivedResults.RemoteEndPoint.Address, receivedResults.Buffer.AsMemory()));
                     }
                 }
@@ -62,7 +63,7 @@ namespace EchoDotNetLiteLANBridge
             });
         }
 
-        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)> Received;
+        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)>? Received;
 
         public void Dispose()
         {
@@ -77,7 +78,6 @@ namespace EchoDotNetLiteLANBridge
             }
         }
 
-#nullable enable
         public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             IPEndPoint remote;
@@ -90,7 +90,18 @@ namespace EchoDotNetLiteLANBridge
                 remote = new IPEndPoint(address, DefaultUdpPort);
             }
 
-            _logger.LogDebug($"UDP送信:{remote.Address} {BytesConvert.ToHexString(data.Span)}");
+#if NET5_0_OR_GREATER
+            _logger.LogDebug($"UDP送信:{remote.Address} {Convert.ToHexString(data.Span)}");
+#else
+            if (MemoryMarshal.TryGetArray(data, out var segment))
+            {
+                _logger.LogDebug($"UDP送信:{remote.Address} {BitConverter.ToString(segment.Array!, segment.Offset, segment.Count)}");
+            }
+            else
+            {
+                _logger.LogDebug($"UDP送信:{remote.Address} {BitConverter.ToString(data.ToArray())}");
+            }
+#endif
 
             var sendUdpClient = new UdpClient()
             {
@@ -105,5 +116,4 @@ namespace EchoDotNetLiteLANBridge
             sendUdpClient.Close();
         }
     }
-#nullable restore
 }

@@ -75,7 +75,7 @@ namespace EchoDotNetLiteLANBridge.Example
         {
             if (sender is EchoPropertyInstance echoPropertyInstance)
             {
-                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {BytesConvert.ToHexString(e.Span)}");
+                _logger.LogTrace($"EchoProperty Change {echoPropertyInstance.GetDebugString()} {Convert.ToHexString(e.Span)}");
             }
         }
 
@@ -126,7 +126,7 @@ namespace EchoDotNetLiteLANBridge.Example
                     sb.AppendLine($"{device.Spec.Class.ClassNameOfficial}");
                     foreach(var prop in device.GETProperties)
                     {
-                        sb.AppendLine($"\t0x{prop.Spec.Code:X2} {prop.Spec.Name}\t{BytesConvert.ToHexString(prop.ValueSpan)}");
+                        sb.AppendLine($"\t0x{prop.Spec.Code:X2} {prop.Spec.Name}\t{Convert.ToHexString(prop.ValueSpan)}");
                     }
                     _logger.LogInformation(sb.ToString());
                 }
