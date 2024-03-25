@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EchoDotNetLite\EchoDotNetLite.csproj" />
+    <ProjectReference Include="..\..\..\src\EchoDotNetLite\EchoDotNetLite.csproj" />
   </ItemGroup>
 
   <ItemGroup>
