@@ -1,0 +1,92 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: "2022 smdn <smdn@smdn.jp>"
+
+name: Run tests with released packages
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "The project name to run the test."
+        required: false
+        type: string
+
+      os:
+        description: "The OS label which run the test on. (ex: ubuntu-22.04, ubuntu-20.04, windows-latest, macos-latest)"
+        required: false
+        type: string
+
+      verbose:
+        description: "If true, enables verbose output."
+        required: false
+        type: boolean
+        default: false
+
+      dotnet_test_options_verbosity_level:
+        description: "The argument to be set to the `--verbosity <LEVEL>` option of the `dotnet test` command. <LEVEL> := q[uiet], m[inimal], n[ormal], d[etailed], diag[nostic]"
+        required: false
+        type: string
+
+      dotnet_test_options_framework:
+        description: "The argument to be set to the `--framework <FRAMEWORK>` option of the `dotnet test` command."
+        required: false
+        type: string
+
+      dotnet_test_options_filter_expression:
+        description: "The argument to be set to the `--filter <EXPRESSION>` option of the `dotnet test` command."
+        required: false
+        type: string
+
+jobs:
+  prerequisites:
+    runs-on: ubuntu-latest
+    outputs:
+      os: ${{ steps.input-prerequisites.outputs.os }}
+      verbose: ${{ steps.input-prerequisites.outputs.verbose }}
+    env:
+      RUNS_ON_OS_LIST_DEFAULT: 'ubuntu-22.04, ubuntu-20.04, windows-latest, macos-latest'
+    steps:
+    - name: Delay until the package is published
+      run: |
+        # If the workflow is triggered by 'release' event,
+        # wait for a while until the package is published on NuGet
+        if [ '${{ github.event_name }}' = 'release' ]; then
+          sleep 5.0m
+        fi
+
+    - name: Determine prerequisites
+      id: input-prerequisites
+      run: |
+        if [ -z '${{ github.event.inputs.os }}' ]; then
+          echo "os=${RUNS_ON_OS_LIST_DEFAULT}" >> $GITHUB_OUTPUT
+        else
+          echo 'os=${{ github.event.inputs.os }}' >> $GITHUB_OUTPUT
+        fi
+
+        if [ '${{ github.event.inputs.verbose }}' = 'true' ]; then
+          echo 'verbose=true' >> $GITHUB_OUTPUT
+        else
+          echo 'verbose=false' >> $GITHUB_OUTPUT
+        fi
+
+  run-test:
+    uses: smdn/Smdn.Fundamentals/.github/workflows/test.yml@workflows/test-v1.3.1
+    needs: prerequisites
+    with:
+      project:              ${{ github.event.inputs.project }}
+      os:                   ${{ needs.prerequisites.outputs.os }}
+      extra_options_common: '/p:TestReleasedPackage=true'
+      verbose:              ${{ fromJSON(needs.prerequisites.outputs.verbose) }}
+      path_proj_install_project_assets: "eng/InstallProjectAssets.proj"
+      dotnet_sdk_version:   '8.0.100'
+      timeout_minutes_test_job:   10
+      timeout_hang:               "[ {'OS':'windows','Timeout':'6min'}, {'OS':'macos','Timeout':'3min'}, {'OS':'','Timeout':'1min'} ]"
+      timeout_vstest_connection:  "[ {'OS':'windows','Timeout':360}, {'OS':'macos','Timeout':180}, {'OS':'','Timeout':60} ]"
+      dotnet_test_options_verbosity_level:    ${{ github.event.inputs.dotnet_test_options_verbosity_level }}
+      dotnet_test_options_framework:          ${{ github.event.inputs.dotnet_test_options_framework }}
+      dotnet_test_options_filter_expression:  ${{ github.event.inputs.dotnet_test_options_filter_expression }}
+    secrets:
+      token_repo: ${{ secrets.GITHUB_TOKEN }}
