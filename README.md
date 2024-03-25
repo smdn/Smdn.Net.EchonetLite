@@ -13,12 +13,16 @@ EchoDotNetLiteは、ECHONET Liteやその周辺の規格/仕様を.NETで実装�
 # プロジェクト構成
 |プロジェクト名|概要|備考|
 |--|--|--|
-|SkstackIpDotNet|SKSTACK-IPのAPIラッパーライブラリ<br>RL7023 Stick-D/IPSに付属のSKコマンドリファレンスマニュアル`SKSTACK-IP(Single-hop Edition) Version 1.2.1a`をもとに全コマンドを実装|Bルートで使用しないコマンドのテスト不足<br>一部レスポンス解析未実装<br>|
 |[EchoDotNetLite](./src/EchoDotNetLite/)|ECHONET Lite 通信ミドルウェアライブラリ<br>ECHONET Lite規格書 Ver.1.13をもとに全サービスを実装<br><br>EchoDotNetLiteといわゆるLANのブリッジクラス`UdpEchonetLiteHandler`も含む|Bルートで使用しないサービスのテスト不足<br>|
 |[EchoDotNetLite.Specifications](./src/EchoDotNetLite.Specifications/)|ECHONET機器オブジェクト詳細規定の定義<br>JSONファイル、およびそれを読み取るクラス郡<br>APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）をもとに生成|APPENDIXからJSONへの変換過程で脱字等が発生している可能性あり|
-|EchoDotNetLiteSkstackIpBridge|EchoDotNetLiteとSkStackIPのブリッジクラス||
-|EchoDotNetLiteSkstackIpBridge.Example|低圧スマート電力量メータ(Bルート)のコントローラー実装例 コンソールアプリケーション||
 |[udp-handler](./examples/EchoDotNetLite/udp-handler/)|LAN経由(UDP)で家電を操作する、コントローラー実装例<br>コンソールアプリケーション<br>MoekadenRoomでサポートする機器オブジェクトとの相互通信を実装([EchoDotNetLite](./src/EchoDotNetLite/)の実装確認が目的)||
+
+> [!NOTE]
+> オリジナルに存在していたSKSTACK-IP関連の実装は、本プロジェクトでは引き継がずに廃止しています。
+>
+> [SkstackIpDotNet](https://github.com/HiroyukiSakoh/EchoDotNetLite/tree/master/SkstackIpDotNet)については、代替実装として[Smdn.Net.SkStackIP](https://github.com/smdn/Smdn.Net.SkStackIP)を使用することができます。
+>
+> [EchoDotNetLiteSkstackIpBridge](https://github.com/HiroyukiSakoh/EchoDotNetLite/tree/master/EchoDotNetLiteSkstackIpBridge)に相当する実装については、今後本プロジェクトでも実装予定です。
 
 
 
