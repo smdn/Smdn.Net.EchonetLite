@@ -63,7 +63,7 @@ namespace EchoDotNetLiteLANBridge
             });
         }
 
-        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)> Received;
+        public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)>? Received;
 
         public void Dispose()
         {
@@ -78,7 +78,6 @@ namespace EchoDotNetLiteLANBridge
             }
         }
 
-#nullable enable
         public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             IPEndPoint remote;
@@ -117,5 +116,4 @@ namespace EchoDotNetLiteLANBridge
             sendUdpClient.Close();
         }
     }
-#nullable restore
 }
