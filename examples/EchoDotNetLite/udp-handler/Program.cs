@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-License-Identifier: MIT
 using EchoDotNetLite;
 using Microsoft.Extensions.Configuration;
