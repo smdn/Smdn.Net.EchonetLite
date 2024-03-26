@@ -51,10 +51,11 @@ namespace EchoDotNetLite
         /// <inheritdoc cref="PerformPropertyValueWriteRequestAsync(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
         /// <param name="timeoutMilliseconds">ミリ秒単位でのタイムアウト時間。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,IReadOnlyCollection{PropertyRequest}}}"/>。
+        /// 非同期の操作を表す<see cref="Task{T}"/>。
         /// タイムアウトまでに不可応答(SetI_SNA <c>0x50</c>)がなかった場合は<see langword="true"/>、不可応答による応答があった場合は<see langword="false"/>を返します。
         /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
+#pragma warning disable CS1573
         [Obsolete($"Use {nameof(PerformPropertyValueWriteRequestAsync)} instead.")]
         public async Task<(bool, IReadOnlyCollection<PropertyRequest>?)> プロパティ値書き込み要求応答不要(
             EchoObjectInstance sourceObject
@@ -62,6 +63,7 @@ namespace EchoDotNetLite
             , EchoObjectInstance destinationObject
             , IEnumerable<EchoPropertyInstance> properties
             , int timeoutMilliseconds = 1000)
+#pragma warning disable CS1573
         {
             using var cts = CreateTimeoutCancellationTokenSource(timeoutMilliseconds);
 
@@ -177,7 +179,7 @@ namespace EchoDotNetLite
                 cancellationToken: default
             ).ConfigureAwait(false);
 
-        /// <inheritdoc cref="自発プロパティ値通知Async(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance}, CancellationToken)"/>
+        /// <inheritdoc cref="自発プロパティ値通知(EchoObjectInstance, EchoNode?, EchoObjectInstance, IEnumerable{EchoPropertyInstance})"/>
         [Obsolete($"Use {nameof(PerformPropertyValueNotificationAsync)} instead.")]
         public async Task 自発プロパティ値通知(
             EchoObjectInstance sourceObject

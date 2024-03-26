@@ -53,7 +53,8 @@ namespace EchoDotNetLite.Models
         /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
         /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
         /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-        /// <param name="opcList"><see cref="OPCList"/>に指定する値。</param>
+        /// <param name="opcSetList"><see cref="OPCSetList"/>に指定する値。</param>
+        /// <param name="opcGetList"><see cref="OPCGetList"/>に指定する値。</param>
         /// <exception cref="ArgumentException">
         /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGet_Res"/>, <see cref="ESV.SetGet_SNA"/>のいずれかではありません。
         /// この場合、<see cref="OPCList"/>のみを指定する必要があります。

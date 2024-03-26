@@ -23,7 +23,7 @@ namespace EchoDotNetLite.Models
         }
 
         /// <summary>
-        /// 任意電文形式の電文を表す<see cref="ReadOnlyMemory{byte}"/>。
+        /// 任意電文形式の電文を表す<see cref="ReadOnlyMemory{Byte}"/>。
         /// </summary>
         public ReadOnlyMemory<byte> Message { get; }
     }

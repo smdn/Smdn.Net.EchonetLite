@@ -33,7 +33,7 @@ namespace EchoDotNetLite
         /// </summary>
         /// <remarks>
         ///   <para>
-        ///   イベント引数には、<see cref="ValueTuple{EchoNode,IReadOnlyList{EchoObjectInstance}}"/>が設定されます。
+        ///   イベント引数には、<see cref="ValueTuple{T1,T2}"/>が設定されます。
         ///   イベント引数は、インスタンスリスト通知の送信元のECHONET Lite ノードを表す<see cref="EchoNode"/>、
         ///   および通知されたインスタンスリストを表す<see cref="IReadOnlyList{EchoObjectInstance}"/>を保持します。
         ///   </para>
@@ -55,7 +55,7 @@ namespace EchoDotNetLite
         /// </summary>
         /// <remarks>
         ///   <para>
-        ///   イベント引数には、<see cref="ValueTuple{EchoNode,IReadOnlyList{EchoObjectInstance}}"/>が設定されます。
+        ///   イベント引数には、<see cref="ValueTuple{EchoNode,T2}"/>が設定されます。
         ///   イベント引数は、インスタンスリスト通知の送信元のECHONET Lite ノードを表す<see cref="EchoNode"/>、
         ///   および通知されたインスタンスリストを表す<see cref="IReadOnlyList{EchoObjectInstance}"/>を保持します。
         ///   </para>

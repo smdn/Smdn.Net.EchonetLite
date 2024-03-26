@@ -19,7 +19,7 @@ public static class PropertyContentSerializer
     /// つまり、<paramref name="instanceList"/>の85個目以降の要素は無視されます。
     /// </remarks>
     /// <param name="instanceList">インスタンスリストを表す<see cref="IEnumerable{EOJ}"/>。</param>
-    /// <param name="destination">シリアライズした結果が書き込まれる<see cref="Span{byte}"/></param>
+    /// <param name="destination">シリアライズした結果が書き込まれる<see cref="Span{Byte}"/></param>
     /// <param name="bytesWritten"><paramref name="destination"/>に書き込まれた長さ。</param>
     /// <returns>
     /// 正常に書き込まれた場合は<see langword="true"/>。
@@ -78,7 +78,7 @@ public static class PropertyContentSerializer
     /// <summary>
     /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)のプロパティ内容をデシリアライズします。
     /// </summary>
-    /// <param name="content">「インスタンスリスト通知」のプロパティ内容を表す<see cref="ReadOnlySpan{byte}"/>。</param>
+    /// <param name="content">「インスタンスリスト通知」のプロパティ内容を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
     /// <param name="instanceList">デシリアライズした結果を格納した<see cref="IReadOnlyList{EOJ}"/>。</param>
     /// <returns>
     /// 正常にデシリアライズされた場合は<see langword="true"/>。
@@ -137,8 +137,8 @@ public static class PropertyContentSerializer
     ///   <item><description>「Get プロパティマップ」(EPC <c>0x9F</c>)</description></item>
     /// </list>
     /// </summary>
-    /// <param name="content">「プロパティマップ」のプロパティ内容を表す<see cref="ReadOnlySpan{byte}"/>。</param>
-    /// <param name="propertyMap">デシリアライズした結果を格納した<see cref="IReadOnlyList{byte}"/>。</param>
+    /// <param name="content">「プロパティマップ」のプロパティ内容を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
+    /// <param name="propertyMap">デシリアライズした結果を格納した<see cref="IReadOnlyList{Byte}"/>。</param>
     /// <returns>
     /// 正常にデシリアライズされた場合は<see langword="true"/>。
     /// <paramref name="content"/>の内容に不足がある場合は<see langword="false"/>。

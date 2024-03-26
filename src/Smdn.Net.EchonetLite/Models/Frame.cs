@@ -24,8 +24,8 @@ namespace EchoDotNetLite.Models
         /// <param name="edata"><see cref="EDATA"/>に指定する値。</param>
         /// <exception cref="ArgumentNullException"><paramref name="edata"/>が<see langword="null"/>です。</exception>
         /// <exception cref="ArgumentException">
-        /// <paramref name="edata"/>の型が<paramref name="ehd2">と矛盾しています。
-        /// または<paramref name="ehd2">に不正な値が指定されています。
+        /// <paramref name="edata"/>の型が<paramref name="ehd2"/>と矛盾しています。
+        /// または<paramref name="ehd2"/>に不正な値が指定されています。
         /// </exception>
         public Frame(EHD1 ehd1, EHD2 ehd2, ushort tid, IEDATA edata)
         {

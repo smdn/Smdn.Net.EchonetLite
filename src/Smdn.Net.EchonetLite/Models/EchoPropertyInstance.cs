@@ -126,12 +126,12 @@ namespace EchoDotNetLite.Models
         private ArrayBufferWriter<byte>? _value = null;
 
         /// <summary>
-        /// プロパティ値を表す<see cref="ReadOnlyMemory{byte}"/>を取得します。
+        /// プロパティ値を表す<see cref="ReadOnlyMemory{Byte}"/>を取得します。
         /// </summary>
         public ReadOnlyMemory<byte> ValueMemory => _value is null ? ReadOnlyMemory<byte>.Empty : _value.WrittenMemory;
 
         /// <summary>
-        /// プロパティ値を表す<see cref="ReadOnlySpan{byte}"/>を取得します。
+        /// プロパティ値を表す<see cref="ReadOnlySpan{Byte}"/>を取得します。
         /// </summary>
         public ReadOnlySpan<byte> ValueSpan => _value is null ? ReadOnlySpan<byte>.Empty : _value.WrittenSpan;
 
@@ -163,7 +163,7 @@ namespace EchoDotNetLite.Models
         /// プロパティ値の設定が行われたあと、イベント<see cref="ValueSet"/>が発生します。
         /// 設定によって値が変更された場合は、イベント<see cref="ValueChanged"/>も発生します。
         /// </remarks>
-        /// <param name="newValue">プロパティ値として設定する値を表す<see cref="ReadOnlyMemory{byte}"/>。</param>
+        /// <param name="newValue">プロパティ値として設定する値を表す<see cref="ReadOnlyMemory{Byte}"/>。</param>
         /// <seealso cref="ValueSet"/>
         /// <seealso cref="ValueChanged"/>
         public void SetValue(ReadOnlyMemory<byte> newValue)
@@ -177,8 +177,8 @@ namespace EchoDotNetLite.Models
         /// 書き込みによって値が変更された場合は、イベント<see cref="ValueChanged"/>も発生します。
         /// </remarks>
         /// <param name="write">
-        /// プロパティ値を書き込むための<see cref="Action{IBufferWriter{byte}}"/>デリゲート。
-        /// 引数で渡される<see cref="IBufferWriter{byte}"/>を介してプロパティ値として設定する内容を書き込んでください。
+        /// プロパティ値を書き込むための<see cref="Action{T}"/>デリゲート。
+        /// 引数で渡される<see cref="IBufferWriter{Byte}"/>を介してプロパティ値として設定する内容を書き込んでください。
         /// </param>
         /// <exception cref="ArgumentNullException"><paramref name="write"/>が<see langword="null"/>です。</exception>
         /// <seealso cref="ValueSet"/>

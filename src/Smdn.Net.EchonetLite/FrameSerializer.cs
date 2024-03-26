@@ -138,14 +138,14 @@ namespace EchoDotNetLite
             if ((bytes[0] & 0xF0) != (byte)EHD1.ECHONETLite)
                 return false;
 
-            /// ECHONET Lite電文ヘッダー１(1B)
+            // ECHONET Lite電文ヘッダー１(1B)
             var ehd1 = (EHD1)bytes[0];
-            /// ECHONET Lite電文ヘッダー２(1B)
+            // ECHONET Lite電文ヘッダー２(1B)
             var ehd2 = (EHD2)bytes[1];
-            /// トランザクションID(2B)
+            // トランザクションID(2B)
             var tid = BitConverter.ToUInt16(bytes.Slice(2, 2));
 
-            /// ECHONET Liteデータ(残り全部)
+            // ECHONET Liteデータ(残り全部)
             var edataSpan = bytes.Slice(4);
 
             switch (ehd2)

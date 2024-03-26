@@ -283,7 +283,7 @@ namespace EchoDotNetLite
         /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{IReadOnlyCollection{PropertyRequest}}"/>。
+        /// 非同期の操作を表す<see cref="Task{T}"/>。
         /// 書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
         /// <exception cref="ArgumentNullException">
@@ -403,7 +403,7 @@ namespace EchoDotNetLite
         /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,IReadOnlyCollection{PropertyRequest}}}"/>。
+        /// 非同期の操作を表す<see cref="Task{T}"/>。
         /// 成功応答(Set_Res <c>0x71</c>)の場合は<see langword="true"/>、不可応答(SetC_SNA <c>0x51</c>)その他の場合は<see langword="false"/>を返します。
         /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
@@ -513,7 +513,7 @@ namespace EchoDotNetLite
         /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,IReadOnlyCollection{PropertyRequest}}}"/>。
+        /// 非同期の操作を表す<see cref="Task{T}"/>。
         /// 成功応答(Get_Res <c>0x72</c>)の場合は<see langword="true"/>、不可応答(Get_SNA <c>0x52</c>)その他の場合は<see langword="false"/>を返します。
         /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
@@ -624,7 +624,7 @@ namespace EchoDotNetLite
         /// <param name="propertiesGet">読み出し対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{ValueTuple{bool,IReadOnlyCollection{PropertyRequest},IReadOnlyCollection{PropertyRequest}}}"/>。
+        /// 非同期の操作を表す<see cref="Task{T}"/>。
         /// 成功応答(SetGet_Res <c>0x7E</c>)の場合は<see langword="true"/>、不可応答(SetGet_SNA <c>0x5E</c>)その他の場合は<see langword="false"/>を返します。
         /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
@@ -855,7 +855,7 @@ namespace EchoDotNetLite
         /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchoPropertyInstance}"/>。</param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
         /// <returns>
-        /// 非同期の操作を表す<see cref="Task{IReadOnlyCollection{PropertyRequest}}"/>。
+        /// 非同期の操作を表す<see cref="Task{T}"/>。
         /// 通知に成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
         /// </returns>
         /// <exception cref="ArgumentNullException">
@@ -959,8 +959,8 @@ namespace EchoDotNetLite
         /// </remarks>
         /// <param name="sender">イベントのソース。</param>
         /// <param name="value">
-        /// イベントデータを格納している<see cref="ValueTuple{IPAddress,ReadOnlyMemory{byte}}"/>。
-        /// データの送信元を表す<see cref="IPAddress"/>と、受信したデータを表す<see cref="ReadOnlyMemory{byte}"/>を保持します。
+        /// イベントデータを格納している<see cref="ValueTuple{T1,T2}"/>。
+        /// データの送信元を表す<see cref="IPAddress"/>と、受信したデータを表す<see cref="ReadOnlyMemory{Byte}"/>を保持します。
         /// </param>
         private void EchonetDataReceived(object? sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
         {
@@ -978,8 +978,8 @@ namespace EchoDotNetLite
         /// </summary>
         /// <param name="address">送信先となるECHONET Lite ノードの<see cref="IPAddress"/>。　<see langword="null"/>の場合は、サブネット内のすべてのノードに対して一斉同報送信を行います。</param>
         /// <param name="writeFrame">
-        /// 送信するECHONET Lite フレームをバッファへ書き込むための<see cref="Action{IBufferWriter{byte}}"/>デリゲート。
-        /// 呼び出し元は、送信するECHONET Lite フレームを、引数として渡される<see cref="IBufferWriter{byte}"/>に書き込む必要があります。
+        /// 送信するECHONET Lite フレームをバッファへ書き込むための<see cref="Action{T}"/>デリゲート。
+        /// 呼び出し元は、送信するECHONET Lite フレームを、引数として渡される<see cref="IBufferWriter{Byte}"/>に書き込む必要があります。
         /// </param>
         /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
         /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
@@ -1025,7 +1025,7 @@ namespace EchoDotNetLite
         /// インスタンスリスト通知受信時の処理を行います。
         /// </summary>
         /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
-        /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{byte}"/>。</param>
+        /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
         /// <seealso cref="PerformInstanceListNotificationAsync"/>
         /// <seealso cref="AcquirePropertyMapsAsync"/>
         private async ValueTask HandleInstanceListNotificationReceivedAsync(EchoNode sourceNode, ReadOnlyMemory<byte> edt)
@@ -1347,8 +1347,8 @@ namespace EchoDotNetLite
         /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
-        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
-        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
+        /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
         /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
         /// </returns>
         /// <seealso cref="PerformPropertyValueWriteRequestAsync"/>
@@ -1423,8 +1423,8 @@ namespace EchoDotNetLite
         /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
-        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
-        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
+        /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
         /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
         /// </returns>
         /// <seealso cref="PerformPropertyValueWriteRequestResponseRequiredAsync"/>
@@ -1518,11 +1518,11 @@ namespace EchoDotNetLite
         /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
-        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
-        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
+        /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
         /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
         /// </returns>
-        /// <seealso cref="PerformPropertyValueReadRequest"/>
+        /// <seealso cref="PerformPropertyValueReadRequestAsync"/>
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
         /// </seealso>
@@ -1616,8 +1616,8 @@ namespace EchoDotNetLite
         /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
-        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
-        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
+        /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
         /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
         /// </returns>
         /// <seealso cref="PerformPropertyValueWriteReadRequestAsync"/>
@@ -1740,8 +1740,8 @@ namespace EchoDotNetLite
         /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
         /// <returns>
-        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
-        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
+        /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
         /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
         /// </returns>
         /// <seealso cref="PerformPropertyValueNotificationRequestAsync"/>
@@ -1814,8 +1814,8 @@ namespace EchoDotNetLite
         /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchoNode"/>。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchoObjectInstance"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
-        /// 非同期の読み取り操作を表す<see cref="Task{bool}"/>。
-        /// <see cref="Task{bool}.Result"/>には処理の結果が含まれます。
+        /// 非同期の読み取り操作を表す<see cref="Task{Boolean}"/>。
+        /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
         /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
         /// </returns>
         /// <seealso cref="PerformPropertyValueNotificationResponseRequiredAsync"/>
