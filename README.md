@@ -1,5 +1,5 @@
-# EchoDotNetLite
-EchoDotNetLiteは、ECHONET Liteやその周辺の規格/仕様を.NETで実装したものです。
+# Smdn.Net.EchonetLite
+`Smdn.Net.EchonetLite`は、ECHONET Liteやその周辺の規格/仕様を.NETで実装したものです。
 
 このプロジェクトでは、オリジナルである[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をよりモダンな.NET/C#コードに書き換え、NuGetパッケージとしてリリースすることを主な目的としています。
 
