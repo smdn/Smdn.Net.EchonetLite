@@ -28,10 +28,7 @@
 
 # Project status
 - 現在NuGetパッケージの公開に向けて作業中です
-  - コードベースの.NET 6.0へのアップデートは完了しています
   - `Smdn.Net.EchonetLite.Specifications`が保持・参照しているECHONET機器オブジェクト詳細規定は **Release K** のまま更新されていないため、これを最新版に追従させる予定です
-  - 本フォークでは`SkstackIpDotNet`の使用・メンテナンスは行いません。　今後削除予定です。　代替実装として、[Smdn.Net.SkStackIP](https://github.com/smdn/Smdn.Net.SkStackIP)をご利用ください。
-  - 本フォークでは`EchoDotNetLiteSkstackIpBridge`および`EchoDotNetLiteLANBridge`のメンテナンスは行いません。　一部実装は`EchoDotNetLite`へ取り込んだのち、削除予定です。
 - APIは未確定・実装は不完全です
   - 全般的に異常系処理全般の考慮が不足しています
 
