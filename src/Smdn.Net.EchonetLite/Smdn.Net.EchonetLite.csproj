@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
     <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
