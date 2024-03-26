@@ -1,5 +1,6 @@
 <!--
 SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 SPDX-License-Identifier: MIT
 -->
 <Project Sdk="Microsoft.NET.Sdk">
@@ -21,7 +22,7 @@ SPDX-License-Identifier: MIT
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\EchoDotNetLite\EchoDotNetLite.csproj" />
+    <ProjectReference Include="..\..\..\src\Smdn.Net.EchonetLite\Smdn.Net.EchonetLite.csproj" />
   </ItemGroup>
 
   <ItemGroup>
