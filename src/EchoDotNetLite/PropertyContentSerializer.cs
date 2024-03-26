@@ -40,7 +40,7 @@ public static class PropertyContentSerializer
         if (instanceList is null)
             return false;
 
-        //1 ﾊﾞｲﾄ目：通報インスタンス数
+        //1 バイト目：通報インスタンス数
         if (destination.Length < 1)
             return false;
 
@@ -49,7 +49,7 @@ public static class PropertyContentSerializer
         bytesWritten++;
         destination = destination.Slice(1);
 
-        //2～253 ﾊﾞｲﾄ目：ECHONET オブジェクトコード（EOJ3 バイト）を列挙。
+        //2～253 バイト目：ECHONET オブジェクトコード（EOJ3 バイト）を列挙。
         var numberOfInstances = 0;
 
         foreach (var instance in instanceList)
@@ -95,7 +95,7 @@ public static class PropertyContentSerializer
     {
         instanceList = default;
 
-        //1 ﾊﾞｲﾄ目：通報インスタンス数
+        //1 バイト目：通報インスタンス数
         if (content.Length < 1)
             return false;
 
@@ -104,7 +104,7 @@ public static class PropertyContentSerializer
 
         content = content.Slice(1);
 
-        //2～253 ﾊﾞｲﾄ目：ECHONET オブジェクトコード（EOJ3 バイト）を列挙。
+        //2～253 バイト目：ECHONET オブジェクトコード（EOJ3 バイト）を列挙。
         for (var i = 0; i < numberOfInstance; i++)
         {
             if (content.Length < 3)

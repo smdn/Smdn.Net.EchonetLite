@@ -378,7 +378,7 @@ namespace EchoDotNetLite.Specifications
         public static class 住宅設備関連機器
         {
             /// <summary>
-            /// 0x60 電動ブラインド･日よけ
+            /// 0x60 電動ブラインド・日よけ
             /// </summary>
             public static IEchonetObject 電動ブラインド日よけ { get; } = new EchonetObject(0x02, 0x60);
             /// <summary>
