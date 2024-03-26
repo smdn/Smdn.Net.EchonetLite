@@ -1,3 +1,7 @@
+[![GitHub license](https://img.shields.io/github/license/smdn/Smdn.Net.EchonetLite)](https://github.com/smdn/Smdn.Net.EchonetLite/blob/main/COPYING.txt)
+[![tests/main](https://img.shields.io/github/actions/workflow/status/smdn/Smdn.Net.EchonetLite/test.yml?branch=main&label=tests%2Fmain)](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/test.yml)
+[![CodeQL](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/codeql-analysis.yml)
+
 # Smdn.Net.EchonetLite
 `Smdn.Net.EchonetLite`は、ECHONET Liteやその周辺の規格/仕様を.NETで実装したものです。
 
@@ -13,8 +17,8 @@
 # プロジェクト構成
 |プロジェクト名|概要|備考|
 |--|--|--|
-|[Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)|ECHONET Lite 通信ミドルウェアライブラリ<br>ECHONET Lite規格書 Ver.1.13をもとに全サービスを実装<br><br>`Smdn.Net.EchonetLite`といわゆるLANのブリッジクラス`UdpEchonetLiteHandler`も含む|Bルートで使用しないサービスのテスト不足<br>|
-|[Smdn.Net.EchonetLite.Specifications](./src/Smdn.Net.EchonetLite.Specifications/)|ECHONET機器オブジェクト詳細規定の定義<br>JSONファイル、およびそれを読み取るクラス郡<br>APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）をもとに生成|APPENDIXからJSONへの変換過程で脱字等が発生している可能性あり|
+|[Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)<br/>[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite/)|ECHONET Lite 通信ミドルウェアライブラリ<br>ECHONET Lite規格書 Ver.1.13をもとに全サービスを実装<br><br>`Smdn.Net.EchonetLite`といわゆるLANのブリッジクラス`UdpEchonetLiteHandler`も含む|Bルートで使用しないサービスのテスト不足<br>|
+|[Smdn.Net.EchonetLite.Specifications](./src/Smdn.Net.EchonetLite.Specifications/)<br/>[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Specifications.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Specifications/)|ECHONET機器オブジェクト詳細規定の定義<br>JSONファイル、およびそれを読み取るクラス郡<br>APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）をもとに生成|APPENDIXからJSONへの変換過程で脱字等が発生している可能性あり|
 |[udp-handler](./examples/Smdn.Net.EchonetLite/udp-handler/)|LAN経由(UDP)で家電を操作する、コントローラー実装例<br>コンソールアプリケーション<br>MoekadenRoomでサポートする機器オブジェクトとの相互通信を実装([Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)の実装確認が目的)||
 
 > [!NOTE]
