@@ -26,6 +26,10 @@ SPDX-License-Identifier: MIT
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <PropertyGroup Label="assembly attributes">
+    <Copyright Condition=" '$(Copyright)' == '' ">Copyright © 2018 HiroyukiSakoh, Copyright © 2023 smdn.</Copyright>
+  </PropertyGroup>
+
   <!-- disables code style/code analysis warnings -->
   <PropertyGroup>
     <NoWarn>IDE0055;$(NoWarn)</NoWarn> <!-- IDE0055: 書式設定を修正 -->
