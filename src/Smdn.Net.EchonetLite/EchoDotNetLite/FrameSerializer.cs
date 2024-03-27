@@ -212,7 +212,7 @@ namespace EchoDotNetLite
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcGetList, out var bytesReadForOPCGetList))
+                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
                     return false;
 
                 edata = new
@@ -224,7 +224,7 @@ namespace EchoDotNetLite
                     opcGetList
                 );
 
-                bytes = bytes.Slice(bytesReadForOPCGetList);
+                // bytes = bytes.Slice(bytesReadForOPCGetList);
             }
             else
             {
@@ -232,10 +232,10 @@ namespace EchoDotNetLite
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcList, out var bytesRead))
+                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcList, out _ /* var bytesRead */))
                     return false;
 
-                bytes = bytes.Slice(bytesRead);
+                // bytes = bytes.Slice(bytesRead);
 
                 edata = new
                 (

@@ -31,7 +31,6 @@ SPDX-License-Identifier: MIT
     <NoWarn>IDE0005;$(NoWarn)</NoWarn> <!-- IDE0005: Using ディレクティブは必要ありません。 -->
     <NoWarn>IDE0040;$(NoWarn)</NoWarn> <!-- IDE0040: アクセシビリティ修飾子が必要です -->
     <NoWarn>IDE0055;$(NoWarn)</NoWarn> <!-- IDE0055: 書式設定を修正 -->
-    <NoWarn>IDE0059;$(NoWarn)</NoWarn> <!-- IDE0059: 値の不必要な代入 -->
     <NoWarn>IDE0060;$(NoWarn)</NoWarn> <!-- IDE0060: 未使用のパラメーターを削除 -->
     <NoWarn>IDE0090;$(NoWarn)</NoWarn> <!-- IDE0090: 'new' 式を簡素化できます -->
     <NoWarn>IDE0161;$(NoWarn)</NoWarn> <!-- IDE0161: 範囲指定されたファイルが設定された namespace に変換 -->
