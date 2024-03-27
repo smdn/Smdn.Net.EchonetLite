@@ -42,7 +42,7 @@ namespace EchoDotNetLiteLANBridge
                 {
                     while (true)
                     {
-                        var receivedResults = await receiveUdpClient.ReceiveAsync();
+                        var receivedResults = await receiveUdpClient.ReceiveAsync().ConfigureAwait(false);
                         if (selfAddresses.Contains(receivedResults.RemoteEndPoint.Address))
                         {
                             //ブロードキャストを自分で受信(無視)
@@ -109,9 +109,9 @@ namespace EchoDotNetLiteLANBridge
             };
             sendUdpClient.Connect(remote);
 #if NET6_0_OR_GREATER
-            await sendUdpClient.SendAsync(data, cancellationToken);
+            await sendUdpClient.SendAsync(data, cancellationToken).ConfigureAwait(false);
 #else
-            await sendUdpClient.SendAsync(data.ToArray(), data.Length);
+            await sendUdpClient.SendAsync(data.ToArray(), data.Length).ConfigureAwait(false);
 #endif
             sendUdpClient.Close();
         }
