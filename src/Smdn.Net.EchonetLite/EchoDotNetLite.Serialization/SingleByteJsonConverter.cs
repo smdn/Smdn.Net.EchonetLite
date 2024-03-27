@@ -13,7 +13,7 @@ internal sealed class SingleByteJsonConverter<TByte> : JsonConverter<TByte>
         => throw new NotSupportedException();
 
     private static byte GetByte(TByte value)
-        => Convert.ToByte(value);
+        => Convert.ToByte(value, provider: null);
 
     public override void Write(Utf8JsonWriter writer, TByte value, JsonSerializerOptions options)
     {

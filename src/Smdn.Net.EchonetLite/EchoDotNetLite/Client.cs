@@ -1205,7 +1205,7 @@ namespace EchoDotNetLite
                 sb.AppendLine("------");
                 foreach (var temp in device.Properties)
                 {
-                    sb.AppendFormat("\t{0}\r\n", temp.GetDebugString());
+                    sb.Append('\t').Append(temp.GetDebugString()).AppendLine();
                 }
                 sb.AppendLine("------");
                 _logger.LogTrace(sb.ToString());

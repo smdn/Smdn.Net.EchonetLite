@@ -36,7 +36,6 @@ SPDX-License-Identifier: MIT
     <NoWarn>CA1008;$(NoWarn)</NoWarn> <!-- CA1008: 提案された名前 'None' を伴う、値 0 を含む メンバーを追加します -->
     <NoWarn>CA1031;$(NoWarn)</NoWarn> <!-- CA1031: 'Dispose' を変更してより具体的な許可された例外の種類をキャッチするか、例外を再スローしてください -->
     <NoWarn>CA1063;$(NoWarn)</NoWarn> <!-- CA1063: Dispose(bool) のオーバーライド可能な実装を提供するか、型を sealed としてマークします。Dispose(false) を呼び出す場合は、ネイティブ リソースのみがクリーンアップされます。Dispose(true) を呼び出す場合には、マネージド リソースとネイティブ リソースの両方がクリーンアップされます。  -->
-    <NoWarn>CA1305;$(NoWarn)</NoWarn> <!-- CA1305:現在のユーザーのロケール設定によって異なる場合があります。 -->
     <NoWarn>CA1708;$(NoWarn)</NoWarn> <!-- CA1708: 名前は、大文字と小文字の区別以外にも相違させる必要があります -->
     <NoWarn>CA1716;$(NoWarn)</NoWarn> <!-- CA1716: 予約されている言語キーワードと競合しないようにしてください。-->
     <NoWarn>CA1721;$(NoWarn)</NoWarn> <!-- CA1721: メソッドの存在が指定されているため、プロパティ名は混乱を招きます。-->

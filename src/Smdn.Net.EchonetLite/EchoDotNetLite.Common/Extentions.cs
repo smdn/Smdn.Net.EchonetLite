@@ -36,7 +36,7 @@ namespace EchoDotNetLite.Common
                 return "Spec null";
             }
             var sb = new StringBuilder();
-            sb.Append($"0x{echoPropertyInstance.Spec.Code:X2}");
+            sb.AppendFormat(provider: null, "0x{0:X2}", echoPropertyInstance.Spec.Code);
             sb.Append(echoPropertyInstance.Spec.Name);
             sb.Append(' ');
             sb.Append(echoPropertyInstance.Get ? "Get" : "");
