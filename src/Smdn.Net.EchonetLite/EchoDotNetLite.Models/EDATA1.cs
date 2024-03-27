@@ -107,7 +107,7 @@ namespace EchoDotNetLite.Models
 #endif
         public bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
 
-        public IReadOnlyCollection<PropertyRequest> GetOPCList()
+        internal IReadOnlyCollection<PropertyRequest> GetOPCList()
         {
             if (IsWriteOrReadService)
                 throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
