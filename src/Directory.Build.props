@@ -41,7 +41,6 @@ SPDX-License-Identifier: MIT
     <NoWarn>CA1725;$(NoWarn)</NoWarn> <!-- CA1725: 宣言されている識別子と一致するように、メンバーのパラメーター名を変更してください-->
     <NoWarn>CA1816;$(NoWarn)</NoWarn> <!-- CA1816: GC.SuppressFinalize(object) を呼び出すように Dispose() を変更します。これにより、ファイナライザーを導入する派生型で、その呼び出しのために 'IDisposable' を再実装する必要がなくなります。-->
     <NoWarn>CA1848;$(NoWarn)</NoWarn> <!-- CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-    <NoWarn>CA1851;$(NoWarn)</NoWarn> <!-- CA1851: 'IEnumerable' コレクションを複数列挙している可能性があります。複数列挙を回避する実装を検討してください。 -->
     <NoWarn>CA2213;$(NoWarn)</NoWarn> <!-- CA2213: Dispose メソッドを変更して、このフィールドで Close または Dispose を呼び出します。 -->
     <NoWarn>CA2254;$(NoWarn)</NoWarn> <!-- CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
   </PropertyGroup>
