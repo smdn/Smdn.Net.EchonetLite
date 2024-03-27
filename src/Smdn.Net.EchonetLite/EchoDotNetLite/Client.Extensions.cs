@@ -6,7 +6,9 @@ using System.Collections.Generic;
 
 namespace EchoDotNetLite
 {
+#pragma warning disable IDE0040
     partial class EchoClient
+#pragma warning restore IDE0040
     {
         /// <summary>
         /// インスタンスリスト通知の受信による更新を開始するときに発生するイベント。

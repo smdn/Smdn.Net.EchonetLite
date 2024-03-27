@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace EchoDotNetLite
 {
+#pragma warning disable IDE0040
     partial class EchoClient
+#pragma warning restore IDE0040
     {
         [Obsolete($"Use {nameof(Nodes)} instead.")]
         public ICollection<EchoNode> NodeList => Nodes;
