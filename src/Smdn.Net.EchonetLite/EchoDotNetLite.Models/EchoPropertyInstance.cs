@@ -17,7 +17,7 @@ namespace EchoDotNetLite.Models
     public sealed class EchoPropertyInstance
     {
         internal static Specifications.EchoProperty GenerateUnknownProperty(byte epc)
-            => new Specifications.EchoProperty
+            => new
             (
                 code: epc,
                 name: "Unknown",

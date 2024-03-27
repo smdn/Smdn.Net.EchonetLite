@@ -33,7 +33,7 @@ namespace EchoDotNetLite
         /// ECHONET Lite フレームのリクエスト送信時の排他区間を定義するセマフォ。
         /// <see cref="_requestFrameBuffer"/>への書き込み、および<see cref="_echonetLiteHandler"/>による送信を排他制御するために使用する。
         /// </summary>
-        private readonly SemaphoreSlim _requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+        private readonly SemaphoreSlim _requestSemaphore = new(initialCount: 1, maxCount: 1);
 
         /// <summary>
         /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
