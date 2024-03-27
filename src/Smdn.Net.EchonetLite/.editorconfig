@@ -1,0 +1,3 @@
+[*.cs]
+dotnet_style_namespace_match_folder = true
+dotnet_diagnostic.IDE0130.severity = warning
