@@ -212,7 +212,7 @@ namespace EchoDotNetLite
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcGetList, out var bytesReadForOPCGetList))
+                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
                     return false;
 
                 edata = new
@@ -224,7 +224,7 @@ namespace EchoDotNetLite
                     opcGetList
                 );
 
-                bytes = bytes.Slice(bytesReadForOPCGetList);
+                // bytes = bytes.Slice(bytesReadForOPCGetList);
             }
             else
             {
@@ -232,10 +232,10 @@ namespace EchoDotNetLite
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcList, out var bytesRead))
+                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcList, out _ /* var bytesRead */))
                     return false;
 
-                bytes = bytes.Slice(bytesRead);
+                // bytes = bytes.Slice(bytesRead);
 
                 edata = new
                 (
@@ -364,17 +364,36 @@ namespace EchoDotNetLite
             bool failIfEmpty
         )
         {
+            IEnumerable<PropertyRequest> opcListNonEnumerated;
+
+#if NET6_0_OR_GREATER
+            if (opcList.TryGetNonEnumeratedCount(out var countOfProps)) {
+              opcListNonEnumerated = opcList;
+            }
+            else {
+              var evaluatedOpcList = opcList.ToList();
+
+              countOfProps = evaluatedOpcList.Count;
+              opcListNonEnumerated = evaluatedOpcList;
+            }
+#else
+            var evaluatedOpcList = opcList.ToList();
+            var countOfProps = evaluatedOpcList.Count;
+
+            opcListNonEnumerated = evaluatedOpcList;
+#endif
+
             // ４．２．３ サービス内容に関する詳細シーケンス
             // OPC 処理プロパティ数(1B)
             // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
             // OPCSet 処理プロパティ数(1B)
             // OPCGet 処理プロパティ数(1B)
-            if (failIfEmpty && !opcList.Any()) // XXX: expecting LINQ optimization
+            if (failIfEmpty && countOfProps == 0)
                 return false;
 
-            Write(buffer, (byte)opcList.Count()); // XXX: expecting LINQ optimization
+            Write(buffer, (byte)countOfProps);
 
-            foreach (var prp in opcList)
+            foreach (var prp in opcListNonEnumerated)
             {
                 // ECHONET Liteプロパティ(1B)
                 Write(buffer, prp.EPC);

@@ -2,14 +2,15 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using EchoDotNetLite;
-using EchoDotNetLite.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+#if !NET5_0_OR_GREATER
 using System.Runtime.InteropServices;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,7 +43,7 @@ namespace EchoDotNetLiteLANBridge
                 {
                     while (true)
                     {
-                        var receivedResults = await receiveUdpClient.ReceiveAsync();
+                        var receivedResults = await receiveUdpClient.ReceiveAsync().ConfigureAwait(false);
                         if (selfAddresses.Contains(receivedResults.RemoteEndPoint.Address))
                         {
                             //ブロードキャストを自分で受信(無視)
@@ -109,9 +110,9 @@ namespace EchoDotNetLiteLANBridge
             };
             sendUdpClient.Connect(remote);
 #if NET6_0_OR_GREATER
-            await sendUdpClient.SendAsync(data, cancellationToken);
+            await sendUdpClient.SendAsync(data, cancellationToken).ConfigureAwait(false);
 #else
-            await sendUdpClient.SendAsync(data.ToArray(), data.Length);
+            await sendUdpClient.SendAsync(data.ToArray(), data.Length).ConfigureAwait(false);
 #endif
             sendUdpClient.Close();
         }

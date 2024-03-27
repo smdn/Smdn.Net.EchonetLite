@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace EchoDotNetLite
 {
+#pragma warning disable IDE0040
     partial class EchoClient
+#pragma warning restore IDE0040
     {
         [Obsolete($"Use {nameof(Nodes)} instead.")]
         public ICollection<EchoNode> NodeList => Nodes;
@@ -40,7 +42,7 @@ namespace EchoDotNetLite
         private static CancellationTokenSource CreateTimeoutCancellationTokenSource(int timeoutMilliseconds)
         {
             if (0 > timeoutMilliseconds)
-                throw new ArgumentOutOfRangeException("タイムアウト時間に負の値を指定することはできません。", nameof(timeoutMilliseconds));
+                throw new ArgumentOutOfRangeException(message: "タイムアウト時間に負の値を指定することはできません。", actualValue: timeoutMilliseconds, paramName: nameof(timeoutMilliseconds));
 
             if (timeoutMilliseconds == Timeout.Infinite)
                 return new CancellationTokenSource();

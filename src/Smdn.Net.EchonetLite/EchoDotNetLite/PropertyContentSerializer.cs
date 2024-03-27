@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -206,7 +205,7 @@ public static class PropertyContentSerializer
 
                 for (var j = 0; j < 8; j++)
                 {
-                    var upper = 0x80 + 0x10 * j;
+                    var upper = 0x80 + (0x10 * j);
                     var bitMask = 1 << j;
 
                     if ((propertyBits & bitMask) != 0)

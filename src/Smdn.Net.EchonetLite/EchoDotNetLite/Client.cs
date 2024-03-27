@@ -33,7 +33,7 @@ namespace EchoDotNetLite
         /// ECHONET Lite フレームのリクエスト送信時の排他区間を定義するセマフォ。
         /// <see cref="_requestFrameBuffer"/>への書き込み、および<see cref="_echonetLiteHandler"/>による送信を排他制御するために使用する。
         /// </summary>
-        private readonly SemaphoreSlim _requestSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+        private readonly SemaphoreSlim _requestSemaphore = new(initialCount: 1, maxCount: 1);
 
         /// <summary>
         /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
@@ -1205,7 +1205,7 @@ namespace EchoDotNetLite
                 sb.AppendLine("------");
                 foreach (var temp in device.Properties)
                 {
-                    sb.AppendFormat("\t{0}\r\n", temp.GetDebugString());
+                    sb.Append('\t').Append(temp.GetDebugString()).AppendLine();
                 }
                 sb.AppendLine("------");
                 _logger.LogTrace(sb.ToString());
@@ -1226,6 +1226,7 @@ namespace EchoDotNetLite
         /// ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
         /// <exception cref="InvalidOperationException">電文形式 1（規定電文形式）を期待しましたが、<see cref="EDATA1"/>を取得できませんでした。</exception>
+#pragma warning disable CA1502 // TODO: reduce complexity
         private void HandleFrameReceived(object? sender, (IPAddress address, Frame frame) value)
         {
             if (value.frame.EHD1 != EHD1.ECHONETLite)
@@ -1336,6 +1337,7 @@ namespace EchoDotNetLite
                 }
             });
         }
+#pragma warning restore CA1502
 
         /// <summary>
         /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を処理します。
@@ -1751,7 +1753,9 @@ namespace EchoDotNetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
         /// </seealso>
+#pragma warning disable IDE0060
         private async Task<bool> HandlePropertyValueNotificationRequestAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
+#pragma warning restore IDE0060
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");

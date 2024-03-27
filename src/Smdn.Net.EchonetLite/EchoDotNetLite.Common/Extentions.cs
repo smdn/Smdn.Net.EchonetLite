@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 using EchoDotNetLite.Models;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -36,7 +35,7 @@ namespace EchoDotNetLite.Common
                 return "Spec null";
             }
             var sb = new StringBuilder();
-            sb.Append($"0x{echoPropertyInstance.Spec.Code:X2}");
+            sb.AppendFormat(provider: null, "0x{0:X2}", echoPropertyInstance.Spec.Code);
             sb.Append(echoPropertyInstance.Spec.Name);
             sb.Append(' ');
             sb.Append(echoPropertyInstance.Get ? "Get" : "");

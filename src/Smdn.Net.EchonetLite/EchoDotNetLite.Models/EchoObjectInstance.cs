@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using EchoDotNetLite.Common;
 using EchoDotNetLite.Specifications;
 
@@ -16,7 +15,9 @@ namespace EchoDotNetLite.Models
     /// <summary>
     /// ECHONET Lite オブジェクトインスタンス
     /// </summary>
+#pragma warning disable CA1708
     public sealed class EchoObjectInstance
+#pragma warning restore CA1708
     {
         /// <summary>
         /// デフォルトコンストラクタ
@@ -149,26 +150,31 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// GETプロパティの一覧
         /// </summary>
+#pragma warning disable CA1708
         public IEnumerable<EchoPropertyInstance> GetProperties => Properties.Where(static p => p.Spec.Get);
 
         [Obsolete($"Use {nameof(GetProperties)} instead.")]
         public IEnumerable<EchoPropertyInstance> GETProperties => GetProperties;
+#pragma warning restore CA1708
 
         /// <summary>
         /// SETプロパティの一覧
         /// </summary>
+#pragma warning disable CA1708
         public IEnumerable<EchoPropertyInstance> SetProperties => Properties.Where(static p => p.Spec.Set);
 
         [Obsolete($"Use {nameof(SetProperties)} instead.")]
         public IEnumerable<EchoPropertyInstance> SETProperties => SetProperties;
+#pragma warning restore CA1708
 
         /// <summary>
         /// ANNOプロパティの一覧
         /// </summary>
+#pragma warning disable CA1708
         public IEnumerable<EchoPropertyInstance> AnnoProperties => Properties.Where(static p => p.Spec.Anno);
 
         [Obsolete($"Use {nameof(AnnoProperties)} instead.")]
         public IEnumerable<EchoPropertyInstance> ANNOProperties => AnnoProperties;
-
+#pragma warning restore CA1708
     }
 }

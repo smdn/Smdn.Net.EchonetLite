@@ -1,11 +1,8 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Enums;
 using EchoDotNetLite.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Models

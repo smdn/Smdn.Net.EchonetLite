@@ -5,10 +5,10 @@ using EchoDotNetLite.Enums;
 using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
+#endif
 using System.Text.Json.Serialization;
-using static EchoDotNetLite.Models.Frame;
 
 namespace EchoDotNetLite.Models
 {
@@ -107,7 +107,7 @@ namespace EchoDotNetLite.Models
 #endif
         public bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
 
-        public IReadOnlyCollection<PropertyRequest> GetOPCList()
+        internal IReadOnlyCollection<PropertyRequest> GetOPCList()
         {
             if (IsWriteOrReadService)
                 throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");

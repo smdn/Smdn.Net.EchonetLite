@@ -1,0 +1,50 @@
+<!--
+SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Project>
+  <PropertyGroup>
+    <SmdnBuildAssetRootDirectory>$(MSBuildThisFileDirectory)..\</SmdnBuildAssetRootDirectory>
+  </PropertyGroup>
+
+  <ImportGroup Label="project assets">
+    <Import Project="$(MSBuildThisFileDirectory)ProjectAssets.props" />
+  </ImportGroup>
+
+  <PropertyGroup Label="API list generator configurations">
+    <APIListOutputBaseDirectory>$(MSBuildThisFileDirectory)..\doc\api-list\</APIListOutputBaseDirectory>
+    <APIListPackageVersion>1.4.0</APIListPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="package properties">
+    <Authors>HiroyukiSakoh,smdn</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/smdn/Smdn.Net.EchonetLite</PackageProjectUrl>
+    <PackageTags>ECHONET;ECHONET-Lite</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Label="repository properties" Condition="'$(GITHUB_ACTIONS)' != 'true'">
+    <RepositoryUrl>https://github.com/smdn/Smdn.Net.EchonetLite</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Label="assembly attributes">
+    <Copyright Condition=" '$(Copyright)' == '' ">Copyright © 2018 HiroyukiSakoh, Copyright © 2023 smdn.</Copyright>
+  </PropertyGroup>
+
+  <!-- disables code style/code analysis warnings -->
+  <PropertyGroup>
+    <NoWarn>IDE0055;$(NoWarn)</NoWarn> <!-- IDE0055: 書式設定を修正 -->
+    <NoWarn>IDE0161;$(NoWarn)</NoWarn> <!-- IDE0161: 範囲指定されたファイルが設定された namespace に変換 -->
+    <NoWarn>IDE1006;$(NoWarn)</NoWarn> <!-- IDE1006: 名前付けルール違反 -->
+    <NoWarn>CA1008;$(NoWarn)</NoWarn> <!-- CA1008: 提案された名前 'None' を伴う、値 0 を含む メンバーを追加します -->
+    <NoWarn>CA1031;$(NoWarn)</NoWarn> <!-- CA1031: 'Dispose' を変更してより具体的な許可された例外の種類をキャッチするか、例外を再スローしてください -->
+    <NoWarn>CA1063;$(NoWarn)</NoWarn> <!-- CA1063: Dispose(bool) のオーバーライド可能な実装を提供するか、型を sealed としてマークします。Dispose(false) を呼び出す場合は、ネイティブ リソースのみがクリーンアップされます。Dispose(true) を呼び出す場合には、マネージド リソースとネイティブ リソースの両方がクリーンアップされます。  -->
+    <NoWarn>CA1716;$(NoWarn)</NoWarn> <!-- CA1716: 予約されている言語キーワードと競合しないようにしてください。-->
+    <NoWarn>CA1725;$(NoWarn)</NoWarn> <!-- CA1725: 宣言されている識別子と一致するように、メンバーのパラメーター名を変更してください-->
+    <NoWarn>CA1816;$(NoWarn)</NoWarn> <!-- CA1816: GC.SuppressFinalize(object) を呼び出すように Dispose() を変更します。これにより、ファイナライザーを導入する派生型で、その呼び出しのために 'IDisposable' を再実装する必要がなくなります。-->
+    <NoWarn>CA1848;$(NoWarn)</NoWarn> <!-- CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
+    <NoWarn>CA2213;$(NoWarn)</NoWarn> <!-- CA2213: Dispose メソッドを変更して、このフィールドで Close または Dispose を呼び出します。 -->
+    <NoWarn>CA2254;$(NoWarn)</NoWarn> <!-- CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
+  </PropertyGroup>
+</Project>

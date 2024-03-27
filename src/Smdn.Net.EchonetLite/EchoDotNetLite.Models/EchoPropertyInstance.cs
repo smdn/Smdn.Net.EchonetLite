@@ -3,10 +3,6 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace EchoDotNetLite.Models
 {
@@ -17,7 +13,7 @@ namespace EchoDotNetLite.Models
     public sealed class EchoPropertyInstance
     {
         internal static Specifications.EchoProperty GenerateUnknownProperty(byte epc)
-            => new Specifications.EchoProperty
+            => new
             (
                 code: epc,
                 name: "Unknown",

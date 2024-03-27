@@ -1,9 +1,6 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
+// SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace EchoDotNetLite.Enums
 {
     public enum EHD1 : byte

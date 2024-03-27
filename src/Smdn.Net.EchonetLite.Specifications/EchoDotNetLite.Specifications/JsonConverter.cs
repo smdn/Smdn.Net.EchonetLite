@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#pragma warning disable CA1812
+
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

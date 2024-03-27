@@ -12,8 +12,8 @@ internal sealed class SingleByteJsonConverter<TByte> : JsonConverter<TByte>
     public override TByte Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         => throw new NotSupportedException();
 
-    private byte GetByte(TByte value)
-        => Convert.ToByte(value);
+    private static byte GetByte(TByte value)
+        => Convert.ToByte(value, provider: null);
 
     public override void Write(Utf8JsonWriter writer, TByte value, JsonSerializerOptions options)
     {

@@ -6,6 +6,9 @@ $RepositoryRootDirectory = [System.IO.Path]::GetFullPath(
   [System.IO.Path]::Join($PSScriptRoot, "../")
 )
 
+# download Smdn.MSBuild.ProjectAssets.* first
+dotnet restore $([System.IO.Path]::Join($RepositoryRootDirectory, 'eng', 'InstallProjectAssets.proj'))
+
 # create a solution for the build target projects
 Set-Location $RepositoryRootDirectory
 
