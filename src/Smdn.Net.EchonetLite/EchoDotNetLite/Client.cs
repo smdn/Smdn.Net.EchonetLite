@@ -1753,7 +1753,9 @@ namespace EchoDotNetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
         /// </seealso>
+#pragma warning disable IDE0060
         private async Task<bool> HandlePropertyValueNotificationRequestAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchoNode sourceNode)
+#pragma warning restore IDE0060
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
