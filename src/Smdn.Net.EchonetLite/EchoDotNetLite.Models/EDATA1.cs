@@ -5,10 +5,10 @@ using EchoDotNetLite.Enums;
 using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
+#endif
 using System.Text.Json.Serialization;
-using static EchoDotNetLite.Models.Frame;
 
 namespace EchoDotNetLite.Models
 {

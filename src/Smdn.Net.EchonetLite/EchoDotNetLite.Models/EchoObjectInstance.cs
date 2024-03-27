@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using EchoDotNetLite.Common;
 using EchoDotNetLite.Specifications;
 

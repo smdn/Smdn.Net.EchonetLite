@@ -4,9 +4,7 @@
 #pragma warning disable CA1812
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

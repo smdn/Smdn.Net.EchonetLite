@@ -4,13 +4,11 @@
 using EchoDotNetLite.Common;
 using EchoDotNetLite.Specifications;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
-using System.Text;
 
 namespace EchoDotNetLite.Models
 {

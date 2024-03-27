@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: MIT
 using EchoDotNetLite.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace EchoDotNetLite.Models
