@@ -17,6 +17,7 @@ SPDX-License-Identifier: MIT
   </PropertyGroup>
 
   <PropertyGroup Label="package properties">
+    <Authors>HiroyukiSakoh,smdn</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/smdn/Smdn.Net.EchonetLite</PackageProjectUrl>
   </PropertyGroup>
