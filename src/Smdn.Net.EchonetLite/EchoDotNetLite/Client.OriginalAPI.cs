@@ -40,7 +40,7 @@ namespace EchoDotNetLite
         private static CancellationTokenSource CreateTimeoutCancellationTokenSource(int timeoutMilliseconds)
         {
             if (0 > timeoutMilliseconds)
-                throw new ArgumentOutOfRangeException("タイムアウト時間に負の値を指定することはできません。", nameof(timeoutMilliseconds));
+                throw new ArgumentOutOfRangeException(message: "タイムアウト時間に負の値を指定することはできません。", actualValue: timeoutMilliseconds, paramName: nameof(timeoutMilliseconds));
 
             if (timeoutMilliseconds == Timeout.Infinite)
                 return new CancellationTokenSource();
