@@ -180,7 +180,7 @@ public static class PropertyContentSerializer
             if (content.Length < numberOfProperties)
                 return false;
 
-#if NET8_0_OR_GREATER
+#if SYSTEM_COLLECTIONS_GENERIC_COLLECTIONEXTENSIONS_ADDRANGE
             props.AddRange(content.Slice(0, numberOfProperties));
 #else
             for (var i = 0; i < numberOfProperties; i++)

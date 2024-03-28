@@ -1012,7 +1012,7 @@ namespace EchoDotNetLite
             }
             finally {
                 // reset written count to reuse the buffer for the next write
-#if NET8_0_OR_GREATER
+#if SYSTEM_BUFFERS_ARRAYBUFFERWRITER_RESETWRITTENCOUNT
                 _requestFrameBuffer.ResetWrittenCount();
 #else
                 _requestFrameBuffer.Clear();

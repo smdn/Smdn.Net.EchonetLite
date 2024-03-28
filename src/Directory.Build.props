@@ -32,6 +32,15 @@ SPDX-License-Identifier: MIT
     <Copyright Condition=" '$(Copyright)' == '' ">Copyright © 2018 HiroyukiSakoh, Copyright © 2023 smdn.</Copyright>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference
+      Include="Smdn.MSBuild.DefineConstants.NETSdkApi"
+      Version="[1.4.8]"
+      PrivateAssets="all"
+      IncludeAssets="build"
+    />
+  </ItemGroup>
+
   <!-- disables code style/code analysis warnings -->
   <PropertyGroup>
     <NoWarn>IDE0055;$(NoWarn)</NoWarn> <!-- IDE0055: 書式設定を修正 -->

@@ -8,8 +8,8 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-#if !NET5_0_OR_GREATER
-using System.Runtime.InteropServices;
+#if !SYSTEM_CONVERT_TOHEXSTRING
+using System.Runtime.InteropServices; // MemoryMarshal
 #endif
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,7 +91,7 @@ namespace EchoDotNetLiteLANBridge
                 remote = new IPEndPoint(address, DefaultUdpPort);
             }
 
-#if NET5_0_OR_GREATER
+#if SYSTEM_CONVERT_TOHEXSTRING
             _logger.LogDebug($"UDP送信:{remote.Address} {Convert.ToHexString(data.Span)}");
 #else
             if (MemoryMarshal.TryGetArray(data, out var segment))
@@ -109,7 +109,7 @@ namespace EchoDotNetLiteLANBridge
                 EnableBroadcast = true
             };
             sendUdpClient.Connect(remote);
-#if NET6_0_OR_GREATER
+#if SYSTEM_NET_SOCKETS_UDPCLIENT_SENDASYNC_READONLYMEMORY_OF_BYTE
             await sendUdpClient.SendAsync(data, cancellationToken).ConfigureAwait(false);
 #else
             await sendUdpClient.SendAsync(data.ToArray(), data.Length).ConfigureAwait(false);

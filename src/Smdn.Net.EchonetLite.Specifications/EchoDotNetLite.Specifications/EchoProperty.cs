@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Text.Json.Serialization;
@@ -170,7 +170,7 @@ namespace EchoDotNetLite.Specifications
         /// プロパティの値が単位を持つかどうか
         /// </summary>
         [JsonIgnore]
-#if NET5_0_OR_GREATER
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
         [MemberNotNullWhen(true, nameof(Unit))]
 #endif
         public bool HasUnit { get; }

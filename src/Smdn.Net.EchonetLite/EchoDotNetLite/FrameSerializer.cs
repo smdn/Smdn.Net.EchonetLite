@@ -366,7 +366,7 @@ namespace EchoDotNetLite
         {
             IEnumerable<PropertyRequest> opcListNonEnumerated;
 
-#if NET6_0_OR_GREATER
+#if SYSTEM_LINQ_ENUMERABLE_TRYGETNONENUMERATEDCOUNT
             if (opcList.TryGetNonEnumeratedCount(out var countOfProps)) {
               opcListNonEnumerated = opcList;
             }

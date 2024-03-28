@@ -205,7 +205,7 @@ namespace EchoDotNetLite.Models
 
                     _value.WrittenSpan.CopyTo(oldValue.AsSpan(0, oldValueLength));
 
-#if NET8_0_OR_GREATER
+#if SYSTEM_BUFFERS_ARRAYBUFFERWRITER_RESETWRITTENCOUNT
                     _value.ResetWrittenCount();
 #else
                     _value.Clear();

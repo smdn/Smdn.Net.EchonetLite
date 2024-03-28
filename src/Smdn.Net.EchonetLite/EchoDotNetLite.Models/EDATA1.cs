@@ -5,7 +5,7 @@ using EchoDotNetLite.Enums;
 using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Text.Json.Serialization;
@@ -100,7 +100,7 @@ namespace EchoDotNetLite.Models
         public IReadOnlyCollection<PropertyRequest>? OPCSetList { get; }
 
         [JsonIgnore]
-#if NET5_0_OR_GREATER
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
         [MemberNotNullWhen(false, nameof(OPCList))]
         [MemberNotNullWhen(true, nameof(OPCGetList))]
         [MemberNotNullWhen(true, nameof(OPCSetList))]
@@ -112,7 +112,7 @@ namespace EchoDotNetLite.Models
             if (IsWriteOrReadService)
                 throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
 
-#if NET5_0_OR_GREATER
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
             return OPCList;
 #else
             return OPCList!;
@@ -124,7 +124,7 @@ namespace EchoDotNetLite.Models
             if (!IsWriteOrReadService)
                 throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
 
-#if NET5_0_OR_GREATER
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
             return (OPCSetList, OPCGetList);
 #else
             return (OPCSetList!, OPCGetList!);

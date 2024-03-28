@@ -28,7 +28,7 @@ namespace EchoDotNetLite.Specifications
             if (!str.StartsWith(SingleByteHexStringPrefix, StringComparison.Ordinal))
                 throw new JsonException($"property value must have a prefix '{SingleByteHexStringPrefix}'");
 
-#if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if SYSTEM_INUMBER_TRYPARSE_READONLYSPAN_OF_CHAR
             if (!byte.TryParse(str.AsSpan(SingleByteHexStringPrefix.Length), style: SingleByteHexNumberStyles, provider: null, out var value))
 #else
             if (!byte.TryParse(str.Substring(SingleByteHexStringPrefix.Length), style: SingleByteHexNumberStyles, provider: null, out var value))
