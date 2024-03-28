@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 namespace EchoDotNetLite.Enums
 {
+#pragma warning disable CA1707
     public enum ESV : byte
     {
         //表 ３-９ 要求用 ESV コード一覧表
@@ -50,4 +51,5 @@ namespace EchoDotNetLite.Enums
         SetGet_SNA = 0x5E,
         //0x5F　for future reserved
     }
+#pragma warning restore CA1707
 }
