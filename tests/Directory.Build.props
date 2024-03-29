@@ -3,30 +3,26 @@ SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 SPDX-License-Identifier: MIT
 -->
 <Project>
-  <PropertyGroup>
-    <!-- default project configurations -->
-    <LangVersion>latest</LangVersion>
-    <Deterministic>true</Deterministic>
+  <!-- This is required to restore Smdn.MSBuild.ProjectAssets.* when test projects are attempted to built directly. (ex: on CI) -->
+  <ImportGroup Label="project assets">
+    <Import Project="$(MSBuildThisFileDirectory)..\src\ProjectAssets.props" />
+  </ImportGroup>
+
+  <PropertyGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
+
+    <SmdnTestTargetProjectDirectory
+      Condition=" '$(SmdnTestTargetProjectName)' != '' "
+    >$(MSBuildThisFileDirectory)..\src\$(SmdnTestTargetProjectName)\</SmdnTestTargetProjectDirectory>
+    <SmdnTestTargetProjectFullPath
+      Condition=" '$(SmdnTestTargetProjectName)' != '' "
+    >$(SmdnTestTargetProjectDirectory)$(SmdnTestTargetProjectName).csproj</SmdnTestTargetProjectFullPath>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- code analysis defaults -->
-    <AnalysisLevel>latest</AnalysisLevel>
-    <AnalysisModeDesign>None</AnalysisModeDesign>
-    <AnalysisModeDocumentation>None</AnalysisModeDocumentation>
-    <AnalysisModeGlobalization>Recommended</AnalysisModeGlobalization>
-    <AnalysisModeInteroperability>Recommended</AnalysisModeInteroperability>
-    <AnalysisModeMaintainability>Recommended</AnalysisModeMaintainability>
-    <AnalysisModeNaming>None</AnalysisModeNaming>
-    <AnalysisModePerformance>None</AnalysisModePerformance>
-    <AnalysisModeSingleFile>None</AnalysisModeSingleFile>
-    <AnalysisModeReliability>Recommended</AnalysisModeReliability>
-    <AnalysisModeSecurity>Recommended</AnalysisModeSecurity>
-    <AnalysisModeStyle>Recommended</AnalysisModeStyle>
-    <AnalysisModeUsage>None</AnalysisModeUsage>
-  </PropertyGroup>
+  <Import
+    Condition=" '$(IsTestProject)' == 'true' "
+    Project="$(MSBuildThisFileDirectory)TargetFrameworks.props"
+  />
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.13.3" />

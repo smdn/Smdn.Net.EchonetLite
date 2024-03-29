@@ -1,7 +1,7 @@
 // Smdn.Net.EchonetLite.Specifications.dll (Smdn.Net.EchonetLite.Specifications-1.0.0)
 //   Name: Smdn.Net.EchonetLite.Specifications
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0+4c9409e6289af3f4788c241c5e4e4509d40e777c
+//   InformationalVersion: 1.0.0+09c70cea21a44d4da6c916802e58d35453fa7d86
 //   TargetFramework: .NETStandard,Version=v2.0
 //   Configuration: Release
 //   Referenced assemblies:

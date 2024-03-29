@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 <Project>
   <PropertyGroup>
     <SmdnProjectAssets_Common_PackageVersion Condition=" '$(SmdnProjectAssets_Common_PackageVersion)' == '' ">1.4.0</SmdnProjectAssets_Common_PackageVersion>
-    <!-- <SmdnProjectAssets_Library_PackageVersion Condition=" '$(SmdnProjectAssets_Library_PackageVersion)' == '' ">1.7.1</SmdnProjectAssets_Library_PackageVersion> -->
+    <SmdnProjectAssets_Library_PackageVersion Condition=" '$(SmdnProjectAssets_Library_PackageVersion)' == '' ">1.7.2</SmdnProjectAssets_Library_PackageVersion>
   </PropertyGroup>
 
   <!--
@@ -24,7 +24,7 @@ SPDX-License-Identifier: MIT
   -->
   <PropertyGroup>
     <_SmdnProjectAssets_Common_PathToPackageRoot Condition=" '$(_SmdnProjectAssets_Common_PathToPackageRoot)' == '' ">$(_NuGetPackageAltRoot)smdn.msbuild.projectassets.common\$(SmdnProjectAssets_Common_PackageVersion)\</_SmdnProjectAssets_Common_PathToPackageRoot>
-    <!-- <_SmdnProjectAssets_Library_PathToPackageRoot Condition=" '$(_SmdnProjectAssets_Library_PathToPackageRoot)' == '' ">$(_NuGetPackageAltRoot)smdn.msbuild.projectassets.library\$(SmdnProjectAssets_Library_PackageVersion)\</_SmdnProjectAssets_Library_PathToPackageRoot> -->
+    <_SmdnProjectAssets_Library_PathToPackageRoot Condition=" '$(_SmdnProjectAssets_Library_PathToPackageRoot)' == '' ">$(_NuGetPackageAltRoot)smdn.msbuild.projectassets.library\$(SmdnProjectAssets_Library_PackageVersion)\</_SmdnProjectAssets_Library_PathToPackageRoot>
   </PropertyGroup>
 
   <!--
@@ -36,25 +36,23 @@ SPDX-License-Identifier: MIT
       Include="Smdn.MSBuild.ProjectAssets.Common"
       Version="[$(SmdnProjectAssets_Common_PackageVersion)]"
     />
-    <!--
     <PackageDownload
       Include="Smdn.MSBuild.ProjectAssets.Library"
       Version="[$(SmdnProjectAssets_Library_PackageVersion)]"
     />
-    -->
   </ItemGroup>
 
   <!--
     Import *.props files.
   -->
   <Import Project="$(_SmdnProjectAssets_Common_PathToPackageRoot)project\Project.props" />
-  <!-- <Import Project="$(_SmdnProjectAssets_Library_PathToPackageRoot)project\Project.props" /> -->
+  <Import Project="$(_SmdnProjectAssets_Library_PathToPackageRoot)project\Project.props" />
 
   <!--
     Define the path to *.targets files to be imported.
   -->
   <PropertyGroup>
     <SmdnProjectAssets_TargetsImports>$(SmdnProjectAssets_TargetsImports);$(_SmdnProjectAssets_Common_PathToPackageRoot)project\Project.targets</SmdnProjectAssets_TargetsImports>
-    <!-- <SmdnProjectAssets_TargetsImports>$(SmdnProjectAssets_TargetsImports);$(_SmdnProjectAssets_Library_PathToPackageRoot)project\Project.targets</SmdnProjectAssets_TargetsImports> -->
+    <SmdnProjectAssets_TargetsImports>$(SmdnProjectAssets_TargetsImports);$(_SmdnProjectAssets_Library_PathToPackageRoot)project\Project.targets</SmdnProjectAssets_TargetsImports>
   </PropertyGroup>
 </Project>
