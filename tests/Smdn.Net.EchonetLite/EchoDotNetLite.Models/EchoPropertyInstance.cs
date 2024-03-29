@@ -27,7 +27,7 @@ public class EchoPropertyInstanceTests {
   {
     var p = CreateProperty();
 
-    Assert.AreEqual(0, p.ValueSpan.Length, nameof(p.ValueSpan.Length));
+    Assert.That(p.ValueSpan.Length, Is.EqualTo(0), nameof(p.ValueSpan.Length));
   }
 
   [Test]
@@ -35,7 +35,7 @@ public class EchoPropertyInstanceTests {
   {
     var p = CreateProperty();
 
-    Assert.AreEqual(0, p.ValueMemory.Length, nameof(p.ValueMemory.Length));
+    Assert.That(p.ValueMemory.Length, Is.EqualTo(0), nameof(p.ValueMemory.Length));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_SetValue()
@@ -55,7 +55,7 @@ public class EchoPropertyInstanceTests {
 
 #pragma warning disable CS0618
     p.ValueSet += (sender, val) => {
-      Assert.AreSame(sender, p, nameof(p));
+      Assert.That(p, Is.SameAs(sender), nameof(p));
       Assert.That(p.ValueMemory, SequenceIs.EqualTo(val), $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}");
 
       Assert.That(
@@ -78,18 +78,18 @@ public class EchoPropertyInstanceTests {
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.SetValue} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.SetValue} #1");
-    Assert.AreEqual(1, countOfValueSet, $"{nameof(countOfValueSet)} after {p.SetValue} #1");
+    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} after {p.SetValue} #1");
 
     // reset
     p.SetValue(resetValue);
-    Assert.AreEqual(2, countOfValueSet, $"{nameof(countOfValueSet)} after {p.SetValue} #2");
+    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} after {p.SetValue} #2");
 
     // set again
     p.SetValue(newValue);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.SetValue} #3");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.SetValue} #3");
-    Assert.AreEqual(3, countOfValueSet, $"{nameof(countOfValueSet)} after {p.SetValue} #3");
+    Assert.That(countOfValueSet, Is.EqualTo(3), $"{nameof(countOfValueSet)} after {p.SetValue} #3");
   }
 
   [Test]
@@ -117,7 +117,7 @@ public class EchoPropertyInstanceTests {
 
 #pragma warning disable CS0618
     p.ValueSet += (sender, val) => {
-      Assert.AreSame(sender, p, nameof(p));
+      Assert.That(p, Is.SameAs(sender), nameof(p));
       Assert.That(p.ValueMemory, SequenceIs.EqualTo(val), $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}");
 
       Assert.That(
@@ -140,18 +140,18 @@ public class EchoPropertyInstanceTests {
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.WriteValue} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.WriteValue} #1");
-    Assert.AreEqual(1, countOfValueSet, $"{nameof(countOfValueSet)} after {p.WriteValue} #1");
+    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} after {p.WriteValue} #1");
 
     // reset
     p.SetValue(resetValue);
-    Assert.AreEqual(2, countOfValueSet, $"{nameof(countOfValueSet)} after {p.WriteValue} #2");
+    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} after {p.WriteValue} #2");
 
     // write again
     p.WriteValue(writer => writer.Write(newValue.AsSpan()));
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.WriteValue} #3");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.WriteValue} #3");
-    Assert.AreEqual(3, countOfValueSet, $"{nameof(countOfValueSet)} after {p.WriteValue} #3");
+    Assert.That(countOfValueSet, Is.EqualTo(3), $"{nameof(countOfValueSet)} after {p.WriteValue} #3");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_ValueChanged_InitialSet()
@@ -175,7 +175,7 @@ public class EchoPropertyInstanceTests {
 #pragma warning restore CS0618
 
     p.ValueChanged += (sender, e) => {
-      Assert.AreSame(sender, p, nameof(p));
+      Assert.That(p, Is.SameAs(sender), nameof(p));
 
       Assert.That(e.OldValue, SequenceIs.EqualTo(ReadOnlyMemory<byte>.Empty), nameof(e.OldValue));
       Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
@@ -185,14 +185,14 @@ public class EchoPropertyInstanceTests {
 
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
-    Assert.AreEqual(1, countOfValueChanged, $"{nameof(countOfValueChanged)} #1");
-    Assert.AreEqual(1, countOfValueSet, $"{nameof(countOfValueSet)} #1");
+    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #1");
+    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} #1");
 
     // set same value again
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
-    Assert.AreEqual(1, countOfValueChanged, $"{nameof(countOfValueChanged)} #2");
-    Assert.AreEqual(2, countOfValueSet, $"{nameof(countOfValueSet)} #2");
+    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #2");
+    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} #2");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_ValueChanged_DifferentValue()
@@ -219,7 +219,7 @@ public class EchoPropertyInstanceTests {
 #pragma warning restore CS0618
 
     p.ValueChanged += (sender, e) => {
-      Assert.AreSame(sender, p, nameof(p));
+      Assert.That(p, Is.SameAs(sender), nameof(p));
 
       Assert.That(e.OldValue, SequenceIs.EqualTo(initialValue), nameof(e.OldValue));
       Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
@@ -229,13 +229,13 @@ public class EchoPropertyInstanceTests {
 
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
-    Assert.AreEqual(1, countOfValueChanged, $"{nameof(countOfValueChanged)} #1");
-    Assert.AreEqual(1, countOfValueSet, $"{nameof(countOfValueSet)} #1");
+    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #1");
+    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} #1");
 
     // set same value again
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
-    Assert.AreEqual(1, countOfValueChanged, $"{nameof(countOfValueChanged)} #2");
-    Assert.AreEqual(2, countOfValueSet, $"{nameof(countOfValueSet)} #2");
+    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #2");
+    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} #2");
   }
 }

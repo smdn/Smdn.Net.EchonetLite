@@ -17,7 +17,7 @@ public class EchoClassTests {
     yield return new object?[] {
       "valid ctor params",
       new object?[] { true, (byte)0x00, "classNameOfficial", "className" },
-      null, null, static (EchoClass c) => Assert.AreEqual("className", c.ClassName)
+      null, null, static (EchoClass c) => Assert.That(c.ClassName, Is.EqualTo("className"))
     };
 
     yield return new object?[] {
@@ -73,7 +73,7 @@ public class EchoClassTests {
         message: testCaseName
       );
 
-      Assert.IsNotNull(c, testCaseName);
+      Assert.That(c, Is.Not.Null, testCaseName);
 
       if (assertClass is not null)
         assertClass(c!);
@@ -86,7 +86,7 @@ public class EchoClassTests {
       );
 
       if (expectedArgumentExceptionParamName is not null)
-        Assert.AreEqual(expectedArgumentExceptionParamName, (ex as ArgumentException)!.ParamName, $"{testCaseName} ParamName");
+        Assert.That((ex as ArgumentException)!.ParamName, Is.EqualTo(expectedArgumentExceptionParamName), $"{testCaseName} ParamName");
     }
   }
 
@@ -145,11 +145,11 @@ public class EchoClassTests {
   {
     var c = JsonSerializer.Deserialize<EchoClass>(input);
 
-    Assert.IsNotNull(c);
-    Assert.AreEqual(expectedStatus, c!.Status, nameof(c.Status));
-    Assert.AreEqual(expectedClassCode, c.ClassCode, nameof(c.ClassCode));
-    Assert.AreEqual(expectedClassNameOfficial, c.ClassNameOfficial, nameof(c.ClassNameOfficial));
-    Assert.AreEqual(expectedClassName, c.ClassName, nameof(c.ClassName));
+    Assert.That(c, Is.Not.Null);
+    Assert.That(c!.Status, Is.EqualTo(expectedStatus), nameof(c.Status));
+    Assert.That(c.ClassCode, Is.EqualTo(expectedClassCode), nameof(c.ClassCode));
+    Assert.That(c.ClassNameOfficial, Is.EqualTo(expectedClassNameOfficial), nameof(c.ClassNameOfficial));
+    Assert.That(c.ClassName, Is.EqualTo(expectedClassName), nameof(c.ClassName));
   }
 
   [TestCase(0x00, "\"ClassCode\":\"0x0\"")]
@@ -166,9 +166,6 @@ public class EchoClassTests {
       className: "*"
     );
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(c)
-    );
+    Assert.That(JsonSerializer.Serialize(c), Does.Contain(expectedJsonFragment));
   }
 }

@@ -32,8 +32,9 @@ partial class FrameSerializerTests {
   [TestCaseSource(nameof(YieldTestCases_TryDeserialize_InputTooShort))]
   public void TryDeserialize_InputTooShort(byte[] input)
   {
-    Assert.IsFalse(
+    Assert.That(
       FrameSerializer.TryDeserialize(input, out _),
+      Is.False,
       message: "The length of input must be greater than 4 bytes."
     );
   }
@@ -52,11 +53,12 @@ partial class FrameSerializerTests {
   public void TryDeserialize_EHD1(byte[] input, bool expectAsEchonetLiteFrame)
   {
     if (expectAsEchonetLiteFrame) {
-      Assert.IsTrue(FrameSerializer.TryDeserialize(input, out _));
+      Assert.That(FrameSerializer.TryDeserialize(input, out _), Is.True);
     }
     else {
-      Assert.IsFalse(
+      Assert.That(
         FrameSerializer.TryDeserialize(input, out _),
+        Is.False,
         message: "The input byte sequence is not an ECHONETLite frame."
       );
     }
@@ -68,7 +70,7 @@ partial class FrameSerializerTests {
   {
     var input = new byte[] { EHD1_ECHONETLite, ehd2, TID_ZERO_0, TID_ZERO_1 };
 
-    Assert.IsFalse(FrameSerializer.TryDeserialize(input, out _));
+    Assert.That(FrameSerializer.TryDeserialize(input, out _), Is.False);
   }
 
   [TestCase((byte)0x00, (byte)0x00, (byte)0x00)]
@@ -104,16 +106,15 @@ partial class FrameSerializerTests {
       0x00, // OPCSet
     };
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA!;
 
-    Assert.AreEqual(seojClassGroupCode, edata.SEOJ.ClassGroupCode, nameof(edata.SEOJ.ClassGroupCode));
-    Assert.AreEqual(seojClassCode, edata.SEOJ.ClassCode, nameof(edata.SEOJ.ClassCode));
-    Assert.AreEqual(seojInstanceCode, edata.SEOJ.InstanceCode, nameof(edata.SEOJ.InstanceCode));
+    Assert.That(edata.SEOJ.ClassGroupCode, Is.EqualTo(seojClassGroupCode), nameof(edata.SEOJ.ClassGroupCode));
+    Assert.That(edata.SEOJ.ClassCode, Is.EqualTo(seojClassCode), nameof(edata.SEOJ.ClassCode));
+    Assert.That(edata.SEOJ.InstanceCode, Is.EqualTo(seojInstanceCode), nameof(edata.SEOJ.InstanceCode));
   }
 
   [TestCase((byte)0x00, (byte)0x00, (byte)0x00)]
@@ -149,16 +150,15 @@ partial class FrameSerializerTests {
       0x00, // OPCSet
     };
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA!;
 
-    Assert.AreEqual(deojClassGroupCode, edata.DEOJ.ClassGroupCode, nameof(edata.DEOJ.ClassGroupCode));
-    Assert.AreEqual(deojClassCode, edata.DEOJ.ClassCode, nameof(edata.DEOJ.ClassCode));
-    Assert.AreEqual(deojInstanceCode, edata.DEOJ.InstanceCode, nameof(edata.DEOJ.InstanceCode));
+    Assert.That(edata.DEOJ.ClassGroupCode, Is.EqualTo(deojClassGroupCode), nameof(edata.DEOJ.ClassGroupCode));
+    Assert.That(edata.DEOJ.ClassCode, Is.EqualTo(deojClassCode), nameof(edata.DEOJ.ClassCode));
+    Assert.That(edata.DEOJ.InstanceCode, Is.EqualTo(deojInstanceCode), nameof(edata.DEOJ.InstanceCode));
   }
 
   private static byte[] CreateEHD2Type1Frame(byte esv, params byte[] extraFrameSequence)
@@ -205,14 +205,13 @@ partial class FrameSerializerTests {
       0x00  // OPCGet
     );
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA!;
 
-    Assert.AreEqual(expectedESV, edata.ESV, nameof(edata.ESV));
+    Assert.That(edata.ESV, Is.EqualTo(expectedESV), nameof(edata.ESV));
   }
 
   [TestCase(ESV.SetGet)]
@@ -244,39 +243,38 @@ partial class FrameSerializerTests {
       0x44  // EDT #2 [3]
     );
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA!;
 
-    Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
+    Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
-    Assert.IsNotNull(edata.OPCSetList, nameof(edata.OPCSetList));
-    Assert.AreEqual(2, edata.OPCSetList!.Count, "OPCSet");
+    Assert.That(edata.OPCSetList, Is.Not.Null, nameof(edata.OPCSetList));
+    Assert.That(edata.OPCSetList!.Count, Is.EqualTo(2), "OPCSet");
 
     var opcSetList = edata.OPCSetList.ToArray();
 
-    Assert.AreEqual(0x10, opcSetList[0].EPC, "OPCSet #1 EPC");
-    Assert.AreEqual(1, opcSetList[0].PDC, "OPCSet #1 PDC");
+    Assert.That(opcSetList[0].EPC, Is.EqualTo(0x10), "OPCSet #1 EPC");
+    Assert.That(opcSetList[0].PDC, Is.EqualTo(1), "OPCSet #1 PDC");
     Assert.That(opcSetList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPCSet #1 EDT");
 
-    Assert.AreEqual(0x20, opcSetList[1].EPC, "OPCSet #2 EPC");
-    Assert.AreEqual(2, opcSetList[1].PDC, "OPCSet #2 PDC");
+    Assert.That(opcSetList[1].EPC, Is.EqualTo(0x20), "OPCSet #2 EPC");
+    Assert.That(opcSetList[1].PDC, Is.EqualTo(2), "OPCSet #2 PDC");
     Assert.That(opcSetList[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPCSet #2 EDT");
 
-    Assert.IsNotNull(edata.OPCGetList, nameof(edata.OPCGetList));
-    Assert.AreEqual(2, edata.OPCGetList!.Count, "OPCGet");
+    Assert.That(edata.OPCGetList, Is.Not.Null, nameof(edata.OPCGetList));
+    Assert.That(edata.OPCGetList!.Count, Is.EqualTo(2), "OPCGet");
 
     var opcGetList = edata.OPCGetList.ToArray();
 
-    Assert.AreEqual(0x30, opcGetList[0].EPC, "OPCGet #1 EPC");
-    Assert.AreEqual(3, opcGetList[0].PDC, "OPCGet #1 PDC");
+    Assert.That(opcGetList[0].EPC, Is.EqualTo(0x30), "OPCGet #1 EPC");
+    Assert.That(opcGetList[0].PDC, Is.EqualTo(3), "OPCGet #1 PDC");
     Assert.That(opcGetList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "OPCGet #1 EDT");
 
-    Assert.AreEqual(0x40, opcGetList[1].EPC, "OPCGet #2 EPC");
-    Assert.AreEqual(4, opcGetList[1].PDC, "OPCGet #2 PDC");
+    Assert.That(opcGetList[1].EPC, Is.EqualTo(0x40), "OPCGet #2 EPC");
+    Assert.That(opcGetList[1].PDC, Is.EqualTo(4), "OPCGet #2 PDC");
     Assert.That(opcGetList[1].EDT, SequenceIs.EqualTo(new byte[] { 0x41, 0x42, 0x43, 0x44 }), "OPCGet #2 EDT");
   }
 
@@ -297,27 +295,26 @@ partial class FrameSerializerTests {
       0x22  // EDT #2 [1]
     );
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA!;
 
-    Assert.IsNull(edata.OPCGetList, nameof(edata.OPCGetList));
-    Assert.IsNull(edata.OPCSetList, nameof(edata.OPCSetList));
+    Assert.That(edata.OPCGetList, Is.Null, nameof(edata.OPCGetList));
+    Assert.That(edata.OPCSetList, Is.Null, nameof(edata.OPCSetList));
 
-    Assert.IsNotNull(edata.OPCList, nameof(edata.OPCList));
-    Assert.AreEqual(2, edata.OPCList!.Count, "OPC");
+    Assert.That(edata.OPCList, Is.Not.Null, nameof(edata.OPCList));
+    Assert.That(edata.OPCList!.Count, Is.EqualTo(2), "OPC");
 
     var opcList = edata.OPCList.ToArray();
 
-    Assert.AreEqual(0x10, opcList[0].EPC, "OPC #1 EPC");
-    Assert.AreEqual(1, opcList[0].PDC, "OPC #1 PDC");
+    Assert.That(opcList[0].EPC, Is.EqualTo(0x10), "OPC #1 EPC");
+    Assert.That(opcList[0].PDC, Is.EqualTo(1), "OPC #1 PDC");
     Assert.That(opcList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPC #1 EDT");
 
-    Assert.AreEqual(0x20, opcList[1].EPC, "OPC #2 EPC");
-    Assert.AreEqual(2, opcList[1].PDC, "OPC #2 PDC");
+    Assert.That(opcList[1].EPC, Is.EqualTo(0x20), "OPC #2 EPC");
+    Assert.That(opcList[1].PDC, Is.EqualTo(2), "OPC #2 PDC");
     Assert.That(opcList[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPC #2 EDT");
   }
 
@@ -335,25 +332,24 @@ partial class FrameSerializerTests {
       0x33  // EDT #1 [2]
     );
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA!;
 
-    Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
+    Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
-    Assert.IsNotNull(edata.OPCSetList, nameof(edata.OPCSetList));
-    CollectionAssert.IsEmpty(edata.OPCSetList!, nameof(edata.OPCSetList));
+    Assert.That(edata.OPCSetList, Is.Not.Null, nameof(edata.OPCSetList));
+    Assert.That(edata.OPCSetList!, Is.Empty, nameof(edata.OPCSetList));
 
-    Assert.IsNotNull(edata.OPCGetList, nameof(edata.OPCGetList));
-    Assert.AreEqual(1, edata.OPCGetList!.Count, "OPCGet");
+    Assert.That(edata.OPCGetList, Is.Not.Null, nameof(edata.OPCGetList));
+    Assert.That(edata.OPCGetList!.Count, Is.EqualTo(1), "OPCGet");
 
     var opcGetList = edata.OPCGetList.ToArray();
 
-    Assert.AreEqual(0x30, opcGetList[0].EPC, "OPCGet #1 EPC");
-    Assert.AreEqual(3, opcGetList[0].PDC, "OPCGet #1 PDC");
+    Assert.That(opcGetList[0].EPC, Is.EqualTo(0x30), "OPCGet #1 EPC");
+    Assert.That(opcGetList[0].PDC, Is.EqualTo(3), "OPCGet #1 PDC");
     Assert.That(opcGetList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "OPCGet #1 EDT");
   }
 
@@ -369,26 +365,25 @@ partial class FrameSerializerTests {
       0x00  // OPCGet
     );
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA1>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
 
     var edata = (EDATA1)frame.EDATA!;
 
-    Assert.IsNull(edata.OPCList, nameof(edata.OPCList));
+    Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
-    Assert.IsNotNull(edata.OPCSetList, nameof(edata.OPCSetList));
-    Assert.AreEqual(1, edata.OPCSetList!.Count, "OPCSet");
+    Assert.That(edata.OPCSetList, Is.Not.Null, nameof(edata.OPCSetList));
+    Assert.That(edata.OPCSetList!.Count, Is.EqualTo(1), "OPCSet");
 
     var opcSetList = edata.OPCSetList.ToArray();
 
-    Assert.AreEqual(0x10, opcSetList[0].EPC, "OPCSet #1 EPC");
-    Assert.AreEqual(1, opcSetList[0].PDC, "OPCSet #1 PDC");
+    Assert.That(opcSetList[0].EPC, Is.EqualTo(0x10), "OPCSet #1 EPC");
+    Assert.That(opcSetList[0].PDC, Is.EqualTo(1), "OPCSet #1 PDC");
     Assert.That(opcSetList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPCSet #1 EDT");
 
-    Assert.IsNotNull(edata.OPCGetList, nameof(edata.OPCGetList));
-    CollectionAssert.IsEmpty(edata.OPCGetList, nameof(edata.OPCGetList));
+    Assert.That(edata.OPCGetList, Is.Not.Null, nameof(edata.OPCGetList));
+    Assert.That(edata.OPCGetList, Is.Empty, nameof(edata.OPCGetList));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_TryDeserialize_EHD2Type2_EDATA()
@@ -410,14 +405,12 @@ partial class FrameSerializerTests {
   [TestCaseSource(nameof(YieldTestCases_TryDeserialize_EHD2Type2_EDATA))]
   public void TryDeserialize_EHD2Type2_EDATA(byte[] input, byte[] expectedEDATA)
   {
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA2>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA2>(), nameof(frame.EDATA));
 
     var edata = (EDATA2)frame.EDATA!;
 
-    Assert.IsNotNull(edata.Message, nameof(edata.Message));
     Assert.That(edata.Message, SequenceIs.EqualTo(expectedEDATA), nameof(edata.Message));
   }
 
@@ -426,14 +419,12 @@ partial class FrameSerializerTests {
   {
     var input = new byte[] { EHD1_ECHONETLite, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, /* no EDATA */ };
 
-    Assert.IsTrue(FrameSerializer.TryDeserialize(input, out var frame));
+    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.IsNotNull(frame, nameof(frame));
-    Assert.IsInstanceOf<EDATA2>(frame!.EDATA, nameof(frame.EDATA));
+    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA2>(), nameof(frame.EDATA));
 
     var edata = (EDATA2)frame.EDATA!;
 
-    Assert.IsNotNull(edata.Message, nameof(edata.Message));
-    Assert.IsTrue(edata.Message.IsEmpty, nameof(edata.Message));
+    Assert.That(edata.Message.IsEmpty, Is.True, nameof(edata.Message));
   }
 }

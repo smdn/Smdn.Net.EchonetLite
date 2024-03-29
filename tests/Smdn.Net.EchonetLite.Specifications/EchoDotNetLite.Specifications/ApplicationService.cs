@@ -22,9 +22,6 @@ public class ApplicationServiceTests {
       Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    Assert.AreEqual(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(value, options)
-    );
+    Assert.That(JsonSerializer.Serialize(value, options), Is.EqualTo(expectedJsonFragment));
   }
 }

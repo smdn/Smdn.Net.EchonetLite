@@ -18,7 +18,7 @@ public class EchoPropertyTests {
     yield return new object?[] {
       "valid ctor params",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.AreEqual("name", p.Name)
+      null, null, static (EchoProperty p) => Assert.That(p.Name, Is.EqualTo("name"))
     };
 
     yield return new object?[] {
@@ -68,50 +68,50 @@ public class EchoPropertyTests {
     yield return new object?[] {
       "value null",
       new object?[] { "name", (byte)0x00, "detail", null, "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.IsNull(p.Value, $"{nameof(p.Value)} must be null")
+      null, null, static (EchoProperty p) => Assert.That(p.Value, Is.Null, $"{nameof(p.Value)} must be null")
     };
     yield return new object?[] {
       "value empty",
       new object?[] { "name", (byte)0x00, "detail", string.Empty, "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.IsNull(p.Value, $"{nameof(p.Value)} must be null")
+      null, null, static (EchoProperty p) => Assert.That(p.Value, Is.Null, $"{nameof(p.Value)} must be null")
     };
 
     yield return new object?[] {
       "optionRequired null",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchoProperty p) => CollectionAssert.IsEmpty(p.OptionRequired, $"{nameof(p.OptionRequired)} must be empty")
+      null, null, static (EchoProperty p) => Assert.That(p.OptionRequired, Is.Empty, $"{nameof(p.OptionRequired)} must be empty")
     };
     yield return new object?[] {
       "optionRequired empty",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, new List<ApplicationService>(), "description", "unit" },
-      null, null, static (EchoProperty p) => CollectionAssert.IsEmpty(p.OptionRequired, $"{nameof(p.OptionRequired)} must be empty")
+      null, null, static (EchoProperty p) => Assert.That(p.OptionRequired, Is.Empty, $"{nameof(p.OptionRequired)} must be empty")
     };
     yield return new object?[] {
       "optionRequired non-empty",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, new List<ApplicationService>() { ApplicationService.モバイルサービス }, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.AreEqual(1, p.OptionRequired.Count, $"{nameof(p.OptionRequired)} must not be empty")
+      null, null, static (EchoProperty p) => Assert.That(p.OptionRequired.Count, Is.EqualTo(1), $"{nameof(p.OptionRequired)} must not be empty")
     };
 
     yield return new object?[] {
       "description null",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, null, "unit" },
-      null, null, static (EchoProperty p) => Assert.IsNull(p.Description, $"{nameof(p.Description)} must be null")
+      null, null, static (EchoProperty p) => Assert.That(p.Description, Is.Null, $"{nameof(p.Description)} must be null")
     };
     yield return new object?[] {
       "description empty",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, string.Empty, "unit" },
-      null, null, static (EchoProperty p) => Assert.IsNull(p.Description, $"{nameof(p.Description)} must be null")
+      null, null, static (EchoProperty p) => Assert.That(p.Description, Is.Null, $"{nameof(p.Description)} must be null")
     };
 
     yield return new object?[] {
       "unit null",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", null },
-      null, null, static (EchoProperty p) => Assert.IsNull(p.Unit, $"{nameof(p.Unit)} must be null")
+      null, null, static (EchoProperty p) => Assert.That(p.Unit, Is.Null, $"{nameof(p.Unit)} must be null")
     };
     yield return new object?[] {
       "unit empty",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", string.Empty },
-      null, null, static (EchoProperty p) => Assert.IsNull(p.Unit, $"{nameof(p.Unit)} must be null")
+      null, null, static (EchoProperty p) => Assert.That(p.Unit, Is.Null, $"{nameof(p.Unit)} must be null")
     };
   }
 
@@ -145,7 +145,7 @@ public class EchoPropertyTests {
         message: testCaseName
       );
 
-      Assert.IsNotNull(prop, testCaseName);
+      Assert.That(prop, Is.Not.Null, testCaseName);
 
       if (assertProperty is not null)
         assertProperty(prop!);
@@ -158,7 +158,7 @@ public class EchoPropertyTests {
       );
 
       if (expectedArgumentExceptionParamName is not null)
-        Assert.AreEqual(expectedArgumentExceptionParamName, (ex as ArgumentException)!.ParamName, $"{testCaseName} ParamName");
+        Assert.That((ex as ArgumentException)!.ParamName, Is.EqualTo(expectedArgumentExceptionParamName), $"{testCaseName} ParamName");
     }
   }
 
@@ -169,23 +169,23 @@ public class EchoPropertyTests {
 
     var epc8E = obj.GetProperties.First(static prop => prop.Code == 0x8E); // 製造年月日 Unit: ""
 
-    Assert.IsNull(epc8E.Unit, "EPC 8E");
-    Assert.IsFalse(epc8E.HasUnit, "EPC 8E");
+    Assert.That(epc8E.Unit, Is.Null, "EPC 8E");
+    Assert.That(epc8E.HasUnit, Is.False, "EPC 8E");
 
     var epcD3 = obj.GetProperties.First(static prop => prop.Code == 0xD3); // 係数 Unit: ""
 
-    Assert.IsNull(epcD3.Unit, "EPC D3");
-    Assert.IsFalse(epcD3.HasUnit, "EPC D3");
+    Assert.That(epcD3.Unit, Is.Null, "EPC D3");
+    Assert.That(epcD3.HasUnit, Is.False, "EPC D3");
 
     var epcE1 = obj.GetProperties.First(static prop => prop.Code == 0xE1); // 積算電力量単位 （正方向、逆方向計測値） Unit: "－"
 
-    Assert.IsNull(epcE1.Unit, "EPC E1");
-    Assert.IsFalse(epcE1.HasUnit, "EPC E1");
+    Assert.That(epcE1.Unit, Is.Null, "EPC E1");
+    Assert.That(epcE1.HasUnit, Is.False, "EPC E1");
 
     var epcE7 = obj.GetProperties.First(static prop => prop.Code == 0xE7); // 瞬時電力計測値 Unit: "W"
 
-    Assert.AreEqual("W", epcE7.Unit, "EPC E7");
-    Assert.IsTrue(epcE7.HasUnit, "EPC E7");
+    Assert.That(epcE7.Unit, Is.EqualTo("W"), "EPC E7");
+    Assert.That(epcE7.HasUnit, Is.True, "EPC E7");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Deserialize()
@@ -455,16 +455,16 @@ public class EchoPropertyTests {
   {
     var p = JsonSerializer.Deserialize<EchoProperty>(input);
 
-    Assert.IsNotNull(p);
-    Assert.AreEqual(expectedName, p!.Name, message: $"{testCaseName}; {nameof(p.Name)}");
-    Assert.AreEqual(expectedCode, p.Code, message: $"{testCaseName}; {nameof(p.Code)}");
-    Assert.AreEqual(expectedMinSize, p.MinSize, message: $"{testCaseName}; {nameof(p.MinSize)}");
-    Assert.AreEqual(expectedGet, p.Get, message: $"{testCaseName}; {nameof(p.Get)}");
+    Assert.That(p, Is.Not.Null);
+    Assert.That(p!.Name, Is.EqualTo(expectedName), message: $"{testCaseName}; {nameof(p.Name)}");
+    Assert.That(p.Code, Is.EqualTo(expectedCode), message: $"{testCaseName}; {nameof(p.Code)}");
+    Assert.That(p.MinSize, Is.EqualTo(expectedMinSize), message: $"{testCaseName}; {nameof(p.MinSize)}");
+    Assert.That(p.Get, Is.EqualTo(expectedGet), message: $"{testCaseName}; {nameof(p.Get)}");
 
     if (expectedRequiredOptions is null)
-      Assert.IsNull(p.OptionRequired, message: $"{testCaseName}; {nameof(p.OptionRequired)}");
+      Assert.That(p.OptionRequired, Is.Null, message: $"{testCaseName}; {nameof(p.OptionRequired)}");
     else
-      CollectionAssert.AreEquivalent(expectedRequiredOptions, p.OptionRequired, message: $"{testCaseName}; {nameof(p.OptionRequired)}");
+      Assert.That(p.OptionRequired, Is.EquivalentTo(expectedRequiredOptions), message: $"{testCaseName}; {nameof(p.OptionRequired)}");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Deserialize_Unit()
@@ -511,9 +511,9 @@ public class EchoPropertyTests {
   {
     var p = JsonSerializer.Deserialize<EchoProperty>(input);
 
-    Assert.IsNotNull(p);
-    Assert.AreEqual(expectedUnitString, p!.Unit, message: $"{testCaseName}; {nameof(p.Unit)}");
-    Assert.AreEqual(expectedHasUnit, p.HasUnit, message: $"{testCaseName}; {nameof(p.HasUnit)}");
+    Assert.That(p, Is.Not.Null);
+    Assert.That(p!.Unit, Is.EqualTo(expectedUnitString), message: $"{testCaseName}; {nameof(p.Unit)}");
+    Assert.That(p.HasUnit, Is.EqualTo(expectedHasUnit), message: $"{testCaseName}; {nameof(p.HasUnit)}");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_OptionRequired()
@@ -542,10 +542,7 @@ public class EchoPropertyTests {
         unit: default
       ),
       new Action<string>(static json => {
-        StringAssert.Contains(
-          @"""OptionRequierd"":[""モバイルサービス"",""エネルギーサービス""],",
-          json
-        );
+        Assert.That(json, Does.Contain(@"""OptionRequierd"":[""モバイルサービス"",""エネルギーサービス""],"));
       })
     };
 
@@ -570,10 +567,7 @@ public class EchoPropertyTests {
         unit: default
       ),
       new Action<string>(static json => {
-        StringAssert.Contains(
-          @"""OptionRequierd"":[],",
-          json
-        );
+        Assert.That(json, Does.Contain(@"""OptionRequierd"":[],"));
       })
     };
 
@@ -598,10 +592,7 @@ public class EchoPropertyTests {
         unit: default
       ),
       new Action<string>(static json => {
-        StringAssert.Contains(
-          @"""OptionRequierd"":[],",
-          json
-        );
+        Assert.That(json, Does.Contain(@"""OptionRequierd"":[],"));
       })
     };
   }
@@ -643,9 +634,6 @@ public class EchoPropertyTests {
       unit: default
     );
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(prop)
-    );
+    Assert.That(JsonSerializer.Serialize(prop), Does.Contain(expectedJsonFragment));
   }
 }

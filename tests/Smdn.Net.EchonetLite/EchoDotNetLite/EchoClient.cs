@@ -119,7 +119,7 @@ public class EchoClientTests {
 
     Assert.DoesNotThrow(() => client.Dispose(), nameof(client.Dispose));
 
-    Assert.AreEqual(shouldDisposeEchonetLiteHandler, disposableHandler.IsDisposed, nameof(disposableHandler.IsDisposed));
+    Assert.That(disposableHandler.IsDisposed, Is.EqualTo(shouldDisposeEchonetLiteHandler), nameof(disposableHandler.IsDisposed));
   }
 
   [TestCase(true)]
@@ -132,6 +132,6 @@ public class EchoClientTests {
 
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), nameof(client.DisposeAsync));
 
-    Assert.AreEqual(shouldDisposeEchonetLiteHandler, asyncDisposableHandler.IsDisposed, nameof(asyncDisposableHandler.IsDisposed));
+    Assert.That(asyncDisposableHandler.IsDisposed, Is.EqualTo(shouldDisposeEchonetLiteHandler), nameof(asyncDisposableHandler.IsDisposed));
   }
 }

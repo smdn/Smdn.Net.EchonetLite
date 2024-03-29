@@ -18,7 +18,7 @@ public class EchoClassGroupTests {
     yield return new object?[] {
       "valid ctor params",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", "superClass", null },
-      null, null, static (EchoClassGroup cg) => Assert.AreEqual("classGroupName", cg.ClassGroupName)
+      null, null, static (EchoClassGroup cg) => Assert.That(cg.ClassGroupName, Is.EqualTo("classGroupName"))
     };
 
     yield return new object?[] {
@@ -46,23 +46,23 @@ public class EchoClassGroupTests {
     yield return new object?[] {
       "superClass null",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", null, null },
-      null, null, static (EchoClassGroup cg) => Assert.IsNull(cg.SuperClass, nameof(cg.SuperClass))
+      null, null, static (EchoClassGroup cg) => Assert.That(cg.SuperClass, Is.Null, nameof(cg.SuperClass))
     };
     yield return new object?[] {
       "superClass empty",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", string.Empty, null },
-      null, null, static (EchoClassGroup cg) => Assert.IsNull(cg.SuperClass, nameof(cg.SuperClass))
+      null, null, static (EchoClassGroup cg) => Assert.That(cg.SuperClass, Is.Null, nameof(cg.SuperClass))
     };
 
     yield return new object?[] {
       "classList null",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", "superClass", null },
-      null, null, static (EchoClassGroup cg) => CollectionAssert.IsEmpty(cg.ClassList, nameof(cg.ClassList))
+      null, null, static (EchoClassGroup cg) => Assert.That(cg.ClassList, Is.Empty, nameof(cg.ClassList))
     };
     yield return new object?[] {
       "classList empty",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", "superClass", new List<EchoClass>() },
-      null, null, static (EchoClassGroup cg) => CollectionAssert.IsEmpty(cg.ClassList, nameof(cg.ClassList))
+      null, null, static (EchoClassGroup cg) => Assert.That(cg.ClassList, Is.Empty, nameof(cg.ClassList))
     };
     yield return new object?[] {
       "classList not empty",
@@ -70,7 +70,7 @@ public class EchoClassGroupTests {
           new EchoClass(false, (byte)0x00, "?", "?"),
         }
       },
-      null, null, static (EchoClassGroup cg) => Assert.AreEqual(1, cg.ClassList.Count, nameof(cg.SuperClass))
+      null, null, static (EchoClassGroup cg) => Assert.That(cg.ClassList.Count, Is.EqualTo(1), nameof(cg.SuperClass))
     };
   }
 
@@ -104,7 +104,7 @@ public class EchoClassGroupTests {
         message: testCaseName
       );
 
-      Assert.IsNotNull(cg, testCaseName);
+      Assert.That(cg, Is.Not.Null, testCaseName);
 
       if (assertClassGroup is not null)
         assertClassGroup(cg!);
@@ -117,7 +117,7 @@ public class EchoClassGroupTests {
       );
 
       if (expectedArgumentExceptionParamName is not null)
-        Assert.AreEqual(expectedArgumentExceptionParamName, (ex as ArgumentException)!.ParamName, $"{testCaseName} ParamName");
+        Assert.That((ex as ArgumentException)!.ParamName, Is.EqualTo(expectedArgumentExceptionParamName), $"{testCaseName} ParamName");
     }
   }
 
@@ -179,11 +179,11 @@ public class EchoClassGroupTests {
   {
     var cg = JsonSerializer.Deserialize<EchoClassGroup>(input);
 
-    Assert.IsNotNull(cg);
-    Assert.AreEqual(expectedClassGroupCode, cg!.ClassGroupCode, nameof(cg.ClassGroupCode));
-    Assert.AreEqual(expectedClassGroupNameOfficial, cg.ClassGroupNameOfficial, nameof(cg.ClassGroupNameOfficial));
-    Assert.AreEqual(expectedClassGroupName, cg.ClassGroupName, nameof(cg.ClassGroupName));
-    Assert.AreEqual(expectedSuperClass, cg.SuperClass, nameof(cg.SuperClass));
+    Assert.That(cg, Is.Not.Null);
+    Assert.That(cg!.ClassGroupCode, Is.EqualTo(expectedClassGroupCode), nameof(cg.ClassGroupCode));
+    Assert.That(cg.ClassGroupNameOfficial, Is.EqualTo(expectedClassGroupNameOfficial), nameof(cg.ClassGroupNameOfficial));
+    Assert.That(cg.ClassGroupName, Is.EqualTo(expectedClassGroupName), nameof(cg.ClassGroupName));
+    Assert.That(cg.SuperClass, Is.EqualTo(expectedSuperClass), nameof(cg.SuperClass));
   }
 
   [TestCase(0x00, "\"ClassGroupCode\":\"0x0\"")]
@@ -201,10 +201,7 @@ public class EchoClassGroupTests {
       classList: default
     );
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(cg)
-    );
+    Assert.That(JsonSerializer.Serialize(cg), Does.Contain(expectedJsonFragment));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_ClassList()
@@ -221,19 +218,10 @@ public class EchoClassGroupTests {
         }
       ),
       new Action<string>(static json => {
-        StringAssert.Contains(
-          $@",""ClassList"":[",
-          json
-        );
+        Assert.That(json, Does.Contain($@",""ClassList"":["));
 
-        StringAssert.Contains(
-          JsonSerializer.Serialize(機器.センサ関連機器.ガス漏れセンサ.Class),
-          json
-        );
-        StringAssert.Contains(
-          JsonSerializer.Serialize(機器.センサ関連機器.防犯センサ.Class),
-          json
-        );
+        Assert.That(json, Does.Contain(JsonSerializer.Serialize(機器.センサ関連機器.ガス漏れセンサ.Class)));
+        Assert.That(json, Does.Contain(JsonSerializer.Serialize(機器.センサ関連機器.防犯センサ.Class)));
       })
     };
 
@@ -246,10 +234,7 @@ public class EchoClassGroupTests {
         classList: new List<EchoClass>()
       ),
       new Action<string>(static json => {
-        StringAssert.Contains(
-          $@",""ClassList"":[]",
-          json
-        );
+        Assert.That(json, Does.Contain($@",""ClassList"":[]"));
       })
     };
 
@@ -262,10 +247,7 @@ public class EchoClassGroupTests {
         classList: null
       ),
       new Action<string>(static json => {
-        StringAssert.DoesNotContain(
-          @""",ClassList"":",
-          json
-        );
+        Assert.That(json, Does.Not.Contain(@""",ClassList"":"));
       })
     };
   }

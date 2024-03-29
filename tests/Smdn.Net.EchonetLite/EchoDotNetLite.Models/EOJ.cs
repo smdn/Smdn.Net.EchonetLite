@@ -17,10 +17,7 @@ public class EOJTests {
   {
     var eoj = new EOJ(classGroupCode, 0x00, 0x00);
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(eoj)
-    );
+    Assert.That(JsonSerializer.Serialize(eoj), Does.Contain(expectedJsonFragment));
   }
 
   [TestCase(0x00, "\"ClassCode\":\"00\"")]
@@ -32,10 +29,7 @@ public class EOJTests {
   {
     var eoj = new EOJ(0x00, classCode, 0x00);
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(eoj)
-    );
+    Assert.That(JsonSerializer.Serialize(eoj), Does.Contain(expectedJsonFragment));
   }
 
   [TestCase(0x00, "\"InstanceCode\":\"00\"")]
@@ -47,9 +41,6 @@ public class EOJTests {
   {
     var eoj = new EOJ(0x00, 0x00, instanceCode);
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(eoj)
-    );
+    Assert.That(JsonSerializer.Serialize(eoj), Does.Contain(expectedJsonFragment));
   }
 }

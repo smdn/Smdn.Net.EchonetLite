@@ -80,7 +80,7 @@ public class EDATA1Tests {
       ? new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
       : new EDATA1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
 
-    Assert.AreEqual(expectedAsWriteOrReadService, edata.IsWriteOrReadService, nameof(edata.IsWriteOrReadService));
+    Assert.That(edata.IsWriteOrReadService, Is.EqualTo(expectedAsWriteOrReadService), nameof(edata.IsWriteOrReadService));
   }
 
   [Test]
@@ -88,10 +88,7 @@ public class EDATA1Tests {
   {
     var edata1 = new EDATA1(default, default, ESV.INF, Array.Empty<PropertyRequest>());
 
-    StringAssert.DoesNotContain(
-      $"\"\"{nameof(edata1.IsWriteOrReadService)}\"\"",
-      JsonSerializer.Serialize(edata1)
-    );
+    Assert.That(JsonSerializer.Serialize(edata1), Does.Not.Contain($"\"\"{nameof(edata1.IsWriteOrReadService)}\"\""));
   }
 
   [TestCase(ESV.SetI, "\"ESV\":\"60\"")]
@@ -103,9 +100,6 @@ public class EDATA1Tests {
   {
     var edata1 = new EDATA1(default, default, esv, Array.Empty<PropertyRequest>());
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(edata1)
-    );
+    Assert.That(JsonSerializer.Serialize(edata1), Does.Contain(expectedJsonFragment));
   }
 }

@@ -46,10 +46,7 @@ public class FrameTests {
   {
     var f = new Frame(ehd1, EHD2.Type2, (ushort)0x0000u, new EDATA2(default));
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(f)
-    );
+    Assert.That(JsonSerializer.Serialize(f), Does.Contain(expectedJsonFragment));
   }
 
   [Test]
@@ -57,10 +54,7 @@ public class FrameTests {
   {
     var f = new Frame(EHD1.ECHONETLite, EHD2.Type1, (ushort)0x0000u, new EDATA1(default, default, default, Array.Empty<PropertyRequest>()));
 
-    StringAssert.Contains(
-      "\"EHD2\":\"81\"",
-      JsonSerializer.Serialize(f)
-    );
+    Assert.That(JsonSerializer.Serialize(f), Does.Contain("\"EHD2\":\"81\""));
   }
 
   [Test]
@@ -68,10 +62,7 @@ public class FrameTests {
   {
     var f = new Frame(EHD1.ECHONETLite, EHD2.Type2, (ushort)0x0000u, new EDATA2(default));
 
-    StringAssert.Contains(
-      "\"EHD2\":\"82\"",
-      JsonSerializer.Serialize(f)
-    );
+    Assert.That(JsonSerializer.Serialize(f), Does.Contain("\"EHD2\":\"82\""));
   }
 
   [TestCase((ushort)0x0000u, "\"TID\":\"0000\"")]
@@ -84,9 +75,6 @@ public class FrameTests {
   {
     var f = new Frame(EHD1.ECHONETLite, EHD2.Type2, tid, new EDATA2(default));
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(f)
-    );
+    Assert.That(JsonSerializer.Serialize(f), Does.Contain(expectedJsonFragment));
   }
 }
