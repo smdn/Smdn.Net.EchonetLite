@@ -14,21 +14,21 @@ public class 機器Tests {
   {
     var obj = 機器.管理操作関連機器.コントローラ;
 
-    Assert.IsNotNull(obj);
-    Assert.IsNotNull(obj.ClassGroup, nameof(IEchonetObject.ClassGroup));
-    Assert.AreEqual(0x05,obj.ClassGroup.ClassGroupCode, nameof(EchoClassGroup.ClassGroupCode));
-    Assert.AreEqual("管理・操作関連機器クラスグループ", obj.ClassGroup.ClassGroupNameOfficial, nameof(EchoClassGroup.ClassGroupNameOfficial));
-    Assert.AreEqual("機器オブジェクトスーパークラス", obj.ClassGroup.SuperClass, nameof(EchoClassGroup.SuperClass));
-    CollectionAssert.IsNotEmpty(obj.ClassGroup.ClassList, nameof(EchoClassGroup.ClassList));
+    Assert.That(obj, Is.Not.Null);
+    Assert.That(obj.ClassGroup, Is.Not.Null, nameof(IEchonetObject.ClassGroup));
+    Assert.That(obj.ClassGroup.ClassGroupCode, Is.EqualTo(0x05), nameof(EchoClassGroup.ClassGroupCode));
+    Assert.That(obj.ClassGroup.ClassGroupNameOfficial, Is.EqualTo("管理・操作関連機器クラスグループ"), nameof(EchoClassGroup.ClassGroupNameOfficial));
+    Assert.That(obj.ClassGroup.SuperClass, Is.EqualTo("機器オブジェクトスーパークラス"), nameof(EchoClassGroup.SuperClass));
+    Assert.That(obj.ClassGroup.ClassList, Is.Not.Empty, nameof(EchoClassGroup.ClassList));
 
-    Assert.IsNotNull(obj.GetProperties, nameof(IEchonetObject.GetProperties));
-    CollectionAssert.IsNotEmpty(obj.GetProperties, nameof(IEchonetObject.GetProperties));
+    Assert.That(obj.GetProperties, Is.Not.Null, nameof(IEchonetObject.GetProperties));
+    Assert.That(obj.GetProperties, Is.Not.Empty, nameof(IEchonetObject.GetProperties));
 
-    Assert.IsNotNull(obj.SetProperties, nameof(IEchonetObject.SetProperties));
-    CollectionAssert.IsNotEmpty(obj.SetProperties, nameof(IEchonetObject.SetProperties));
+    Assert.That(obj.SetProperties, Is.Not.Null, nameof(IEchonetObject.SetProperties));
+    Assert.That(obj.SetProperties, Is.Not.Empty, nameof(IEchonetObject.SetProperties));
 
-    Assert.IsNotNull(obj.AnnoProperties, nameof(IEchonetObject.AnnoProperties));
-    CollectionAssert.IsNotEmpty(obj.AnnoProperties, nameof(IEchonetObject.AnnoProperties));
+    Assert.That(obj.AnnoProperties, Is.Not.Null, nameof(IEchonetObject.AnnoProperties));
+    Assert.That(obj.AnnoProperties, Is.Not.Empty, nameof(IEchonetObject.AnnoProperties));
   }
 
   [Test]
@@ -36,19 +36,19 @@ public class 機器Tests {
   {
     var obj = 機器.管理操作関連機器.コントローラ;
 
-    Assert.IsNotNull(obj);
-    Assert.IsNotNull(obj.Class, nameof(IEchonetObject.Class));
-    Assert.AreEqual(0xFF, obj.Class.ClassCode, nameof(EchoClass.ClassCode));
-    Assert.AreEqual("コントローラ", obj.Class.ClassNameOfficial, nameof(EchoClass.ClassNameOfficial));
+    Assert.That(obj, Is.Not.Null);
+    Assert.That(obj.Class, Is.Not.Null, nameof(IEchonetObject.Class));
+    Assert.That(obj.Class.ClassCode, Is.EqualTo(0xFF), nameof(EchoClass.ClassCode));
+    Assert.That(obj.Class.ClassNameOfficial, Is.EqualTo("コントローラ"), nameof(EchoClass.ClassNameOfficial));
 
-    Assert.IsNotNull(obj.GetProperties, nameof(IEchonetObject.GetProperties));
-    CollectionAssert.IsNotEmpty(obj.GetProperties, nameof(IEchonetObject.GetProperties));
+    Assert.That(obj.GetProperties, Is.Not.Null, nameof(IEchonetObject.GetProperties));
+    Assert.That(obj.GetProperties, Is.Not.Empty, nameof(IEchonetObject.GetProperties));
 
-    Assert.IsNotNull(obj.SetProperties, nameof(IEchonetObject.SetProperties));
-    CollectionAssert.IsNotEmpty(obj.SetProperties, nameof(IEchonetObject.SetProperties));
+    Assert.That(obj.SetProperties, Is.Not.Null, nameof(IEchonetObject.SetProperties));
+    Assert.That(obj.SetProperties, Is.Not.Empty, nameof(IEchonetObject.SetProperties));
 
-    Assert.IsNotNull(obj.AnnoProperties, nameof(IEchonetObject.AnnoProperties));
-    CollectionAssert.IsNotEmpty(obj.AnnoProperties, nameof(IEchonetObject.AnnoProperties));
+    Assert.That(obj.AnnoProperties, Is.Not.Null, nameof(IEchonetObject.AnnoProperties));
+    Assert.That(obj.AnnoProperties, Is.Not.Empty, nameof(IEchonetObject.AnnoProperties));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_機器オブジェクトスーパークラスJson()
@@ -63,15 +63,15 @@ public class 機器Tests {
   {
     var epc80 = obj.GetProperties.FirstOrDefault(static prop => prop.Name == "動作状態");
 
-    Assert.IsNotNull(epc80);
-    Assert.AreEqual(0x80, epc80!.Code, nameof(epc80.Code));
-    Assert.AreEqual("unsigned char", epc80.DataType, nameof(epc80.DataType));
+    Assert.That(epc80, Is.Not.Null);
+    Assert.That(epc80!.Code, Is.EqualTo(0x80), nameof(epc80.Code));
+    Assert.That(epc80.DataType, Is.EqualTo("unsigned char"), nameof(epc80.DataType));
 
     var epc9D = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0x9D);
 
-    Assert.IsNotNull(epc9D);
-    Assert.AreEqual("状変アナウンスプロパティマップ", epc9D!.Name, nameof(epc9D.Code));
-    Assert.AreEqual("unsigned char×(MAX17)", epc9D.DataType, nameof(epc9D.DataType));
+    Assert.That(epc9D, Is.Not.Null);
+    Assert.That(epc9D!.Name, Is.EqualTo("状変アナウンスプロパティマップ"), nameof(epc9D.Code));
+    Assert.That(epc9D.DataType, Is.EqualTo("unsigned char×(MAX17)"), nameof(epc9D.DataType));
   }
 
   [Test]
@@ -81,19 +81,19 @@ public class 機器Tests {
 
     var epcE0 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xE0);
 
-    Assert.IsNotNull(epcE0);
-    Assert.AreEqual(0xE0, epcE0!.Code, nameof(epcE0.Code));
-    Assert.AreEqual("積算電力量計測値 (正方向計測値)", epcE0.Name, nameof(epcE0.Name));
-    Assert.AreEqual("unsigned long", epcE0.DataType, nameof(epcE0.DataType));
-    Assert.AreEqual("kWh", epcE0.Unit, nameof(epcE0.Unit));
+    Assert.That(epcE0, Is.Not.Null);
+    Assert.That(epcE0!.Code, Is.EqualTo(0xE0), nameof(epcE0.Code));
+    Assert.That(epcE0.Name, Is.EqualTo("積算電力量計測値 (正方向計測値)"), nameof(epcE0.Name));
+    Assert.That(epcE0.DataType, Is.EqualTo("unsigned long"), nameof(epcE0.DataType));
+    Assert.That(epcE0.Unit, Is.EqualTo("kWh"), nameof(epcE0.Unit));
 
     var epcE7 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xE7);
 
-    Assert.IsNotNull(epcE7);
-    Assert.AreEqual(0xE7, epcE7!.Code, nameof(epcE7.Code));
-    Assert.AreEqual("瞬時電力計測値", epcE7!.Name, nameof(epcE7.Name));
-    Assert.AreEqual("signed long", epcE7.DataType, nameof(epcE7.DataType));
-    Assert.AreEqual("W", epcE7.Unit, nameof(epcE7.Unit));
+    Assert.That(epcE7, Is.Not.Null);
+    Assert.That(epcE7!.Code, Is.EqualTo(0xE7), nameof(epcE7.Code));
+    Assert.That(epcE7!.Name, Is.EqualTo("瞬時電力計測値"), nameof(epcE7.Name));
+    Assert.That(epcE7.DataType, Is.EqualTo("signed long"), nameof(epcE7.DataType));
+    Assert.That(epcE7.Unit, Is.EqualTo("W"), nameof(epcE7.Unit));
   }
 
   [Test]
@@ -103,35 +103,35 @@ public class 機器Tests {
 
     var epc80 = obj.GetProperties.LastOrDefault(static prop => prop.Code == 0x80); // overrides properties from super class
 
-    Assert.IsNotNull(epc80);
-    Assert.AreEqual(0x80, epc80!.Code, nameof(epc80.Code));
-    Assert.AreEqual("動作状態", epc80.Name, nameof(epc80.Name));
-    Assert.IsNotNull(epc80.OptionRequired, nameof(epc80.OptionRequired));
-    CollectionAssert.AreEquivalent(
-      new[] { ApplicationService.エネルギーサービス },
+    Assert.That(epc80, Is.Not.Null);
+    Assert.That(epc80!.Code, Is.EqualTo(0x80), nameof(epc80.Code));
+    Assert.That(epc80.Name, Is.EqualTo("動作状態"), nameof(epc80.Name));
+    Assert.That(epc80.OptionRequired, Is.Not.Null, nameof(epc80.OptionRequired));
+    Assert.That(
       epc80.OptionRequired,
+      Is.EquivalentTo(new[] { ApplicationService.エネルギーサービス }),
       nameof(epc80.OptionRequired)
     );
 
     var epcB0 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xB0);
 
-    Assert.IsNotNull(epcB0);
-    Assert.AreEqual(0xB0, epcB0!.Code, nameof(epcB0.Code));
-    Assert.AreEqual("表示制御設定", epcB0.Name, nameof(epcB0.Name));
-    CollectionAssert.IsEmpty(epcB0.OptionRequired ?? Enumerable.Empty<ApplicationService>(), nameof(epcB0.OptionRequired));
+    Assert.That(epcB0, Is.Not.Null);
+    Assert.That(epcB0!.Code, Is.EqualTo(0xB0), nameof(epcB0.Code));
+    Assert.That(epcB0.Name, Is.EqualTo("表示制御設定"), nameof(epcB0.Name));
+    Assert.That(epcB0.OptionRequired ?? Enumerable.Empty<ApplicationService>(), Is.Empty, nameof(epcB0.OptionRequired));
 
     var epcB1 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xB1);
 
-    Assert.IsNotNull(epcB1);
-    Assert.AreEqual(0xB1, epcB1!.Code, nameof(epcB1.Code));
-    Assert.AreEqual("文字列設定受付可能状態", epcB1.Name, nameof(epcB1.Name));
-    Assert.IsNotNull(epcB1.OptionRequired, nameof(epcB1.OptionRequired));
-    CollectionAssert.AreEquivalent(
-      new[] {
+    Assert.That(epcB1, Is.Not.Null);
+    Assert.That(epcB1!.Code, Is.EqualTo(0xB1), nameof(epcB1.Code));
+    Assert.That(epcB1.Name, Is.EqualTo("文字列設定受付可能状態"), nameof(epcB1.Name));
+    Assert.That(epcB1.OptionRequired, Is.Not.Null, nameof(epcB1.OptionRequired));
+    Assert.That(
+      epcB1.OptionRequired,
+      Is.EquivalentTo(new[] {
         ApplicationService.快適生活支援サービス,
         ApplicationService.セキュリティサービス
-      },
-      epcB1.OptionRequired,
+      }),
       nameof(epcB1.OptionRequired)
     );
   }

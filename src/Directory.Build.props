@@ -41,7 +41,7 @@ SPDX-License-Identifier: MIT
     />
   </ItemGroup>
 
-  <!-- disables code style/code analysis warnings -->
+  <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Common -->
   <PropertyGroup>
     <NoWarn>IDE0055;$(NoWarn)</NoWarn> <!-- IDE0055: 書式設定を修正 -->
     <NoWarn>IDE0161;$(NoWarn)</NoWarn> <!-- IDE0161: 範囲指定されたファイルが設定された namespace に変換 -->

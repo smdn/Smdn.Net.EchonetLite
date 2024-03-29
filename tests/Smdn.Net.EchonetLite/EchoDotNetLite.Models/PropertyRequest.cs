@@ -19,10 +19,7 @@ public class PropertyRequestTests {
   {
     var pr = new PropertyRequest(epc);
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(pr)
-    );
+    Assert.That(JsonSerializer.Serialize(pr), Does.Contain(expectedJsonFragment));
   }
 
   [TestCase(0x00, "\"PDC\":\"00\"")]
@@ -34,10 +31,7 @@ public class PropertyRequestTests {
   {
     var pr = new PropertyRequest(epc: 0x00, edt: new byte[pdc]);
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(pr)
-    );
+    Assert.That(JsonSerializer.Serialize(pr), Does.Contain(expectedJsonFragment));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_EDT()
@@ -63,10 +57,7 @@ public class PropertyRequestTests {
   {
     var pr = new PropertyRequest(epc: 0x00, edt: edt);
 
-    StringAssert.Contains(
-      expectedJsonFragment,
-      JsonSerializer.Serialize(pr)
-    );
+    Assert.That(JsonSerializer.Serialize(pr), Does.Contain(expectedJsonFragment));
   }
 }
 
