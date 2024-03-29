@@ -76,20 +76,20 @@ public class EchoPropertyInstanceTests {
 
     p.SetValue(newValue);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.SetValue} #1");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.SetValue} #1");
-    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} after {p.SetValue} #1");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueSet)} #1");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueSet)} #1");
+    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} after {nameof(p.ValueSet)} #1");
 
     // reset
     p.SetValue(resetValue);
-    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} after {p.SetValue} #2");
+    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} after {nameof(p.ValueSet)} #2");
 
     // set again
     p.SetValue(newValue);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.SetValue} #3");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.SetValue} #3");
-    Assert.That(countOfValueSet, Is.EqualTo(3), $"{nameof(countOfValueSet)} after {p.SetValue} #3");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueSet)} #3");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueSet)} #3");
+    Assert.That(countOfValueSet, Is.EqualTo(3), $"{nameof(countOfValueSet)} after {nameof(p.ValueSet)} #3");
   }
 
   [Test]
@@ -138,20 +138,20 @@ public class EchoPropertyInstanceTests {
 
     p.WriteValue(writer => writer.Write(newValue.AsSpan()));
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.WriteValue} #1");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.WriteValue} #1");
-    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} after {p.WriteValue} #1");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #1");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #1");
+    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} after {nameof(p.WriteValue)} #1");
 
     // reset
     p.SetValue(resetValue);
-    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} after {p.WriteValue} #2");
+    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} after {nameof(p.WriteValue)} #2");
 
     // write again
     p.WriteValue(writer => writer.Write(newValue.AsSpan()));
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {p.WriteValue} #3");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {p.WriteValue} #3");
-    Assert.That(countOfValueSet, Is.EqualTo(3), $"{nameof(countOfValueSet)} after {p.WriteValue} #3");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #3");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #3");
+    Assert.That(countOfValueSet, Is.EqualTo(3), $"{nameof(countOfValueSet)} after {nameof(p.WriteValue)} #3");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_ValueChanged_InitialSet()
