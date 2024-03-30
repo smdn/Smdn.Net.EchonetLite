@@ -17,6 +17,14 @@ SPDX-License-Identifier: MIT
     <RootNamespace/> <!-- empty the root namespace so that the namespace is determined only by the directory name, for code style rule IDE0030 -->
   </PropertyGroup>
 
+  <PropertyGroup Label="assembly attributes">
+    <Description>
+<![CDATA[Provides the implementation based on the specifications described in the "ECHONET Lite SPECIFICATION II ECHONET Lite Communication Middleware Specifications". Including APIs such as `EchoClient`, which is an implementation corresponding to the "Communication Middleware" in the specification, and `IEchonetLiteHandler`, which is the interface for implementing the communication endpoint to the "Lower Communication Layers".
+
+「ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様」に記載されている仕様に基づく実装を提供します。　同仕様書における「通信ミドルウェア」に相当する`EchoClient`、および「下位通信層」との通信エンドポイントを実装するためのインターフェース`IEchonetLiteHandler`などのAPIを提供します。]]>
+    </Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
   </ItemGroup>

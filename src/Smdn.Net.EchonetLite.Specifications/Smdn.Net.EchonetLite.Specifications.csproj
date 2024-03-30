@@ -16,6 +16,14 @@ SPDX-License-Identifier: MIT
     <RootNamespace/> <!-- empty the root namespace so that the namespace is determined only by the directory name, for code style rule IDE0030 -->
   </PropertyGroup>
 
+  <PropertyGroup Label="assembly attributes">
+    <Description>
+<![CDATA[Provides the details of the class groups, device objects, and property configurations described in the "ECHONET SPECIFICATION APPENDIX Detailed Requirements for ECHONET Device objects," and provides the API for referencing them.
+
+「ECHONET SPECIFICATION APPENDIX ECHONET 機器オブジェクト詳細規定」に記載されているクラスグループ・機器オブジェクト・プロパティ構成の定義、およびその定義を参照するためのAPIを提供します。]]>
+    </Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="6.0.0" />
   </ItemGroup>
