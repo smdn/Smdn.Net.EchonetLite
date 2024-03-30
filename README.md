@@ -3,13 +3,16 @@
 [![CodeQL](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/codeql-analysis.yml)
 
 # Smdn.Net.EchonetLite
-`Smdn.Net.EchonetLite`は、ECHONET Liteやその周辺の規格/仕様を.NETで実装したものです。
+`Smdn.Net.EchonetLite`は、ECHONET Liteやその周辺の規格/仕様を.NETで使用できるように実装したものです。
 
-このプロジェクトでは、オリジナルである[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をよりモダンな.NET/C#コードに書き換え、NuGetパッケージとしてリリースすることを主な目的としています。
+## Introduction
+このプロジェクトは[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をフォークしたものです。　This is a project forked from [HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite).
+
+本プロジェクトでは、オリジナルである[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をよりモダンな.NET/C#コードに書き換え、NuGetパッケージとしてリリースすることを目的としています。　また、Bルートサービス(電力メーター情報発信サービス)を.NETで利用できるようにするために必要な実装を確保・維持することを主な動機としています。
+
+現時点ではBルートサービスをターゲットとしていますが、長期的にはECHONET Liteを広くサポートすることも検討しています。
 
 > [!IMPORTANT]
-> このプロジェクトは[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をフォークしたものです。　This is a project forked from [HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite).
->
 > 本プロジェクトは、オリジナルから引き続き[MIT License](./LICENSE.txt)を採用しており、同ライセンスの条項に従ってフォーク・改変を行っていますが、オリジナルとの連絡・連携・追従を行っておらず、個別のプロジェクトとして開発を行っていることを書き添えておきます。
 
 
