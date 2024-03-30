@@ -29,7 +29,10 @@ version 1.0.0時点では、[同仕様Ver.1.13](https://echonet.jp/spec_v113_lit
 本ライブラリは、オリジナルにおける`EchoDotNetLite`をベースにしています。
 
 > [!NOTE]
-> [Bルート](https://echonet.jp/about/sma/)で使用しないサービスのテストが不足しています。
+> [Bルート](https://echonet.jp/about/sma/)で使用しないサービスのテストが不足しています。　また、全般的に異常系処理全般の考慮が不足しています。
+
+> [!WARNING]
+> 現在のところAPIは未確定・変更予定あり、実装は一部不完全です。
 
 
 ## Smdn.Net.EchonetLite.Specifications
@@ -47,6 +50,8 @@ version 1.0.0時点では、[同仕様Ver.1.13](https://echonet.jp/spec_v113_lit
 > [!NOTE]
 > 今後のバージョンで、より新しいReleaseへの追従、および[Machine Readable Appendix](https://echonet.jp/spec_g/)をベースにした生成手段を使用するよう改善予定です。
 
+> [!WARNING]
+> 現在のところAPIは未確定・変更予定あり、実装は一部不完全です。
 
 
 ## その他のプロジェクト/ライブラリ
@@ -64,11 +69,6 @@ version 1.0.0時点では、[同仕様Ver.1.13](https://echonet.jp/spec_v113_lit
 > このサンプルコードはオリジナルより引き継いだものですが、本プロジェクトとしてはコンパイル可能性までの確認まではしていますが、動作確認はしていません。　したがって、現時点で動作しなくなっている可能性は否定できません。
 
 
-# Project status
-- 現在NuGetパッケージの公開に向けて作業中です
-  - `Smdn.Net.EchonetLite.Specifications`が保持・参照しているECHONET機器オブジェクト詳細規定は **Release K** のまま更新されていないため、これを最新版に追従させる予定です
-- APIは未確定・実装は不完全です
-  - 全般的に異常系処理全般の考慮が不足しています
 
 # 動作確認環境
 以下はオリジナルの`EchoDotNetLite`についての確認状況です。
