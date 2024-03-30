@@ -34,7 +34,7 @@ SPDX-License-Identifier: MIT
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Smdn.Net.EchonetLite.Specifications\Smdn.Net.EchonetLite.Specifications.csproj" />
+    <ProjectOrPackageReference ReferencePackageVersion="1.0.0" Include="..\Smdn.Net.EchonetLite.Specifications\Smdn.Net.EchonetLite.Specifications.csproj" />
   </ItemGroup>
 
   <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Library -->
