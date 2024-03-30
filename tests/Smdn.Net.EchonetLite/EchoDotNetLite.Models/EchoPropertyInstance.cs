@@ -50,46 +50,46 @@ public class EchoPropertyInstanceTests {
   public void SetValue(byte[] newValue)
   {
     var p = CreateProperty();
-    var countOfValueSet = 0;
-    var resetValue = new byte[] { 0xFF };
+    var countOfValueChanged = 0;
+    var resetValue = new byte[] { 0xCD, 0xCD };
 
 #pragma warning disable CS0618
-    p.ValueSet += (sender, val) => {
+    p.ValueChanged += (sender, val) => {
       Assert.That(p, Is.SameAs(sender), nameof(p));
-      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val), $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}");
+      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val.NewValue), $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}");
 
       Assert.That(
-        val,
+        val.NewValue,
         SequenceIs.EqualTo(
-          countOfValueSet switch {
+          countOfValueChanged switch {
             0 or 2 => newValue.AsMemory(),
             1 => resetValue.AsMemory(),
             _ => throw new InvalidOperationException("unexpected event")
           }
         ),
-        $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}"
+        $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}"
       );
 
-      countOfValueSet++;
+      countOfValueChanged++;
     };
 #pragma warning restore CS0618
 
     p.SetValue(newValue);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueSet)} #1");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueSet)} #1");
-    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} after {nameof(p.ValueSet)} #1");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueChanged)} #1");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueChanged)} #1");
+    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #1");
 
     // reset
     p.SetValue(resetValue);
-    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} after {nameof(p.ValueSet)} #2");
+    Assert.That(countOfValueChanged, Is.EqualTo(2), $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #2");
 
     // set again
     p.SetValue(newValue);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueSet)} #3");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueSet)} #3");
-    Assert.That(countOfValueSet, Is.EqualTo(3), $"{nameof(countOfValueSet)} after {nameof(p.ValueSet)} #3");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueChanged)} #3");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueChanged)} #3");
+    Assert.That(countOfValueChanged, Is.EqualTo(3), $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #3");
   }
 
   [Test]
@@ -112,27 +112,27 @@ public class EchoPropertyInstanceTests {
   public void WriteValue(byte[] newValue)
   {
     var p = CreateProperty();
-    var countOfValueSet = 0;
-    var resetValue = new byte[] { 0xFF };
+    var countOfValueChanged = 0;
+    var resetValue = new byte[] { 0xCD, 0xCD };
 
 #pragma warning disable CS0618
-    p.ValueSet += (sender, val) => {
+    p.ValueChanged += (sender, val) => {
       Assert.That(p, Is.SameAs(sender), nameof(p));
-      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val), $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}");
+      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val.NewValue), $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}");
 
       Assert.That(
-        val,
+        val.NewValue,
         SequenceIs.EqualTo(
-          countOfValueSet switch {
+          countOfValueChanged switch {
             0 or 2 => newValue.AsMemory(),
             1 => resetValue.AsMemory(),
             _ => throw new InvalidOperationException("unexpected event")
           }
         ),
-        $"{nameof(p.ValueMemory)} on {nameof(p.ValueSet)} #{countOfValueSet}"
+        $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}"
       );
 
-      countOfValueSet++;
+      countOfValueChanged++;
     };
 #pragma warning restore CS0618
 
@@ -140,18 +140,18 @@ public class EchoPropertyInstanceTests {
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #1");
-    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} after {nameof(p.WriteValue)} #1");
+    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #1");
 
     // reset
     p.SetValue(resetValue);
-    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} after {nameof(p.WriteValue)} #2");
+    Assert.That(countOfValueChanged, Is.EqualTo(2), $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #2");
 
     // write again
     p.WriteValue(writer => writer.Write(newValue.AsSpan()));
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #3");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #3");
-    Assert.That(countOfValueSet, Is.EqualTo(3), $"{nameof(countOfValueSet)} after {nameof(p.WriteValue)} #3");
+    Assert.That(countOfValueChanged, Is.EqualTo(3), $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #3");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_ValueChanged_InitialSet()
@@ -167,12 +167,7 @@ public class EchoPropertyInstanceTests {
   {
     var p = CreateProperty();
 
-    var countOfValueSet = 0;
     var countOfValueChanged = 0;
-
-#pragma warning disable CS0618
-    p.ValueSet += (_, _) => countOfValueSet++;
-#pragma warning restore CS0618
 
     p.ValueChanged += (sender, e) => {
       Assert.That(p, Is.SameAs(sender), nameof(p));
@@ -186,13 +181,11 @@ public class EchoPropertyInstanceTests {
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
     Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #1");
-    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} #1");
 
     // set same value again
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
     Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #2");
-    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} #2");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_ValueChanged_DifferentValue()
@@ -211,12 +204,7 @@ public class EchoPropertyInstanceTests {
 
     p.SetValue(initialValue.AsMemory());
 
-    var countOfValueSet = 0;
     var countOfValueChanged = 0;
-
-#pragma warning disable CS0618
-    p.ValueSet += (_, _) => countOfValueSet++;
-#pragma warning restore CS0618
 
     p.ValueChanged += (sender, e) => {
       Assert.That(p, Is.SameAs(sender), nameof(p));
@@ -230,12 +218,10 @@ public class EchoPropertyInstanceTests {
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
     Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #1");
-    Assert.That(countOfValueSet, Is.EqualTo(1), $"{nameof(countOfValueSet)} #1");
 
     // set same value again
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
     Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #2");
-    Assert.That(countOfValueSet, Is.EqualTo(2), $"{nameof(countOfValueSet)} #2");
   }
 }

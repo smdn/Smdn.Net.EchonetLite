@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
-using EchoDotNetLite.Common;
 using EchoDotNetLite.Specifications;
 
 namespace EchoDotNetLite.Models
@@ -15,9 +14,7 @@ namespace EchoDotNetLite.Models
     /// <summary>
     /// ECHONET Lite オブジェクトインスタンス
     /// </summary>
-#pragma warning disable CA1708
     public sealed class EchoObjectInstance
-#pragma warning restore CA1708
     {
         /// <summary>
         /// デフォルトコンストラクタ
@@ -65,20 +62,6 @@ namespace EchoDotNetLite.Models
         private void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
         {
             PropertiesChanged?.Invoke(this, e);
-
-#pragma warning disable CS0618
-            // translate event args to raise obsolete OnCollectionChanged event
-            var handler = OnCollectionChanged;
-
-            if (handler is null)
-                return;
-
-            if (e.TryGetAddedItem<EchoPropertyInstance>(out var addedProperty))
-                handler(this, (CollectionChangeType.Add, addedProperty));
-
-            if (e.TryGetRemovedItem<EchoPropertyInstance>(out var removedProperty))
-                handler(this, (CollectionChangeType.Remove, removedProperty));
-#pragma warning restore CS0618
         }
 
         internal void AddProperty(EchoPropertyInstance prop)
@@ -115,20 +98,11 @@ namespace EchoDotNetLite.Models
         public event NotifyCollectionChangedEventHandler? PropertiesChanged;
 
         /// <summary>
-        /// イベント オブジェクトインスタンス増減通知
-        /// </summary>
-        [Obsolete($"Use {nameof(PropertiesChanged)} instead.")]
-        public event EventHandler<(CollectionChangeType, EchoPropertyInstance)>? OnCollectionChanged;
-
-        /// <summary>
         /// プロパティマップ取得状態
         /// </summary>
         /// <seealso cref="EchoClient.PropertyMapAcquiring"/>
         /// <seealso cref="EchoClient.PropertyMapAcquired"/>
         public bool HasPropertyMapAcquired { get; internal set; } = false;
-
-        [Obsolete($"Use {nameof(HasPropertyMapAcquired)} instead.")]
-        public bool IsPropertyMapGet => HasPropertyMapAcquired;
 
         /// <summary>
         /// クラスグループコード、クラスグループ名
@@ -150,31 +124,16 @@ namespace EchoDotNetLite.Models
         /// <summary>
         /// GETプロパティの一覧
         /// </summary>
-#pragma warning disable CA1708
         public IEnumerable<EchoPropertyInstance> GetProperties => Properties.Where(static p => p.Spec.Get);
-
-        [Obsolete($"Use {nameof(GetProperties)} instead.")]
-        public IEnumerable<EchoPropertyInstance> GETProperties => GetProperties;
-#pragma warning restore CA1708
 
         /// <summary>
         /// SETプロパティの一覧
         /// </summary>
-#pragma warning disable CA1708
         public IEnumerable<EchoPropertyInstance> SetProperties => Properties.Where(static p => p.Spec.Set);
-
-        [Obsolete($"Use {nameof(SetProperties)} instead.")]
-        public IEnumerable<EchoPropertyInstance> SETProperties => SetProperties;
-#pragma warning restore CA1708
 
         /// <summary>
         /// ANNOプロパティの一覧
         /// </summary>
-#pragma warning disable CA1708
         public IEnumerable<EchoPropertyInstance> AnnoProperties => Properties.Where(static p => p.Spec.Anno);
-
-        [Obsolete($"Use {nameof(AnnoProperties)} instead.")]
-        public IEnumerable<EchoPropertyInstance> ANNOProperties => AnnoProperties;
-#pragma warning restore CA1708
     }
 }

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Common;
 using EchoDotNetLite.Specifications;
 using System;
 using System.Collections.Generic;
@@ -32,20 +31,6 @@ namespace EchoDotNetLite.Models
         private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
         {
             DevicesChanged?.Invoke(this, e);
-
-            // translate event args to raise obsolete OnCollectionChanged event
-#pragma warning disable CS0618
-            var handler = OnCollectionChanged;
-
-            if (handler is null)
-                return;
-
-            if (e.TryGetAddedItem<EchoObjectInstance>(out var addedObject))
-                handler(this, (CollectionChangeType.Add, addedObject));
-
-            if (e.TryGetRemovedItem<EchoObjectInstance>(out var removedObject))
-                handler(this, (CollectionChangeType.Remove, removedObject));
-#pragma warning restore CS0618
         }
 
         /// <summary>
@@ -71,12 +56,6 @@ namespace EchoDotNetLite.Models
         /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
         /// </remarks>
         public event NotifyCollectionChangedEventHandler? DevicesChanged;
-
-        /// <summary>
-        /// イベント オブジェクトインスタンス増減通知
-        /// </summary>
-        [Obsolete($"Use {nameof(DevicesChanged)} instead.")]
-        public event EventHandler<(CollectionChangeType, EchoObjectInstance)>? OnCollectionChanged;
     }
 
 

@@ -132,35 +132,21 @@ namespace EchoDotNetLite.Models
         public ReadOnlySpan<byte> ValueSpan => _value is null ? ReadOnlySpan<byte>.Empty : _value.WrittenSpan;
 
         /// <summary>
-        /// プロパティ値変更イベント
-        /// </summary>
-        /// <remarks>
-        /// このイベントは、プロパティ値の設定が行われる場合に発生します。
-        /// このイベントは、設定される値が以前と同じ値の場合でも発生します。
-        /// </remarks>
-        /// <seealso cref="ValueChanged"/>
-        [Obsolete($"Use {nameof(ValueChanged)} instead.")]
-        public event EventHandler<ReadOnlyMemory<byte>>? ValueSet;
-
-        /// <summary>
         /// プロパティ値に変更があった場合に発生するイベント。
         /// </summary>
         /// <remarks>
         /// このイベントは、プロパティに異なる値が設定された場合にのみ発生します。
         /// プロパティに値が設定される際、その値が以前と同じ値だった場合には発生しません。
         /// </remarks>
-        /// <seealso cref="ValueSet"/>
         public event EventHandler<(ReadOnlyMemory<byte> OldValue, ReadOnlyMemory<byte> NewValue)>? ValueChanged;
 
         /// <summary>
         /// プロパティ値を設定します。
         /// </summary>
         /// <remarks>
-        /// プロパティ値の設定が行われたあと、イベント<see cref="ValueSet"/>が発生します。
-        /// 設定によって値が変更された場合は、イベント<see cref="ValueChanged"/>も発生します。
+        /// 設定によって値が変更された場合は、イベント<see cref="ValueChanged"/>が発生します。
         /// </remarks>
         /// <param name="newValue">プロパティ値として設定する値を表す<see cref="ReadOnlyMemory{Byte}"/>。</param>
-        /// <seealso cref="ValueSet"/>
         /// <seealso cref="ValueChanged"/>
         public void SetValue(ReadOnlyMemory<byte> newValue)
             => WriteValue(writer => writer.Write(newValue.Span), newValueSize: newValue.Length);
@@ -169,15 +155,13 @@ namespace EchoDotNetLite.Models
         /// プロパティ値を書き込みます。
         /// </summary>
         /// <remarks>
-        /// プロパティ値の設定が行われたあと、イベント<see cref="ValueSet"/>が発生します。
-        /// 書き込みによって値が変更された場合は、イベント<see cref="ValueChanged"/>も発生します。
+        /// 書き込みによって値が変更された場合は、イベント<see cref="ValueChanged"/>が発生します。
         /// </remarks>
         /// <param name="write">
         /// プロパティ値を書き込むための<see cref="Action{T}"/>デリゲート。
         /// 引数で渡される<see cref="IBufferWriter{Byte}"/>を介してプロパティ値として設定する内容を書き込んでください。
         /// </param>
         /// <exception cref="ArgumentNullException"><paramref name="write"/>が<see langword="null"/>です。</exception>
-        /// <seealso cref="ValueSet"/>
         /// <seealso cref="ValueChanged"/>
         public void WriteValue(Action<IBufferWriter<byte>> write)
             => WriteValue(write ?? throw new ArgumentNullException(nameof(write)), newValueSize: 0);
@@ -213,9 +197,6 @@ namespace EchoDotNetLite.Models
                 }
 
                 write(_value);
-
-                // 変更がなくてもValueSetイベントを起こす
-                ValueSet?.Invoke(this, _value.WrittenMemory);
 
                 if (valueChangedHandlers is not null)
                 {
