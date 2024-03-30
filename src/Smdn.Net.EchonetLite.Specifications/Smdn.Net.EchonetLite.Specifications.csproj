@@ -24,6 +24,11 @@ SPDX-License-Identifier: MIT
     </Description>
   </PropertyGroup>
 
+  <PropertyGroup Label="package properties">
+    <PackageTags>ECHONET-SPECIFICATION-APPENDIX;$(PackageTags)</PackageTags>
+    <GenerateNupkgReadmeFileDependsOnTargets>$(GenerateNupkgReadmeFileDependsOnTargets);GenerateReadmeFileContent</GenerateNupkgReadmeFileDependsOnTargets>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="6.0.0" />
   </ItemGroup>
@@ -51,4 +56,15 @@ SPDX-License-Identifier: MIT
   <PropertyGroup>
     <NoWarn>IL2026;SA1005;SA1028;SA1110;SA1306;SA1309;SA1313;SA1505;SA1508;SA1513;SA1514;SA1518;SA1616;SA1623;SA1629;SA1642;SA1649;$(NoWarn)</NoWarn>
   </PropertyGroup>
+
+  <Target Name="GenerateReadmeFileContent">
+    <PropertyGroup>
+      <PackageReadmeFileContent><![CDATA[# $(PackageId) $(PackageVersion)
+$(Description)
+
+## Contributing
+This project welcomes contributions, feedbacks and suggestions. You can contribute to this project by submitting [Issues]($(RepositoryUrl)/issues/new/choose) or [Pull Requests]($(RepositoryUrl)/pulls/) on the [GitHub repository]($(RepositoryUrl)).
+]]></PackageReadmeFileContent>
+    </PropertyGroup>
+  </Target>
 </Project>
