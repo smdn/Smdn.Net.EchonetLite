@@ -14,20 +14,51 @@
 
 
 
-# プロジェクト構成
-|プロジェクト名|概要|備考|
-|--|--|--|
-|[Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)<br/>[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite/)|ECHONET Lite 通信ミドルウェアライブラリ<br>ECHONET Lite規格書 Ver.1.13をもとに全サービスを実装<br><br>`Smdn.Net.EchonetLite`といわゆるLANのブリッジクラス`UdpEchonetLiteHandler`も含む|Bルートで使用しないサービスのテスト不足<br>|
-|[Smdn.Net.EchonetLite.Specifications](./src/Smdn.Net.EchonetLite.Specifications/)<br/>[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Specifications.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Specifications/)|ECHONET機器オブジェクト詳細規定の定義<br>JSONファイル、およびそれを読み取るクラス郡<br>APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）をもとに生成|APPENDIXからJSONへの変換過程で脱字等が発生している可能性あり|
-|[udp-handler](./examples/Smdn.Net.EchonetLite/udp-handler/)|LAN経由(UDP)で家電を操作する、コントローラー実装例<br>コンソールアプリケーション<br>MoekadenRoomでサポートする機器オブジェクトとの相互通信を実装([Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)の実装確認が目的)||
+## Smdn.Net.EchonetLite
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite/)
+
+[Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)は、「[ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様](https://echonet.jp/spec_g/)」(en:[Part II ECHONET Lite Communication Middleware Specifications](https://echonet.jp/spec_g/))に記載されている仕様に基づく実装を提供します。
+
+同仕様書における**通信ミドルウェア**(**Communication Middleware**)に相当する機能を.NETで実装した`EchoClient`、および**下位通信層**(**Lower Communication Layers**)との通信エンドポイントを実装するためのインターフェース`IEchonetLiteHandler`などのAPIを提供します。
+
+version 1.0.0時点では、[同仕様Ver.1.13](https://echonet.jp/spec_v113_lite/)をもとに全サービスを実装しています。　また`IEchonetLiteHandler`の実装として、下位通信層としてUDPを使用する、いわゆるLANのブリッジクラス`UdpEchonetLiteHandler`を同梱しています。
+
+本ライブラリは、オリジナルにおける`EchoDotNetLite`をベースにしています。
 
 > [!NOTE]
-> オリジナルに存在していたSKSTACK-IP関連の実装は、本プロジェクトでは引き継がずに廃止しています。
->
-> [SkstackIpDotNet](https://github.com/HiroyukiSakoh/EchoDotNetLite/tree/master/SkstackIpDotNet)については、代替実装として[Smdn.Net.SkStackIP](https://github.com/smdn/Smdn.Net.SkStackIP)を使用することができます。
->
-> [EchoDotNetLiteSkstackIpBridge](https://github.com/HiroyukiSakoh/EchoDotNetLite/tree/master/EchoDotNetLiteSkstackIpBridge)に相当する実装については、今後本プロジェクトでも実装予定です。
+> [Bルート](https://echonet.jp/about/sma/)で使用しないサービスのテストが不足しています。
 
+
+## Smdn.Net.EchonetLite.Specifications
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Specifications.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Specifications/)
+
+[Smdn.Net.EchonetLite.Specifications](./src/Smdn.Net.EchonetLite.Specifications/)は、「[ECHONET SPECIFICATION APPENDIX ECHONET 機器オブジェクト詳細規定](https://echonet.jp/spec_g/)」(en:[APPENDIX Detailed Requirements for ECHONET Device objects](https://echonet.jp/spec_g/))に記載されているクラスグループ・機器オブジェクト・プロパティ構成の定義、およびその定義を参照するためのAPIを提供します。
+
+[APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）](https://echonet.jp/spec_old_lite/#standard-03)をもとに[生成したJSONファイル](./src/Smdn.Net.EchonetLite.Specifications/MasterData/)をアセンブリのリソースとして埋め込んでいます。　また、それを読み取るクラス郡を実装しています。
+
+本ライブラリは、オリジナルにおける`EchoDotNetLite.Specifications`をベースにしています。
+
+> [!NOTE]
+> APPENDIXからJSONへの変換過程で脱字等が発生している可能性あります。
+
+> [!NOTE]
+> 今後のバージョンで、より新しいReleaseへの追従、および[Machine Readable Appendix](https://echonet.jp/spec_g/)をベースにした生成手段を使用するよう改善予定です。
+
+
+
+## その他のプロジェクト/ライブラリ
+オリジナルに存在していたSKSTACK-IP関連の実装は、本プロジェクトでは引き継がずに廃止しています。
+
+[SkstackIpDotNet](https://github.com/HiroyukiSakoh/EchoDotNetLite/tree/master/SkstackIpDotNet)については、代替実装として[Smdn.Net.SkStackIP](https://github.com/smdn/Smdn.Net.SkStackIP)を使用することができます。
+
+[EchoDotNetLiteSkstackIpBridge](https://github.com/HiroyukiSakoh/EchoDotNetLite/tree/master/EchoDotNetLiteSkstackIpBridge)に相当する実装については、今後本プロジェクトでも実装予定です。
+
+
+# Usage
+[udp-handler](./examples/Smdn.Net.EchonetLite/udp-handler/)は、([Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)の実装確認を目的とした、LAN経由(UDP)で家電を操作するコントローラーの実装例です。　MoekadenRoomでサポートする機器オブジェクトとの相互通信を実装しています。
+
+> [!WARNING]
+> このサンプルコードはオリジナルより引き継いだものですが、本プロジェクトとしてはコンパイル可能性までの確認まではしていますが、動作確認はしていません。　したがって、現時点で動作しなくなっている可能性は否定できません。
 
 
 # Project status
