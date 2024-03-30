@@ -1,7 +1,7 @@
 // Smdn.Net.EchonetLite.Specifications.dll (Smdn.Net.EchonetLite.Specifications-1.0.0)
 //   Name: Smdn.Net.EchonetLite.Specifications
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0+47be3bf8a921cf589966104e5cf07eaf7ca4cc01
+//   InformationalVersion: 1.0.0+91a3806bf52215122f5f5320e55e44c9cbd95586
 //   TargetFramework: .NETCoreApp,Version=v8.0
 //   Configuration: Release
 //   Referenced assemblies:
