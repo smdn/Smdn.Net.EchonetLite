@@ -350,7 +350,7 @@ namespace Smdn.Net.EchonetLite
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
-                    if (edata.ESV != ESV.SetI_SNA)
+                    if (edata.ESV != ESV.SetIServiceNotAvailable)
                         return;
 
                     var opcList = edata.GetOPCList();
@@ -471,7 +471,7 @@ namespace Smdn.Net.EchonetLite
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
-                    if (edata.ESV != ESV.SetC_SNA && edata.ESV != ESV.Set_Res)
+                    if (edata.ESV != ESV.SetCServiceNotAvailable && edata.ESV != ESV.SetResponse)
                         return;
 
                     var opcList = edata.GetOPCList();
@@ -486,7 +486,7 @@ namespace Smdn.Net.EchonetLite
                             target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueMemory);
                         }
                     }
-                    responseTCS.SetResult((edata.ESV == ESV.Set_Res, opcList));
+                    responseTCS.SetResult((edata.ESV == ESV.SetResponse, opcList));
 
                     //TODO 一斉通知の応答の扱いが…
                 }
@@ -581,7 +581,7 @@ namespace Smdn.Net.EchonetLite
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
-                    if (edata.ESV != ESV.Get_Res && edata.ESV != ESV.Get_SNA)
+                    if (edata.ESV != ESV.GetResponse && edata.ESV != ESV.GetServiceNotAvailable)
                         return;
 
                     var opcList = edata.GetOPCList();
@@ -596,7 +596,7 @@ namespace Smdn.Net.EchonetLite
                             target.SetValue(prop.EDT);
                         }
                     }
-                    responseTCS.SetResult((edata.ESV == ESV.Get_Res, opcList));
+                    responseTCS.SetResult((edata.ESV == ESV.GetResponse, opcList));
 
                     //TODO 一斉通知の応答の扱いが…
                 }
@@ -696,7 +696,7 @@ namespace Smdn.Net.EchonetLite
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
-                    if (edata.ESV != ESV.SetGet_Res && edata.ESV != ESV.SetGet_SNA)
+                    if (edata.ESV != ESV.SetGetResponse && edata.ESV != ESV.SetGetServiceNotAvailable)
                         return;
 
                     var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
@@ -721,7 +721,7 @@ namespace Smdn.Net.EchonetLite
                             target.SetValue(prop.EDT);
                         }
                     }
-                    responseTCS.SetResult((edata.ESV == ESV.SetGet_Res, opcSetList, opcGetList));
+                    responseTCS.SetResult((edata.ESV == ESV.SetGetResponse, opcSetList, opcGetList));
 
                     //TODO 一斉通知の応答の扱いが…
                 }
@@ -807,7 +807,7 @@ namespace Smdn.Net.EchonetLite
                     tid: GetNewTid(),
                     sourceObject: sourceObject.EOJ,
                     destinationObject: destinationObject.EOJ,
-                    esv: ESV.INF_REQ,
+                    esv: ESV.InfRequest,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
                 ),
                 cancellationToken
@@ -860,7 +860,7 @@ namespace Smdn.Net.EchonetLite
                     tid: GetNewTid(),
                     sourceObject: sourceObject.EOJ,
                     destinationObject: destinationObject.EOJ,
-                    esv: ESV.INF,
+                    esv: ESV.Inf,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
                 cancellationToken
@@ -925,7 +925,7 @@ namespace Smdn.Net.EchonetLite
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
-                    if (edata.ESV != ESV.INFC_Res)
+                    if (edata.ESV != ESV.InfCResponse)
                         return;
 
                     responseTCS.SetResult(edata.GetOPCList());
@@ -947,7 +947,7 @@ namespace Smdn.Net.EchonetLite
                     tid: GetNewTid(),
                     sourceObject: sourceObject.EOJ,
                     destinationObject: destinationObject.EOJ,
-                    esv: ESV.INFC,
+                    esv: ESV.InfC,
                     opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
                 ),
                 cancellationToken
@@ -1300,7 +1300,7 @@ namespace Smdn.Net.EchonetLite
                     //なければ、プロパティ値読み出し不可応答 Get_SNA
                     task = Task.Run(() => HandlePropertyValueReadRequest(value, edata, destObject));
                     break;
-                case ESV.INF_REQ://プロパティ値通知要求
+                case ESV.InfRequest://プロパティ値通知要求
                     //あれば、プロパティ値通知 INF
                     //なければ、プロパティ値通知不可応答 INF_SNA
                     break;
@@ -1309,41 +1309,41 @@ namespace Smdn.Net.EchonetLite
                     //なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
                     task = Task.Run(() => HandlePropertyValueWriteReadRequestAsync(value, edata, destObject));
                     break;
-                case ESV.INF: //プロパティ値通知
+                case ESV.Inf: //プロパティ値通知
                     //プロパティ値通知要求 INF_REQのレスポンス
                     //または、自発的な通知のケースがある。
                     //なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
                     task = Task.Run(() => HandlePropertyValueNotificationRequestAsync(value, edata, sourceNode));
                     break;
-                case ESV.INFC: //プロパティ値通知（応答要）
+                case ESV.InfC: //プロパティ値通知（応答要）
                     //プロパティ値通知応答 INFC_Res
                     task = Task.Run(() => HandlePropertyValueNotificationResponseRequiredAsync(value, edata, sourceNode, destObject));
                     break;
 
-                case ESV.SetI_SNA: //プロパティ値書き込み要求不可応答
+                case ESV.SetIServiceNotAvailable: //プロパティ値書き込み要求不可応答
                     //プロパティ値書き込み要求（応答不要）SetIのレスポンスなので、要求送信(SETI)のハンドラで対処
                     break;
 
-                case ESV.Set_Res: //プロパティ値書き込み応答
-                case ESV.SetC_SNA: //プロパティ値書き込み要求不可応答
+                case ESV.SetResponse: //プロパティ値書き込み応答
+                case ESV.SetCServiceNotAvailable: //プロパティ値書き込み要求不可応答
                     //プロパティ値書き込み要求（応答要） SetCのレスポンスなので、要求送信(SETC)のハンドラで対処
                     break;
 
-                case ESV.Get_Res: //プロパティ値読み出し応答
-                case ESV.Get_SNA: //プロパティ値読み出し不可応答
+                case ESV.GetResponse: //プロパティ値読み出し応答
+                case ESV.GetServiceNotAvailable: //プロパティ値読み出し不可応答
                     //プロパティ値読み出し要求 Getのレスポンスなので、要求送信(GET)のハンドラで対処
                     break;
 
-                case ESV.INFC_Res: //プロパティ値通知応答
+                case ESV.InfCResponse: //プロパティ値通知応答
                     //プロパティ値通知（応答要） INFCのレスポンスなので、要求送信(INFC)のハンドラで対処
                     break;
 
-                case ESV.INF_SNA: //プロパティ値通知不可応答
+                case ESV.InfServiceNotAvailable: //プロパティ値通知不可応答
                     //プロパティ値通知要求 INF_REQ のレスポンスなので、要求送信(INF_REQ)のハンドラで対処
                     break;
 
-                case ESV.SetGet_Res://プロパティ値書き込み・読み出し応答
-                case ESV.SetGet_SNA: //プロパティ値書き込み・読み出し不可応答
+                case ESV.SetGetResponse://プロパティ値書き込み・読み出し応答
+                case ESV.SetGetServiceNotAvailable: //プロパティ値書き込み・読み出し不可応答
                     //プロパティ値書き込み・読み出し要求 SetGet のレスポンスなので、要求送信(SETGET)のハンドラで対処
                     break;
                 default:
@@ -1425,7 +1425,7 @@ namespace Smdn.Net.EchonetLite
                         tid: request.frame.TID,
                         sourceObject: edata.DEOJ, //入れ替え
                         destinationObject: edata.SEOJ, //入れ替え
-                        esv: ESV.SetI_SNA, //SetI_SNA(0x50)
+                        esv: ESV.SetIServiceNotAvailable, //SetI_SNA(0x50)
                         opcListOrOpcSetList: opcList
                     ),
                     cancellationToken: default
@@ -1504,7 +1504,7 @@ namespace Smdn.Net.EchonetLite
                         tid: request.frame.TID,
                         sourceObject: edata.DEOJ, //入れ替え
                         destinationObject: edata.SEOJ, //入れ替え
-                        esv: ESV.SetC_SNA, //SetC_SNA(0x51)
+                        esv: ESV.SetCServiceNotAvailable, //SetC_SNA(0x51)
                         opcListOrOpcSetList: opcList
                     ),
                     cancellationToken: default
@@ -1522,7 +1522,7 @@ namespace Smdn.Net.EchonetLite
                     tid: request.frame.TID,
                     sourceObject: edata.DEOJ, //入れ替え
                     destinationObject: edata.SEOJ, //入れ替え
-                    esv: ESV.Set_Res, //Set_Res(0x71)
+                    esv: ESV.SetResponse, //Set_Res(0x71)
                     opcListOrOpcSetList: opcList
                 ),
                 cancellationToken: default
@@ -1599,7 +1599,7 @@ namespace Smdn.Net.EchonetLite
                         tid: request.frame.TID,
                         sourceObject: edata.DEOJ, //入れ替え
                         destinationObject: edata.SEOJ, //入れ替え
-                        esv: ESV.Get_SNA, //Get_SNA(0x52)
+                        esv: ESV.GetServiceNotAvailable, //Get_SNA(0x52)
                         opcListOrOpcSetList: opcList
                     ),
                     cancellationToken: default
@@ -1617,7 +1617,7 @@ namespace Smdn.Net.EchonetLite
                     tid: request.frame.TID,
                     sourceObject: edata.DEOJ, //入れ替え
                     destinationObject: edata.SEOJ, //入れ替え
-                    esv: ESV.Get_Res, //Get_Res(0x72)
+                    esv: ESV.GetResponse, //Get_Res(0x72)
                     opcListOrOpcSetList: opcList
                 ),
                 cancellationToken: default
@@ -1721,7 +1721,7 @@ namespace Smdn.Net.EchonetLite
                         tid: request.frame.TID,
                         sourceObject: edata.DEOJ, //入れ替え
                         destinationObject: edata.SEOJ, //入れ替え
-                        esv: ESV.SetGet_SNA, //SetGet_SNA(0x5E)
+                        esv: ESV.SetGetServiceNotAvailable, //SetGet_SNA(0x5E)
                         opcListOrOpcSetList: opcSetList,
                         opcGetList: opcGetList
                     ),
@@ -1740,7 +1740,7 @@ namespace Smdn.Net.EchonetLite
                     tid: request.frame.TID,
                     sourceObject: edata.DEOJ, //入れ替え
                     destinationObject: edata.SEOJ, //入れ替え
-                    esv: ESV.SetGet_Res, //SetGet_Res(0x7E)
+                    esv: ESV.SetGetResponse, //SetGet_Res(0x7E)
                     opcListOrOpcSetList: opcSetList,
                     opcGetList: opcGetList
                 ),
@@ -1922,7 +1922,7 @@ namespace Smdn.Net.EchonetLite
                         tid: request.frame.TID,
                         sourceObject: edata.DEOJ, //入れ替え
                         destinationObject: edata.SEOJ, //入れ替え
-                        esv: ESV.INFC_Res, //INFC_Res(0x74)
+                        esv: ESV.InfCResponse, //INFC_Res(0x74)
                         opcListOrOpcSetList: opcList
                     ),
                     cancellationToken: default

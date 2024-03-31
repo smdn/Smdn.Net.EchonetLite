@@ -98,7 +98,7 @@ partial class FrameSerializerTests {
       DEOJ_ClassGroupCode,
       DEOJ_ClassCode,
       DEOJ_InstanceCode,
-      (byte)ESV.SetGet_SNA,
+      (byte)ESV.SetGetServiceNotAvailable,
       0x00, // OPCGet
       0x00, // OPCSet
     };
@@ -142,7 +142,7 @@ partial class FrameSerializerTests {
       deojClassGroupCode,
       deojClassCode,
       deojInstanceCode,
-      (byte)ESV.SetGet_SNA,
+      (byte)ESV.SetGetServiceNotAvailable,
       0x00, // OPCGet
       0x00, // OPCSet
     };
@@ -191,9 +191,9 @@ partial class FrameSerializerTests {
 
   [TestCase((byte)0x00, (ESV)0x00)]
   [TestCase((byte)0xFF, (ESV)0xFF)]
-  [TestCase((byte)0x5E, ESV.SetGet_SNA)]
+  [TestCase((byte)0x5E, ESV.SetGetServiceNotAvailable)]
   [TestCase((byte)0x62, ESV.Get)]
-  [TestCase((byte)0x7E, ESV.SetGet_Res)]
+  [TestCase((byte)0x7E, ESV.SetGetResponse)]
   public void TryDeserialize_EHD2Type1_EDATA_ESV(byte esv, ESV expectedESV)
   {
     var input = CreateEHD2Type1Frame(
@@ -212,8 +212,8 @@ partial class FrameSerializerTests {
   }
 
   [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
+  [TestCase(ESV.SetGetResponse)]
+  [TestCase(ESV.SetGetServiceNotAvailable)]
   public void TryDeserialize_EHD2Type1_EDATA_OPC_OfESVSetGet(ESV esv)
   {
     var input = CreateEHD2Type1Frame(
@@ -277,7 +277,7 @@ partial class FrameSerializerTests {
 
   [TestCase(ESV.Get)]
   [TestCase(ESV.SetI)]
-  [TestCase(ESV.INF)]
+  [TestCase(ESV.Inf)]
   public void TryDeserialize_EHD2Type1_EDATA_OPC_OfESVOtherThanSetGet(ESV esv)
   {
     var input = CreateEHD2Type1Frame(
@@ -319,7 +319,7 @@ partial class FrameSerializerTests {
   public void TryDeserialize_EHD2Type1_EDATA_ESVSetGetSNA_OPCSetZero()
   {
     var input = CreateEHD2Type1Frame(
-      (byte)ESV.SetGet_SNA,
+      (byte)ESV.SetGetServiceNotAvailable,
       0x00, // OPCSet
       0x01, // OPCGet
       0x30, // EPC #1
@@ -354,7 +354,7 @@ partial class FrameSerializerTests {
   public void TryDeserialize_EHD2Type1_EDATA_ESVSetGetSNA_OPCGetZero()
   {
     var input = CreateEHD2Type1Frame(
-      (byte)ESV.SetGet_SNA,
+      (byte)ESV.SetGetServiceNotAvailable,
       0x01, // OPCSet
       0x10, // EPC #1
       0x01, // PDC #1

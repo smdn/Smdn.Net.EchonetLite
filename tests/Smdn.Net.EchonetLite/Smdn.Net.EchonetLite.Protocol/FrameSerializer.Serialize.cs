@@ -202,19 +202,19 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetI, (byte)0x60)]
   [TestCase(ESV.SetC, (byte)0x61)]
   [TestCase(ESV.Get, (byte)0x62)]
-  [TestCase(ESV.INF_REQ, (byte)0x63)]
+  [TestCase(ESV.InfRequest, (byte)0x63)]
   [TestCase(ESV.SetGet, (byte)0x6E)]
-  [TestCase(ESV.Set_Res, (byte)0x71)]
-  [TestCase(ESV.Get_Res, (byte)0x72)]
-  [TestCase(ESV.INF, (byte)0x73)]
-  [TestCase(ESV.INFC, (byte)0x74)]
-  [TestCase(ESV.INFC_Res, (byte)0x7A)]
-  [TestCase(ESV.SetGet_Res, (byte)0x7E)]
-  [TestCase(ESV.SetI_SNA, (byte)0x50)]
-  [TestCase(ESV.SetC_SNA, (byte)0x51)]
-  [TestCase(ESV.Get_SNA, (byte)0x52)]
-  [TestCase(ESV.INF_SNA, (byte)0x53)]
-  [TestCase(ESV.SetGet_SNA, (byte)0x5E)]
+  [TestCase(ESV.SetResponse, (byte)0x71)]
+  [TestCase(ESV.GetResponse, (byte)0x72)]
+  [TestCase(ESV.Inf, (byte)0x73)]
+  [TestCase(ESV.InfC, (byte)0x74)]
+  [TestCase(ESV.InfCResponse, (byte)0x7A)]
+  [TestCase(ESV.SetGetResponse, (byte)0x7E)]
+  [TestCase(ESV.SetIServiceNotAvailable, (byte)0x50)]
+  [TestCase(ESV.SetCServiceNotAvailable, (byte)0x51)]
+  [TestCase(ESV.GetServiceNotAvailable, (byte)0x52)]
+  [TestCase(ESV.InfServiceNotAvailable, (byte)0x53)]
+  [TestCase(ESV.SetGetServiceNotAvailable, (byte)0x5E)]
   [TestCase((ESV)0x00, (byte)0x00)]
   [TestCase((ESV)0xFF, (byte)0xFF)]
   public void Serialize_EHD2Type1_EDATA1_ESV(ESV esv, byte expectedESVByte)
@@ -225,7 +225,7 @@ partial class FrameSerializerTests {
         ehd2: EHD2.Type1,
         tid: ZeroTID,
         edata: esv switch {
-          ESV.SetGet or ESV.SetGet_Res or ESV.SetGet_SNA => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: new List<PropertyRequest>() { new() }, opcGetList: new List<PropertyRequest>() { new() }),
+          ESV.SetGet or ESV.SetGetResponse or ESV.SetGetServiceNotAvailable => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: new List<PropertyRequest>() { new() }, opcGetList: new List<PropertyRequest>() { new() }),
           _ => new EData1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>())
         }
       )
@@ -237,16 +237,16 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetI)]
   [TestCase(ESV.SetC)]
   [TestCase(ESV.Get)]
-  [TestCase(ESV.INF_REQ)]
-  [TestCase(ESV.Set_Res)]
-  [TestCase(ESV.Get_Res)]
-  [TestCase(ESV.INF)]
-  [TestCase(ESV.INFC)]
-  [TestCase(ESV.INFC_Res)]
-  [TestCase(ESV.SetI_SNA)]
-  [TestCase(ESV.SetC_SNA)]
-  [TestCase(ESV.Get_SNA)]
-  [TestCase(ESV.INF_SNA)]
+  [TestCase(ESV.InfRequest)]
+  [TestCase(ESV.SetResponse)]
+  [TestCase(ESV.GetResponse)]
+  [TestCase(ESV.Inf)]
+  [TestCase(ESV.InfC)]
+  [TestCase(ESV.InfCResponse)]
+  [TestCase(ESV.SetIServiceNotAvailable)]
+  [TestCase(ESV.SetCServiceNotAvailable)]
+  [TestCase(ESV.GetServiceNotAvailable)]
+  [TestCase(ESV.InfServiceNotAvailable)]
   public void Serialize_EHD2Type1_EDATA1_OPC_ForSingleProperty(ESV esv)
   {
     var edt = new byte[] { 0x00, 0x01, 0x02, 0x03 };
@@ -309,8 +309,8 @@ partial class FrameSerializerTests {
   }
 
   [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
+  [TestCase(ESV.SetGetResponse)]
+  [TestCase(ESV.SetGetServiceNotAvailable)]
   public void Serialize_EHD2Type1_EDATA1_OPCGet_OPCSet_ForSingleProperty(ESV esv)
   {
     var edtOPCSet = new byte[] { 0x00, 0x01, 0x02, 0x03 };
@@ -349,8 +349,8 @@ partial class FrameSerializerTests {
   }
 
   [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
+  [TestCase(ESV.SetGetResponse)]
+  [TestCase(ESV.SetGetServiceNotAvailable)]
   public void Serialize_EHD2Type1_EDATA1_OPCSet_ForMultipleProperty(ESV esv)
   {
     var edtOPCSet0 = new byte[] { 0x11, 0x12 };
@@ -397,8 +397,8 @@ partial class FrameSerializerTests {
   }
 
   [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
+  [TestCase(ESV.SetGetResponse)]
+  [TestCase(ESV.SetGetServiceNotAvailable)]
   public void Serialize_EHD2Type1_EDATA1_OPCGet_ForMultipleProperty(ESV esv)
   {
     var edtOPCSet = new byte[] { 0x11, 0x12 };
@@ -446,10 +446,10 @@ partial class FrameSerializerTests {
 
   [Test]
   public void Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty_OfESVSetGetSNA()
-    => Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty(ESV.SetGet_SNA);
+    => Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty(ESV.SetGetServiceNotAvailable);
 
   [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
+  [TestCase(ESV.SetGetResponse)]
   public void Serialize_EHD2Type1_EDATA1_OPCSet_ForNoProperty_OfESVOtherThanSetGetSNA(ESV esv)
   {
     Assert.Throws<InvalidOperationException>(
@@ -488,10 +488,10 @@ partial class FrameSerializerTests {
 
   [Test]
   public void Serialize_EHD2Type1_EDATA1_OPCGet_ForNoProperty_OfESVSetGetSNA()
-    => Serialize_EHD2Type1_EDATA1_OPCGet_ForNoProperty(ESV.SetGet_SNA);
+    => Serialize_EHD2Type1_EDATA1_OPCGet_ForNoProperty(ESV.SetGetServiceNotAvailable);
 
   [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
+  [TestCase(ESV.SetGetResponse)]
   public void Serialize_EHD2Type1_EDATA1_OPCGet_ForNoProperty_OfESVOtherThanSetGetSNA(ESV esv)
   {
     Assert.Throws<InvalidOperationException>(

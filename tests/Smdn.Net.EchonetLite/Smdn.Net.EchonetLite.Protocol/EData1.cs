@@ -10,8 +10,8 @@ namespace Smdn.Net.EchonetLite.Protocol;
 [TestFixture]
 public class EData1Tests {
   [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
+  [TestCase(ESV.SetGetResponse)]
+  [TestCase(ESV.SetGetServiceNotAvailable)]
   public void Ctor_NotForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
@@ -20,8 +20,8 @@ public class EData1Tests {
   }
 
   [TestCase(ESV.SetGet)]
-  [TestCase(ESV.SetGet_Res)]
-  [TestCase(ESV.SetGet_SNA)]
+  [TestCase(ESV.SetGetResponse)]
+  [TestCase(ESV.SetGetServiceNotAvailable)]
   public void Ctor_ForWriteOrReadService_OPCSetOPCGetCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
@@ -34,9 +34,9 @@ public class EData1Tests {
 
   [TestCase(ESV.SetI)]
   [TestCase(ESV.Get)]
-  [TestCase(ESV.INF)]
-  [TestCase(ESV.SetI_SNA)]
-  [TestCase(ESV.Get_SNA)]
+  [TestCase(ESV.Inf)]
+  [TestCase(ESV.SetIServiceNotAvailable)]
+  [TestCase(ESV.GetServiceNotAvailable)]
   public void Ctor_ForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
@@ -46,9 +46,9 @@ public class EData1Tests {
 
   [TestCase(ESV.SetI)]
   [TestCase(ESV.Get)]
-  [TestCase(ESV.INF)]
-  [TestCase(ESV.SetI_SNA)]
-  [TestCase(ESV.Get_SNA)]
+  [TestCase(ESV.Inf)]
+  [TestCase(ESV.SetIServiceNotAvailable)]
+  [TestCase(ESV.GetServiceNotAvailable)]
   public void Ctor_NotForWriteOrReadService_OPCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
@@ -59,19 +59,19 @@ public class EData1Tests {
   [TestCase(ESV.SetI, false)]
   [TestCase(ESV.SetC, false)]
   [TestCase(ESV.Get, false)]
-  [TestCase(ESV.INF_REQ, false)]
+  [TestCase(ESV.InfRequest, false)]
   [TestCase(ESV.SetGet, true)]
-  [TestCase(ESV.Set_Res, false)]
-  [TestCase(ESV.Get_Res, false)]
-  [TestCase(ESV.INF, false)]
-  [TestCase(ESV.INFC, false)]
-  [TestCase(ESV.INFC_Res, false)]
-  [TestCase(ESV.SetGet_Res, true)]
-  [TestCase(ESV.SetI_SNA, false)]
-  [TestCase(ESV.SetC_SNA, false)]
-  [TestCase(ESV.Get_SNA, false)]
-  [TestCase(ESV.INF_SNA, false)]
-  [TestCase(ESV.SetGet_SNA, true)]
+  [TestCase(ESV.SetResponse, false)]
+  [TestCase(ESV.GetResponse, false)]
+  [TestCase(ESV.Inf, false)]
+  [TestCase(ESV.InfC, false)]
+  [TestCase(ESV.InfCResponse, false)]
+  [TestCase(ESV.SetGetResponse, true)]
+  [TestCase(ESV.SetIServiceNotAvailable, false)]
+  [TestCase(ESV.SetCServiceNotAvailable, false)]
+  [TestCase(ESV.GetServiceNotAvailable, false)]
+  [TestCase(ESV.InfServiceNotAvailable, false)]
+  [TestCase(ESV.SetGetServiceNotAvailable, true)]
   public void IsWriteOrReadService(ESV esv, bool expectedAsWriteOrReadService)
   {
     var edata = expectedAsWriteOrReadService
@@ -84,7 +84,7 @@ public class EData1Tests {
   [Test]
   public void Serialize_IsWriteOrReadService_MustNotBeSerialized()
   {
-    var edata1 = new EData1(default, default, ESV.INF, Array.Empty<PropertyRequest>());
+    var edata1 = new EData1(default, default, ESV.Inf, Array.Empty<PropertyRequest>());
 
     Assert.That(JsonSerializer.Serialize(edata1), Does.Not.Contain($"\"\"{nameof(edata1.IsWriteOrReadService)}\"\""));
   }

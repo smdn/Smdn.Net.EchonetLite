@@ -29,14 +29,14 @@ namespace Smdn.Net.EchonetLite.Protocol
         /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
         /// <param name="opcList"><see cref="OPCList"/>に指定する値。</param>
         /// <exception cref="ArgumentException">
-        /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGet_Res"/>, <see cref="ESV.SetGet_SNA"/>のいずれかです。
+        /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかです。
         /// この場合、<see cref="OPCSetList"/>および<see cref="OPCGetList"/>を指定する必要があります。
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="opcList"/>が<see langword="null"/>です。</exception>
         public EData1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcList)
         {
             if (FrameSerializer.IsESVWriteOrReadService(esv))
-                throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGet_Res)}, or {nameof(ESV.SetGet_SNA)}.", paramName: nameof(esv));
+                throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
 
             SEOJ = seoj;
             DEOJ = deoj;
@@ -56,14 +56,14 @@ namespace Smdn.Net.EchonetLite.Protocol
         /// <param name="opcSetList"><see cref="OPCSetList"/>に指定する値。</param>
         /// <param name="opcGetList"><see cref="OPCGetList"/>に指定する値。</param>
         /// <exception cref="ArgumentException">
-        /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGet_Res"/>, <see cref="ESV.SetGet_SNA"/>のいずれかではありません。
+        /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかではありません。
         /// この場合、<see cref="OPCList"/>のみを指定する必要があります。
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="opcSetList"/>もしくは<paramref name="opcGetList"/>が<see langword="null"/>です。</exception>
         public EData1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcSetList, IReadOnlyCollection<PropertyRequest> opcGetList)
         {
             if (!FrameSerializer.IsESVWriteOrReadService(esv))
-                throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGet_Res)}, or {nameof(ESV.SetGet_SNA)}.", paramName: nameof(esv));
+                throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
 
             SEOJ = seoj;
             DEOJ = deoj;

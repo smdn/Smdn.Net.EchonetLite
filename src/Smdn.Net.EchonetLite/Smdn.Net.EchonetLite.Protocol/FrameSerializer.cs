@@ -86,7 +86,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             // ECHONET Liteプロパティ(1B)
             // EDTのバイト数(1B)
             // プロパティ値データ(PDCで指定)
-            var failIfOpcSetOrOpcGetIsZero = IsESVWriteOrReadService(esv) && esv != ESV.SetGet_SNA;
+            var failIfOpcSetOrOpcGetIsZero = IsESVWriteOrReadService(esv) && esv != ESV.SetGetServiceNotAvailable;
 
             if (!TryWriteEDataType1ProcessingTargetProperties(buffer, opcListOrOpcSetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
                 throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
@@ -176,8 +176,8 @@ namespace Smdn.Net.EchonetLite.Protocol
         internal static bool IsESVWriteOrReadService(ESV esv)
             => esv switch {
                 ESV.SetGet => true,
-                ESV.SetGet_Res => true,
-                ESV.SetGet_SNA => true,
+                ESV.SetGetResponse => true,
+                ESV.SetGetServiceNotAvailable => true,
                 _ => false,
             };
 
