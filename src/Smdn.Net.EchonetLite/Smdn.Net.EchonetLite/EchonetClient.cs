@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Smdn.Net.EchonetLite.Protocol;
-using Smdn.Net.EchonetLite.Extensions;
 
 namespace Smdn.Net.EchonetLite
 {
