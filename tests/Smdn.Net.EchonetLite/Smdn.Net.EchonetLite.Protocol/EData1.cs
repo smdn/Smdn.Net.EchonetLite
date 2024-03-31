@@ -8,14 +8,14 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.Protocol;
 
 [TestFixture]
-public class EDATA1Tests {
+public class EData1Tests {
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGet_Res)]
   [TestCase(ESV.SetGet_SNA)]
   public void Ctor_NotForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
-      () => new EDATA1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>())
+      () => new EData1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>())
     );
   }
 
@@ -25,10 +25,10 @@ public class EDATA1Tests {
   public void Ctor_ForWriteOrReadService_OPCSetOPCGetCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
-      () => new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: null!, opcGetList: Array.Empty<PropertyRequest>())
+      () => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: null!, opcGetList: Array.Empty<PropertyRequest>())
     );
     Assert.Throws<ArgumentNullException>(
-      () => new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: null!)
+      () => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: null!)
     );
   }
 
@@ -40,7 +40,7 @@ public class EDATA1Tests {
   public void Ctor_ForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
-      () => new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
+      () => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
     );
   }
 
@@ -52,7 +52,7 @@ public class EDATA1Tests {
   public void Ctor_NotForWriteOrReadService_OPCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
-      () => new EDATA1(seoj: default, deoj: default, esv: esv, opcList: null!)
+      () => new EData1(seoj: default, deoj: default, esv: esv, opcList: null!)
     );
   }
 
@@ -75,8 +75,8 @@ public class EDATA1Tests {
   public void IsWriteOrReadService(ESV esv, bool expectedAsWriteOrReadService)
   {
     var edata = expectedAsWriteOrReadService
-      ? new EDATA1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
-      : new EDATA1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
+      ? new EData1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
+      : new EData1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
 
     Assert.That(edata.IsWriteOrReadService, Is.EqualTo(expectedAsWriteOrReadService), nameof(edata.IsWriteOrReadService));
   }
@@ -84,7 +84,7 @@ public class EDATA1Tests {
   [Test]
   public void Serialize_IsWriteOrReadService_MustNotBeSerialized()
   {
-    var edata1 = new EDATA1(default, default, ESV.INF, Array.Empty<PropertyRequest>());
+    var edata1 = new EData1(default, default, ESV.INF, Array.Empty<PropertyRequest>());
 
     Assert.That(JsonSerializer.Serialize(edata1), Does.Not.Contain($"\"\"{nameof(edata1.IsWriteOrReadService)}\"\""));
   }
@@ -96,7 +96,7 @@ public class EDATA1Tests {
   [TestCase((ESV)0xFF, "\"ESV\":\"FF\"")]
   public void Serialize_ClassGroupCode(ESV esv, string expectedJsonFragment)
   {
-    var edata1 = new EDATA1(default, default, esv, Array.Empty<PropertyRequest>());
+    var edata1 = new EData1(default, default, esv, Array.Empty<PropertyRequest>());
 
     Assert.That(JsonSerializer.Serialize(edata1), Does.Contain(expectedJsonFragment));
   }

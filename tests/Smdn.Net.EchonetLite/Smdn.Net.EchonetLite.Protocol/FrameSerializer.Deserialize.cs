@@ -105,9 +105,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
 
-    var edata = (EDATA1)frame.EDATA!;
+    var edata = (EData1)frame.EData!;
 
     Assert.That(edata.SEOJ.ClassGroupCode, Is.EqualTo(seojClassGroupCode), nameof(edata.SEOJ.ClassGroupCode));
     Assert.That(edata.SEOJ.ClassCode, Is.EqualTo(seojClassCode), nameof(edata.SEOJ.ClassCode));
@@ -149,9 +149,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
 
-    var edata = (EDATA1)frame.EDATA!;
+    var edata = (EData1)frame.EData!;
 
     Assert.That(edata.DEOJ.ClassGroupCode, Is.EqualTo(deojClassGroupCode), nameof(edata.DEOJ.ClassGroupCode));
     Assert.That(edata.DEOJ.ClassCode, Is.EqualTo(deojClassCode), nameof(edata.DEOJ.ClassCode));
@@ -204,9 +204,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
 
-    var edata = (EDATA1)frame.EDATA!;
+    var edata = (EData1)frame.EData!;
 
     Assert.That(edata.ESV, Is.EqualTo(expectedESV), nameof(edata.ESV));
   }
@@ -242,9 +242,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
 
-    var edata = (EDATA1)frame.EDATA!;
+    var edata = (EData1)frame.EData!;
 
     Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
@@ -294,9 +294,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
 
-    var edata = (EDATA1)frame.EDATA!;
+    var edata = (EData1)frame.EData!;
 
     Assert.That(edata.OPCGetList, Is.Null, nameof(edata.OPCGetList));
     Assert.That(edata.OPCSetList, Is.Null, nameof(edata.OPCSetList));
@@ -331,9 +331,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
 
-    var edata = (EDATA1)frame.EDATA!;
+    var edata = (EData1)frame.EData!;
 
     Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
@@ -364,9 +364,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA1>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
 
-    var edata = (EDATA1)frame.EDATA!;
+    var edata = (EData1)frame.EData!;
 
     Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
@@ -404,9 +404,9 @@ partial class FrameSerializerTests {
   {
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA2>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData2>(), nameof(frame.EData));
 
-    var edata = (EDATA2)frame.EDATA!;
+    var edata = (EData2)frame.EData!;
 
     Assert.That(edata.Message, SequenceIs.EqualTo(expectedEDATA), nameof(edata.Message));
   }
@@ -418,9 +418,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 
-    Assert.That(frame!.EDATA, Is.InstanceOf<EDATA2>(), nameof(frame.EDATA));
+    Assert.That(frame!.EData, Is.InstanceOf<EData2>(), nameof(frame.EData));
 
-    var edata = (EDATA2)frame.EDATA!;
+    var edata = (EData2)frame.EData!;
 
     Assert.That(edata.Message.IsEmpty, Is.True, nameof(edata.Message));
   }

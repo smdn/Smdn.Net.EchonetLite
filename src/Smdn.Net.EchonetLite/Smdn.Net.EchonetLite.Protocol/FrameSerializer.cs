@@ -22,8 +22,8 @@ namespace Smdn.Net.EchonetLite.Protocol
             switch (frame.EHD2)
             {
                 case EHD2.Type1:
-                    if (frame.EDATA is not EDATA1 edata1)
-                        throw new ArgumentException($"{nameof(EDATA1)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
+                    if (frame.EData is not EData1 edata1)
+                        throw new ArgumentException($"{nameof(EData1)} must be set to {nameof(Frame)}.{nameof(Frame.EData)}.", paramName: nameof(frame));
 
 #if !NET5_0_OR_GREATER // NotNullWhenAttribute
 #pragma warning disable CS8604
@@ -43,8 +43,8 @@ namespace Smdn.Net.EchonetLite.Protocol
                     break;
 
                 case EHD2.Type2:
-                    if (frame.EDATA is not EDATA2 edata2)
-                        throw new ArgumentException($"{nameof(EDATA2)} must be set to {nameof(Frame)}.{nameof(Frame.EDATA)}.", paramName: nameof(frame));
+                    if (frame.EData is not EData2 edata2)
+                        throw new ArgumentException($"{nameof(EData2)} must be set to {nameof(Frame)}.{nameof(Frame.EData)}.", paramName: nameof(frame));
 
                     SerializeEchonetLiteFrameFormat2(buffer, frame.TID, edata2.Message.Span);
 
@@ -88,7 +88,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             // プロパティ値データ(PDCで指定)
             var failIfOpcSetOrOpcGetIsZero = IsESVWriteOrReadService(esv) && esv != ESV.SetGet_SNA;
 
-            if (!TryWriteEDATAType1ProcessingTargetProperties(buffer, opcListOrOpcSetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
+            if (!TryWriteEDataType1ProcessingTargetProperties(buffer, opcListOrOpcSetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
                 throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
 
             if (IsESVWriteOrReadService(esv))
@@ -100,7 +100,7 @@ namespace Smdn.Net.EchonetLite.Protocol
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                if (!TryWriteEDATAType1ProcessingTargetProperties(buffer, opcGetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
+                if (!TryWriteEDataType1ProcessingTargetProperties(buffer, opcGetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
                     throw new InvalidOperationException("OPCGet can not be zero when ESV is other than SetGet_SNA.");
             }
         }
@@ -116,9 +116,9 @@ namespace Smdn.Net.EchonetLite.Protocol
 
             WriteEchonetLiteEHDAndTID(buffer, EHD1.ECHONETLite, EHD2.Type2, tid);
 
-            var bufferEDATASpan = buffer.GetSpan(edata.Length);
+            var bufferEDataSpan = buffer.GetSpan(edata.Length);
 
-            edata.CopyTo(bufferEDATASpan);
+            edata.CopyTo(bufferEDataSpan);
 
             buffer.Advance(edata.Length);
         }
@@ -149,7 +149,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             switch (ehd2)
             {
                 case EHD2.Type1:
-                    if (TryReadEDATAType1(edataSpan, out var edata))
+                    if (TryReadEDataType1(edataSpan, out var edata))
                     {
                         frame = new Frame(ehd1, ehd2, tid, edata);
                         return true;
@@ -162,7 +162,7 @@ namespace Smdn.Net.EchonetLite.Protocol
                         ehd1,
                         ehd2,
                         tid,
-                        new EDATA2
+                        new EData2
                         (
                             edataSpan.ToArray() // TODO: reduce allocation
                         )
@@ -181,15 +181,15 @@ namespace Smdn.Net.EchonetLite.Protocol
                 _ => false,
             };
 
-        private static bool TryReadEDATAType1(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out EDATA1? edata)
+        private static bool TryReadEDataType1(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out EData1? edata)
         {
             edata = null;
 
             if (bytes.Length < 7)
                 return false;
 
-            var seoj = ReadEDATA1EOJ(bytes.Slice(0, 3));
-            var deoj = ReadEDATA1EOJ(bytes.Slice(3, 3));
+            var seoj = ReadEData1EOJ(bytes.Slice(0, 3));
+            var deoj = ReadEData1EOJ(bytes.Slice(3, 3));
             var esv = (ESV)bytes[6];
 
             bytes = bytes.Slice(7);
@@ -201,7 +201,7 @@ namespace Smdn.Net.EchonetLite.Protocol
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcSetList, out var bytesReadForOPCSetList))
+                if (!TryReadEData1ProcessingTargetProperties(bytes, out var opcSetList, out var bytesReadForOPCSetList))
                     return false;
 
                 bytes = bytes.Slice(bytesReadForOPCSetList);
@@ -210,7 +210,7 @@ namespace Smdn.Net.EchonetLite.Protocol
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
+                if (!TryReadEData1ProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
                     return false;
 
                 edata = new
@@ -230,7 +230,7 @@ namespace Smdn.Net.EchonetLite.Protocol
                 // ECHONET Liteプロパティ(1B)
                 // EDTのバイト数(1B)
                 // プロパティ値データ(PDCで指定)
-                if (!TryReadEDATA1ProcessingTargetProperties(bytes, out var opcList, out _ /* var bytesRead */))
+                if (!TryReadEData1ProcessingTargetProperties(bytes, out var opcList, out _ /* var bytesRead */))
                     return false;
 
                 // bytes = bytes.Slice(bytesRead);
@@ -247,7 +247,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             return true;
         }
 
-        private static EOJ ReadEDATA1EOJ(ReadOnlySpan<byte> bytes)
+        private static EOJ ReadEData1EOJ(ReadOnlySpan<byte> bytes)
         {
 #if DEBUG
             if (bytes.Length < 3)
@@ -262,7 +262,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             );
         }
 
-        private static bool TryReadEDATA1ProcessingTargetProperties(
+        private static bool TryReadEData1ProcessingTargetProperties(
           ReadOnlySpan<byte> bytes,
           [NotNullWhen(true)] out IReadOnlyCollection<PropertyRequest>? processingTargetProperties,
           out int bytesRead
@@ -356,7 +356,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             buffer.Advance(3);
         }
 
-        private static bool TryWriteEDATAType1ProcessingTargetProperties(
+        private static bool TryWriteEDataType1ProcessingTargetProperties(
             IBufferWriter<byte> buffer,
             IEnumerable<PropertyRequest> opcList,
             bool failIfEmpty

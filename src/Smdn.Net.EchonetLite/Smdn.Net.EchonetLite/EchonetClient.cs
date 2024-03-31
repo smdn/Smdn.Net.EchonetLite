@@ -346,7 +346,7 @@ namespace Smdn.Net.EchonetLite
 
                     if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
                         return;
-                    if (value.response.EDATA is not EDATA1 edata)
+                    if (value.response.EData is not EData1 edata)
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
@@ -467,7 +467,7 @@ namespace Smdn.Net.EchonetLite
 
                     if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
                         return;
-                    if (value.response.EDATA is not EDATA1 edata)
+                    if (value.response.EData is not EData1 edata)
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
@@ -577,7 +577,7 @@ namespace Smdn.Net.EchonetLite
 
                     if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
                         return;
-                    if (value.response.EDATA is not EDATA1 edata)
+                    if (value.response.EData is not EData1 edata)
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
@@ -692,7 +692,7 @@ namespace Smdn.Net.EchonetLite
 
                     if (destinationNode is not null && !destinationNode.Address.Equals(value.address))
                         return;
-                    if (value.response.EDATA is not EDATA1 edata)
+                    if (value.response.EData is not EData1 edata)
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
@@ -921,7 +921,7 @@ namespace Smdn.Net.EchonetLite
 
                     if (!destinationNode.Address.Equals(value.address))
                         return;
-                    if (value.response.EDATA is not EDATA1 edata)
+                    if (value.response.EData is not EData1 edata)
                         return;
                     if (edata.SEOJ != destinationObject.EOJ)
                         return;
@@ -1246,7 +1246,7 @@ namespace Smdn.Net.EchonetLite
         /// イベントデータを格納している<see cref="ValueTuple{IPAddress,Frame}"/>。
         /// ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
-        /// <exception cref="InvalidOperationException">電文形式 1（規定電文形式）を期待しましたが、<see cref="EDATA1"/>を取得できませんでした。</exception>
+        /// <exception cref="InvalidOperationException">電文形式 1（規定電文形式）を期待しましたが、<see cref="EData1"/>を取得できませんでした。</exception>
 #pragma warning disable CA1502 // TODO: reduce complexity
         private void HandleFrameReceived(object? sender, (IPAddress address, Frame frame) value)
         {
@@ -1255,8 +1255,8 @@ namespace Smdn.Net.EchonetLite
             if (value.frame.EHD2 != EHD2.Type1)
                 return;
 
-            if (value.frame.EDATA is not EDATA1 edata)
-                throw new InvalidOperationException($"expected {nameof(EDATA1)}, but was {value.frame.EDATA?.GetType()}");
+            if (value.frame.EData is not EData1 edata)
+                throw new InvalidOperationException($"expected {nameof(EData1)}, but was {value.frame.EData?.GetType()}");
 
                 var sourceNode = Nodes.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
                 //未知のノードの場合
@@ -1367,7 +1367,7 @@ namespace Smdn.Net.EchonetLite
         /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
         /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
-        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
         /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1381,7 +1381,7 @@ namespace Smdn.Net.EchonetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
         /// </seealso>
-        private async Task<bool> HandlePropertyValueWriteRequestAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchonetObject? destObject)
+        private async Task<bool> HandlePropertyValueWriteRequestAsync((IPAddress address, Frame frame) request, EData1 edata, EchonetObject? destObject)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
@@ -1443,7 +1443,7 @@ namespace Smdn.Net.EchonetLite
         /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
         /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
-        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
         /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1457,7 +1457,7 @@ namespace Smdn.Net.EchonetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
         /// </seealso>
-        private async Task<bool> HandlePropertyValueWriteRequestResponseRequiredAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchonetObject? destObject)
+        private async Task<bool> HandlePropertyValueWriteRequestResponseRequiredAsync((IPAddress address, Frame frame) request, EData1 edata, EchonetObject? destObject)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
@@ -1538,7 +1538,7 @@ namespace Smdn.Net.EchonetLite
         /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
         /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
-        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
         /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1552,7 +1552,7 @@ namespace Smdn.Net.EchonetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
         /// </seealso>
-        private async Task<bool> HandlePropertyValueReadRequest((IPAddress address, Frame frame) request, EDATA1 edata, EchonetObject? destObject)
+        private async Task<bool> HandlePropertyValueReadRequest((IPAddress address, Frame frame) request, EData1 edata, EchonetObject? destObject)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
@@ -1636,7 +1636,7 @@ namespace Smdn.Net.EchonetLite
         /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
         /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
-        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
         /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1650,7 +1650,7 @@ namespace Smdn.Net.EchonetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
         /// </seealso>
-        private async Task<bool> HandlePropertyValueWriteReadRequestAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchonetObject? destObject)
+        private async Task<bool> HandlePropertyValueWriteReadRequestAsync((IPAddress address, Frame frame) request, EData1 edata, EchonetObject? destObject)
         {
             if (edata.OPCSetList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCSetList)} is null");
@@ -1760,7 +1760,7 @@ namespace Smdn.Net.EchonetLite
         /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
         /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
-        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetNode"/>。</param>
         /// <returns>
         /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1775,7 +1775,7 @@ namespace Smdn.Net.EchonetLite
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
         /// </seealso>
 #pragma warning disable IDE0060
-        private async Task<bool> HandlePropertyValueNotificationRequestAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchonetNode sourceNode)
+        private async Task<bool> HandlePropertyValueNotificationRequestAsync((IPAddress address, Frame frame) request, EData1 edata, EchonetNode sourceNode)
 #pragma warning restore IDE0060
         {
             if (edata.OPCList is null)
@@ -1835,7 +1835,7 @@ namespace Smdn.Net.EchonetLite
         /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
         /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
         /// </param>
-        /// <param name="edata">受信したEDATAを表す<see cref="EDATA1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+        /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
         /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetNode"/>。</param>
         /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
         /// <returns>
@@ -1850,7 +1850,7 @@ namespace Smdn.Net.EchonetLite
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
         /// </seealso>
-        private async Task<bool> HandlePropertyValueNotificationResponseRequiredAsync((IPAddress address, Frame frame) request, EDATA1 edata, EchonetNode sourceNode, EchonetObject? destObject)
+        private async Task<bool> HandlePropertyValueNotificationResponseRequiredAsync((IPAddress address, Frame frame) request, EData1 edata, EchonetNode sourceNode, EchonetObject? destObject)
         {
             if (edata.OPCList is null)
                 throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");

@@ -19,13 +19,13 @@ namespace Smdn.Net.EchonetLite.Protocol
         /// <param name="ehd1"><see cref="EHD1"/>に指定する値。</param>
         /// <param name="ehd2"><see cref="EHD2"/>に指定する値。</param>
         /// <param name="tid"><see cref="TID"/>に指定する値。</param>
-        /// <param name="edata"><see cref="EDATA"/>に指定する値。</param>
+        /// <param name="edata"><see cref="EData"/>に指定する値。</param>
         /// <exception cref="ArgumentNullException"><paramref name="edata"/>が<see langword="null"/>です。</exception>
         /// <exception cref="ArgumentException">
         /// <paramref name="edata"/>の型が<paramref name="ehd2"/>と矛盾しています。
         /// または<paramref name="ehd2"/>に不正な値が指定されています。
         /// </exception>
-        public Frame(EHD1 ehd1, EHD2 ehd2, ushort tid, IEDATA edata)
+        public Frame(EHD1 ehd1, EHD2 ehd2, ushort tid, IEData edata)
         {
             if (edata is null)
                 throw new ArgumentNullException(nameof(edata));
@@ -33,12 +33,12 @@ namespace Smdn.Net.EchonetLite.Protocol
             switch (ehd2)
             {
                 case EHD2.Type1:
-                    if (edata is not EDATA1)
+                    if (edata is not EData1)
                         throw new ArgumentException(message: "type mismatch", paramName: nameof(edata));
                     break;
 
                 case EHD2.Type2:
-                    if (edata is not EDATA2)
+                    if (edata is not EData2)
                         throw new ArgumentException(message: "type mismatch", paramName: nameof(edata));
                     break;
 
@@ -49,7 +49,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             EHD1 = ehd1;
             EHD2 = ehd2;
             TID = tid;
-            EDATA = edata;
+            EData = edata;
         }
 
         /// <summary>
@@ -73,6 +73,6 @@ namespace Smdn.Net.EchonetLite.Protocol
         /// ECHONET Liteデータ
         /// ECHONET Lite 通信ミドルウェアにてやり取りされる電文のデータ領域。
         /// </summary>
-        public IEDATA? EDATA { get; }
+        public IEData? EData { get; }
     }
 }

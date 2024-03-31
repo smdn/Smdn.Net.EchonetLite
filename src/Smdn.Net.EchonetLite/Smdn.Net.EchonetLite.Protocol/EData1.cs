@@ -16,10 +16,10 @@ namespace Smdn.Net.EchonetLite.Protocol
     /// <summary>
     /// 電文形式 1（規定電文形式）
     /// </summary>
-    public sealed class EDATA1 : IEDATA
+    public sealed class EData1 : IEData
     {
         /// <summary>
-        /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EDATA1"/>を作成します。
+        /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EData1"/>を作成します。
         /// </summary>
         /// <remarks>
         /// このオーバーロードでは、<see cref="OPCGetList"/>および<see cref="OPCSetList"/>に<see langword="null"/>を設定します。
@@ -33,7 +33,7 @@ namespace Smdn.Net.EchonetLite.Protocol
         /// この場合、<see cref="OPCSetList"/>および<see cref="OPCGetList"/>を指定する必要があります。
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="opcList"/>が<see langword="null"/>です。</exception>
-        public EDATA1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcList)
+        public EData1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcList)
         {
             if (FrameSerializer.IsESVWriteOrReadService(esv))
                 throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGet_Res)}, or {nameof(ESV.SetGet_SNA)}.", paramName: nameof(esv));
@@ -45,7 +45,7 @@ namespace Smdn.Net.EchonetLite.Protocol
         }
 
         /// <summary>
-        /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EDATA1"/>を作成します。
+        /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EData1"/>を作成します。
         /// </summary>
         /// <remarks>
         /// このオーバーロードでは、<see cref="OPCList"/>に<see langword="null"/>を設定します。
@@ -60,7 +60,7 @@ namespace Smdn.Net.EchonetLite.Protocol
         /// この場合、<see cref="OPCList"/>のみを指定する必要があります。
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="opcSetList"/>もしくは<paramref name="opcGetList"/>が<see langword="null"/>です。</exception>
-        public EDATA1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcSetList, IReadOnlyCollection<PropertyRequest> opcGetList)
+        public EData1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcSetList, IReadOnlyCollection<PropertyRequest> opcGetList)
         {
             if (!FrameSerializer.IsESVWriteOrReadService(esv))
                 throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGet_Res)}, or {nameof(ESV.SetGet_SNA)}.", paramName: nameof(esv));

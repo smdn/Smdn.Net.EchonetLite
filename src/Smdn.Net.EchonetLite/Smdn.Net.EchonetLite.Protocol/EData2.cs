@@ -9,13 +9,13 @@ namespace Smdn.Net.EchonetLite.Protocol
     /// <summary>
     /// 電文形式２（任意電文形式）
     /// </summary>
-    public sealed class EDATA2 : IEDATA
+    public sealed class EData2 : IEData
     {
         /// <summary>
-        /// ECHONET Liteフレームの電文形式２（任意電文形式）の電文を記述する<see cref="EDATA2"/>を作成します。
+        /// ECHONET Liteフレームの電文形式２（任意電文形式）の電文を記述する<see cref="EData2"/>を作成します。
         /// </summary>
         /// <param name="message"><see cref="Message"/>に指定する値。</param>
-        public EDATA2(ReadOnlyMemory<byte> message)
+        public EData2(ReadOnlyMemory<byte> message)
         {
             Message = message;
         }
