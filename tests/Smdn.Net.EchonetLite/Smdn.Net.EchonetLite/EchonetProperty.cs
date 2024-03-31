@@ -17,9 +17,9 @@ public class EchonetPropertyTests {
       classGroupCode: 0xFF,
       classCode: 0xFF,
       epc: 0xFF,
-      isPropertyAnno: true,
-      isPropertySet: true,
-      isPropertyGet: true
+      isAnno: true,
+      isSet: true,
+      isGet: true
     );
 
   [Test]
