@@ -47,9 +47,9 @@ namespace Smdn.Net.EchonetLite
                 classGroupCode: classGroupCode,
                 classCode: classCode,
                 epc: epc,
-                isPropertyAnno: false,
-                isPropertySet: false,
-                isPropertyGet: false
+                isAnno: false,
+                isSet: false,
+                isGet: false
             )
         {
         }
@@ -59,18 +59,18 @@ namespace Smdn.Net.EchonetLite
             byte classGroupCode,
             byte classCode,
             byte epc,
-            bool isPropertyAnno,
-            bool isPropertySet,
-            bool isPropertyGet
+            bool isAnno,
+            bool isSet,
+            bool isGet
         )
             : this
             (
                 spec:
                     SpecificationUtil.FindProperty(classGroupCode, classCode, epc) ??
                     GenerateUnknownProperty(epc),
-                isPropertyAnno: isPropertyAnno,
-                isPropertySet: isPropertySet,
-                isPropertyGet: isPropertyGet
+                isAnno: isAnno,
+                isSet: isSet,
+                isGet: isGet
             )
         {
         }
@@ -79,9 +79,9 @@ namespace Smdn.Net.EchonetLite
             : this
             (
                 spec: spec,
-                isPropertyAnno: false,
-                isPropertySet: false,
-                isPropertyGet: false
+                isAnno: false,
+                isSet: false,
+                isGet: false
             )
         {
         }
@@ -89,15 +89,15 @@ namespace Smdn.Net.EchonetLite
         public EchonetProperty
         (
             EchonetPropertySpecification spec,
-            bool isPropertyAnno,
-            bool isPropertySet,
-            bool isPropertyGet
+            bool isAnno,
+            bool isSet,
+            bool isGet
         )
         {
             Spec = spec ?? throw new ArgumentNullException(nameof(spec));
-            Anno = isPropertyAnno;
-            Set = isPropertySet;
-            Get = isPropertyGet;
+            IsAnno = isAnno;
+            IsSet = isSet;
+            IsGet = isGet;
         }
 
         /// <summary>
@@ -109,17 +109,17 @@ namespace Smdn.Net.EchonetLite
         /// プロパティ値の読み出し・通知要求のサービスを処理する。
         /// プロパティ値読み出し要求(0x62)、プロパティ値書き込み・読み出し要求(0x6E)、プロパティ値通知要求(0x63)の要求受付処理を実施する。
         /// </summary>
-        public bool Get { get; }
+        public bool IsGet { get; }
         /// <summary>
         /// プロパティ値の書き込み要求のサービスを処理する。
         /// プロパティ値書き込み要求(応答不要)(0x60)、プロパティ値書き込み要求(応答要)(0x61)、プロパティ値書き込み・読み出し要求(0x6E)の要求受付処理を実施する。
         /// </summary>
-        public bool Set { get; }
+        public bool IsSet { get; }
         /// <summary>
         /// プロパティ値の通知要求のサービスを処理する。
         /// プロパティ値通知要求（0x63）の要求受付処理を実施する。
         /// </summary>
-        public bool Anno { get; }
+        public bool IsAnno { get; }
 
         private ArrayBufferWriter<byte>? _value = null;
 

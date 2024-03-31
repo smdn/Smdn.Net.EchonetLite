@@ -21,13 +21,13 @@ namespace Smdn.Net.EchonetLite
             sb.AppendFormat(provider: null, "0x{0:X2}", property.Spec.Code);
             sb.Append(property.Spec.Name);
             sb.Append(' ');
-            sb.Append(property.Get ? "Get" : "");
+            sb.Append(property.IsGet ? "Get" : "");
             sb.Append(property.Spec.GetRequired ? "(Req)" : "");
             sb.Append(' ');
-            sb.Append(property.Set ? "Set" : "");
+            sb.Append(property.IsSet ? "Set" : "");
             sb.Append(property.Spec.SetRequired ? "(Req)" : "");
             sb.Append(' ');
-            sb.Append(property.Anno ? "Anno" : "");
+            sb.Append(property.IsAnno ? "Anno" : "");
             sb.Append(property.Spec.AnnoRequired ? "(Req)" : "");
             return sb.ToString();
         }
