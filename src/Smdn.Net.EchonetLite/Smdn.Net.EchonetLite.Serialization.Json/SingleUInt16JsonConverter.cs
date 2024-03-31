@@ -6,7 +6,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Serialization;
+namespace Smdn.Net.EchonetLite.Serialization.Json;
 
 internal sealed class SingleUInt16JsonConverter : JsonConverter<ushort>
 {

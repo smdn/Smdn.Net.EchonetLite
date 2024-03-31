@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
-namespace EchoDotNetLite.Models;
+namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class EchoPropertyInstanceTests {

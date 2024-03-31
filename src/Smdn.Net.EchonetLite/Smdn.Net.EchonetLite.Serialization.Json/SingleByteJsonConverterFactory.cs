@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Reflection;
 
-namespace EchoDotNetLite.Serialization;
+namespace Smdn.Net.EchonetLite.Serialization.Json;
 
 internal sealed class SingleByteJsonConverterFactory : JsonConverterFactory
 {

@@ -1,15 +1,13 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Enums;
-using EchoDotNetLite.Models;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace EchoDotNetLite
+namespace Smdn.Net.EchonetLite.Protocol
 {
     public static class FrameSerializer
     {

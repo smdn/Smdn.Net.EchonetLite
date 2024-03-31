@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -14,7 +13,7 @@ using System.Runtime.InteropServices; // MemoryMarshal
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EchoDotNetLiteLANBridge
+namespace Smdn.Net.EchonetLite
 {
     public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable
     {

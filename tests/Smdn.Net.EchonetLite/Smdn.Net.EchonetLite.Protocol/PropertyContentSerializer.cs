@@ -5,11 +5,9 @@ using System.Collections.Generic;
 
 using NUnit.Framework;
 
-using EchoDotNetLite.Models;
-
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
-namespace EchoDotNetLite;
+namespace Smdn.Net.EchonetLite.Protocol;
 
 [TestFixture]
 public partial class PropertyContentSerializerTests {

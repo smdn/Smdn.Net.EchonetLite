@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-namespace EchoDotNetLite.Enums
+namespace Smdn.Net.EchonetLite.Protocol
 {
     public enum EHD2 : byte
     {

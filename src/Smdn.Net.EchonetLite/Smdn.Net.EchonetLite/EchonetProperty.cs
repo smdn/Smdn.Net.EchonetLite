@@ -6,7 +6,7 @@ using System.Buffers;
 
 using Smdn.Net.EchonetLite.Appendix;
 
-namespace EchoDotNetLite.Models
+namespace Smdn.Net.EchonetLite
 {
 
     /// <summary>

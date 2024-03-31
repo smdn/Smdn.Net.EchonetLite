@@ -7,9 +7,9 @@ using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-using Smdn.Net.EchonetLite;
+using Smdn.Net.EchonetLite.Protocol;
 
-namespace EchoDotNetLite.Models
+namespace Smdn.Net.EchonetLite
 {
 
     /// <summary>

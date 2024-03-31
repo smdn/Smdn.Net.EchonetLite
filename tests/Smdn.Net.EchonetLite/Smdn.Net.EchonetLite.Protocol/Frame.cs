@@ -1,13 +1,11 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Enums;
-
 using System;
 using System.Text.Json;
 
 using NUnit.Framework;
 
-namespace EchoDotNetLite.Models;
+namespace Smdn.Net.EchonetLite.Protocol;
 
 [TestFixture]
 public class FrameTests {

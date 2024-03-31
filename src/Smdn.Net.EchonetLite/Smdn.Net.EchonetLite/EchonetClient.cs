@@ -1,9 +1,6 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Common;
-using EchoDotNetLite.Enums;
-using EchoDotNetLite.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers;
@@ -15,9 +12,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Smdn.Net.EchonetLite;
+using Smdn.Net.EchonetLite.Protocol;
+using Smdn.Net.EchonetLite.Extensions;
 
-namespace EchoDotNetLite
+namespace Smdn.Net.EchonetLite
 {
     public partial class EchoClient : IDisposable, IAsyncDisposable
     {

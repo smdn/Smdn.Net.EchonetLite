@@ -4,7 +4,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Serialization;
+namespace Smdn.Net.EchonetLite.Serialization.Json;
 
 internal sealed class SingleByteJsonConverter<TByte> : JsonConverter<TByte>
 // where TByte : System.Numerics.IUnsignedNumber<byte>

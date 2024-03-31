@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 using NUnit.Framework;
 
-namespace EchoDotNetLite;
+namespace Smdn.Net.EchonetLite.Protocol;
 
 [TestFixture]
 public partial class FrameSerializerTests {

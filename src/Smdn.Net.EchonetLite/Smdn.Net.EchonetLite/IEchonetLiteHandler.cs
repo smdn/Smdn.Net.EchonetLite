@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EchoDotNetLite
+namespace Smdn.Net.EchonetLite
 {
 
     /// <summary>

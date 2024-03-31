@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 
-namespace EchoDotNetLite.Serialization;
+namespace Smdn.Net.EchonetLite.Serialization.Json;
 
 internal static class Hexadecimals
 {

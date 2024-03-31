@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 
-namespace EchoDotNetLite.Models
+namespace Smdn.Net.EchonetLite.Protocol
 {
 
     /// <summary>

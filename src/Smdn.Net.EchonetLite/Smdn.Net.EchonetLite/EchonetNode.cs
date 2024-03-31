@@ -8,10 +8,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 
-using Smdn.Net.EchonetLite;
 using Smdn.Net.EchonetLite.Appendix;
 
-namespace EchoDotNetLite.Models
+namespace Smdn.Net.EchonetLite
 {
     /// <summary>
     /// ECHONET Liteノード

@@ -4,7 +4,7 @@ using System.Text.Json;
 
 using NUnit.Framework;
 
-namespace EchoDotNetLite.Models;
+namespace Smdn.Net.EchonetLite.Protocol;
 
 [TestFixture]
 public class EOJTests {

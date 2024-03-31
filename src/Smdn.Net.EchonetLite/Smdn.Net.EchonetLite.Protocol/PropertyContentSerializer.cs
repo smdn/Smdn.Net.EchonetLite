@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-using EchoDotNetLite.Models;
-
-namespace EchoDotNetLite;
+namespace Smdn.Net.EchonetLite.Protocol;
 
 public static class PropertyContentSerializer
 {

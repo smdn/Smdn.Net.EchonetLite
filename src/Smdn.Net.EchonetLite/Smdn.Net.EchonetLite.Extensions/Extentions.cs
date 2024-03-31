@@ -1,14 +1,13 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Models;
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
-namespace EchoDotNetLite.Common
+namespace Smdn.Net.EchonetLite.Extensions
 {
     public static class Extentions
     {

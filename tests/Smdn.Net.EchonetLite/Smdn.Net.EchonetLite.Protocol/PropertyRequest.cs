@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: MIT
 using System.Text.Json;
 
-using EchoDotNetLite.Enums;
-
 using NUnit.Framework;
 
-namespace EchoDotNetLite.Models;
+namespace Smdn.Net.EchonetLite.Protocol;
 
 [TestFixture]
 public class PropertyRequestTests {

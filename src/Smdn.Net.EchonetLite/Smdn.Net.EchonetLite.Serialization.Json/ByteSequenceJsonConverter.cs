@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Serialization;
+namespace Smdn.Net.EchonetLite.Serialization.Json;
 
 internal sealed class ByteSequenceJsonConverter : JsonConverter<ReadOnlyMemory<byte>>
 {

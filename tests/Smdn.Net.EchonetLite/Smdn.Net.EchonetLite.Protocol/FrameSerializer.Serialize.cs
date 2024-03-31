@@ -4,14 +4,11 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 
-using EchoDotNetLite.Models;
-using EchoDotNetLite.Enums;
-
 using NUnit.Framework;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
-namespace EchoDotNetLite;
+namespace Smdn.Net.EchonetLite.Protocol;
 
 partial class FrameSerializerTests {
   private class PseudoBufferWriter : IBufferWriter<byte> {

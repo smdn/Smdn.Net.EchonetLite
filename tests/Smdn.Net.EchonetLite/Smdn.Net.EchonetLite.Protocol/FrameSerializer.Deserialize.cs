@@ -4,14 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using EchoDotNetLite.Models;
-using EchoDotNetLite.Enums;
-
 using NUnit.Framework;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
-namespace EchoDotNetLite;
+namespace Smdn.Net.EchonetLite.Protocol;
 
 partial class FrameSerializerTests {
   private const byte EHD1_ECHONETLite = 0x10;

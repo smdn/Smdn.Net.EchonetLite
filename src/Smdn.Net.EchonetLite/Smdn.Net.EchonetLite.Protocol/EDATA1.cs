@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Enums;
-using EchoDotNetLite.Serialization;
 using System;
 using System.Collections.Generic;
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
@@ -10,7 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Models
+using Smdn.Net.EchonetLite.Serialization.Json;
+
+namespace Smdn.Net.EchonetLite.Protocol
 {
 
     /// <summary>

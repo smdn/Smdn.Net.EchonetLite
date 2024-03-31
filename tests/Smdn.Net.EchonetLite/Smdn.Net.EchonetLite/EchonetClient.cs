@@ -5,11 +5,11 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-using EchoDotNetLite.Enums;
-
 using NUnit.Framework;
 
-namespace EchoDotNetLite;
+using Smdn.Net.EchonetLite.Protocol;
+
+namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class EchoClientTests {
