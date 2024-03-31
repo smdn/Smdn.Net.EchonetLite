@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 
-namespace EchoDotNetLite.Specifications;
+namespace Smdn.Net.EchonetLite.Appendix;
 
 internal static class JsonValidationUtils {
     public static string ThrowIfValueIsNullOrEmpty(string? value, string paramName)

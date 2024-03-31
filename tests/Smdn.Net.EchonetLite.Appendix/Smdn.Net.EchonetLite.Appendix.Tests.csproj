@@ -8,6 +8,6 @@ SPDX-License-Identifier: MIT
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\src\Smdn.Net.EchonetLite.Specifications\Smdn.Net.EchonetLite.Specifications.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\src\Smdn.Net.EchonetLite.Appendix\Smdn.Net.EchonetLite.Appendix.csproj" />
   </ItemGroup>
 </Project>

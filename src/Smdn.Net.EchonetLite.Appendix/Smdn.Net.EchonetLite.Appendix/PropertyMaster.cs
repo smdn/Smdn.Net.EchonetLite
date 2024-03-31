@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Specifications
+namespace Smdn.Net.EchonetLite.Appendix
 {
     internal sealed class PropertyMaster
     {
@@ -24,7 +24,7 @@ namespace EchoDotNetLite.Specifications
         (
             string? version,
             string? appendixRelease,
-            IReadOnlyList<EchoProperty>? properties
+            IReadOnlyList<EchonetPropertySpecification>? properties
         )
         {
             Version = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(version, nameof(version));
@@ -43,6 +43,6 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// プロパティのリスト
         /// </summary>
-        public IReadOnlyList<EchoProperty> Properties { get; }
+        public IReadOnlyList<EchonetPropertySpecification> Properties { get; }
     }
 }

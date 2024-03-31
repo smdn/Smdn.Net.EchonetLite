@@ -8,13 +8,13 @@ using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Specifications
+namespace Smdn.Net.EchonetLite.Appendix
 {
 
     /// <summary>
     /// ECHONET Lite オブジェクトプロパティ
     /// </summary>
-    public sealed class EchoProperty
+    public sealed class EchonetPropertySpecification
     {
         /// <summary>
         /// JSONデシリアライズ用のコンストラクタ
@@ -22,7 +22,7 @@ namespace EchoDotNetLite.Specifications
         /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>の値。</param>
         /// <param name="code"><see cref="Code"/>に設定する値。</param>
         /// <param name="detail"><see cref="Detail"/>に設定する非<see langword="null"/>の値。</param>
-        /// <param name="value"><see cref="Value"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
+        /// <param name="valueRange"><see cref="ValueRange"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
         /// <param name="dataType"><see cref="DataType"/>に設定する非<see langword="null"/>の値。</param>
         /// <param name="logicalDataType"><see cref="LogicalDataType"/>に設定する非<see langword="null"/>の値。</param>
         /// <param name="minSize"><see cref="MinSize"/>に設定する値。</param>
@@ -33,18 +33,18 @@ namespace EchoDotNetLite.Specifications
         /// <param name="setRequired"><see cref="SetRequired"/>に設定する値。</param>
         /// <param name="anno"><see cref="Anno"/>に設定する値。</param>
         /// <param name="annoRequired"><see cref="AnnoRequired"/>に設定する値。</param>
-        /// <param name="optionRequired"><see cref="OptionRequired"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{ApplicationService}"/>を設定します。</param>
+        /// <param name="optionRequired"><see cref="OptionRequired"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{ApplicationServiceName}"/>を設定します。</param>
         /// <param name="description"><see cref="Description"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
         /// <param name="unit"><see cref="Unit"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
         /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
         /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         [JsonConstructor]
-        public EchoProperty
+        public EchonetPropertySpecification
         (
             string? name,
             byte code,
             string? detail,
-            string? value,
+            string? valueRange,
             string? dataType,
             string? logicalDataType,
             int? minSize,
@@ -55,7 +55,7 @@ namespace EchoDotNetLite.Specifications
             bool setRequired,
             bool anno,
             bool annoRequired,
-            IReadOnlyList<ApplicationService>? optionRequired,
+            IReadOnlyList<ApplicationServiceName>? optionRequired,
             string? description,
             string? unit
         )
@@ -63,7 +63,7 @@ namespace EchoDotNetLite.Specifications
             Name = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(name, nameof(name));
             Code = code;
             Detail = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(detail, nameof(detail));
-            Value = string.IsNullOrEmpty(value) ? null : value;
+            ValueRange = string.IsNullOrEmpty(valueRange) ? null : valueRange;
             DataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(dataType, nameof(dataType));
             LogicalDataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(logicalDataType, nameof(logicalDataType));
             MinSize = minSize;
@@ -74,7 +74,7 @@ namespace EchoDotNetLite.Specifications
             SetRequired = setRequired;
             Anno = anno;
             AnnoRequired = annoRequired;
-            OptionRequired = optionRequired ?? Array.Empty<ApplicationService>();
+            OptionRequired = optionRequired ?? Array.Empty<ApplicationServiceName>();
             Description = string.IsNullOrEmpty(description) ? null : description;
             Unit = string.IsNullOrEmpty(unit) ? null : unit;
 
@@ -105,7 +105,8 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// 値域(10 進表記)
         /// </summary>
-        public string? Value { get; }
+        [JsonPropertyName("Value")]
+        public string? ValueRange { get; }
         /// <summary>
         /// データ型
         /// </summary>
@@ -156,7 +157,7 @@ namespace EchoDotNetLite.Specifications
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         // MasterDataのJSONファイルでは、プロパティ名がOptionRequiredではなくOptionRequierdとなっていることに注意
         [JsonPropertyName("OptionRequierd")]
-        public IReadOnlyList<ApplicationService> OptionRequired { get; }
+        public IReadOnlyList<ApplicationServiceName> OptionRequired { get; }
         /// <summary>
         /// 備考
         /// </summary>

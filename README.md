@@ -35,12 +35,12 @@ version 1.0.0時点では、[同仕様Ver.1.13](https://echonet.jp/spec_v113_lit
 > 現在のところAPIは未確定・変更予定あり、実装は一部不完全です。
 
 
-## Smdn.Net.EchonetLite.Specifications
-[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Specifications.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Specifications/)
+## Smdn.Net.EchonetLite.Appendix
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Appendix.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Appendix/)
 
-[Smdn.Net.EchonetLite.Specifications](./src/Smdn.Net.EchonetLite.Specifications/)は、「[ECHONET SPECIFICATION APPENDIX ECHONET 機器オブジェクト詳細規定](https://echonet.jp/spec_g/)」(en:[APPENDIX Detailed Requirements for ECHONET Device objects](https://echonet.jp/spec_g/))に記載されているクラスグループ・機器オブジェクト・プロパティ構成の定義、およびその定義を参照するためのAPIを提供します。
+[Smdn.Net.EchonetLite.Appendix](./src/Smdn.Net.EchonetLite.Appendix/)は、「[ECHONET SPECIFICATION APPENDIX ECHONET 機器オブジェクト詳細規定](https://echonet.jp/spec_g/)」(en:[APPENDIX Detailed Requirements for ECHONET Device objects](https://echonet.jp/spec_g/))に記載されているクラスグループ・機器オブジェクト・プロパティ構成の定義、およびその定義を参照するためのAPIを提供します。
 
-[APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）](https://echonet.jp/spec_old_lite/#standard-03)をもとに[生成したJSONファイル](./src/Smdn.Net.EchonetLite.Specifications/MasterData/)をアセンブリのリソースとして埋め込んでいます。　また、それを読み取るクラス郡を実装しています。
+[APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）](https://echonet.jp/spec_old_lite/#standard-03)をもとに[生成したJSONファイル](./src/Smdn.Net.EchonetLite.Appendix/MasterData/)をアセンブリのリソースとして埋め込んでいます。　また、それを読み取るクラス郡を実装しています。
 
 本ライブラリは、オリジナルにおける`EchoDotNetLite.Specifications`をベースにしています。
 

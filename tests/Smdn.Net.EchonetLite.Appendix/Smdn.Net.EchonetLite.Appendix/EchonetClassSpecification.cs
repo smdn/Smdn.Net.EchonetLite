@@ -8,7 +8,7 @@ using System.Reflection;
 
 using NUnit.Framework;
 
-namespace EchoDotNetLite.Specifications;
+namespace Smdn.Net.EchonetLite.Appendix;
 
 [TestFixture]
 public class EchoClassTests {
@@ -17,29 +17,29 @@ public class EchoClassTests {
     yield return new object?[] {
       "valid ctor params",
       new object?[] { true, (byte)0x00, "classNameOfficial", "className" },
-      null, null, static (EchoClass c) => Assert.That(c.ClassName, Is.EqualTo("className"))
+      null, null, static (EchonetClassSpecification c) => Assert.That(c.PropertyName, Is.EqualTo("className"))
     };
 
     yield return new object?[] {
       "classNameOfficial null",
       new object?[] { true, (byte)0x00, null, "className" },
-      typeof(ArgumentNullException), "classNameOfficial", null
+      typeof(ArgumentNullException), "name", null
     };
     yield return new object?[] {
       "classNameOfficial empty",
       new object?[] { true, (byte)0x00, string.Empty, "className" },
-      typeof(ArgumentException), "classNameOfficial", null
+      typeof(ArgumentException), "name", null
     };
 
     yield return new object?[] {
       "className null",
       new object?[] { true, (byte)0x00, "classNameOfficial", null },
-      typeof(ArgumentNullException), "className", null
+      typeof(ArgumentNullException), "propertyName", null
     };
     yield return new object?[] {
       "className empty",
       new object?[] { true, (byte)0x00, "classNameOfficial", string.Empty },
-      typeof(ArgumentException), "className", null
+      typeof(ArgumentException), "propertyName", null
     };
   }
 
@@ -49,10 +49,10 @@ public class EchoClassTests {
     object?[] ctorParams,
     Type? expectedExceptionType,
     string? expectedArgumentExceptionParamName,
-    Action<EchoClass>? assertClass
+    Action<EchonetClassSpecification>? assertClass
   )
   {
-    var ctor = typeof(EchoClass).GetConstructors().FirstOrDefault(
+    var ctor = typeof(EchonetClassSpecification).GetConstructors().FirstOrDefault(
       static c => c.GetCustomAttributes(typeof(JsonConstructorAttribute), inherit: false).Any()
     );
 
@@ -61,12 +61,12 @@ public class EchoClassTests {
       return;
     }
 
-    var createClass = new Func<EchoClass>(
-      () => (EchoClass)ctor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: ctorParams, culture: null)!
+    var createClass = new Func<EchonetClassSpecification>(
+      () => (EchonetClassSpecification)ctor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: ctorParams, culture: null)!
     );
 
     if (expectedExceptionType is null) {
-      EchoClass? c = null;
+      EchonetClassSpecification? c = null;
 
       Assert.DoesNotThrow(
         () => c = createClass(),
@@ -137,19 +137,19 @@ public class EchoClassTests {
   [TestCaseSource(nameof(YieldTestCases_Deserialize))]
   public void Deserialize(
     string input,
-    bool expectedStatus,
-    byte expectedClassCode,
-    string expectedClassNameOfficial,
-    string expectedClassName
+    bool expectedIsDefined,
+    byte expectedCode,
+    string expectedName,
+    string expectedPropertyName
   )
   {
-    var c = JsonSerializer.Deserialize<EchoClass>(input);
+    var c = JsonSerializer.Deserialize<EchonetClassSpecification>(input);
 
     Assert.That(c, Is.Not.Null);
-    Assert.That(c!.Status, Is.EqualTo(expectedStatus), nameof(c.Status));
-    Assert.That(c.ClassCode, Is.EqualTo(expectedClassCode), nameof(c.ClassCode));
-    Assert.That(c.ClassNameOfficial, Is.EqualTo(expectedClassNameOfficial), nameof(c.ClassNameOfficial));
-    Assert.That(c.ClassName, Is.EqualTo(expectedClassName), nameof(c.ClassName));
+    Assert.That(c!.IsDefined, Is.EqualTo(expectedIsDefined), nameof(c.IsDefined));
+    Assert.That(c.Code, Is.EqualTo(expectedCode), nameof(c.Code));
+    Assert.That(c.Name, Is.EqualTo(expectedName), nameof(c.Name));
+    Assert.That(c.PropertyName, Is.EqualTo(expectedPropertyName), nameof(c.PropertyName));
   }
 
   [TestCase(0x00, "\"ClassCode\":\"0x0\"")]
@@ -159,11 +159,11 @@ public class EchoClassTests {
   [TestCase(0xFF, "\"ClassCode\":\"0xff\"")]
   public void Serialize_ClassCode(byte classCode, string expectedJsonFragment)
   {
-    var c = new EchoClass(
-      status: default,
-      classCode: classCode,
-      classNameOfficial: "*",
-      className: "*"
+    var c = new EchonetClassSpecification(
+      isDefined: default,
+      code: classCode,
+      name: "*",
+      propertyName: "*"
     );
 
     Assert.That(JsonSerializer.Serialize(c), Does.Contain(expectedJsonFragment));

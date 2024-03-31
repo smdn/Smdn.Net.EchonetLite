@@ -6,33 +6,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-namespace EchoDotNetLite.Specifications
+namespace Smdn.Net.EchonetLite.Appendix
 {
-    internal class EchonetObject : IEchonetObject
+    internal class EchonetObjectSpecification : IEchonetObject
     {
-        public EchonetObject(byte classGroupCode, byte classCode)
+        public EchonetObjectSpecification(byte classGroupCode, byte classCode)
         {
             ClassGroup =
-               SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
-               SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
+               SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.Code == classGroupCode) ??
+               SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.Code == classGroupCode) ??
                throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
 
-            var properties = new List<EchoProperty>();
+            var properties = new List<EchonetPropertySpecification>();
 
             //スーパークラスのプロパティを列挙
-            using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
+            using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClassName}.json"))
             {
                 var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
                 properties.AddRange(superClassProperties.Properties);
             }
 
-            Class = ClassGroup.ClassList?.FirstOrDefault(c => c.Status && c.ClassCode == classCode)
+            Class = ClassGroup.Classes?.FirstOrDefault(c => c.IsDefined && c.Code == classCode)
                 ?? throw new ArgumentException($"unknown class: 0x{classCode:X2}");
 
-            if (Class.Status)
+            if (Class.IsDefined)
             {
-                var classGroupDirectoryName = $"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}";
-                var classFileName = $"0x{Class.ClassCode:X2}-{Class.ClassName}.json";
+                var classGroupDirectoryName = $"0x{ClassGroup.Code:X2}-{ClassGroup.PropertyName}";
+                var classFileName = $"0x{Class.Code:X2}-{Class.PropertyName}.json";
 
                 //クラスのプロパティを列挙
                 using (var stream = SpecificationMaster.GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName))
@@ -50,35 +50,35 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// クラスグループコード
         /// </summary>
-        public EchoClassGroup ClassGroup { get; }
+        public EchonetClassGroupSpecification ClassGroup { get; }
         /// <summary>
         /// クラスコード
         /// </summary>
-        public EchoClass Class { get; }
+        public EchonetClassSpecification Class { get; }
 
         /// <summary>
         /// 仕様上定義済みのプロパティの一覧
         /// </summary>
-        internal IReadOnlyList<EchoProperty> Properties { get; }
+        internal IReadOnlyList<EchonetPropertySpecification> Properties { get; }
 
         /// <summary>
         /// 仕様上定義済みのGETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoProperty> GetProperties
+        public IEnumerable<EchonetPropertySpecification> GetProperties
         {
             get { return Properties.Where(static p => p.Get); }
         }
         /// <summary>
         /// 仕様上定義済みのSETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoProperty> SetProperties
+        public IEnumerable<EchonetPropertySpecification> SetProperties
         {
             get { return Properties.Where(static p => p.Set); }
         }
         /// <summary>
         /// 仕様上定義済みのANNOプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoProperty> AnnoProperties
+        public IEnumerable<EchonetPropertySpecification> AnnoProperties
         {
             get { return Properties.Where(static p => p.Anno); }
         }

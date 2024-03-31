@@ -15,6 +15,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Smdn.Net.EchonetLite;
+
 namespace EchoDotNetLite
 {
     public partial class EchoClient : IDisposable, IAsyncDisposable
@@ -108,7 +110,7 @@ namespace EchoDotNetLite
             SelfNode = new EchoNode
             (
                 address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
-                nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
+                nodeProfile: new EchoObjectInstance(Profiles.NodeProfile, 0x01)
             );
             Nodes = new List<EchoNode>();
             //自己消費用
@@ -250,8 +252,8 @@ namespace EchoDotNetLite
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
                 , new EchoObjectInstance(new EOJ(
-                    classGroupCode: Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                    classCode: Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
+                    classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
+                    classCode: Profiles.NodeProfile.Class.Code,
                     instanceCode: 0x01
                 ))
                 , Enumerable.Repeat(property, 1)
@@ -276,8 +278,8 @@ namespace EchoDotNetLite
             (
                 new EchoPropertyInstance
                 (
-                    Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                    Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
+                    Profiles.NodeProfile.ClassGroup.Code,
+                    Profiles.NodeProfile.Class.Code,
                     0xD5//インスタンスリスト通知
                 ),
                 1
@@ -287,8 +289,8 @@ namespace EchoDotNetLite
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
                 , new EchoObjectInstance(new EOJ(
-                    classGroupCode: Specifications.プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                    classCode: Specifications.プロファイル.ノードプロファイル.Class.ClassCode,
+                    classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
+                    classCode: Profiles.NodeProfile.Class.Code,
                     instanceCode: 0x01
                 ))
                 , properties
@@ -1210,8 +1212,8 @@ namespace EchoDotNetLite
 
                         return new EchoPropertyInstance
                         (
-                            device.Spec.ClassGroup.ClassGroupCode,
-                            device.Spec.Class.ClassCode,
+                            device.Spec.ClassGroup.Code,
+                            device.Spec.Class.Code,
                             code,
                             caps.Anno,
                             caps.Set,
@@ -1267,7 +1269,7 @@ namespace EchoDotNetLite
                     sourceNode = new EchoNode
                     (
                         address: value.address,
-                        nodeProfile: new EchoObjectInstance(Specifications.プロファイル.ノードプロファイル, 0x01)
+                        nodeProfile: new EchoObjectInstance(Profiles.NodeProfile, 0x01)
                     );
                     Nodes.Add(sourceNode);
                     NodeJoined?.Invoke(this,sourceNode);

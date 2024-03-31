@@ -3,25 +3,27 @@
 // SPDX-License-Identifier: MIT
 using System.Collections.Generic;
 
-namespace EchoDotNetLite.Specifications
+using Smdn.Net.EchonetLite.Appendix;
+
+namespace Smdn.Net.EchonetLite
 {
     /// <summary>
     /// ECHONET Lite クラスグループ定義
     /// プロファイルクラスグループ
     /// </summary>
-    public static class プロファイル
+    public static class Profiles
     {
         /// <summary>
         /// 0xF0 ノードプロファイル
         /// </summary>
-        public static IEchonetObject ノードプロファイル { get; } = new EchonetObject(0x0E, 0xF0);
+        public static IEchonetObject NodeProfile { get; } = new EchonetObjectSpecification(0x0E, 0xF0);
 
         /// <summary>
         /// クラス一覧
         /// </summary>
-        public static IReadOnlyList<IEchonetObject> クラス一覧 { get; } = new IEchonetObject[]
+        public static IReadOnlyList<IEchonetObject> All { get; } = new IEchonetObject[]
         {
-            ノードプロファイル,
+            NodeProfile,
         };
     }
 }

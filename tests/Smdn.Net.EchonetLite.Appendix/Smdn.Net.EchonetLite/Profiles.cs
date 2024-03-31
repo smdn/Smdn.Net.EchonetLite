@@ -4,30 +4,32 @@ using System.Linq;
 
 using NUnit.Framework;
 
-namespace EchoDotNetLite.Specifications;
+using Smdn.Net.EchonetLite.Appendix;
+
+namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
-public class プロファイルTests {
+public class ProfilesTests {
   [Test]
   public void ノードプロファイル()
   {
-    var p = プロファイル.ノードプロファイル;
+    var p = Profiles.NodeProfile;
 
     Assert.That(p, Is.Not.Null);
     Assert.That(p.ClassGroup, Is.Not.Null, nameof(IEchonetObject.ClassGroup));
-    Assert.That(p.ClassGroup.ClassGroupCode, Is.EqualTo(0x0E), nameof(EchoClassGroup.ClassGroupCode));
-    Assert.That(p.ClassGroup.ClassGroupNameOfficial, Is.EqualTo("プロファイルクラスグループ"), nameof(EchoClassGroup.ClassGroupNameOfficial));
-    Assert.That(p.ClassGroup.SuperClass, Is.EqualTo("プロファイルオブジェクトスーパークラス"), nameof(EchoClassGroup.SuperClass));
+    Assert.That(p.ClassGroup.Code, Is.EqualTo(0x0E), nameof(EchonetClassGroupSpecification.Code));
+    Assert.That(p.ClassGroup.Name, Is.EqualTo("プロファイルクラスグループ"), nameof(EchonetClassGroupSpecification.Name));
+    Assert.That(p.ClassGroup.SuperClassName, Is.EqualTo("プロファイルオブジェクトスーパークラス"), nameof(EchonetClassGroupSpecification.SuperClassName));
 
-    Assert.That(p.ClassGroup.ClassList, Is.Not.Null, nameof(EchoClassGroup.ClassList));
-    Assert.That(p.ClassGroup.ClassList.Count, Is.EqualTo(1), nameof(EchoClassGroup.ClassList));
+    Assert.That(p.ClassGroup.Classes, Is.Not.Null, nameof(EchonetClassGroupSpecification.Classes));
+    Assert.That(p.ClassGroup.Classes.Count, Is.EqualTo(1), nameof(EchonetClassGroupSpecification.Classes));
 
-    Assert.That(p.ClassGroup.ClassList[0].ClassCode, Is.EqualTo(0xF0), nameof(EchoClassGroup.ClassList));
+    Assert.That(p.ClassGroup.Classes[0].Code, Is.EqualTo(0xF0), nameof(EchonetClassGroupSpecification.Classes));
 
-    var c = p.ClassGroup.ClassList[0];
+    var c = p.ClassGroup.Classes[0];
 
-    Assert.That(c.ClassCode, Is.EqualTo(0xF0), nameof(EchoClass.ClassCode));
-    Assert.That(c.ClassNameOfficial, Is.EqualTo("ノードプロファイル"), nameof(EchoClass.ClassNameOfficial));
+    Assert.That(c.Code, Is.EqualTo(0xF0), nameof(EchonetClassSpecification.Code));
+    Assert.That(c.Name, Is.EqualTo("ノードプロファイル"), nameof(EchonetClassSpecification.Name));
 
     Assert.That(
       p.GetProperties.First(static prop => prop.Name == "状変アナウンスプロパティマップ").Code,
@@ -51,13 +53,13 @@ public class プロファイルTests {
   [Test]
   public void プロファイルオブジェクトスーパークラスJson()
   {
-    var epc88 = プロファイル.ノードプロファイル.GetProperties.FirstOrDefault(static prop => prop.Name == "異常発生状態");
+    var epc88 = Profiles.NodeProfile.GetProperties.FirstOrDefault(static prop => prop.Name == "異常発生状態");
 
     Assert.That(epc88, Is.Not.Null);
     Assert.That(epc88!.Code, Is.EqualTo(0x88), nameof(epc88.Code));
     Assert.That(epc88.DataType, Is.EqualTo("unsigned char"), nameof(epc88.DataType));
 
-    var epc9D = プロファイル.ノードプロファイル.GetProperties.FirstOrDefault(static prop => prop.Code == 0x9D);
+    var epc9D = Profiles.NodeProfile.GetProperties.FirstOrDefault(static prop => prop.Code == 0x9D);
 
     Assert.That(epc9D, Is.Not.Null);
     Assert.That(epc9D!.Name, Is.EqualTo("状変アナウンスプロパティマップ"), nameof(epc9D.Code));
@@ -67,7 +69,7 @@ public class プロファイルTests {
   [Test]
   public void MasterData_プロファイル_ノードプロファイルJson()
   {
-    var epc82 = プロファイル.ノードプロファイル.GetProperties.FirstOrDefault(static prop => prop.Code == 0x82);
+    var epc82 = Profiles.NodeProfile.GetProperties.FirstOrDefault(static prop => prop.Code == 0x82);
 
     Assert.That(epc82, Is.Not.Null);
     Assert.That(epc82!.Code, Is.EqualTo(0x82), nameof(epc82.Code));
@@ -76,7 +78,7 @@ public class プロファイルTests {
     Assert.That(epc82.Unit, Is.Null, nameof(epc82.Unit));
     Assert.That(epc82.HasUnit, Is.False, nameof(epc82.Unit));
 
-    var epcD3 = プロファイル.ノードプロファイル.GetProperties.FirstOrDefault(static prop => prop.Code == 0xD3);
+    var epcD3 = Profiles.NodeProfile.GetProperties.FirstOrDefault(static prop => prop.Code == 0xD3);
 
     Assert.That(epcD3, Is.Not.Null);
     Assert.That(epcD3!.Code, Is.EqualTo(0xD3), nameof(epcD3.Code));

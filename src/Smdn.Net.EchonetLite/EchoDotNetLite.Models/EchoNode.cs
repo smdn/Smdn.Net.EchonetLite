@@ -1,13 +1,15 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
+
+using Smdn.Net.EchonetLite;
+using Smdn.Net.EchonetLite.Appendix;
 
 namespace EchoDotNetLite.Models
 {
@@ -61,12 +63,12 @@ namespace EchoDotNetLite.Models
 
     internal static class SpecificationUtil
     {
-        public static Specifications.EchoProperty? FindProperty(byte classGroupCode, byte classCode, byte epc)
+        public static EchonetPropertySpecification? FindProperty(byte classGroupCode, byte classCode, byte epc)
         {
             var @class = FindClass(classGroupCode, classCode);
             if (@class is not null)
             {
-                Specifications.EchoProperty? property;
+                EchonetPropertySpecification? property;
                  property = @class.AnnoProperties.FirstOrDefault(p => p.Code == epc);
                 if (property is not null)
                 {
@@ -90,53 +92,53 @@ namespace EchoDotNetLite.Models
         {
             return new UnknownEchoObject
             (
-                classGroup: new EchoClassGroup
+                classGroup: new
                 (
-                    classGroupCode: classGroupCode,
-                    classGroupName: "Unknown",
-                    classGroupNameOfficial: "Unknown",
-                    classList: Array.Empty<EchoClass>(),
-                    superClass: null
+                    code: classGroupCode,
+                    name: "Unknown",
+                    propertyName: "Unknown",
+                    classes: Array.Empty<EchonetClassSpecification>(),
+                    superClassName: null
                 ),
-                @class: new EchoClass
+                @class: new
                 (
-                    classCode: classCode,
-                    className: "Unknown",
-                    classNameOfficial: "Unknown",
-                    status: false
+                    isDefined: false,
+                    code: classCode,
+                    name: "Unknown",
+                    propertyName: "Unknown"
                 )
             );
         }
         private class UnknownEchoObject : IEchonetObject
         {
-            public UnknownEchoObject(EchoClassGroup classGroup, EchoClass @class)
+            public UnknownEchoObject(EchonetClassGroupSpecification classGroup, EchonetClassSpecification @class)
             {
                 ClassGroup = classGroup ?? throw new ArgumentNullException(nameof(classGroup));
                 Class = @class ?? throw new ArgumentNullException(nameof(@class));
             }
 
-            public EchoClassGroup ClassGroup { get; }
-            public EchoClass Class { get; }
+            public EchonetClassGroupSpecification ClassGroup { get; }
+            public EchonetClassSpecification Class { get; }
 
-            public IEnumerable<EchoProperty> GetProperties => Enumerable.Empty<EchoProperty>();
+            public IEnumerable<EchonetPropertySpecification> GetProperties => Enumerable.Empty<EchonetPropertySpecification>();
 
-            public IEnumerable<EchoProperty> SetProperties => Enumerable.Empty<EchoProperty>();
+            public IEnumerable<EchonetPropertySpecification> SetProperties => Enumerable.Empty<EchonetPropertySpecification>();
 
-            public IEnumerable<EchoProperty> AnnoProperties => Enumerable.Empty<EchoProperty>();
+            public IEnumerable<EchonetPropertySpecification> AnnoProperties => Enumerable.Empty<EchonetPropertySpecification>();
         }
 
-        public static Specifications.IEchonetObject? FindClass(byte classGroupCode, byte classCode)
+        public static IEchonetObject? FindClass(byte classGroupCode, byte classCode)
         {
-            var profileClass = Specifications.プロファイル.クラス一覧.FirstOrDefault(
-                                g => g.ClassGroup.ClassGroupCode == classGroupCode
-                                && g.Class.ClassCode == classCode);
+            var profileClass = Profiles.All.FirstOrDefault(
+                                g => g.ClassGroup.Code == classGroupCode
+                                && g.Class.Code == classCode);
             if (profileClass != null)
             {
                 return profileClass;
             }
-            var deviceClass = Specifications.機器.クラス一覧.FirstOrDefault(
-                                g => g.ClassGroup.ClassGroupCode == classGroupCode
-                                && g.Class.ClassCode == classCode);
+            var deviceClass = DeviceClasses.All.FirstOrDefault(
+                                g => g.ClassGroup.Code == classGroupCode
+                                && g.Class.Code == classCode);
             if (deviceClass != null)
             {
                 return deviceClass;

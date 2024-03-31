@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Specifications
+namespace Smdn.Net.EchonetLite.Appendix
 {
     /// <summary>
     /// ECHONETオブジェクト詳細マスタ
@@ -36,8 +36,8 @@ namespace EchoDotNetLite.Specifications
         (
             string? version,
             string? appendixRelease,
-            IReadOnlyList<EchoClassGroup>? プロファイル,
-            IReadOnlyList<EchoClassGroup>? 機器
+            IReadOnlyList<EchonetClassGroupSpecification>? プロファイル,
+            IReadOnlyList<EchonetClassGroupSpecification>? 機器
         )
         {
             Version = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(version, nameof(version));
@@ -96,10 +96,10 @@ namespace EchoDotNetLite.Specifications
         /// <summary>
         /// プロファイルオブジェクト
         /// </summary>
-        public IReadOnlyList<EchoClassGroup> プロファイル { get; }
+        public IReadOnlyList<EchonetClassGroupSpecification> プロファイル { get; }
         /// <summary>
         /// 機器オブジェクト
         /// </summary>
-        public IReadOnlyList<EchoClassGroup> 機器 { get; }
+        public IReadOnlyList<EchonetClassGroupSpecification> 機器 { get; }
     }
 }

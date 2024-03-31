@@ -22,7 +22,7 @@ namespace EchoDotNetLite.Common
             {
                 return "Spec null";
             }
-            return $"0x{echoObjectInstance.Spec.ClassGroup.ClassGroupCode:X2}{echoObjectInstance.Spec.ClassGroup.ClassGroupName} 0x{echoObjectInstance.Spec.Class.ClassCode:X2}{echoObjectInstance.Spec.Class.ClassName} {echoObjectInstance.InstanceCode:X2}";
+            return $"0x{echoObjectInstance.Spec.ClassGroup.Code:X2}{echoObjectInstance.Spec.ClassGroup.Name} 0x{echoObjectInstance.Spec.Class.Code:X2}{echoObjectInstance.Spec.Class.Name} {echoObjectInstance.InstanceCode:X2}";
         }
         public static string GetDebugString(this EchoPropertyInstance echoPropertyInstance)
         {
