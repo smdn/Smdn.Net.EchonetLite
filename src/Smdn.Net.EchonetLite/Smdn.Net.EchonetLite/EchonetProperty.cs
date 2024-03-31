@@ -12,7 +12,7 @@ namespace Smdn.Net.EchonetLite
     /// <summary>
     /// プロパティクラス
     /// </summary>
-    public sealed class EchoPropertyInstance
+    public sealed class EchonetProperty
     {
         internal static EchonetPropertySpecification GenerateUnknownProperty(byte epc)
             => new
@@ -36,7 +36,7 @@ namespace Smdn.Net.EchonetLite
                 unit: null
             );
 
-        public EchoPropertyInstance
+        public EchonetProperty
         (
             byte classGroupCode,
             byte classCode,
@@ -54,7 +54,7 @@ namespace Smdn.Net.EchonetLite
         {
         }
 
-        public EchoPropertyInstance
+        public EchonetProperty
         (
             byte classGroupCode,
             byte classCode,
@@ -75,7 +75,7 @@ namespace Smdn.Net.EchonetLite
         {
         }
 
-        public EchoPropertyInstance(EchonetPropertySpecification spec)
+        public EchonetProperty(EchonetPropertySpecification spec)
             : this
             (
                 spec: spec,
@@ -86,7 +86,7 @@ namespace Smdn.Net.EchonetLite
         {
         }
 
-        public EchoPropertyInstance
+        public EchonetProperty
         (
             EchonetPropertySpecification spec,
             bool isPropertyAnno,

@@ -15,14 +15,14 @@ namespace Smdn.Net.EchonetLite
     /// <summary>
     /// ECHONET Liteノード
     /// </summary>
-    public sealed class EchoNode
+    public sealed class EchonetNode
     {
-        public EchoNode(IPAddress address, EchoObjectInstance nodeProfile)
+        public EchonetNode(IPAddress address, EchonetObject nodeProfile)
         {
             Address = address ?? throw new ArgumentNullException(nameof(address));
             NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
 
-            var devices = new ObservableCollection<EchoObjectInstance>();
+            var devices = new ObservableCollection<EchonetObject>();
 
             devices.CollectionChanged += (_, e) => OnDevicesChanged(e);
 
@@ -42,12 +42,12 @@ namespace Smdn.Net.EchonetLite
         /// <summary>
         /// ノードプロファイルオブジェクト
         /// </summary>
-        public EchoObjectInstance NodeProfile { get; }
+        public EchonetObject NodeProfile { get; }
 
         /// <summary>
         /// 機器オブジェクトのリスト
         /// </summary>
-        public ICollection<EchoObjectInstance> Devices { get;  }
+        public ICollection<EchonetObject> Devices { get;  }
 
         /// <summary>
         /// 機器オブジェクトのリスト<see cref="Devices"/>に変更があったときに発生するイベント。

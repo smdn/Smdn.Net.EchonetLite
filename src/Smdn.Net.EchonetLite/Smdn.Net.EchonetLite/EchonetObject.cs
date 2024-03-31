@@ -15,12 +15,12 @@ namespace Smdn.Net.EchonetLite
     /// <summary>
     /// ECHONET Lite オブジェクトインスタンス
     /// </summary>
-    public sealed class EchoObjectInstance
+    public sealed class EchonetObject
     {
         /// <summary>
         /// デフォルトコンストラクタ
         /// </summary>
-        public EchoObjectInstance(EOJ eoj)
+        public EchonetObject(EOJ eoj)
             : this
             (
                 classObject:
@@ -37,7 +37,7 @@ namespace Smdn.Net.EchonetLite
         /// </summary>
         /// <param name="classObject">オブジェクトクラス</param>
         /// <param name="instanceCode"></param>
-        public EchoObjectInstance(IEchonetObject classObject,byte instanceCode)
+        public EchonetObject(IEchonetObject classObject,byte instanceCode)
         {
             Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
             InstanceCode = instanceCode;
@@ -46,15 +46,15 @@ namespace Smdn.Net.EchonetLite
 
             foreach (var prop in classObject.GetProperties)
             {
-                properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new(prop));
             }
             foreach (var prop in classObject.SetProperties)
             {
-                properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new(prop));
             }
             foreach (var prop in classObject.AnnoProperties)
             {
-                properties.Add(new EchoPropertyInstance(prop));
+                properties.Add(new(prop));
             }
 
             properties.CollectionChanged += (_, e) => OnPropertiesChanged(e);
@@ -65,10 +65,10 @@ namespace Smdn.Net.EchonetLite
             PropertiesChanged?.Invoke(this, e);
         }
 
-        internal void AddProperty(EchoPropertyInstance prop)
+        internal void AddProperty(EchonetProperty prop)
             => properties.Add(prop);
 
-        internal void ResetProperties(IEnumerable<EchoPropertyInstance> props)
+        internal void ResetProperties(IEnumerable<EchonetProperty> props)
         {
             properties.Clear();
 
@@ -101,8 +101,8 @@ namespace Smdn.Net.EchonetLite
         /// <summary>
         /// プロパティマップ取得状態
         /// </summary>
-        /// <seealso cref="EchoClient.PropertyMapAcquiring"/>
-        /// <seealso cref="EchoClient.PropertyMapAcquired"/>
+        /// <seealso cref="EchonetClient.PropertyMapAcquiring"/>
+        /// <seealso cref="EchonetClient.PropertyMapAcquired"/>
         public bool HasPropertyMapAcquired { get; internal set; } = false;
 
         /// <summary>
@@ -118,23 +118,23 @@ namespace Smdn.Net.EchonetLite
         /// <summary>
         /// プロパティの一覧
         /// </summary>
-        public IReadOnlyCollection<EchoPropertyInstance> Properties => properties;
+        public IReadOnlyCollection<EchonetProperty> Properties => properties;
 
-        private readonly ObservableCollection<EchoPropertyInstance> properties;
+        private readonly ObservableCollection<EchonetProperty> properties;
 
         /// <summary>
         /// GETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> GetProperties => Properties.Where(static p => p.Spec.Get);
+        public IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.Spec.Get);
 
         /// <summary>
         /// SETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> SetProperties => Properties.Where(static p => p.Spec.Set);
+        public IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.Spec.Set);
 
         /// <summary>
         /// ANNOプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoPropertyInstance> AnnoProperties => Properties.Where(static p => p.Spec.Anno);
+        public IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.Spec.Anno);
     }
 }

@@ -11,40 +11,40 @@ namespace Smdn.Net.EchonetLite.Extensions
 {
     public static class Extentions
     {
-        public static string GetDebugString(this EchoObjectInstance echoObjectInstance)
+        public static string GetDebugString(this EchonetObject obj)
         {
-            if (echoObjectInstance == null)
+            if (obj == null)
             {
                 return "null";
             }
-            if(echoObjectInstance.Spec == null)
+            if(obj.Spec == null)
             {
                 return "Spec null";
             }
-            return $"0x{echoObjectInstance.Spec.ClassGroup.Code:X2}{echoObjectInstance.Spec.ClassGroup.Name} 0x{echoObjectInstance.Spec.Class.Code:X2}{echoObjectInstance.Spec.Class.Name} {echoObjectInstance.InstanceCode:X2}";
+            return $"0x{obj.Spec.ClassGroup.Code:X2}{obj.Spec.ClassGroup.Name} 0x{obj.Spec.Class.Code:X2}{obj.Spec.Class.Name} {obj.InstanceCode:X2}";
         }
-        public static string GetDebugString(this EchoPropertyInstance echoPropertyInstance)
+        public static string GetDebugString(this EchonetProperty property)
         {
-            if (echoPropertyInstance == null)
+            if (property == null)
             {
                 return "null";
             }
-            if (echoPropertyInstance.Spec == null)
+            if (property.Spec == null)
             {
                 return "Spec null";
             }
             var sb = new StringBuilder();
-            sb.AppendFormat(provider: null, "0x{0:X2}", echoPropertyInstance.Spec.Code);
-            sb.Append(echoPropertyInstance.Spec.Name);
+            sb.AppendFormat(provider: null, "0x{0:X2}", property.Spec.Code);
+            sb.Append(property.Spec.Name);
             sb.Append(' ');
-            sb.Append(echoPropertyInstance.Get ? "Get" : "");
-            sb.Append(echoPropertyInstance.Spec.GetRequired ? "(Req)" : "");
+            sb.Append(property.Get ? "Get" : "");
+            sb.Append(property.Spec.GetRequired ? "(Req)" : "");
             sb.Append(' ');
-            sb.Append(echoPropertyInstance.Set ? "Set" : "");
-            sb.Append(echoPropertyInstance.Spec.SetRequired ? "(Req)" : "");
+            sb.Append(property.Set ? "Set" : "");
+            sb.Append(property.Spec.SetRequired ? "(Req)" : "");
             sb.Append(' ');
-            sb.Append(echoPropertyInstance.Anno ? "Anno" : "");
-            sb.Append(echoPropertyInstance.Spec.AnnoRequired ? "(Req)" : "");
+            sb.Append(property.Anno ? "Anno" : "");
+            sb.Append(property.Spec.AnnoRequired ? "(Req)" : "");
             return sb.ToString();
         }
 

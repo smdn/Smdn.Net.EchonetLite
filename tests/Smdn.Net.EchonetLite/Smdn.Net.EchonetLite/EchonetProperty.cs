@@ -11,9 +11,9 @@ using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
-public class EchoPropertyInstanceTests {
-  private static EchoPropertyInstance CreateProperty()
-    => new EchoPropertyInstance(
+public class EchonetPropertyTests {
+  private static EchonetProperty CreateProperty()
+    => new(
       classGroupCode: 0xFF,
       classCode: 0xFF,
       epc: 0xFF,
