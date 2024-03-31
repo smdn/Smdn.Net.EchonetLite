@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Specifications
+namespace Smdn.Net.EchonetLite.Appendix
 {
 
     /// <summary>

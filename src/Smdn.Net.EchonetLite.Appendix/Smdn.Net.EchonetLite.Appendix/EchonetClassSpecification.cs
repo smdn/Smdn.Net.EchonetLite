@@ -4,7 +4,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Specifications
+namespace Smdn.Net.EchonetLite.Appendix
 {
     /// <summary>
     /// クラス

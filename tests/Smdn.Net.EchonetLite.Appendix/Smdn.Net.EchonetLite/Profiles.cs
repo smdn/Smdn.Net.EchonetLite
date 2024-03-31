@@ -4,7 +4,9 @@ using System.Linq;
 
 using NUnit.Framework;
 
-namespace EchoDotNetLite.Specifications;
+using Smdn.Net.EchonetLite.Appendix;
+
+namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class プロファイルTests {

@@ -4,7 +4,7 @@ using System.Text.Json;
 
 using NUnit.Framework;
 
-namespace EchoDotNetLite.Specifications;
+namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class ApplicationServiceTests {

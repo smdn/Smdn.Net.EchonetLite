@@ -1,13 +1,15 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using EchoDotNetLite.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
+
+using Smdn.Net.EchonetLite;
+using Smdn.Net.EchonetLite.Appendix;
 
 namespace EchoDotNetLite.Models
 {
@@ -61,12 +63,12 @@ namespace EchoDotNetLite.Models
 
     internal static class SpecificationUtil
     {
-        public static Specifications.EchoProperty? FindProperty(byte classGroupCode, byte classCode, byte epc)
+        public static EchoProperty? FindProperty(byte classGroupCode, byte classCode, byte epc)
         {
             var @class = FindClass(classGroupCode, classCode);
             if (@class is not null)
             {
-                Specifications.EchoProperty? property;
+                EchoProperty? property;
                  property = @class.AnnoProperties.FirstOrDefault(p => p.Code == epc);
                 if (property is not null)
                 {
@@ -125,16 +127,16 @@ namespace EchoDotNetLite.Models
             public IEnumerable<EchoProperty> AnnoProperties => Enumerable.Empty<EchoProperty>();
         }
 
-        public static Specifications.IEchonetObject? FindClass(byte classGroupCode, byte classCode)
+        public static IEchonetObject? FindClass(byte classGroupCode, byte classCode)
         {
-            var profileClass = Specifications.プロファイル.クラス一覧.FirstOrDefault(
+            var profileClass = プロファイル.クラス一覧.FirstOrDefault(
                                 g => g.ClassGroup.ClassGroupCode == classGroupCode
                                 && g.Class.ClassCode == classCode);
             if (profileClass != null)
             {
                 return profileClass;
             }
-            var deviceClass = Specifications.機器.クラス一覧.FirstOrDefault(
+            var deviceClass = 機器.クラス一覧.FirstOrDefault(
                                 g => g.ClassGroup.ClassGroupCode == classGroupCode
                                 && g.Class.ClassCode == classCode);
             if (deviceClass != null)

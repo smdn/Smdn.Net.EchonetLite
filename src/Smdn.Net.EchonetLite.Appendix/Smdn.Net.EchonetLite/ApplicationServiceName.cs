@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 using System.Text.Json.Serialization;
 
-namespace EchoDotNetLite.Specifications
+namespace Smdn.Net.EchonetLite
 {
 
     /// <summary>

@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: MIT
 using System.Collections.Generic;
 
-namespace EchoDotNetLite.Specifications
+using Smdn.Net.EchonetLite.Appendix;
+
+namespace Smdn.Net.EchonetLite
 {
     /// <summary>
     /// ECHONET Lite クラスグループ定義

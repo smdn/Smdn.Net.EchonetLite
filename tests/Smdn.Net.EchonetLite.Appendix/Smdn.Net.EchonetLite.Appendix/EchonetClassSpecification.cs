@@ -8,7 +8,7 @@ using System.Reflection;
 
 using NUnit.Framework;
 
-namespace EchoDotNetLite.Specifications;
+namespace Smdn.Net.EchonetLite.Appendix;
 
 [TestFixture]
 public class EchoClassTests {

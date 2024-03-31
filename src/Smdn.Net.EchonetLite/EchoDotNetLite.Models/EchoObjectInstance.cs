@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
-using EchoDotNetLite.Specifications;
+
+using Smdn.Net.EchonetLite;
 
 namespace EchoDotNetLite.Models
 {
@@ -108,7 +109,7 @@ namespace EchoDotNetLite.Models
         /// クラスグループコード、クラスグループ名
         /// ECHONET機器オブジェクト詳細規定がある場合、詳細仕様
         /// </summary>
-        public Specifications.IEchonetObject Spec { get; }
+        public IEchonetObject Spec { get; }
         /// <summary>
         /// インスタンスコード
         /// </summary>
