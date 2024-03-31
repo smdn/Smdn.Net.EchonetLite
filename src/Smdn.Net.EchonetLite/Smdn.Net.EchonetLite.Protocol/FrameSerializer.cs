@@ -16,7 +16,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             if (buffer is null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            if (!frame.EHD1.HasFlag(EHD1.ECHONETLite))
+            if (!frame.EHD1.HasFlag(EHD1.EchonetLite))
                 throw new InvalidOperationException($"undefined EHD1 ({(byte)frame.EHD1:X2})");
 
             switch (frame.EHD2)
@@ -70,7 +70,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             if (opcListOrOpcSetList is null)
                 throw new ArgumentNullException(nameof(opcListOrOpcSetList));
 
-            WriteEchonetLiteEHDAndTID(buffer, EHD1.ECHONETLite, EHD2.Type1, tid);
+            WriteEchonetLiteEHDAndTID(buffer, EHD1.EchonetLite, EHD2.Type1, tid);
 
             WriteEOJ(buffer, sourceObject); // SEOJ
             WriteEOJ(buffer, destinationObject); // DEOJ
@@ -114,7 +114,7 @@ namespace Smdn.Net.EchonetLite.Protocol
             if (buffer is null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            WriteEchonetLiteEHDAndTID(buffer, EHD1.ECHONETLite, EHD2.Type2, tid);
+            WriteEchonetLiteEHDAndTID(buffer, EHD1.EchonetLite, EHD2.Type2, tid);
 
             var bufferEDataSpan = buffer.GetSpan(edata.Length);
 
@@ -133,7 +133,7 @@ namespace Smdn.Net.EchonetLite.Protocol
                 return false;
 
             //EHD1が0x1*(0001***)以外の場合、ECHONETLiteフレームではない
-            if ((bytes[0] & 0xF0) != (byte)EHD1.ECHONETLite)
+            if ((bytes[0] & 0xF0) != (byte)EHD1.EchonetLite)
                 return false;
 
             // ECHONET Lite電文ヘッダー１(1B)

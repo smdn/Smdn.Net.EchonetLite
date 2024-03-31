@@ -28,7 +28,7 @@ public class EchonetClientTests {
         (
           IPAddress.Loopback,
           new byte[] {
-            (byte)EHD1.ECHONETLite, // EHD1
+            (byte)EHD1.EchonetLite, // EHD1
             (byte)EHD2.Type2, // EHD2
             (byte)0x00, // TID
             (byte)0x00, // TID

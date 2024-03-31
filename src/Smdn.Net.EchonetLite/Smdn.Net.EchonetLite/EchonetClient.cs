@@ -1250,7 +1250,7 @@ namespace Smdn.Net.EchonetLite
 #pragma warning disable CA1502 // TODO: reduce complexity
         private void HandleFrameReceived(object? sender, (IPAddress address, Frame frame) value)
         {
-            if (value.frame.EHD1 != EHD1.ECHONETLite)
+            if (value.frame.EHD1 != EHD1.EchonetLite)
                 return;
             if (value.frame.EHD2 != EHD2.Type1)
                 return;
