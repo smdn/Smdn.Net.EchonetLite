@@ -110,7 +110,7 @@ namespace EchoDotNetLite
             SelfNode = new EchoNode
             (
                 address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
-                nodeProfile: new EchoObjectInstance(プロファイル.ノードプロファイル, 0x01)
+                nodeProfile: new EchoObjectInstance(Profiles.ノードプロファイル, 0x01)
             );
             Nodes = new List<EchoNode>();
             //自己消費用
@@ -252,8 +252,8 @@ namespace EchoDotNetLite
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
                 , new EchoObjectInstance(new EOJ(
-                    classGroupCode: プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                    classCode: プロファイル.ノードプロファイル.Class.ClassCode,
+                    classGroupCode: Profiles.ノードプロファイル.ClassGroup.ClassGroupCode,
+                    classCode: Profiles.ノードプロファイル.Class.ClassCode,
                     instanceCode: 0x01
                 ))
                 , Enumerable.Repeat(property, 1)
@@ -278,8 +278,8 @@ namespace EchoDotNetLite
             (
                 new EchoPropertyInstance
                 (
-                    プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                    プロファイル.ノードプロファイル.Class.ClassCode,
+                    Profiles.ノードプロファイル.ClassGroup.ClassGroupCode,
+                    Profiles.ノードプロファイル.Class.ClassCode,
                     0xD5//インスタンスリスト通知
                 ),
                 1
@@ -289,8 +289,8 @@ namespace EchoDotNetLite
                 SelfNode.NodeProfile//ノードプロファイルから
                 , null//一斉通知
                 , new EchoObjectInstance(new EOJ(
-                    classGroupCode: プロファイル.ノードプロファイル.ClassGroup.ClassGroupCode,
-                    classCode: プロファイル.ノードプロファイル.Class.ClassCode,
+                    classGroupCode: Profiles.ノードプロファイル.ClassGroup.ClassGroupCode,
+                    classCode: Profiles.ノードプロファイル.Class.ClassCode,
                     instanceCode: 0x01
                 ))
                 , properties
@@ -1269,7 +1269,7 @@ namespace EchoDotNetLite
                     sourceNode = new EchoNode
                     (
                         address: value.address,
-                        nodeProfile: new EchoObjectInstance(プロファイル.ノードプロファイル, 0x01)
+                        nodeProfile: new EchoObjectInstance(Profiles.ノードプロファイル, 0x01)
                     );
                     Nodes.Add(sourceNode);
                     NodeJoined?.Invoke(this,sourceNode);

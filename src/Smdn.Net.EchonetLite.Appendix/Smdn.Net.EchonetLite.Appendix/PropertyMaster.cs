@@ -24,7 +24,7 @@ namespace Smdn.Net.EchonetLite.Appendix
         (
             string? version,
             string? appendixRelease,
-            IReadOnlyList<EchoProperty>? properties
+            IReadOnlyList<EchonetPropertySpecification>? properties
         )
         {
             Version = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(version, nameof(version));
@@ -43,6 +43,6 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// プロパティのリスト
         /// </summary>
-        public IReadOnlyList<EchoProperty> Properties { get; }
+        public IReadOnlyList<EchonetPropertySpecification> Properties { get; }
     }
 }

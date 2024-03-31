@@ -10,7 +10,7 @@ namespace Smdn.Net.EchonetLite
     /// アプリケーションサービス
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum ApplicationService
+    public enum ApplicationServiceName
     {
         /// <summary>
         /// (Mobile services)○M

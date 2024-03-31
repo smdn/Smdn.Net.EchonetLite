@@ -11,12 +11,12 @@ namespace Smdn.Net.EchonetLite
     /// ECHONET Lite クラスグループ定義
     /// プロファイルクラスグループ
     /// </summary>
-    public static class プロファイル
+    public static class Profiles
     {
         /// <summary>
         /// 0xF0 ノードプロファイル
         /// </summary>
-        public static IEchonetObject ノードプロファイル { get; } = new EchonetObject(0x0E, 0xF0);
+        public static IEchonetObject ノードプロファイル { get; } = new EchonetObjectSpecification(0x0E, 0xF0);
 
         /// <summary>
         /// クラス一覧

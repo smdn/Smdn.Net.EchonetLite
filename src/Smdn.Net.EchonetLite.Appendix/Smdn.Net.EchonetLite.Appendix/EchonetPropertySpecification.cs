@@ -14,7 +14,7 @@ namespace Smdn.Net.EchonetLite.Appendix
     /// <summary>
     /// ECHONET Lite オブジェクトプロパティ
     /// </summary>
-    public sealed class EchoProperty
+    public sealed class EchonetPropertySpecification
     {
         /// <summary>
         /// JSONデシリアライズ用のコンストラクタ
@@ -33,13 +33,13 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <param name="setRequired"><see cref="SetRequired"/>に設定する値。</param>
         /// <param name="anno"><see cref="Anno"/>に設定する値。</param>
         /// <param name="annoRequired"><see cref="AnnoRequired"/>に設定する値。</param>
-        /// <param name="optionRequired"><see cref="OptionRequired"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{ApplicationService}"/>を設定します。</param>
+        /// <param name="optionRequired"><see cref="OptionRequired"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{ApplicationServiceName}"/>を設定します。</param>
         /// <param name="description"><see cref="Description"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
         /// <param name="unit"><see cref="Unit"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
         /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
         /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         [JsonConstructor]
-        public EchoProperty
+        public EchonetPropertySpecification
         (
             string? name,
             byte code,
@@ -55,7 +55,7 @@ namespace Smdn.Net.EchonetLite.Appendix
             bool setRequired,
             bool anno,
             bool annoRequired,
-            IReadOnlyList<ApplicationService>? optionRequired,
+            IReadOnlyList<ApplicationServiceName>? optionRequired,
             string? description,
             string? unit
         )
@@ -74,7 +74,7 @@ namespace Smdn.Net.EchonetLite.Appendix
             SetRequired = setRequired;
             Anno = anno;
             AnnoRequired = annoRequired;
-            OptionRequired = optionRequired ?? Array.Empty<ApplicationService>();
+            OptionRequired = optionRequired ?? Array.Empty<ApplicationServiceName>();
             Description = string.IsNullOrEmpty(description) ? null : description;
             Unit = string.IsNullOrEmpty(unit) ? null : unit;
 
@@ -156,7 +156,7 @@ namespace Smdn.Net.EchonetLite.Appendix
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         // MasterDataのJSONファイルでは、プロパティ名がOptionRequiredではなくOptionRequierdとなっていることに注意
         [JsonPropertyName("OptionRequierd")]
-        public IReadOnlyList<ApplicationService> OptionRequired { get; }
+        public IReadOnlyList<ApplicationServiceName> OptionRequired { get; }
         /// <summary>
         /// 備考
         /// </summary>

@@ -63,12 +63,12 @@ namespace EchoDotNetLite.Models
 
     internal static class SpecificationUtil
     {
-        public static EchoProperty? FindProperty(byte classGroupCode, byte classCode, byte epc)
+        public static EchonetPropertySpecification? FindProperty(byte classGroupCode, byte classCode, byte epc)
         {
             var @class = FindClass(classGroupCode, classCode);
             if (@class is not null)
             {
-                EchoProperty? property;
+                EchonetPropertySpecification? property;
                  property = @class.AnnoProperties.FirstOrDefault(p => p.Code == epc);
                 if (property is not null)
                 {
@@ -92,15 +92,15 @@ namespace EchoDotNetLite.Models
         {
             return new UnknownEchoObject
             (
-                classGroup: new EchoClassGroup
+                classGroup: new
                 (
                     classGroupCode: classGroupCode,
                     classGroupName: "Unknown",
                     classGroupNameOfficial: "Unknown",
-                    classList: Array.Empty<EchoClass>(),
+                    classList: Array.Empty<EchonetClassSpecification>(),
                     superClass: null
                 ),
-                @class: new EchoClass
+                @class: new
                 (
                     classCode: classCode,
                     className: "Unknown",
@@ -111,32 +111,32 @@ namespace EchoDotNetLite.Models
         }
         private class UnknownEchoObject : IEchonetObject
         {
-            public UnknownEchoObject(EchoClassGroup classGroup, EchoClass @class)
+            public UnknownEchoObject(EchonetClassGroupSpecification classGroup, EchonetClassSpecification @class)
             {
                 ClassGroup = classGroup ?? throw new ArgumentNullException(nameof(classGroup));
                 Class = @class ?? throw new ArgumentNullException(nameof(@class));
             }
 
-            public EchoClassGroup ClassGroup { get; }
-            public EchoClass Class { get; }
+            public EchonetClassGroupSpecification ClassGroup { get; }
+            public EchonetClassSpecification Class { get; }
 
-            public IEnumerable<EchoProperty> GetProperties => Enumerable.Empty<EchoProperty>();
+            public IEnumerable<EchonetPropertySpecification> GetProperties => Enumerable.Empty<EchonetPropertySpecification>();
 
-            public IEnumerable<EchoProperty> SetProperties => Enumerable.Empty<EchoProperty>();
+            public IEnumerable<EchonetPropertySpecification> SetProperties => Enumerable.Empty<EchonetPropertySpecification>();
 
-            public IEnumerable<EchoProperty> AnnoProperties => Enumerable.Empty<EchoProperty>();
+            public IEnumerable<EchonetPropertySpecification> AnnoProperties => Enumerable.Empty<EchonetPropertySpecification>();
         }
 
         public static IEchonetObject? FindClass(byte classGroupCode, byte classCode)
         {
-            var profileClass = プロファイル.クラス一覧.FirstOrDefault(
+            var profileClass = Profiles.クラス一覧.FirstOrDefault(
                                 g => g.ClassGroup.ClassGroupCode == classGroupCode
                                 && g.Class.ClassCode == classCode);
             if (profileClass != null)
             {
                 return profileClass;
             }
-            var deviceClass = 機器.クラス一覧.FirstOrDefault(
+            var deviceClass = DeviceClasses.クラス一覧.FirstOrDefault(
                                 g => g.ClassGroup.ClassGroupCode == classGroupCode
                                 && g.Class.ClassCode == classCode);
             if (deviceClass != null)

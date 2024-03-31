@@ -36,8 +36,8 @@ namespace Smdn.Net.EchonetLite.Appendix
         (
             string? version,
             string? appendixRelease,
-            IReadOnlyList<EchoClassGroup>? プロファイル,
-            IReadOnlyList<EchoClassGroup>? 機器
+            IReadOnlyList<EchonetClassGroupSpecification>? プロファイル,
+            IReadOnlyList<EchonetClassGroupSpecification>? 機器
         )
         {
             Version = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(version, nameof(version));
@@ -96,10 +96,10 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// プロファイルオブジェクト
         /// </summary>
-        public IReadOnlyList<EchoClassGroup> プロファイル { get; }
+        public IReadOnlyList<EchonetClassGroupSpecification> プロファイル { get; }
         /// <summary>
         /// 機器オブジェクト
         /// </summary>
-        public IReadOnlyList<EchoClassGroup> 機器 { get; }
+        public IReadOnlyList<EchonetClassGroupSpecification> 機器 { get; }
     }
 }

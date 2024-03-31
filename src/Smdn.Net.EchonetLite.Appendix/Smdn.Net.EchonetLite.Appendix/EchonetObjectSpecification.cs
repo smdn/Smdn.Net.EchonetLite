@@ -8,16 +8,16 @@ using System.Text.Json;
 
 namespace Smdn.Net.EchonetLite.Appendix
 {
-    internal class EchonetObject : IEchonetObject
+    internal class EchonetObjectSpecification : IEchonetObject
     {
-        public EchonetObject(byte classGroupCode, byte classCode)
+        public EchonetObjectSpecification(byte classGroupCode, byte classCode)
         {
             ClassGroup =
                SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
                SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
                throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
 
-            var properties = new List<EchoProperty>();
+            var properties = new List<EchonetPropertySpecification>();
 
             //スーパークラスのプロパティを列挙
             using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
@@ -50,35 +50,35 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// クラスグループコード
         /// </summary>
-        public EchoClassGroup ClassGroup { get; }
+        public EchonetClassGroupSpecification ClassGroup { get; }
         /// <summary>
         /// クラスコード
         /// </summary>
-        public EchoClass Class { get; }
+        public EchonetClassSpecification Class { get; }
 
         /// <summary>
         /// 仕様上定義済みのプロパティの一覧
         /// </summary>
-        internal IReadOnlyList<EchoProperty> Properties { get; }
+        internal IReadOnlyList<EchonetPropertySpecification> Properties { get; }
 
         /// <summary>
         /// 仕様上定義済みのGETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoProperty> GetProperties
+        public IEnumerable<EchonetPropertySpecification> GetProperties
         {
             get { return Properties.Where(static p => p.Get); }
         }
         /// <summary>
         /// 仕様上定義済みのSETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoProperty> SetProperties
+        public IEnumerable<EchonetPropertySpecification> SetProperties
         {
             get { return Properties.Where(static p => p.Set); }
         }
         /// <summary>
         /// 仕様上定義済みのANNOプロパティの一覧
         /// </summary>
-        public IEnumerable<EchoProperty> AnnoProperties
+        public IEnumerable<EchonetPropertySpecification> AnnoProperties
         {
             get { return Properties.Where(static p => p.Anno); }
         }

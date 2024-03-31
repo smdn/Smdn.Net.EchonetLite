@@ -17,7 +17,7 @@ public class EchoClassTests {
     yield return new object?[] {
       "valid ctor params",
       new object?[] { true, (byte)0x00, "classNameOfficial", "className" },
-      null, null, static (EchoClass c) => Assert.That(c.ClassName, Is.EqualTo("className"))
+      null, null, static (EchonetClassSpecification c) => Assert.That(c.ClassName, Is.EqualTo("className"))
     };
 
     yield return new object?[] {
@@ -49,10 +49,10 @@ public class EchoClassTests {
     object?[] ctorParams,
     Type? expectedExceptionType,
     string? expectedArgumentExceptionParamName,
-    Action<EchoClass>? assertClass
+    Action<EchonetClassSpecification>? assertClass
   )
   {
-    var ctor = typeof(EchoClass).GetConstructors().FirstOrDefault(
+    var ctor = typeof(EchonetClassSpecification).GetConstructors().FirstOrDefault(
       static c => c.GetCustomAttributes(typeof(JsonConstructorAttribute), inherit: false).Any()
     );
 
@@ -61,12 +61,12 @@ public class EchoClassTests {
       return;
     }
 
-    var createClass = new Func<EchoClass>(
-      () => (EchoClass)ctor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: ctorParams, culture: null)!
+    var createClass = new Func<EchonetClassSpecification>(
+      () => (EchonetClassSpecification)ctor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: ctorParams, culture: null)!
     );
 
     if (expectedExceptionType is null) {
-      EchoClass? c = null;
+      EchonetClassSpecification? c = null;
 
       Assert.DoesNotThrow(
         () => c = createClass(),
@@ -143,7 +143,7 @@ public class EchoClassTests {
     string expectedClassName
   )
   {
-    var c = JsonSerializer.Deserialize<EchoClass>(input);
+    var c = JsonSerializer.Deserialize<EchonetClassSpecification>(input);
 
     Assert.That(c, Is.Not.Null);
     Assert.That(c!.Status, Is.EqualTo(expectedStatus), nameof(c.Status));
@@ -159,7 +159,7 @@ public class EchoClassTests {
   [TestCase(0xFF, "\"ClassCode\":\"0xff\"")]
   public void Serialize_ClassCode(byte classCode, string expectedJsonFragment)
   {
-    var c = new EchoClass(
+    var c = new EchonetClassSpecification(
       status: default,
       classCode: classCode,
       classNameOfficial: "*",

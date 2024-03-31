@@ -8,13 +8,13 @@ namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class ApplicationServiceTests {
-  [TestCase(ApplicationService.モバイルサービス, nameof(ApplicationService.モバイルサービス))]
-  [TestCase(ApplicationService.エネルギーサービス, nameof(ApplicationService.エネルギーサービス))]
-  [TestCase(ApplicationService.快適生活支援サービス, nameof(ApplicationService.快適生活支援サービス))]
-  [TestCase(ApplicationService.ホームヘルスケアサービス, nameof(ApplicationService.ホームヘルスケアサービス))]
-  [TestCase(ApplicationService.セキュリティサービス, nameof(ApplicationService.セキュリティサービス))]
-  [TestCase(ApplicationService.機器リモートメンテナンスサービス, nameof(ApplicationService.機器リモートメンテナンスサービス))]
-  public void Serialize(ApplicationService value, string expected)
+  [TestCase(ApplicationServiceName.モバイルサービス, nameof(ApplicationServiceName.モバイルサービス))]
+  [TestCase(ApplicationServiceName.エネルギーサービス, nameof(ApplicationServiceName.エネルギーサービス))]
+  [TestCase(ApplicationServiceName.快適生活支援サービス, nameof(ApplicationServiceName.快適生活支援サービス))]
+  [TestCase(ApplicationServiceName.ホームヘルスケアサービス, nameof(ApplicationServiceName.ホームヘルスケアサービス))]
+  [TestCase(ApplicationServiceName.セキュリティサービス, nameof(ApplicationServiceName.セキュリティサービス))]
+  [TestCase(ApplicationServiceName.機器リモートメンテナンスサービス, nameof(ApplicationServiceName.機器リモートメンテナンスサービス))]
+  public void Serialize(ApplicationServiceName value, string expected)
   {
     var expectedJsonFragment = "\"" + expected + "\"";
 

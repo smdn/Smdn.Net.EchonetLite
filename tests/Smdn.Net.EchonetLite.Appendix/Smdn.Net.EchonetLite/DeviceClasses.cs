@@ -10,18 +10,18 @@ using Smdn.Net.EchonetLite.Appendix;
 namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
-public class 機器Tests {
+public class DeviceClassesTests {
   [Test]
   public void ClassGroup()
   {
-    var obj = 機器.管理操作関連機器.コントローラ;
+    var obj = DeviceClasses.管理操作関連機器.コントローラ;
 
     Assert.That(obj, Is.Not.Null);
     Assert.That(obj.ClassGroup, Is.Not.Null, nameof(IEchonetObject.ClassGroup));
-    Assert.That(obj.ClassGroup.ClassGroupCode, Is.EqualTo(0x05), nameof(EchoClassGroup.ClassGroupCode));
-    Assert.That(obj.ClassGroup.ClassGroupNameOfficial, Is.EqualTo("管理・操作関連機器クラスグループ"), nameof(EchoClassGroup.ClassGroupNameOfficial));
-    Assert.That(obj.ClassGroup.SuperClass, Is.EqualTo("機器オブジェクトスーパークラス"), nameof(EchoClassGroup.SuperClass));
-    Assert.That(obj.ClassGroup.ClassList, Is.Not.Empty, nameof(EchoClassGroup.ClassList));
+    Assert.That(obj.ClassGroup.ClassGroupCode, Is.EqualTo(0x05), nameof(EchonetClassGroupSpecification.ClassGroupCode));
+    Assert.That(obj.ClassGroup.ClassGroupNameOfficial, Is.EqualTo("管理・操作関連機器クラスグループ"), nameof(EchonetClassGroupSpecification.ClassGroupNameOfficial));
+    Assert.That(obj.ClassGroup.SuperClass, Is.EqualTo("機器オブジェクトスーパークラス"), nameof(EchonetClassGroupSpecification.SuperClass));
+    Assert.That(obj.ClassGroup.ClassList, Is.Not.Empty, nameof(EchonetClassGroupSpecification.ClassList));
 
     Assert.That(obj.GetProperties, Is.Not.Null, nameof(IEchonetObject.GetProperties));
     Assert.That(obj.GetProperties, Is.Not.Empty, nameof(IEchonetObject.GetProperties));
@@ -36,12 +36,12 @@ public class 機器Tests {
   [Test]
   public void Class()
   {
-    var obj = 機器.管理操作関連機器.コントローラ;
+    var obj = DeviceClasses.管理操作関連機器.コントローラ;
 
     Assert.That(obj, Is.Not.Null);
     Assert.That(obj.Class, Is.Not.Null, nameof(IEchonetObject.Class));
-    Assert.That(obj.Class.ClassCode, Is.EqualTo(0xFF), nameof(EchoClass.ClassCode));
-    Assert.That(obj.Class.ClassNameOfficial, Is.EqualTo("コントローラ"), nameof(EchoClass.ClassNameOfficial));
+    Assert.That(obj.Class.ClassCode, Is.EqualTo(0xFF), nameof(EchonetClassSpecification.ClassCode));
+    Assert.That(obj.Class.ClassNameOfficial, Is.EqualTo("コントローラ"), nameof(EchonetClassSpecification.ClassNameOfficial));
 
     Assert.That(obj.GetProperties, Is.Not.Null, nameof(IEchonetObject.GetProperties));
     Assert.That(obj.GetProperties, Is.Not.Empty, nameof(IEchonetObject.GetProperties));
@@ -55,9 +55,9 @@ public class 機器Tests {
 
   private static System.Collections.IEnumerable YieldTestCases_機器オブジェクトスーパークラスJson()
   {
-    yield return new object?[] { 機器.センサ関連機器.ガス漏れセンサ };
-    yield return new object?[] { 機器.住宅設備関連機器.低圧スマート電力量メータ };
-    yield return new object?[] { 機器.ＡＶ関連機器.ディスプレー };
+    yield return new object?[] { DeviceClasses.センサ関連機器.ガス漏れセンサ };
+    yield return new object?[] { DeviceClasses.住宅設備関連機器.低圧スマート電力量メータ };
+    yield return new object?[] { DeviceClasses.ＡＶ関連機器.ディスプレー };
   }
 
   [TestCaseSource(nameof(YieldTestCases_機器オブジェクトスーパークラスJson))]
@@ -79,7 +79,7 @@ public class 機器Tests {
   [Test]
   public void MasterData_住宅設備関連機器_低圧スマート電力量メータJson()
   {
-    var obj = 機器.住宅設備関連機器.低圧スマート電力量メータ;
+    var obj = DeviceClasses.住宅設備関連機器.低圧スマート電力量メータ;
 
     var epcE0 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xE0);
 
@@ -101,7 +101,7 @@ public class 機器Tests {
   [Test]
   public void MasterData_ＡＶ関連機器_テレビJson()
   {
-    var obj = 機器.ＡＶ関連機器.テレビ;
+    var obj = DeviceClasses.ＡＶ関連機器.テレビ;
 
     var epc80 = obj.GetProperties.LastOrDefault(static prop => prop.Code == 0x80); // overrides properties from super class
 
@@ -111,7 +111,7 @@ public class 機器Tests {
     Assert.That(epc80.OptionRequired, Is.Not.Null, nameof(epc80.OptionRequired));
     Assert.That(
       epc80.OptionRequired,
-      Is.EquivalentTo(new[] { ApplicationService.エネルギーサービス }),
+      Is.EquivalentTo(new[] { ApplicationServiceName.エネルギーサービス }),
       nameof(epc80.OptionRequired)
     );
 
@@ -120,7 +120,7 @@ public class 機器Tests {
     Assert.That(epcB0, Is.Not.Null);
     Assert.That(epcB0!.Code, Is.EqualTo(0xB0), nameof(epcB0.Code));
     Assert.That(epcB0.Name, Is.EqualTo("表示制御設定"), nameof(epcB0.Name));
-    Assert.That(epcB0.OptionRequired ?? Enumerable.Empty<ApplicationService>(), Is.Empty, nameof(epcB0.OptionRequired));
+    Assert.That(epcB0.OptionRequired ?? Enumerable.Empty<ApplicationServiceName>(), Is.Empty, nameof(epcB0.OptionRequired));
 
     var epcB1 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xB1);
 
@@ -131,8 +131,8 @@ public class 機器Tests {
     Assert.That(
       epcB1.OptionRequired,
       Is.EquivalentTo(new[] {
-        ApplicationService.快適生活支援サービス,
-        ApplicationService.セキュリティサービス
+        ApplicationServiceName.快適生活支援サービス,
+        ApplicationServiceName.セキュリティサービス
       }),
       nameof(epcB1.OptionRequired)
     );

@@ -14,7 +14,7 @@ namespace EchoDotNetLite.Models
     /// </summary>
     public sealed class EchoPropertyInstance
     {
-        internal static EchoProperty GenerateUnknownProperty(byte epc)
+        internal static EchonetPropertySpecification GenerateUnknownProperty(byte epc)
             => new
             (
                 code: epc,
@@ -75,7 +75,7 @@ namespace EchoDotNetLite.Models
         {
         }
 
-        public EchoPropertyInstance(EchoProperty spec)
+        public EchoPropertyInstance(EchonetPropertySpecification spec)
             : this
             (
                 spec: spec,
@@ -88,7 +88,7 @@ namespace EchoDotNetLite.Models
 
         public EchoPropertyInstance
         (
-            EchoProperty spec,
+            EchonetPropertySpecification spec,
             bool isPropertyAnno,
             bool isPropertySet,
             bool isPropertyGet
@@ -104,7 +104,7 @@ namespace EchoDotNetLite.Models
         /// EPC
         /// ECHONET機器オブジェクト詳細規定がある場合、詳細仕様
         /// </summary>
-        public EchoProperty Spec { get; }
+        public EchonetPropertySpecification Spec { get; }
         /// <summary>
         /// プロパティ値の読み出し・通知要求のサービスを処理する。
         /// プロパティ値読み出し要求(0x62)、プロパティ値書き込み・読み出し要求(0x6E)、プロパティ値通知要求(0x63)の要求受付処理を実施する。

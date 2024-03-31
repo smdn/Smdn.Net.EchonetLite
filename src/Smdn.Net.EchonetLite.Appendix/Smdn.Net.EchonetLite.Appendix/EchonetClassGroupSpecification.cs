@@ -10,7 +10,7 @@ namespace Smdn.Net.EchonetLite.Appendix
     /// <summary>
     /// クラスグループ
     /// </summary>
-    public sealed class EchoClassGroup
+    public sealed class EchonetClassGroupSpecification
     {
         /// <summary>
         /// JSONデシリアライズ用のコンストラクタ
@@ -19,24 +19,24 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <param name="classGroupNameOfficial"><see cref="ClassGroupNameOfficial"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
         /// <param name="classGroupName"><see cref="ClassGroupName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
         /// <param name="superClass"><see cref="SuperClass"/>に設定する値。　スーパークラスがない場合は<see langword="null"/>。　空の文字列は<see langword="null"/>として設定されます。</param>
-        /// <param name="classList"><see cref="ClassList"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{EchoClass}"/>を設定します。</param>
+        /// <param name="classList"><see cref="ClassList"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{EchonetClassSpecification}"/>を設定します。</param>
         /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
         /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         [JsonConstructor]
-        public EchoClassGroup
+        public EchonetClassGroupSpecification
         (
             byte classGroupCode,
             string? classGroupNameOfficial,
             string? classGroupName,
             string? superClass,
-            IReadOnlyList<EchoClass>? classList
+            IReadOnlyList<EchonetClassSpecification>? classList
         )
         {
             ClassGroupCode = classGroupCode;
             ClassGroupNameOfficial = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(classGroupNameOfficial, nameof(classGroupNameOfficial));
             ClassGroupName = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(classGroupName, nameof(classGroupName));
             SuperClass = string.IsNullOrEmpty(superClass) ? null : superClass; // can be null
-            ClassList = classList ?? Array.Empty<EchoClass>();
+            ClassList = classList ?? Array.Empty<EchonetClassSpecification>();
         }
 
         /// <summary>
@@ -59,6 +59,6 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// クラスグループに属するクラスのリスト
         /// </summary>
-        public IReadOnlyList<EchoClass> ClassList { get; }
+        public IReadOnlyList<EchonetClassSpecification> ClassList { get; }
     }
 }

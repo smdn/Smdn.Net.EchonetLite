@@ -18,7 +18,7 @@ public class EchoPropertyTests {
     yield return new object?[] {
       "valid ctor params",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.That(p.Name, Is.EqualTo("name"))
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Name, Is.EqualTo("name"))
     };
 
     yield return new object?[] {
@@ -68,50 +68,50 @@ public class EchoPropertyTests {
     yield return new object?[] {
       "value null",
       new object?[] { "name", (byte)0x00, "detail", null, "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.That(p.Value, Is.Null, $"{nameof(p.Value)} must be null")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Value, Is.Null, $"{nameof(p.Value)} must be null")
     };
     yield return new object?[] {
       "value empty",
       new object?[] { "name", (byte)0x00, "detail", string.Empty, "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.That(p.Value, Is.Null, $"{nameof(p.Value)} must be null")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Value, Is.Null, $"{nameof(p.Value)} must be null")
     };
 
     yield return new object?[] {
       "optionRequired null",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.That(p.OptionRequired, Is.Empty, $"{nameof(p.OptionRequired)} must be empty")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.OptionRequired, Is.Empty, $"{nameof(p.OptionRequired)} must be empty")
     };
     yield return new object?[] {
       "optionRequired empty",
-      new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, new List<ApplicationService>(), "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.That(p.OptionRequired, Is.Empty, $"{nameof(p.OptionRequired)} must be empty")
+      new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, new List<ApplicationServiceName>(), "description", "unit" },
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.OptionRequired, Is.Empty, $"{nameof(p.OptionRequired)} must be empty")
     };
     yield return new object?[] {
       "optionRequired non-empty",
-      new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, new List<ApplicationService>() { ApplicationService.モバイルサービス }, "description", "unit" },
-      null, null, static (EchoProperty p) => Assert.That(p.OptionRequired.Count, Is.EqualTo(1), $"{nameof(p.OptionRequired)} must not be empty")
+      new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, new List<ApplicationServiceName>() { ApplicationServiceName.モバイルサービス }, "description", "unit" },
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.OptionRequired.Count, Is.EqualTo(1), $"{nameof(p.OptionRequired)} must not be empty")
     };
 
     yield return new object?[] {
       "description null",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, null, "unit" },
-      null, null, static (EchoProperty p) => Assert.That(p.Description, Is.Null, $"{nameof(p.Description)} must be null")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Description, Is.Null, $"{nameof(p.Description)} must be null")
     };
     yield return new object?[] {
       "description empty",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, string.Empty, "unit" },
-      null, null, static (EchoProperty p) => Assert.That(p.Description, Is.Null, $"{nameof(p.Description)} must be null")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Description, Is.Null, $"{nameof(p.Description)} must be null")
     };
 
     yield return new object?[] {
       "unit null",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", null },
-      null, null, static (EchoProperty p) => Assert.That(p.Unit, Is.Null, $"{nameof(p.Unit)} must be null")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Unit, Is.Null, $"{nameof(p.Unit)} must be null")
     };
     yield return new object?[] {
       "unit empty",
       new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", string.Empty },
-      null, null, static (EchoProperty p) => Assert.That(p.Unit, Is.Null, $"{nameof(p.Unit)} must be null")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Unit, Is.Null, $"{nameof(p.Unit)} must be null")
     };
   }
 
@@ -121,10 +121,10 @@ public class EchoPropertyTests {
     object?[] ctorParams,
     Type? expectedExceptionType,
     string? expectedArgumentExceptionParamName,
-    Action<EchoProperty>? assertProperty
+    Action<EchonetPropertySpecification>? assertProperty
   )
   {
-    var ctor = typeof(EchoProperty).GetConstructors().FirstOrDefault(
+    var ctor = typeof(EchonetPropertySpecification).GetConstructors().FirstOrDefault(
       static c => c.GetCustomAttributes(typeof(JsonConstructorAttribute), inherit: false).Any()
     );
 
@@ -133,12 +133,12 @@ public class EchoPropertyTests {
       return;
     }
 
-    var createProperty = new Func<EchoProperty>(
-      () => (EchoProperty)ctor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: ctorParams, culture: null)!
+    var createProperty = new Func<EchonetPropertySpecification>(
+      () => (EchonetPropertySpecification)ctor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: ctorParams, culture: null)!
     );
 
     if (expectedExceptionType is null) {
-      EchoProperty? prop = null;
+      EchonetPropertySpecification? prop = null;
 
       Assert.DoesNotThrow(
         () => prop = createProperty(),
@@ -165,7 +165,7 @@ public class EchoPropertyTests {
   [Test]
   public void HasUnit()
   {
-    var obj = 機器.住宅設備関連機器.低圧スマート電力量メータ;
+    var obj = DeviceClasses.住宅設備関連機器.低圧スマート電力量メータ;
 
     var epc8E = obj.GetProperties.First(static prop => prop.Code == 0x8E); // 製造年月日 Unit: ""
 
@@ -214,7 +214,7 @@ public class EchoPropertyTests {
       (byte)0x88,
       (int?)1,
       true,
-      Array.Empty<ApplicationService>()
+      Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
@@ -241,7 +241,7 @@ public class EchoPropertyTests {
       (byte)0xFF,
       (int?)1,
       true,
-      Array.Empty<ApplicationService>()
+      Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
@@ -268,7 +268,7 @@ public class EchoPropertyTests {
       (byte)0xFF,
       (int?)1,
       true,
-      Array.Empty<ApplicationService>()
+      Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
@@ -295,7 +295,7 @@ public class EchoPropertyTests {
       (byte)0xFF,
       (int?)null,
       false,
-      Array.Empty<ApplicationService>()
+      Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
@@ -321,7 +321,7 @@ public class EchoPropertyTests {
       (byte)0xFF,
       (int?)null,
       false,
-      Array.Empty<ApplicationService>()
+      Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
@@ -355,12 +355,12 @@ public class EchoPropertyTests {
       (int?)null,
       false,
       new[] {
-        ApplicationService.モバイルサービス,
-        ApplicationService.エネルギーサービス,
-        ApplicationService.快適生活支援サービス,
-        ApplicationService.ホームヘルスケアサービス,
-        ApplicationService.セキュリティサービス,
-        ApplicationService.機器リモートメンテナンスサービス,
+        ApplicationServiceName.モバイルサービス,
+        ApplicationServiceName.エネルギーサービス,
+        ApplicationServiceName.快適生活支援サービス,
+        ApplicationServiceName.ホームヘルスケアサービス,
+        ApplicationServiceName.セキュリティサービス,
+        ApplicationServiceName.機器リモートメンテナンスサービス,
       }
     };
 
@@ -387,7 +387,7 @@ public class EchoPropertyTests {
       (byte)0xFF,
       (int?)null,
       false,
-      Array.Empty<ApplicationService>()
+      Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
@@ -413,7 +413,7 @@ public class EchoPropertyTests {
       (byte)0xFF,
       (int?)null,
       false,
-      Array.Empty<ApplicationService>()
+      Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
@@ -438,7 +438,7 @@ public class EchoPropertyTests {
       (byte)0xFF,
       (int?)null,
       false,
-      Array.Empty<ApplicationService>()
+      Array.Empty<ApplicationServiceName>()
     };
   }
 
@@ -450,10 +450,10 @@ public class EchoPropertyTests {
     byte expectedCode,
     int? expectedMinSize,
     bool expectedGet,
-    IEnumerable<ApplicationService>? expectedRequiredOptions
+    IEnumerable<ApplicationServiceName>? expectedRequiredOptions
   )
   {
-    var p = JsonSerializer.Deserialize<EchoProperty>(input);
+    var p = JsonSerializer.Deserialize<EchonetPropertySpecification>(input);
 
     Assert.That(p, Is.Not.Null);
     Assert.That(p!.Name, Is.EqualTo(expectedName), message: $"{testCaseName}; {nameof(p.Name)}");
@@ -509,7 +509,7 @@ public class EchoPropertyTests {
     bool expectedHasUnit
   )
   {
-    var p = JsonSerializer.Deserialize<EchoProperty>(input);
+    var p = JsonSerializer.Deserialize<EchonetPropertySpecification>(input);
 
     Assert.That(p, Is.Not.Null);
     Assert.That(p!.Unit, Is.EqualTo(expectedUnitString), message: $"{testCaseName}; {nameof(p.Unit)}");
@@ -519,10 +519,10 @@ public class EchoPropertyTests {
   private static System.Collections.IEnumerable YieldTestCases_Serialize_OptionRequired()
   {
     yield return new object?[] {
-      new EchoProperty(
-        optionRequired: new List<ApplicationService>() {
-          ApplicationService.モバイルサービス,
-          ApplicationService.エネルギーサービス
+      new EchonetPropertySpecification(
+        optionRequired: new List<ApplicationServiceName>() {
+          ApplicationServiceName.モバイルサービス,
+          ApplicationServiceName.エネルギーサービス
         },
         name: "*",
         code: default,
@@ -547,8 +547,8 @@ public class EchoPropertyTests {
     };
 
     yield return new object?[] {
-      new EchoProperty(
-        optionRequired: new List<ApplicationService>(),
+      new EchonetPropertySpecification(
+        optionRequired: new List<ApplicationServiceName>(),
         name: "*",
         code: default,
         detail: "*",
@@ -572,7 +572,7 @@ public class EchoPropertyTests {
     };
 
     yield return new object?[] {
-      new EchoProperty(
+      new EchonetPropertySpecification(
         optionRequired: null,
         name: "*",
         code: default,
@@ -598,7 +598,7 @@ public class EchoPropertyTests {
   }
 
   [TestCaseSource(nameof(YieldTestCases_Serialize_OptionRequired))]
-  public void Serialize_OptionRequired(EchoProperty prop, Action<string> assertJson)
+  public void Serialize_OptionRequired(EchonetPropertySpecification prop, Action<string> assertJson)
   {
     var options = new JsonSerializerOptions() {
       Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -614,7 +614,7 @@ public class EchoPropertyTests {
   [TestCase(0xFF, "\"Code\":\"0xff\"")]
   public void Serialize_Code(byte code, string expectedJsonFragment)
   {
-    var prop = new EchoProperty(
+    var prop = new EchonetPropertySpecification(
       name: "*",
       code: code,
       detail: "*",
