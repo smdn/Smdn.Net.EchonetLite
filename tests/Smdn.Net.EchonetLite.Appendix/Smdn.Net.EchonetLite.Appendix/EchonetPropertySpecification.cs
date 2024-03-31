@@ -68,12 +68,12 @@ public class EchoPropertyTests {
     yield return new object?[] {
       "value null",
       new object?[] { "name", (byte)0x00, "detail", null, "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Value, Is.Null, $"{nameof(p.Value)} must be null")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.ValueRange, Is.Null, $"{nameof(p.ValueRange)} must be null")
     };
     yield return new object?[] {
       "value empty",
       new object?[] { "name", (byte)0x00, "detail", string.Empty, "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, null, "description", "unit" },
-      null, null, static (EchonetPropertySpecification p) => Assert.That(p.Value, Is.Null, $"{nameof(p.Value)} must be null")
+      null, null, static (EchonetPropertySpecification p) => Assert.That(p.ValueRange, Is.Null, $"{nameof(p.ValueRange)} must be null")
     };
 
     yield return new object?[] {
@@ -88,7 +88,7 @@ public class EchoPropertyTests {
     };
     yield return new object?[] {
       "optionRequired non-empty",
-      new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, new List<ApplicationServiceName>() { ApplicationServiceName.モバイルサービス }, "description", "unit" },
+      new object?[] { "name", (byte)0x00, "detail", "value", "dataType", "logicalDataType", 0, 0, false, false, false, false, false, false, new List<ApplicationServiceName>() { ApplicationServiceName.MobileServices }, "description", "unit" },
       null, null, static (EchonetPropertySpecification p) => Assert.That(p.OptionRequired.Count, Is.EqualTo(1), $"{nameof(p.OptionRequired)} must not be empty")
     };
 
@@ -355,12 +355,12 @@ public class EchoPropertyTests {
       (int?)null,
       false,
       new[] {
-        ApplicationServiceName.モバイルサービス,
-        ApplicationServiceName.エネルギーサービス,
-        ApplicationServiceName.快適生活支援サービス,
-        ApplicationServiceName.ホームヘルスケアサービス,
-        ApplicationServiceName.セキュリティサービス,
-        ApplicationServiceName.機器リモートメンテナンスサービス,
+        ApplicationServiceName.MobileServices,
+        ApplicationServiceName.EnergyServices,
+        ApplicationServiceName.HomeAmenityServices,
+        ApplicationServiceName.HomeHealthcareServices,
+        ApplicationServiceName.SecurityServices,
+        ApplicationServiceName.RemoteApplianceMaintenanceServices,
       }
     };
 
@@ -521,13 +521,13 @@ public class EchoPropertyTests {
     yield return new object?[] {
       new EchonetPropertySpecification(
         optionRequired: new List<ApplicationServiceName>() {
-          ApplicationServiceName.モバイルサービス,
-          ApplicationServiceName.エネルギーサービス
+          ApplicationServiceName.MobileServices,
+          ApplicationServiceName.EnergyServices
         },
         name: "*",
         code: default,
         detail: "*",
-        value: "*",
+        valueRange: "*",
         dataType: "*",
         logicalDataType: "*",
         minSize: default,
@@ -552,7 +552,7 @@ public class EchoPropertyTests {
         name: "*",
         code: default,
         detail: "*",
-        value: "*",
+        valueRange: "*",
         dataType: "*",
         logicalDataType: "*",
         minSize: default,
@@ -577,7 +577,7 @@ public class EchoPropertyTests {
         name: "*",
         code: default,
         detail: "*",
-        value: "*",
+        valueRange: "*",
         dataType: "*",
         logicalDataType: "*",
         minSize: default,
@@ -618,7 +618,7 @@ public class EchoPropertyTests {
       name: "*",
       code: code,
       detail: "*",
-      value: "*",
+      valueRange: "*",
       dataType: "*",
       logicalDataType: "*",
       minSize: default,

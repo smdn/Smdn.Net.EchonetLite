@@ -13,26 +13,26 @@ namespace Smdn.Net.EchonetLite.Appendix
         public EchonetObjectSpecification(byte classGroupCode, byte classCode)
         {
             ClassGroup =
-               SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
-               SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.ClassGroupCode == classGroupCode) ??
+               SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.Code == classGroupCode) ??
+               SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.Code == classGroupCode) ??
                throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
 
             var properties = new List<EchonetPropertySpecification>();
 
             //スーパークラスのプロパティを列挙
-            using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClass}.json"))
+            using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClassName}.json"))
             {
                 var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
                 properties.AddRange(superClassProperties.Properties);
             }
 
-            Class = ClassGroup.ClassList?.FirstOrDefault(c => c.Status && c.ClassCode == classCode)
+            Class = ClassGroup.Classes?.FirstOrDefault(c => c.IsDefined && c.Code == classCode)
                 ?? throw new ArgumentException($"unknown class: 0x{classCode:X2}");
 
-            if (Class.Status)
+            if (Class.IsDefined)
             {
-                var classGroupDirectoryName = $"0x{ClassGroup.ClassGroupCode:X2}-{ClassGroup.ClassGroupName}";
-                var classFileName = $"0x{Class.ClassCode:X2}-{Class.ClassName}.json";
+                var classGroupDirectoryName = $"0x{ClassGroup.Code:X2}-{ClassGroup.PropertyName}";
+                var classFileName = $"0x{Class.Code:X2}-{Class.PropertyName}.json";
 
                 //クラスのプロパティを列挙
                 using (var stream = SpecificationMaster.GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName))

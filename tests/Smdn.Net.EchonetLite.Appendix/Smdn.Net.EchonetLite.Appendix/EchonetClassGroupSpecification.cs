@@ -18,51 +18,51 @@ public class EchonetClassGroupSpecificationTests {
     yield return new object?[] {
       "valid ctor params",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", "superClass", null },
-      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.ClassGroupName, Is.EqualTo("classGroupName"))
+      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.PropertyName, Is.EqualTo("classGroupName"))
     };
 
     yield return new object?[] {
       "classGroupNameOfficial null",
       new object?[] { (byte)0x00, null, "classGroupName", "superClass", null },
-      typeof(ArgumentNullException), "classGroupNameOfficial", null
+      typeof(ArgumentNullException), "name", null
     };
     yield return new object?[] {
       "classGroupNameOfficial empty",
       new object?[] { (byte)0x00, string.Empty, "classGroupName", "superClass", null },
-      typeof(ArgumentException), "classGroupNameOfficial", null
+      typeof(ArgumentException), "name", null
     };
 
     yield return new object?[] {
       "classGroupName null",
       new object?[] { (byte)0x00, "classGroupNameOfficial", null, "superClass", null },
-      typeof(ArgumentNullException), "classGroupName", null
+      typeof(ArgumentNullException), "propertyName", null
     };
     yield return new object?[] {
       "classGroupName empty",
       new object?[] { (byte)0x00, "classGroupNameOfficial", string.Empty, "superClass", null },
-      typeof(ArgumentException), "classGroupName", null
+      typeof(ArgumentException), "propertyName", null
     };
 
     yield return new object?[] {
       "superClass null",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", null, null },
-      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.SuperClass, Is.Null, nameof(cg.SuperClass))
+      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.SuperClassName, Is.Null, nameof(cg.SuperClassName))
     };
     yield return new object?[] {
       "superClass empty",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", string.Empty, null },
-      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.SuperClass, Is.Null, nameof(cg.SuperClass))
+      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.SuperClassName, Is.Null, nameof(cg.SuperClassName))
     };
 
     yield return new object?[] {
       "classList null",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", "superClass", null },
-      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.ClassList, Is.Empty, nameof(cg.ClassList))
+      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.Classes, Is.Empty, nameof(cg.Classes))
     };
     yield return new object?[] {
       "classList empty",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", "superClass", new List<EchonetClassSpecification>() },
-      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.ClassList, Is.Empty, nameof(cg.ClassList))
+      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.Classes, Is.Empty, nameof(cg.Classes))
     };
     yield return new object?[] {
       "classList not empty",
@@ -70,7 +70,7 @@ public class EchonetClassGroupSpecificationTests {
           new EchonetClassSpecification(false, (byte)0x00, "?", "?"),
         }
       },
-      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.ClassList.Count, Is.EqualTo(1), nameof(cg.SuperClass))
+      null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.Classes.Count, Is.EqualTo(1), nameof(cg.Classes))
     };
   }
 
@@ -171,19 +171,19 @@ public class EchonetClassGroupSpecificationTests {
   [TestCaseSource(nameof(YieldTestCases_Deserialize))]
   public void Deserialize(
     string input,
-    byte expectedClassGroupCode,
-    string expectedClassGroupNameOfficial,
-    string expectedClassGroupName,
-    string expectedSuperClass
+    byte expectedCode,
+    string expectedName,
+    string expectedPropertyName,
+    string expectedSuperClassName
   )
   {
     var cg = JsonSerializer.Deserialize<EchonetClassGroupSpecification>(input);
 
     Assert.That(cg, Is.Not.Null);
-    Assert.That(cg!.ClassGroupCode, Is.EqualTo(expectedClassGroupCode), nameof(cg.ClassGroupCode));
-    Assert.That(cg.ClassGroupNameOfficial, Is.EqualTo(expectedClassGroupNameOfficial), nameof(cg.ClassGroupNameOfficial));
-    Assert.That(cg.ClassGroupName, Is.EqualTo(expectedClassGroupName), nameof(cg.ClassGroupName));
-    Assert.That(cg.SuperClass, Is.EqualTo(expectedSuperClass), nameof(cg.SuperClass));
+    Assert.That(cg!.Code, Is.EqualTo(expectedCode), nameof(cg.Code));
+    Assert.That(cg.Name, Is.EqualTo(expectedName), nameof(cg.Name));
+    Assert.That(cg.PropertyName, Is.EqualTo(expectedPropertyName), nameof(cg.PropertyName));
+    Assert.That(cg.SuperClassName, Is.EqualTo(expectedSuperClassName), nameof(cg.SuperClassName));
   }
 
   [TestCase(0x00, "\"ClassGroupCode\":\"0x0\"")]
@@ -194,11 +194,11 @@ public class EchonetClassGroupSpecificationTests {
   public void Serialize_ClassGroupCode(byte classGroupCode, string expectedJsonFragment)
   {
     var cg = new EchonetClassGroupSpecification(
-      classGroupCode: classGroupCode,
-      classGroupNameOfficial: "*",
-      classGroupName: "*",
-      superClass: default,
-      classList: default
+      code: classGroupCode,
+      name: "*",
+      propertyName: "*",
+      superClassName: default,
+      classes: default
     );
 
     Assert.That(JsonSerializer.Serialize(cg), Does.Contain(expectedJsonFragment));
@@ -208,11 +208,11 @@ public class EchonetClassGroupSpecificationTests {
   {
     yield return new object?[] {
       new EchonetClassGroupSpecification(
-        classGroupCode: default,
-        classGroupNameOfficial: "*",
-        classGroupName: "*",
-        superClass: default,
-        classList: new List<EchonetClassSpecification>() {
+        code: default,
+        name: "*",
+        propertyName: "*",
+        superClassName: default,
+        classes: new List<EchonetClassSpecification>() {
           DeviceClasses.センサ関連機器.ガス漏れセンサ.Class,
           DeviceClasses.センサ関連機器.防犯センサ.Class
         }
@@ -227,11 +227,11 @@ public class EchonetClassGroupSpecificationTests {
 
     yield return new object?[] {
       new EchonetClassGroupSpecification(
-        classGroupCode: default,
-        classGroupNameOfficial: "*",
-        classGroupName: "*",
-        superClass: default,
-        classList: new List<EchonetClassSpecification>()
+        code: default,
+        name: "*",
+        propertyName: "*",
+        superClassName: default,
+        classes: new List<EchonetClassSpecification>()
       ),
       new Action<string>(static json => {
         Assert.That(json, Does.Contain($@",""ClassList"":[]"));
@@ -240,11 +240,11 @@ public class EchonetClassGroupSpecificationTests {
 
     yield return new object?[] {
       new EchonetClassGroupSpecification(
-        classGroupCode: default,
-        classGroupNameOfficial: "*",
-        classGroupName: "*",
-        superClass: default,
-        classList: null
+        code: default,
+        name: "*",
+        propertyName: "*",
+        superClassName: default,
+        classes: null
       ),
       new Action<string>(static json => {
         Assert.That(json, Does.Not.Contain(@""",ClassList"":"));

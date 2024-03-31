@@ -20,7 +20,7 @@ namespace EchoDotNetLite.Models
                 code: epc,
                 name: "Unknown",
                 detail: "Unknown",
-                value: null,
+                valueRange: null,
                 dataType: "Unknown",
                 logicalDataType: "Unknown",
                 minSize: null,

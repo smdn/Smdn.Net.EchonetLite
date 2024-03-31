@@ -22,7 +22,7 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>の値。</param>
         /// <param name="code"><see cref="Code"/>に設定する値。</param>
         /// <param name="detail"><see cref="Detail"/>に設定する非<see langword="null"/>の値。</param>
-        /// <param name="value"><see cref="Value"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
+        /// <param name="valueRange"><see cref="ValueRange"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
         /// <param name="dataType"><see cref="DataType"/>に設定する非<see langword="null"/>の値。</param>
         /// <param name="logicalDataType"><see cref="LogicalDataType"/>に設定する非<see langword="null"/>の値。</param>
         /// <param name="minSize"><see cref="MinSize"/>に設定する値。</param>
@@ -44,7 +44,7 @@ namespace Smdn.Net.EchonetLite.Appendix
             string? name,
             byte code,
             string? detail,
-            string? value,
+            string? valueRange,
             string? dataType,
             string? logicalDataType,
             int? minSize,
@@ -63,7 +63,7 @@ namespace Smdn.Net.EchonetLite.Appendix
             Name = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(name, nameof(name));
             Code = code;
             Detail = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(detail, nameof(detail));
-            Value = string.IsNullOrEmpty(value) ? null : value;
+            ValueRange = string.IsNullOrEmpty(valueRange) ? null : valueRange;
             DataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(dataType, nameof(dataType));
             LogicalDataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(logicalDataType, nameof(logicalDataType));
             MinSize = minSize;
@@ -105,7 +105,8 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// 値域(10 進表記)
         /// </summary>
-        public string? Value { get; }
+        [JsonPropertyName("Value")]
+        public string? ValueRange { get; }
         /// <summary>
         /// データ型
         /// </summary>

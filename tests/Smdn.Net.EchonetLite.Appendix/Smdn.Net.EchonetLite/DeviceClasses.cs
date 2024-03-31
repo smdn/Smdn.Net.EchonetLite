@@ -18,10 +18,10 @@ public class DeviceClassesTests {
 
     Assert.That(obj, Is.Not.Null);
     Assert.That(obj.ClassGroup, Is.Not.Null, nameof(IEchonetObject.ClassGroup));
-    Assert.That(obj.ClassGroup.ClassGroupCode, Is.EqualTo(0x05), nameof(EchonetClassGroupSpecification.ClassGroupCode));
-    Assert.That(obj.ClassGroup.ClassGroupNameOfficial, Is.EqualTo("管理・操作関連機器クラスグループ"), nameof(EchonetClassGroupSpecification.ClassGroupNameOfficial));
-    Assert.That(obj.ClassGroup.SuperClass, Is.EqualTo("機器オブジェクトスーパークラス"), nameof(EchonetClassGroupSpecification.SuperClass));
-    Assert.That(obj.ClassGroup.ClassList, Is.Not.Empty, nameof(EchonetClassGroupSpecification.ClassList));
+    Assert.That(obj.ClassGroup.Code, Is.EqualTo(0x05), nameof(EchonetClassGroupSpecification.Code));
+    Assert.That(obj.ClassGroup.Name, Is.EqualTo("管理・操作関連機器クラスグループ"), nameof(EchonetClassGroupSpecification.Name));
+    Assert.That(obj.ClassGroup.SuperClassName, Is.EqualTo("機器オブジェクトスーパークラス"), nameof(EchonetClassGroupSpecification.SuperClassName));
+    Assert.That(obj.ClassGroup.Classes, Is.Not.Empty, nameof(EchonetClassGroupSpecification.Classes));
 
     Assert.That(obj.GetProperties, Is.Not.Null, nameof(IEchonetObject.GetProperties));
     Assert.That(obj.GetProperties, Is.Not.Empty, nameof(IEchonetObject.GetProperties));
@@ -40,8 +40,8 @@ public class DeviceClassesTests {
 
     Assert.That(obj, Is.Not.Null);
     Assert.That(obj.Class, Is.Not.Null, nameof(IEchonetObject.Class));
-    Assert.That(obj.Class.ClassCode, Is.EqualTo(0xFF), nameof(EchonetClassSpecification.ClassCode));
-    Assert.That(obj.Class.ClassNameOfficial, Is.EqualTo("コントローラ"), nameof(EchonetClassSpecification.ClassNameOfficial));
+    Assert.That(obj.Class.Code, Is.EqualTo(0xFF), nameof(EchonetClassSpecification.Code));
+    Assert.That(obj.Class.Name, Is.EqualTo("コントローラ"), nameof(EchonetClassSpecification.Name));
 
     Assert.That(obj.GetProperties, Is.Not.Null, nameof(IEchonetObject.GetProperties));
     Assert.That(obj.GetProperties, Is.Not.Empty, nameof(IEchonetObject.GetProperties));
@@ -111,7 +111,7 @@ public class DeviceClassesTests {
     Assert.That(epc80.OptionRequired, Is.Not.Null, nameof(epc80.OptionRequired));
     Assert.That(
       epc80.OptionRequired,
-      Is.EquivalentTo(new[] { ApplicationServiceName.エネルギーサービス }),
+      Is.EquivalentTo(new[] { ApplicationServiceName.EnergyServices }),
       nameof(epc80.OptionRequired)
     );
 
@@ -131,8 +131,8 @@ public class DeviceClassesTests {
     Assert.That(
       epcB1.OptionRequired,
       Is.EquivalentTo(new[] {
-        ApplicationServiceName.快適生活支援サービス,
-        ApplicationServiceName.セキュリティサービス
+        ApplicationServiceName.HomeAmenityServices,
+        ApplicationServiceName.SecurityServices
       }),
       nameof(epcB1.OptionRequired)
     );

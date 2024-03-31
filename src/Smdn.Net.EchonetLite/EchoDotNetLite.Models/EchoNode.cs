@@ -94,18 +94,18 @@ namespace EchoDotNetLite.Models
             (
                 classGroup: new
                 (
-                    classGroupCode: classGroupCode,
-                    classGroupName: "Unknown",
-                    classGroupNameOfficial: "Unknown",
-                    classList: Array.Empty<EchonetClassSpecification>(),
-                    superClass: null
+                    code: classGroupCode,
+                    name: "Unknown",
+                    propertyName: "Unknown",
+                    classes: Array.Empty<EchonetClassSpecification>(),
+                    superClassName: null
                 ),
                 @class: new
                 (
-                    classCode: classCode,
-                    className: "Unknown",
-                    classNameOfficial: "Unknown",
-                    status: false
+                    isDefined: false,
+                    code: classCode,
+                    name: "Unknown",
+                    propertyName: "Unknown"
                 )
             );
         }
@@ -129,16 +129,16 @@ namespace EchoDotNetLite.Models
 
         public static IEchonetObject? FindClass(byte classGroupCode, byte classCode)
         {
-            var profileClass = Profiles.クラス一覧.FirstOrDefault(
-                                g => g.ClassGroup.ClassGroupCode == classGroupCode
-                                && g.Class.ClassCode == classCode);
+            var profileClass = Profiles.All.FirstOrDefault(
+                                g => g.ClassGroup.Code == classGroupCode
+                                && g.Class.Code == classCode);
             if (profileClass != null)
             {
                 return profileClass;
             }
-            var deviceClass = DeviceClasses.クラス一覧.FirstOrDefault(
-                                g => g.ClassGroup.ClassGroupCode == classGroupCode
-                                && g.Class.ClassCode == classCode);
+            var deviceClass = DeviceClasses.All.FirstOrDefault(
+                                g => g.ClassGroup.Code == classGroupCode
+                                && g.Class.Code == classCode);
             if (deviceClass != null)
             {
                 return deviceClass;

@@ -17,7 +17,7 @@ namespace Smdn.Net.EchonetLite
         /// <summary>
         /// 一覧
         /// </summary>
-        public static IReadOnlyList<IEchonetObject> クラス一覧 { get; } = new IEchonetObject[]
+        public static IReadOnlyList<IEchonetObject> All { get; } = new IEchonetObject[]
         {
             センサ関連機器.ガス漏れセンサ,
             センサ関連機器.防犯センサ,
@@ -132,7 +132,7 @@ namespace Smdn.Net.EchonetLite
             ＡＶ関連機器.テレビ,
             ＡＶ関連機器.オーディオ,
             ＡＶ関連機器.ネットワークカメラ,
-            Profiles.ノードプロファイル,
+            Profiles.NodeProfile,
         };
         /// <summary>
         /// ECHONET Lite クラスグループ定義

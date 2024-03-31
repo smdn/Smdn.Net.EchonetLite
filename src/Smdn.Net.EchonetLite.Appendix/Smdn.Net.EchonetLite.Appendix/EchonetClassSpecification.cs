@@ -14,43 +14,48 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// JSONデシリアライズ用のコンストラクタ
         /// </summary>
-        /// <param name="status"><see cref="Status"/>に設定する値。</param>
-        /// <param name="classCode"><see cref="ClassCode"/>に設定する値。</param>
-        /// <param name="classNameOfficial"><see cref="ClassNameOfficial"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
-        /// <param name="className"><see cref="ClassName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+        /// <param name="isDefined"><see cref="IsDefined"/>に設定する値。</param>
+        /// <param name="code"><see cref="Code"/>に設定する値。</param>
+        /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+        /// <param name="propertyName"><see cref="PropertyName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
         /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
         /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         [JsonConstructor]
         public EchonetClassSpecification
         (
-            bool status,
-            byte classCode,
-            string? classNameOfficial,
-            string? className
+            bool isDefined,
+            byte code,
+            string? name,
+            string? propertyName
         )
         {
-            Status = status;
-            ClassCode = classCode;
-            ClassNameOfficial = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(classNameOfficial, nameof(classNameOfficial));
-            ClassName = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(className, nameof(className));
+            IsDefined = isDefined;
+            Code = code;
+            Name = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(name, nameof(name));
+            PropertyName = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(propertyName, nameof(propertyName));
         }
 
         /// <summary>
         /// 詳細仕様有無
         /// </summary>
-        public bool Status { get; }
+        [JsonPropertyName("Status")]
+        public bool IsDefined { get; }
         /// <summary>
         /// クラスコード
         /// </summary>
+        [JsonPropertyName("ClassCode")]
         [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
-        public byte ClassCode { get; }
+        public byte Code { get; }
         /// <summary>
         /// クラス名
         /// </summary>
-        public string ClassNameOfficial { get; }
+        [JsonPropertyName("ClassNameOfficial")]
+        public string Name { get; }
+
         /// <summary>
-        /// C#での命名に使用可能なクラス名
+        /// ファイル名・プロパティ名・その他コード上の命名などに使用可能なクラス名
         /// </summary>
-        public string ClassName { get; }
+        [JsonPropertyName("ClassName")]
+        public string PropertyName { get; }
     }
 }

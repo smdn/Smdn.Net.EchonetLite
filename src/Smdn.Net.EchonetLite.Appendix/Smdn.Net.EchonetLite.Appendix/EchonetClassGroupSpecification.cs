@@ -15,50 +15,57 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// JSONデシリアライズ用のコンストラクタ
         /// </summary>
-        /// <param name="classGroupCode"><see cref="ClassGroupCode"/>に設定する値。</param>
-        /// <param name="classGroupNameOfficial"><see cref="ClassGroupNameOfficial"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
-        /// <param name="classGroupName"><see cref="ClassGroupName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
-        /// <param name="superClass"><see cref="SuperClass"/>に設定する値。　スーパークラスがない場合は<see langword="null"/>。　空の文字列は<see langword="null"/>として設定されます。</param>
-        /// <param name="classList"><see cref="ClassList"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{EchonetClassSpecification}"/>を設定します。</param>
+        /// <param name="code"><see cref="Code"/>に設定する値。</param>
+        /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+        /// <param name="propertyName"><see cref="PropertyName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+        /// <param name="superClassName"><see cref="SuperClassName"/>に設定する値。　スーパークラスがない場合は<see langword="null"/>。　空の文字列は<see langword="null"/>として設定されます。</param>
+        /// <param name="classes"><see cref="Classes"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{EchonetClassSpecification}"/>を設定します。</param>
         /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
         /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         [JsonConstructor]
         public EchonetClassGroupSpecification
         (
-            byte classGroupCode,
-            string? classGroupNameOfficial,
-            string? classGroupName,
-            string? superClass,
-            IReadOnlyList<EchonetClassSpecification>? classList
+            byte code,
+            string? name,
+            string? propertyName,
+            string? superClassName,
+            IReadOnlyList<EchonetClassSpecification>? classes
         )
         {
-            ClassGroupCode = classGroupCode;
-            ClassGroupNameOfficial = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(classGroupNameOfficial, nameof(classGroupNameOfficial));
-            ClassGroupName = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(classGroupName, nameof(classGroupName));
-            SuperClass = string.IsNullOrEmpty(superClass) ? null : superClass; // can be null
-            ClassList = classList ?? Array.Empty<EchonetClassSpecification>();
+            Code = code;
+            Name = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(name, nameof(name));
+            PropertyName = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(propertyName, nameof(propertyName));
+            SuperClassName = string.IsNullOrEmpty(superClassName) ? null : superClassName; // can be null
+            Classes = classes ?? Array.Empty<EchonetClassSpecification>();
         }
 
         /// <summary>
         /// クラスグループコード
         /// </summary>
+        [JsonPropertyName("ClassGroupCode")]
         [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
-        public byte ClassGroupCode { get; }
+        public byte Code { get; }
         /// <summary>
         /// クラスグループ名
         /// </summary>
-        public string ClassGroupNameOfficial { get; }
+        [JsonPropertyName("ClassGroupNameOfficial")]
+        public string Name { get; }
+
         /// <summary>
-        /// C#での命名に使用可能なクラスグループ名
+        /// ファイル名・プロパティ名・その他コード上の命名などに使用可能なクラスグループ名
         /// </summary>
-        public string ClassGroupName { get; }
+        [JsonPropertyName("ClassGroupName")]
+        public string PropertyName { get; }
+
         /// <summary>
         /// スーパークラス ない場合NULL
         /// </summary>
-        public string? SuperClass { get; }
+        [JsonPropertyName("SuperClass")]
+        public string? SuperClassName { get; }
         /// <summary>
         /// クラスグループに属するクラスのリスト
         /// </summary>
-        public IReadOnlyList<EchonetClassSpecification> ClassList { get; }
+        [JsonPropertyName("ClassList")]
+        public IReadOnlyList<EchonetClassSpecification> Classes { get; }
     }
 }

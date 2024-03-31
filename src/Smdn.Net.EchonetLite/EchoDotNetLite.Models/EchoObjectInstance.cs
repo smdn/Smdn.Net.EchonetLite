@@ -83,8 +83,8 @@ namespace EchoDotNetLite.Models
         /// </summary>
         public EOJ EOJ => new
         (
-            classGroupCode: Spec.ClassGroup.ClassGroupCode,
-            classCode: Spec.Class.ClassCode,
+            classGroupCode: Spec.ClassGroup.Code,
+            classCode: Spec.Class.Code,
             instanceCode: InstanceCode
         );
 

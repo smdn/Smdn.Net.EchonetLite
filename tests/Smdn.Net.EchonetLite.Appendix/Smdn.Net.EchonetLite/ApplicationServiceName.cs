@@ -8,12 +8,12 @@ namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class ApplicationServiceTests {
-  [TestCase(ApplicationServiceName.モバイルサービス, nameof(ApplicationServiceName.モバイルサービス))]
-  [TestCase(ApplicationServiceName.エネルギーサービス, nameof(ApplicationServiceName.エネルギーサービス))]
-  [TestCase(ApplicationServiceName.快適生活支援サービス, nameof(ApplicationServiceName.快適生活支援サービス))]
-  [TestCase(ApplicationServiceName.ホームヘルスケアサービス, nameof(ApplicationServiceName.ホームヘルスケアサービス))]
-  [TestCase(ApplicationServiceName.セキュリティサービス, nameof(ApplicationServiceName.セキュリティサービス))]
-  [TestCase(ApplicationServiceName.機器リモートメンテナンスサービス, nameof(ApplicationServiceName.機器リモートメンテナンスサービス))]
+  [TestCase(ApplicationServiceName.MobileServices, "モバイルサービス")]
+  [TestCase(ApplicationServiceName.EnergyServices, "エネルギーサービス")]
+  [TestCase(ApplicationServiceName.HomeAmenityServices, "快適生活支援サービス")]
+  [TestCase(ApplicationServiceName.HomeHealthcareServices, "ホームヘルスケアサービス")]
+  [TestCase(ApplicationServiceName.SecurityServices, "セキュリティサービス")]
+  [TestCase(ApplicationServiceName.RemoteApplianceMaintenanceServices, "機器リモートメンテナンスサービス")]
   public void Serialize(ApplicationServiceName value, string expected)
   {
     var expectedJsonFragment = "\"" + expected + "\"";
@@ -24,4 +24,16 @@ public class ApplicationServiceTests {
 
     Assert.That(JsonSerializer.Serialize(value, options), Is.EqualTo(expectedJsonFragment));
   }
-}
+
+  [TestCase("モバイルサービス", ApplicationServiceName.MobileServices)]
+  [TestCase("エネルギーサービス", ApplicationServiceName.EnergyServices)]
+  [TestCase("快適生活支援サービス", ApplicationServiceName.HomeAmenityServices)]
+  [TestCase("ホームヘルスケアサービス", ApplicationServiceName.HomeHealthcareServices)]
+  [TestCase("セキュリティサービス", ApplicationServiceName.SecurityServices)]
+  [TestCase("機器リモートメンテナンスサービス", ApplicationServiceName.RemoteApplianceMaintenanceServices)]
+  public void Deserialize(string value, ApplicationServiceName expected)
+  {
+    var json = "\"" + value + "\"";
+
+    Assert.That(JsonSerializer.Deserialize<ApplicationServiceName>(json), Is.EqualTo(expected));
+  }}

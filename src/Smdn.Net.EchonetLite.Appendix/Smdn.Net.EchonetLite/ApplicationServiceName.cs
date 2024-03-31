@@ -3,38 +3,43 @@
 // SPDX-License-Identifier: MIT
 using System.Text.Json.Serialization;
 
+using Smdn.Net.EchonetLite.Appendix;
+
 namespace Smdn.Net.EchonetLite
 {
 
     /// <summary>
     /// アプリケーションサービス
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    /// <seealso href="https://echonet.jp/spec_g/">
+    /// APPENDIX ECHONET機器オブジェクト詳細規定 Release R 第１章 本書の概要 表１アプリケーションサービスと「オプション必須」プロパティ表記記号一覧
+    /// </seealso>
+    [JsonConverter(typeof(ApplicationServiceNameJsonConverter))]
     public enum ApplicationServiceName
     {
         /// <summary>
-        /// (Mobile services)○M
+        /// モバイルサービス(Mobile services)○M
         /// </summary>
-        モバイルサービス,
+        MobileServices,
         /// <summary>
-        /// (Energy services)○E
+        /// エネルギーサービス(Energy services)○E
         /// </summary>
-        エネルギーサービス,
+        EnergyServices,
         /// <summary>
-        /// (Home amenity services)○Ha
+        /// 快適生活支援サービス(Home amenity services)○Ha
         /// </summary>
-        快適生活支援サービス,
+        HomeAmenityServices,
         /// <summary>
-        /// (Home health-care services)○Hh
+        /// ホームヘルスケアサービス(Home health-care services)○Hh
         /// </summary>
-        ホームヘルスケアサービス,
+        HomeHealthcareServices,
         /// <summary>
-        /// (Security services)○S
+        /// セキュリティサービス(Security services)○S
         /// </summary>
-        セキュリティサービス,
+        SecurityServices,
         /// <summary>
-        /// (Remote appliance maintenance services)○R
+        /// 機器リモートメンテナンスサービス(Remote appliance maintenance services)○R
         /// </summary>
-        機器リモートメンテナンスサービス,
+        RemoteApplianceMaintenanceServices,
     }
 }
