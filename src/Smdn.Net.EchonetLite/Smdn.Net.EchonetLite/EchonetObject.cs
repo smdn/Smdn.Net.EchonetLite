@@ -23,9 +23,7 @@ namespace Smdn.Net.EchonetLite
         public EchonetObject(EOJ eoj)
             : this
             (
-                classObject:
-                    SpecificationUtil.FindClass(eoj.ClassGroupCode, eoj.ClassCode) ??
-                    SpecificationUtil.GenerateUnknownClass(eoj.ClassGroupCode, eoj.ClassCode),
+                classObject: DeviceClasses.LookupClass(eoj.ClassGroupCode, eoj.ClassCode, includeProfiles: true),
                 instanceCode: eoj.InstanceCode
             )
         {

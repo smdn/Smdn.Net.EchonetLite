@@ -64,7 +64,7 @@ namespace Smdn.Net.EchonetLite
     {
         public static EchonetPropertySpecification? FindProperty(byte classGroupCode, byte classCode, byte epc)
         {
-            var @class = FindClass(classGroupCode, classCode);
+            var @class = DeviceClasses.LookupClass(classGroupCode, classCode, includeProfiles: true);
             if (@class is not null)
             {
                 EchonetPropertySpecification? property;
@@ -87,62 +87,5 @@ namespace Smdn.Net.EchonetLite
             return null;
         }
 
-        internal static IEchonetObject GenerateUnknownClass(byte classGroupCode, byte classCode)
-        {
-            return new UnknownEchoObject
-            (
-                classGroup: new
-                (
-                    code: classGroupCode,
-                    name: "Unknown",
-                    propertyName: "Unknown",
-                    classes: Array.Empty<EchonetClassSpecification>(),
-                    superClassName: null
-                ),
-                @class: new
-                (
-                    isDefined: false,
-                    code: classCode,
-                    name: "Unknown",
-                    propertyName: "Unknown"
-                )
-            );
-        }
-        private class UnknownEchoObject : IEchonetObject
-        {
-            public UnknownEchoObject(EchonetClassGroupSpecification classGroup, EchonetClassSpecification @class)
-            {
-                ClassGroup = classGroup ?? throw new ArgumentNullException(nameof(classGroup));
-                Class = @class ?? throw new ArgumentNullException(nameof(@class));
-            }
-
-            public EchonetClassGroupSpecification ClassGroup { get; }
-            public EchonetClassSpecification Class { get; }
-
-            public IEnumerable<EchonetPropertySpecification> GetProperties => Enumerable.Empty<EchonetPropertySpecification>();
-
-            public IEnumerable<EchonetPropertySpecification> SetProperties => Enumerable.Empty<EchonetPropertySpecification>();
-
-            public IEnumerable<EchonetPropertySpecification> AnnoProperties => Enumerable.Empty<EchonetPropertySpecification>();
-        }
-
-        public static IEchonetObject? FindClass(byte classGroupCode, byte classCode)
-        {
-            var profileClass = Profiles.All.FirstOrDefault(
-                                g => g.ClassGroup.Code == classGroupCode
-                                && g.Class.Code == classCode);
-            if (profileClass != null)
-            {
-                return profileClass;
-            }
-            var deviceClass = DeviceClasses.All.FirstOrDefault(
-                                g => g.ClassGroup.Code == classGroupCode
-                                && g.Class.Code == classCode);
-            if (deviceClass != null)
-            {
-                return deviceClass;
-            }
-            return null;
-        }
     }
 }

@@ -1,7 +1,12 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+using System;
 using System.Collections.Generic;
+#if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
+using System.Diagnostics.CodeAnalysis;
+#endif
+using System.Linq;
 
 using Smdn.Net.EchonetLite.Appendix;
 
@@ -14,6 +19,109 @@ namespace Smdn.Net.EchonetLite
     /// </summary>
     public static class DeviceClasses
     {
+        /// <summary>
+        /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトを取得します。
+        /// </summary>
+        /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
+        /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
+        /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
+        /// <param name="echonetObject">取得できた場合は、そのECHONET Lite オブジェクト。　取得できなかった場合は、<see langword="null"/>。</param>
+        /// <returns>指定されたクラスグループコード・クラスコードと一致するCHONET Lite オブジェクトを取得できた場合は<see langword="true"/>、取得できなかった場合は<see langword="false"/>。</returns>
+        public static bool TryLookupClass(
+            byte classGroupCode,
+            byte classCode,
+            bool includeProfiles,
+#if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
+            [NotNullWhen(true)]
+#endif
+            out IEchonetObject? echonetObject
+        )
+        {
+            echonetObject = default;
+
+            if (includeProfiles) {
+                echonetObject = Profiles.All.FirstOrDefault(
+                    g => g.ClassGroup.Code == classGroupCode && g.Class.Code == classCode
+                );
+
+                if (echonetObject is not null)
+                    return true;
+            }
+
+            echonetObject = DeviceClasses.All.FirstOrDefault(
+                g => g.ClassGroup.Code == classGroupCode && g.Class.Code == classCode
+            );
+
+            return echonetObject is not null;
+        }
+
+        /// <summary>
+        /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトを取得または作成します。
+        /// </summary>
+        /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
+        /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
+        /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
+        /// <returns>
+        /// 一致するECHONET Lite オブジェクトを取得できた場合は、そのオブジェクトを返します。
+        /// 一致するECHONET Lite オブジェクトが存在しない場合は、指定されたクラスグループコード・クラスコードをもつオブジェクトを作成して返します。
+        /// </returns>
+        public static IEchonetObject LookupClass(
+            byte classGroupCode,
+            byte classCode,
+            bool includeProfiles
+        )
+            => TryLookupClass(classGroupCode, classCode, includeProfiles, out var classObject)
+                ?
+                    classObject
+#if !NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
+                    !
+#endif
+                : GenerateUnknownClass(classGroupCode, classCode);
+
+        /// <summary>
+        /// 指定されたクラスグループコード・クラスコードをもつ、未知のECHONET Lite オブジェクトを作成します。
+        /// </summary>
+        /// <param name="classGroupCode">作成するECHONET Lite オブジェクトのクラスグループコード。</param>
+        /// <param name="classCode">作成するECHONET Lite オブジェクトのクラスコード。</param>
+        /// <returns>作成したECHONET Lite オブジェクト。</returns>
+        private static UnknownEchoObject GenerateUnknownClass(byte classGroupCode, byte classCode)
+            => new
+            (
+                classGroup: new
+                (
+                    code: classGroupCode,
+                    name: "Unknown",
+                    propertyName: "Unknown",
+                    classes: Array.Empty<EchonetClassSpecification>(),
+                    superClassName: null
+                ),
+                @class: new
+                (
+                    isDefined: false,
+                    code: classCode,
+                    name: "Unknown",
+                    propertyName: "Unknown"
+                )
+            );
+
+        private class UnknownEchoObject : IEchonetObject
+        {
+            public UnknownEchoObject(EchonetClassGroupSpecification classGroup, EchonetClassSpecification @class)
+            {
+                ClassGroup = classGroup ?? throw new ArgumentNullException(nameof(classGroup));
+                Class = @class ?? throw new ArgumentNullException(nameof(@class));
+            }
+
+            public EchonetClassGroupSpecification ClassGroup { get; }
+            public EchonetClassSpecification Class { get; }
+
+            public IEnumerable<EchonetPropertySpecification> GetProperties => Enumerable.Empty<EchonetPropertySpecification>();
+
+            public IEnumerable<EchonetPropertySpecification> SetProperties => Enumerable.Empty<EchonetPropertySpecification>();
+
+            public IEnumerable<EchonetPropertySpecification> AnnoProperties => Enumerable.Empty<EchonetPropertySpecification>();
+        }
+
         /// <summary>
         /// 一覧
         /// </summary>
