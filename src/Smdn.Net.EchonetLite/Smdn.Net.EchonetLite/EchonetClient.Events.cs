@@ -10,6 +10,11 @@ namespace Smdn.Net.EchonetLite
 #pragma warning restore IDE0040
     {
         /// <summary>
+        /// 新しいECHONET Lite ノードが発見されたときに発生するイベント。
+        /// </summary>
+        public event EventHandler<EchonetNode>? NodeJoined;
+
+        /// <summary>
         /// インスタンスリスト通知の受信による更新を開始するときに発生するイベント。
         /// </summary>
         /// <remarks>
