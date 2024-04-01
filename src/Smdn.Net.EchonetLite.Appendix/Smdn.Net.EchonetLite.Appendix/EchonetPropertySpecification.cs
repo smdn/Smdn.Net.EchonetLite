@@ -12,8 +12,18 @@ namespace Smdn.Net.EchonetLite.Appendix
 {
 
     /// <summary>
-    /// ECHONET Lite オブジェクトプロパティ
+    /// ECHONET プロパティの詳細規定を表すクラスです。
+    /// <see href="https://echonet.jp/spec_g/">機器オブジェクト詳細規定</see>で規定される各プロパティの定義を参照します。
     /// </summary>
+    /// <seealso href="https://echonet.jp/spec_v114_lite/">
+    /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．７ ECHONET プロパティ（EPC）
+    /// </seealso>
+    /// <seealso href="https://echonet.jp/spec_v114_lite/">
+    /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２ ECHONET プロパティ基本規定
+    /// </seealso>
+    /// <seealso href="https://echonet.jp/spec_g/">
+    /// APPENDIX ECHONET 機器オブジェクト詳細規定 第２章 機器オブジェクトスーパークラス規定
+    /// </seealso>
     public sealed class EchonetPropertySpecification
     {
         /// <summary>
@@ -118,7 +128,7 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// </summary>
         public string Name { get; }
         /// <summary>
-        /// EPC プロパティコード
+        /// EPC(ECHONET プロパティコード)
         /// </summary>
         [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
         public byte Code { get; }
@@ -147,32 +157,62 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// 最大サイズ
         /// </summary>
         public int? MaxSize { get; }
+
         /// <summary>
+        /// アクセスルールに"Get"が規定されているかどうかを表す値を取得します。
+        /// </summary>
+        /// <remarks>
         /// プロパティ値の読み出し・通知要求のサービスを処理する。
         /// プロパティ値読み出し要求(0x62)、プロパティ値書き込み・読み出し要求(0x6E)、プロパティ値通知要求(0x63)の要求受付処理を実施する。
-        /// </summary>
+        /// </remarks>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
+        /// </seealso>
+        /// <seealso cref="GetRequired"/>
         public bool Get { get; }
+
         /// <summary>
-        /// Get必須
+        /// このプロパティとアクセスルール"Get"のサービスの実装が必須であるかどうかを表す値を取得します。
         /// </summary>
+        /// <seealso cref="Get"/>
         public bool GetRequired { get; }
+
         /// <summary>
+        /// アクセスルールに"Set"が規定されているかどうかを表す値を取得します。
+        /// </summary>
+        /// <remarks>
         /// プロパティ値の書き込み要求のサービスを処理する。
         /// プロパティ値書き込み要求(応答不要)(0x60)、プロパティ値書き込み要求(応答要)(0x61)、プロパティ値書き込み・読み出し要求(0x6E)の要求受付処理を実施する。
-        /// </summary>
+        /// </remarks>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
+        /// </seealso>
+        /// <seealso cref="SetRequired"/>
         public bool Set { get; }
+
         /// <summary>
-        /// Set必須
+        /// このプロパティとアクセスルール"Set"のサービスの実装が必須であるかどうかを表す値を取得します。
         /// </summary>
+        /// <seealso cref="Set"/>
         public bool SetRequired { get; }
+
         /// <summary>
+        /// アクセスルールに"Anno"が規定されているかどうかを表す値を取得します。
+        /// </summary>
+        /// <remarks>
         /// プロパティ値の通知要求のサービスを処理する。
         /// プロパティ値通知要求（0x63）の要求受付処理を実施する。
-        /// </summary>
+        /// </remarks>
+        /// <seealso href="https://echonet.jp/spec_v114_lite/">
+        /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
+        /// </seealso>
+        /// <seealso cref="AnnoRequired"/>
         public bool Anno { get; }
+
         /// <summary>
-        /// Anno必須
+        /// このプロパティとアクセスルール"Anno"のサービスの実装が必須であるかどうかを表す値を取得します。
         /// </summary>
+        /// <seealso cref="Anno"/>
         public bool AnnoRequired { get; }
 
         /// <summary>
