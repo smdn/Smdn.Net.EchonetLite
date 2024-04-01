@@ -24,7 +24,7 @@ namespace Smdn.Net.EchonetLite
         public EchonetObject(EOJ eoj)
             : this
             (
-                classObject: DeviceClasses.LookupClass(eoj.ClassGroupCode, eoj.ClassCode, includeProfiles: true),
+                classObject: DeviceClasses.LookupOrCreateClass(eoj.ClassGroupCode, eoj.ClassCode, includeProfiles: true),
                 instanceCode: eoj.InstanceCode
             )
         {

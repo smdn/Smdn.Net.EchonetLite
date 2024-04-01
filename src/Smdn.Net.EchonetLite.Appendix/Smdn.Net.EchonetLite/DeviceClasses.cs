@@ -64,7 +64,7 @@ namespace Smdn.Net.EchonetLite
         /// 一致するECHONET Lite オブジェクトを取得できた場合は、そのオブジェクトを返します。
         /// 一致するECHONET Lite オブジェクトが存在しない場合は、指定されたクラスグループコード・クラスコードをもつオブジェクトを作成して返します。
         /// </returns>
-        public static EchonetObjectSpecification LookupClass(
+        public static EchonetObjectSpecification LookupOrCreateClass(
             byte classGroupCode,
             byte classCode,
             bool includeProfiles
@@ -88,7 +88,7 @@ namespace Smdn.Net.EchonetLite
         /// 一致するECHONET プロパティを取得できた場合は、そのオブジェクトを返します。
         /// 一致するECHONET プロパティが存在しない場合は、指定されたプロパティコードをもつプロパティを作成して返します。
         /// </returns>
-        public static EchonetPropertySpecification LookupProperty(
+        public static EchonetPropertySpecification LookupOrCreateProperty(
             byte classGroupCode,
             byte classCode,
             byte propertyCode,

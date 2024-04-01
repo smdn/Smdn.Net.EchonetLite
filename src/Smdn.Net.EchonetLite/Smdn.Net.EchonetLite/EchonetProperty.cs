@@ -43,7 +43,7 @@ namespace Smdn.Net.EchonetLite
         )
             : this
             (
-                spec: DeviceClasses.LookupProperty(classGroupCode, classCode, epc, includeProfiles: true),
+                spec: DeviceClasses.LookupOrCreateProperty(classGroupCode, classCode, epc, includeProfiles: true),
                 isAnno: isAnno,
                 isSet: isSet,
                 isGet: isGet
