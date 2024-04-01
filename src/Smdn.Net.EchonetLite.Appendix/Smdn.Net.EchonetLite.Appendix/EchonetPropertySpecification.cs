@@ -39,12 +39,12 @@ namespace Smdn.Net.EchonetLite.Appendix
                 logicalDataType: "Unknown",
                 minSize: null,
                 maxSize: null,
-                get: false,
-                getRequired: false,
-                set: false,
-                setRequired: false,
-                anno: false,
-                annoRequired: false,
+                canGet: false,
+                isGetMandatory: false,
+                canSet: false,
+                isSetMandatory: false,
+                canAnnounceStatusChange: false,
+                isStatusChangeAnnouncementMandatory: false,
                 optionRequired: null,
                 description: null,
                 unit: null
@@ -61,12 +61,12 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <param name="logicalDataType"><see cref="LogicalDataType"/>に設定する非<see langword="null"/>の値。</param>
         /// <param name="minSize"><see cref="MinSize"/>に設定する値。</param>
         /// <param name="maxSize"><see cref="MaxSize"/>に設定する値。</param>
-        /// <param name="get"><see cref="Get"/>に設定する値。</param>
-        /// <param name="getRequired"><see cref="GetRequired"/>に設定する値。</param>
-        /// <param name="set"><see cref="Set"/>に設定する値。</param>
-        /// <param name="setRequired"><see cref="SetRequired"/>に設定する値。</param>
-        /// <param name="anno"><see cref="Anno"/>に設定する値。</param>
-        /// <param name="annoRequired"><see cref="AnnoRequired"/>に設定する値。</param>
+        /// <param name="canGet"><see cref="CanGet"/>に設定する値。</param>
+        /// <param name="isGetMandatory"><see cref="IsGetMandatory"/>に設定する値。</param>
+        /// <param name="canSet"><see cref="CanSet"/>に設定する値。</param>
+        /// <param name="isSetMandatory"><see cref="IsSetMandatory"/>に設定する値。</param>
+        /// <param name="canAnnounceStatusChange"><see cref="CanAnnounceStatusChange"/>に設定する値。</param>
+        /// <param name="isStatusChangeAnnouncementMandatory"><see cref="IsStatusChangeAnnouncementMandatory"/>に設定する値。</param>
         /// <param name="optionRequired"><see cref="OptionRequired"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{ApplicationServiceName}"/>を設定します。</param>
         /// <param name="description"><see cref="Description"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
         /// <param name="unit"><see cref="Unit"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
@@ -83,12 +83,12 @@ namespace Smdn.Net.EchonetLite.Appendix
             string? logicalDataType,
             int? minSize,
             int? maxSize,
-            bool get,
-            bool getRequired,
-            bool set,
-            bool setRequired,
-            bool anno,
-            bool annoRequired,
+            bool canGet,
+            bool isGetMandatory,
+            bool canSet,
+            bool isSetMandatory,
+            bool canAnnounceStatusChange,
+            bool isStatusChangeAnnouncementMandatory,
             IReadOnlyList<ApplicationServiceName>? optionRequired,
             string? description,
             string? unit
@@ -102,12 +102,12 @@ namespace Smdn.Net.EchonetLite.Appendix
             LogicalDataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(logicalDataType, nameof(logicalDataType));
             MinSize = minSize;
             MaxSize = maxSize;
-            Get = get;
-            GetRequired = getRequired;
-            Set = set;
-            SetRequired = setRequired;
-            Anno = anno;
-            AnnoRequired = annoRequired;
+            CanGet = canGet;
+            IsGetMandatory = isGetMandatory;
+            CanSet = canSet;
+            IsSetMandatory = isSetMandatory;
+            CanAnnounceStatusChange = canAnnounceStatusChange;
+            IsStatusChangeAnnouncementMandatory = isStatusChangeAnnouncementMandatory;
             OptionRequired = optionRequired ?? Array.Empty<ApplicationServiceName>();
             Description = string.IsNullOrEmpty(description) ? null : description;
             Unit = string.IsNullOrEmpty(unit) ? null : unit;
@@ -168,14 +168,16 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
         /// </seealso>
-        /// <seealso cref="GetRequired"/>
-        public bool Get { get; }
+        /// <seealso cref="IsGetMandatory"/>
+        [JsonPropertyName("Get")]
+        public bool CanGet { get; }
 
         /// <summary>
         /// このプロパティとアクセスルール"Get"のサービスの実装が必須であるかどうかを表す値を取得します。
         /// </summary>
-        /// <seealso cref="Get"/>
-        public bool GetRequired { get; }
+        /// <seealso cref="CanGet"/>
+        [JsonPropertyName("GetRequired")]
+        public bool IsGetMandatory { get; }
 
         /// <summary>
         /// アクセスルールに"Set"が規定されているかどうかを表す値を取得します。
@@ -187,14 +189,16 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
         /// </seealso>
-        /// <seealso cref="SetRequired"/>
-        public bool Set { get; }
+        /// <seealso cref="IsSetMandatory"/>
+        [JsonPropertyName("Set")]
+        public bool CanSet { get; }
 
         /// <summary>
         /// このプロパティとアクセスルール"Set"のサービスの実装が必須であるかどうかを表す値を取得します。
         /// </summary>
-        /// <seealso cref="Set"/>
-        public bool SetRequired { get; }
+        /// <seealso cref="CanSet"/>
+        [JsonPropertyName("SetRequired")]
+        public bool IsSetMandatory { get; }
 
         /// <summary>
         /// アクセスルールに"Anno"が規定されているかどうかを表す値を取得します。
@@ -206,14 +210,16 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <seealso href="https://echonet.jp/spec_v114_lite/">
         /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
         /// </seealso>
-        /// <seealso cref="AnnoRequired"/>
-        public bool Anno { get; }
+        /// <seealso cref="IsStatusChangeAnnouncementMandatory"/>
+        [JsonPropertyName("Anno")]
+        public bool CanAnnounceStatusChange { get; }
 
         /// <summary>
         /// このプロパティとアクセスルール"Anno"のサービスの実装が必須であるかどうかを表す値を取得します。
         /// </summary>
-        /// <seealso cref="Anno"/>
-        public bool AnnoRequired { get; }
+        /// <seealso cref="CanAnnounceStatusChange"/>
+        [JsonPropertyName("AnnoRequired")]
+        public bool IsStatusChangeAnnouncementMandatory { get; }
 
         /// <summary>
         /// アプリケーションサービスの「オプション必須」プロパティ表記

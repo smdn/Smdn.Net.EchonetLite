@@ -459,12 +459,74 @@ public class EchoPropertyTests {
     Assert.That(p!.Name, Is.EqualTo(expectedName), message: $"{testCaseName}; {nameof(p.Name)}");
     Assert.That(p.Code, Is.EqualTo(expectedCode), message: $"{testCaseName}; {nameof(p.Code)}");
     Assert.That(p.MinSize, Is.EqualTo(expectedMinSize), message: $"{testCaseName}; {nameof(p.MinSize)}");
-    Assert.That(p.Get, Is.EqualTo(expectedGet), message: $"{testCaseName}; {nameof(p.Get)}");
+    Assert.That(p.CanGet, Is.EqualTo(expectedGet), message: $"{testCaseName}; {nameof(p.CanGet)}");
 
     if (expectedRequiredOptions is null)
       Assert.That(p.OptionRequired, Is.Null, message: $"{testCaseName}; {nameof(p.OptionRequired)}");
     else
       Assert.That(p.OptionRequired, Is.EquivalentTo(expectedRequiredOptions), message: $"{testCaseName}; {nameof(p.OptionRequired)}");
+  }
+
+  private static System.Collections.IEnumerable YieldTestCases_Deserialize_AccessRules()
+  {
+    foreach (var (canGet, isGetMandatory, canSet, isSetMandatory, canAnnounceStatusChange, isStatusChangeAnnouncementMandatory) in new[] {
+      (CanGet: false, IsGetMandatory: false, CanSet: false, IsSetMandatory: false, CanAnnounceStatusChange: false, IsStatusChangeAnnouncementMandatory: false),
+      (CanGet: true, IsGetMandatory: false, CanSet: false, IsSetMandatory: false, CanAnnounceStatusChange: false, IsStatusChangeAnnouncementMandatory: false),
+      (CanGet: false, IsGetMandatory: true, CanSet: false, IsSetMandatory: false, CanAnnounceStatusChange: false, IsStatusChangeAnnouncementMandatory: false),
+      (CanGet: false, IsGetMandatory: false, CanSet: true, IsSetMandatory: false, CanAnnounceStatusChange: false, IsStatusChangeAnnouncementMandatory: false),
+      (CanGet: false, IsGetMandatory: false, CanSet: false, IsSetMandatory: true, CanAnnounceStatusChange: false, IsStatusChangeAnnouncementMandatory: false),
+      (CanGet: false, IsGetMandatory: false, CanSet: false, IsSetMandatory: false, CanAnnounceStatusChange: true, IsStatusChangeAnnouncementMandatory: false),
+      (CanGet: false, IsGetMandatory: false, CanSet: false, IsSetMandatory: false, CanAnnounceStatusChange: false, IsStatusChangeAnnouncementMandatory: true),
+    }) {
+      var input = @$"{{
+  ""Name"": ""?"",
+  ""Code"": ""0xFF"",
+  ""Detail"": ""?"",
+  ""Value"": ""?"",
+  ""DataType"": ""unsigned char"",
+  ""LogicalDataType"": ""byte"",
+  ""Get"": {canGet.ToString().ToLowerInvariant()},
+  ""GetRequired"": {isGetMandatory.ToString().ToLowerInvariant()},
+  ""Set"": {canSet.ToString().ToLowerInvariant()},
+  ""SetRequired"": {isSetMandatory.ToString().ToLowerInvariant()},
+  ""Anno"": {canAnnounceStatusChange.ToString().ToLowerInvariant()},
+  ""AnnoRequired"": {isStatusChangeAnnouncementMandatory.ToString().ToLowerInvariant()},
+  ""Description"": ""?"",
+  ""Unit"": """"
+}}";
+
+      yield return new object?[] {
+        input,
+        canGet,
+        isGetMandatory,
+        canSet,
+        isSetMandatory,
+        canAnnounceStatusChange,
+        isStatusChangeAnnouncementMandatory
+      };
+    }
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Deserialize_AccessRules))]
+  public void Deserialize_AccessRules(
+    string input,
+    bool expectedCanGet,
+    bool expectedIsGetMandatory,
+    bool expectedCanSet,
+    bool expectedIsSetMandatory,
+    bool expectedCanAnnounceStatusChange,
+    bool expectedIsStatusChangeAnnouncementMandatory
+  )
+  {
+    var p = JsonSerializer.Deserialize<EchonetPropertySpecification>(input);
+
+    Assert.That(p, Is.Not.Null);
+    Assert.That(p.CanGet, Is.EqualTo(expectedCanGet));
+    Assert.That(p.IsGetMandatory, Is.EqualTo(expectedIsGetMandatory));
+    Assert.That(p.CanSet, Is.EqualTo(expectedCanSet));
+    Assert.That(p.IsSetMandatory, Is.EqualTo(expectedIsSetMandatory));
+    Assert.That(p.CanAnnounceStatusChange, Is.EqualTo(expectedCanAnnounceStatusChange));
+    Assert.That(p.IsStatusChangeAnnouncementMandatory, Is.EqualTo(expectedIsStatusChangeAnnouncementMandatory));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Deserialize_Unit()
@@ -532,12 +594,12 @@ public class EchoPropertyTests {
         logicalDataType: "*",
         minSize: default,
         maxSize: default,
-        get: default,
-        getRequired: default,
-        set: default,
-        setRequired: default,
-        anno: default,
-        annoRequired: default,
+        canGet: default,
+        isGetMandatory: default,
+        canSet: default,
+        isSetMandatory: default,
+        canAnnounceStatusChange: default,
+        isStatusChangeAnnouncementMandatory: default,
         description: default,
         unit: default
       ),
@@ -557,12 +619,12 @@ public class EchoPropertyTests {
         logicalDataType: "*",
         minSize: default,
         maxSize: default,
-        get: default,
-        getRequired: default,
-        set: default,
-        setRequired: default,
-        anno: default,
-        annoRequired: default,
+        canGet: default,
+        isGetMandatory: default,
+        canSet: default,
+        isSetMandatory: default,
+        canAnnounceStatusChange: default,
+        isStatusChangeAnnouncementMandatory: default,
         description: default,
         unit: default
       ),
@@ -582,12 +644,12 @@ public class EchoPropertyTests {
         logicalDataType: "*",
         minSize: default,
         maxSize: default,
-        get: default,
-        getRequired: default,
-        set: default,
-        setRequired: default,
-        anno: default,
-        annoRequired: default,
+        canGet: default,
+        isGetMandatory: default,
+        canSet: default,
+        isSetMandatory: default,
+        canAnnounceStatusChange: default,
+        isStatusChangeAnnouncementMandatory: default,
         description: default,
         unit: default
       ),
@@ -623,12 +685,12 @@ public class EchoPropertyTests {
       logicalDataType: "*",
       minSize: default,
       maxSize: default,
-      get: default,
-      getRequired: default,
-      set: default,
-      setRequired: default,
-      anno: default,
-      annoRequired: default,
+      canGet: default,
+      isGetMandatory: default,
+      canSet: default,
+      isSetMandatory: default,
+      canAnnounceStatusChange: default,
+      isStatusChangeAnnouncementMandatory: default,
       optionRequired: default,
       description: default,
       unit: default

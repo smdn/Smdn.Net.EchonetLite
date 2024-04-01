@@ -124,16 +124,16 @@ namespace Smdn.Net.EchonetLite
         /// <summary>
         /// GETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.Spec.Get);
+        public IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.Spec.CanGet);
 
         /// <summary>
         /// SETプロパティの一覧
         /// </summary>
-        public IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.Spec.Set);
+        public IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.Spec.CanSet);
 
         /// <summary>
         /// ANNOプロパティの一覧
         /// </summary>
-        public IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.Spec.Anno);
+        public IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.Spec.CanAnnounceStatusChange);
     }
 }

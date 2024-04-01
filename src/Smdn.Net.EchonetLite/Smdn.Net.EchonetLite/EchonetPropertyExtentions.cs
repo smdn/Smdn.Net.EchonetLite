@@ -21,14 +21,14 @@ namespace Smdn.Net.EchonetLite
             sb.AppendFormat(provider: null, "0x{0:X2}", property.Spec.Code);
             sb.Append(property.Spec.Name);
             sb.Append(' ');
-            sb.Append(property.IsGet ? "Get" : "");
-            sb.Append(property.Spec.GetRequired ? "(Req)" : "");
+            sb.Append(property.CanGet ? "Get" : "");
+            sb.Append(property.Spec.IsGetMandatory ? "(Req)" : "");
             sb.Append(' ');
-            sb.Append(property.IsSet ? "Set" : "");
-            sb.Append(property.Spec.SetRequired ? "(Req)" : "");
+            sb.Append(property.CanSet ? "Set" : "");
+            sb.Append(property.Spec.IsSetMandatory ? "(Req)" : "");
             sb.Append(' ');
-            sb.Append(property.IsAnno ? "Anno" : "");
-            sb.Append(property.Spec.AnnoRequired ? "(Req)" : "");
+            sb.Append(property.CanAnnounceStatusChange ? "Anno" : "");
+            sb.Append(property.Spec.IsStatusChangeAnnouncementMandatory ? "(Req)" : "");
             return sb.ToString();
         }
     }

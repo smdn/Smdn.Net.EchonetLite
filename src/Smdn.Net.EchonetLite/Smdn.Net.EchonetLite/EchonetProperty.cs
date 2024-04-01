@@ -25,9 +25,9 @@ namespace Smdn.Net.EchonetLite
                 classGroupCode: classGroupCode,
                 classCode: classCode,
                 epc: epc,
-                isAnno: false,
-                isSet: false,
-                isGet: false
+                canAnnounceStatusChange: false,
+                canSet: false,
+                canGet: false
             )
         {
         }
@@ -37,16 +37,16 @@ namespace Smdn.Net.EchonetLite
             byte classGroupCode,
             byte classCode,
             byte epc,
-            bool isAnno,
-            bool isSet,
-            bool isGet
+            bool canAnnounceStatusChange,
+            bool canSet,
+            bool canGet
         )
             : this
             (
                 spec: DeviceClasses.LookupOrCreateProperty(classGroupCode, classCode, epc, includeProfiles: true),
-                isAnno: isAnno,
-                isSet: isSet,
-                isGet: isGet
+                canAnnounceStatusChange: canAnnounceStatusChange,
+                canSet: canSet,
+                canGet: canGet
             )
         {
         }
@@ -55,9 +55,9 @@ namespace Smdn.Net.EchonetLite
             : this
             (
                 spec: spec,
-                isAnno: false,
-                isSet: false,
-                isGet: false
+                canAnnounceStatusChange: false,
+                canSet: false,
+                canGet: false
             )
         {
         }
@@ -65,15 +65,15 @@ namespace Smdn.Net.EchonetLite
         public EchonetProperty
         (
             EchonetPropertySpecification spec,
-            bool isAnno,
-            bool isSet,
-            bool isGet
+            bool canAnnounceStatusChange,
+            bool canSet,
+            bool canGet
         )
         {
             Spec = spec ?? throw new ArgumentNullException(nameof(spec));
-            IsAnno = isAnno;
-            IsSet = isSet;
-            IsGet = isGet;
+            CanAnnounceStatusChange = canAnnounceStatusChange;
+            CanSet = canSet;
+            CanGet = canGet;
         }
 
         /// <summary>
@@ -85,17 +85,17 @@ namespace Smdn.Net.EchonetLite
         /// プロパティ値の読み出し・通知要求のサービスを処理する。
         /// プロパティ値読み出し要求(0x62)、プロパティ値書き込み・読み出し要求(0x6E)、プロパティ値通知要求(0x63)の要求受付処理を実施する。
         /// </summary>
-        public bool IsGet { get; }
+        public bool CanGet { get; }
         /// <summary>
         /// プロパティ値の書き込み要求のサービスを処理する。
         /// プロパティ値書き込み要求(応答不要)(0x60)、プロパティ値書き込み要求(応答要)(0x61)、プロパティ値書き込み・読み出し要求(0x6E)の要求受付処理を実施する。
         /// </summary>
-        public bool IsSet { get; }
+        public bool CanSet { get; }
         /// <summary>
         /// プロパティ値の通知要求のサービスを処理する。
         /// プロパティ値通知要求（0x63）の要求受付処理を実施する。
         /// </summary>
-        public bool IsAnno { get; }
+        public bool CanAnnounceStatusChange { get; }
 
         private ArrayBufferWriter<byte>? _value = null;
 

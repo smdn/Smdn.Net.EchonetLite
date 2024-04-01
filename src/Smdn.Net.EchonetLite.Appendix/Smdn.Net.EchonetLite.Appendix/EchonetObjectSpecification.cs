@@ -104,21 +104,21 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// </summary>
         public IEnumerable<EchonetPropertySpecification> GetProperties
         {
-            get { return Properties.Where(static p => p.Get); }
+            get { return Properties.Where(static p => p.CanGet); }
         }
         /// <summary>
         /// 仕様上定義済みのSETプロパティの一覧
         /// </summary>
         public IEnumerable<EchonetPropertySpecification> SetProperties
         {
-            get { return Properties.Where(static p => p.Set); }
+            get { return Properties.Where(static p => p.CanSet); }
         }
         /// <summary>
         /// 仕様上定義済みのANNOプロパティの一覧
         /// </summary>
         public IEnumerable<EchonetPropertySpecification> AnnoProperties
         {
-            get { return Properties.Where(static p => p.Anno); }
+            get { return Properties.Where(static p => p.CanAnnounceStatusChange); }
         }
     }
 }
