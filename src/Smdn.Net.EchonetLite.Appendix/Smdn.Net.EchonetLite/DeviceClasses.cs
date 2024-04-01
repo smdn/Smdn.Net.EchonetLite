@@ -96,7 +96,12 @@ namespace Smdn.Net.EchonetLite
         )
         {
             if (TryLookupClass(classGroupCode, classCode, includeProfiles, out var obj)) {
-                var prop = obj.Properties.FirstOrDefault(p => p.Code == propertyCode); // TODO: use IReadOnlyDictionary.TryGetValue(TKey, TValue)
+                var prop = obj
+#if !NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
+                  !
+#endif
+                  .Properties
+                  .FirstOrDefault(p => p.Code == propertyCode); // TODO: use IReadOnlyDictionary.TryGetValue(TKey, TValue)
 
                 if (prop is not null)
                     return prop;
