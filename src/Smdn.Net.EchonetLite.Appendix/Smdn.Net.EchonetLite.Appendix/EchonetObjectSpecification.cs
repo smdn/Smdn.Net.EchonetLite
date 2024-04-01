@@ -8,9 +8,33 @@ using System.Text.Json;
 
 namespace Smdn.Net.EchonetLite.Appendix
 {
-    internal class EchonetObjectSpecification : IEchonetObject
+    /// <summary>
+    /// ECHONET Lite オブジェクト
+    /// </summary>
+    public sealed class EchonetObjectSpecification
     {
-        public EchonetObjectSpecification(byte classGroupCode, byte classCode)
+        /// <summary>
+        /// 指定されたクラスグループコード・クラスコードをもつ、未知のECHONET Lite オブジェクトを作成します。
+        /// </summary>
+        internal static EchonetObjectSpecification CreateUnknown(byte classGroupCode, byte classCode)
+            => new(
+                classGroup: new(
+                    code: classGroupCode,
+                    name: "Unknown",
+                    propertyName: "Unknown",
+                    classes: Array.Empty<EchonetClassSpecification>(),
+                    superClassName: null
+                ),
+                @class: new(
+                    isDefined: false,
+                    code: classCode,
+                    name: "Unknown",
+                    propertyName: "Unknown"
+                ),
+                properties: Array.Empty<EchonetPropertySpecification>()
+            );
+
+        internal EchonetObjectSpecification(byte classGroupCode, byte classCode)
         {
             ClassGroup =
                SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.Code == classGroupCode) ??
@@ -47,11 +71,25 @@ namespace Smdn.Net.EchonetLite.Appendix
 
             Properties = properties;
         }
+
+        private EchonetObjectSpecification(
+            EchonetClassGroupSpecification classGroup,
+            EchonetClassSpecification @class,
+            IReadOnlyList<EchonetPropertySpecification> properties
+        )
+        {
+            ClassGroup = classGroup;
+            Class = @class;
+            Properties = properties;
+        }
+
         /// <summary>
+        /// クラスグループ情報
         /// クラスグループコード
         /// </summary>
         public EchonetClassGroupSpecification ClassGroup { get; }
         /// <summary>
+        /// クラス情報
         /// クラスコード
         /// </summary>
         public EchonetClassSpecification Class { get; }

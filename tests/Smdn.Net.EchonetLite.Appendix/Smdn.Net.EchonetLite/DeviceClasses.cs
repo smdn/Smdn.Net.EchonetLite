@@ -17,20 +17,20 @@ public class DeviceClassesTests {
     var obj = DeviceClasses.管理操作関連機器.コントローラ;
 
     Assert.That(obj, Is.Not.Null);
-    Assert.That(obj.ClassGroup, Is.Not.Null, nameof(IEchonetObject.ClassGroup));
+    Assert.That(obj.ClassGroup, Is.Not.Null, nameof(EchonetObjectSpecification.ClassGroup));
     Assert.That(obj.ClassGroup.Code, Is.EqualTo(0x05), nameof(EchonetClassGroupSpecification.Code));
     Assert.That(obj.ClassGroup.Name, Is.EqualTo("管理・操作関連機器クラスグループ"), nameof(EchonetClassGroupSpecification.Name));
     Assert.That(obj.ClassGroup.SuperClassName, Is.EqualTo("機器オブジェクトスーパークラス"), nameof(EchonetClassGroupSpecification.SuperClassName));
     Assert.That(obj.ClassGroup.Classes, Is.Not.Empty, nameof(EchonetClassGroupSpecification.Classes));
 
-    Assert.That(obj.GetProperties, Is.Not.Null, nameof(IEchonetObject.GetProperties));
-    Assert.That(obj.GetProperties, Is.Not.Empty, nameof(IEchonetObject.GetProperties));
+    Assert.That(obj.GetProperties, Is.Not.Null, nameof(EchonetObjectSpecification.GetProperties));
+    Assert.That(obj.GetProperties, Is.Not.Empty, nameof(EchonetObjectSpecification.GetProperties));
 
-    Assert.That(obj.SetProperties, Is.Not.Null, nameof(IEchonetObject.SetProperties));
-    Assert.That(obj.SetProperties, Is.Not.Empty, nameof(IEchonetObject.SetProperties));
+    Assert.That(obj.SetProperties, Is.Not.Null, nameof(EchonetObjectSpecification.SetProperties));
+    Assert.That(obj.SetProperties, Is.Not.Empty, nameof(EchonetObjectSpecification.SetProperties));
 
-    Assert.That(obj.AnnoProperties, Is.Not.Null, nameof(IEchonetObject.AnnoProperties));
-    Assert.That(obj.AnnoProperties, Is.Not.Empty, nameof(IEchonetObject.AnnoProperties));
+    Assert.That(obj.AnnoProperties, Is.Not.Null, nameof(EchonetObjectSpecification.AnnoProperties));
+    Assert.That(obj.AnnoProperties, Is.Not.Empty, nameof(EchonetObjectSpecification.AnnoProperties));
   }
 
   [Test]
@@ -39,18 +39,18 @@ public class DeviceClassesTests {
     var obj = DeviceClasses.管理操作関連機器.コントローラ;
 
     Assert.That(obj, Is.Not.Null);
-    Assert.That(obj.Class, Is.Not.Null, nameof(IEchonetObject.Class));
+    Assert.That(obj.Class, Is.Not.Null, nameof(EchonetObjectSpecification.Class));
     Assert.That(obj.Class.Code, Is.EqualTo(0xFF), nameof(EchonetClassSpecification.Code));
     Assert.That(obj.Class.Name, Is.EqualTo("コントローラ"), nameof(EchonetClassSpecification.Name));
 
-    Assert.That(obj.GetProperties, Is.Not.Null, nameof(IEchonetObject.GetProperties));
-    Assert.That(obj.GetProperties, Is.Not.Empty, nameof(IEchonetObject.GetProperties));
+    Assert.That(obj.GetProperties, Is.Not.Null, nameof(EchonetObjectSpecification.GetProperties));
+    Assert.That(obj.GetProperties, Is.Not.Empty, nameof(EchonetObjectSpecification.GetProperties));
 
-    Assert.That(obj.SetProperties, Is.Not.Null, nameof(IEchonetObject.SetProperties));
-    Assert.That(obj.SetProperties, Is.Not.Empty, nameof(IEchonetObject.SetProperties));
+    Assert.That(obj.SetProperties, Is.Not.Null, nameof(EchonetObjectSpecification.SetProperties));
+    Assert.That(obj.SetProperties, Is.Not.Empty, nameof(EchonetObjectSpecification.SetProperties));
 
-    Assert.That(obj.AnnoProperties, Is.Not.Null, nameof(IEchonetObject.AnnoProperties));
-    Assert.That(obj.AnnoProperties, Is.Not.Empty, nameof(IEchonetObject.AnnoProperties));
+    Assert.That(obj.AnnoProperties, Is.Not.Null, nameof(EchonetObjectSpecification.AnnoProperties));
+    Assert.That(obj.AnnoProperties, Is.Not.Empty, nameof(EchonetObjectSpecification.AnnoProperties));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_機器オブジェクトスーパークラスJson()
@@ -61,7 +61,7 @@ public class DeviceClassesTests {
   }
 
   [TestCaseSource(nameof(YieldTestCases_機器オブジェクトスーパークラスJson))]
-  public void 機器オブジェクトスーパークラスJson(IEchonetObject obj)
+  public void 機器オブジェクトスーパークラスJson(EchonetObjectSpecification obj)
   {
     var epc80 = obj.GetProperties.FirstOrDefault(static prop => prop.Name == "動作状態");
 

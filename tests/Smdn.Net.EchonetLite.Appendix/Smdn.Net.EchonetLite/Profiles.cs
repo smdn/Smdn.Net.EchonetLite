@@ -16,7 +16,7 @@ public class ProfilesTests {
     var p = Profiles.NodeProfile;
 
     Assert.That(p, Is.Not.Null);
-    Assert.That(p.ClassGroup, Is.Not.Null, nameof(IEchonetObject.ClassGroup));
+    Assert.That(p.ClassGroup, Is.Not.Null, nameof(EchonetObjectSpecification.ClassGroup));
     Assert.That(p.ClassGroup.Code, Is.EqualTo(0x0E), nameof(EchonetClassGroupSpecification.Code));
     Assert.That(p.ClassGroup.Name, Is.EqualTo("プロファイルクラスグループ"), nameof(EchonetClassGroupSpecification.Name));
     Assert.That(p.ClassGroup.SuperClassName, Is.EqualTo("プロファイルオブジェクトスーパークラス"), nameof(EchonetClassGroupSpecification.SuperClassName));

@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
 
+using Smdn.Net.EchonetLite.Appendix;
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite
@@ -35,7 +36,7 @@ namespace Smdn.Net.EchonetLite
         /// </summary>
         /// <param name="classObject">オブジェクトクラス</param>
         /// <param name="instanceCode"></param>
-        public EchonetObject(IEchonetObject classObject,byte instanceCode)
+        public EchonetObject(EchonetObjectSpecification classObject,byte instanceCode)
         {
             Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
             InstanceCode = instanceCode;
@@ -107,7 +108,7 @@ namespace Smdn.Net.EchonetLite
         /// クラスグループコード、クラスグループ名
         /// ECHONET機器オブジェクト詳細規定がある場合、詳細仕様
         /// </summary>
-        public IEchonetObject Spec { get; }
+        public EchonetObjectSpecification Spec { get; }
         /// <summary>
         /// インスタンスコード
         /// </summary>
