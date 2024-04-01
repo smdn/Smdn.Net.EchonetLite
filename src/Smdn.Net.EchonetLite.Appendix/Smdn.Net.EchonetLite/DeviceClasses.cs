@@ -78,6 +78,34 @@ namespace Smdn.Net.EchonetLite
                 : EchonetObjectSpecification.CreateUnknown(classGroupCode, classCode);
 
         /// <summary>
+        /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトから、指定されたプロパティコードをもつECHONET プロパティを取得または作成します。
+        /// </summary>
+        /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
+        /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
+        /// <param name="propertyCode">取得するECHONET プロパティのプロパティコード。</param>
+        /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
+        /// <returns>
+        /// 一致するECHONET プロパティを取得できた場合は、そのオブジェクトを返します。
+        /// 一致するECHONET プロパティが存在しない場合は、指定されたプロパティコードをもつプロパティを作成して返します。
+        /// </returns>
+        public static EchonetPropertySpecification LookupProperty(
+            byte classGroupCode,
+            byte classCode,
+            byte propertyCode,
+            bool includeProfiles
+        )
+        {
+            if (TryLookupClass(classGroupCode, classCode, includeProfiles, out var obj)) {
+                var prop = obj.Properties.FirstOrDefault(p => p.Code == propertyCode); // TODO: use IReadOnlyDictionary.TryGetValue(TKey, TValue)
+
+                if (prop is not null)
+                    return prop;
+            }
+
+            return EchonetPropertySpecification.CreateUnknown(propertyCode);
+        }
+
+        /// <summary>
         /// 一覧
         /// </summary>
         public static IReadOnlyList<EchonetObjectSpecification> All { get; } =

@@ -14,28 +14,6 @@ namespace Smdn.Net.EchonetLite
     /// </summary>
     public sealed class EchonetProperty
     {
-        internal static EchonetPropertySpecification GenerateUnknownProperty(byte epc)
-            => new
-            (
-                code: epc,
-                name: "Unknown",
-                detail: "Unknown",
-                valueRange: null,
-                dataType: "Unknown",
-                logicalDataType: "Unknown",
-                minSize: null,
-                maxSize: null,
-                get: false,
-                getRequired: false,
-                set: false,
-                setRequired: false,
-                anno: false,
-                annoRequired: false,
-                optionRequired: null,
-                description: null,
-                unit: null
-            );
-
         public EchonetProperty
         (
             byte classGroupCode,
@@ -65,9 +43,7 @@ namespace Smdn.Net.EchonetLite
         )
             : this
             (
-                spec:
-                    SpecificationUtil.FindProperty(classGroupCode, classCode, epc) ??
-                    GenerateUnknownProperty(epc),
+                spec: DeviceClasses.LookupProperty(classGroupCode, classCode, epc, includeProfiles: true),
                 isAnno: isAnno,
                 isSet: isSet,
                 isGet: isGet

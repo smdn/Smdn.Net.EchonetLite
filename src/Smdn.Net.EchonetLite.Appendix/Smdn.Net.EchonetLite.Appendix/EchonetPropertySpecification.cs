@@ -17,6 +17,30 @@ namespace Smdn.Net.EchonetLite.Appendix
     public sealed class EchonetPropertySpecification
     {
         /// <summary>
+        /// 指定されたプロパティコードをもつ、未知のECHONET プロパティを作成します。
+        /// </summary>
+        internal static EchonetPropertySpecification CreateUnknown(byte code)
+            => new(
+                code: code,
+                name: "Unknown",
+                detail: "Unknown",
+                valueRange: null,
+                dataType: "Unknown",
+                logicalDataType: "Unknown",
+                minSize: null,
+                maxSize: null,
+                get: false,
+                getRequired: false,
+                set: false,
+                setRequired: false,
+                anno: false,
+                annoRequired: false,
+                optionRequired: null,
+                description: null,
+                unit: null
+            );
+
+        /// <summary>
         /// JSONデシリアライズ用のコンストラクタ
         /// </summary>
         /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>の値。</param>
