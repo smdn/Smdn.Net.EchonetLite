@@ -13,16 +13,16 @@ namespace Smdn.Net.EchonetLite;
 /// </summary>
 public static class Profiles
 {
-    /// <summary>
-    /// 0xF0 ノードプロファイル
-    /// </summary>
-    public static EchonetObjectSpecification NodeProfile { get; } = new(0x0E, 0xF0);
+  /// <summary>
+  /// 0xF0 ノードプロファイル
+  /// </summary>
+  public static EchonetObjectSpecification NodeProfile { get; } = new(0x0E, 0xF0);
 
-    /// <summary>
-    /// クラス一覧
-    /// </summary>
-    public static IReadOnlyList<EchonetObjectSpecification> All { get; } =
-    [
-        NodeProfile,
-    ];
+  /// <summary>
+  /// クラス一覧
+  /// </summary>
+  public static IReadOnlyList<EchonetObjectSpecification> All { get; } =
+  [
+    NodeProfile,
+  ];
 }
