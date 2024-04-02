@@ -43,6 +43,41 @@ public sealed class EchonetObjectSpecification {
       )
     );
 
+  /*
+   * instance members
+   */
+  /// <summary>
+  /// クラスグループ情報
+  /// クラスグループコード
+  /// </summary>
+  public EchonetClassGroupSpecification ClassGroup { get; }
+
+  /// <summary>
+  /// クラス情報
+  /// クラスコード
+  /// </summary>
+  public EchonetClassSpecification Class { get; }
+
+  /// <summary>
+  /// 仕様上定義済みのプロパティの一覧
+  /// </summary>
+  public IReadOnlyDictionary<byte, EchonetPropertySpecification> AllProperties { get; }
+
+  /// <summary>
+  /// 仕様上定義済みのGETプロパティの一覧
+  /// </summary>
+  public IReadOnlyDictionary<byte, EchonetPropertySpecification> GetProperties { get; }
+
+  /// <summary>
+  /// 仕様上定義済みのSETプロパティの一覧
+  /// </summary>
+  public IReadOnlyDictionary<byte, EchonetPropertySpecification> SetProperties { get; }
+
+  /// <summary>
+  /// 仕様上定義済みのANNOプロパティの一覧
+  /// </summary>
+  public IReadOnlyDictionary<byte, EchonetPropertySpecification> AnnoProperties { get; }
+
   internal EchonetObjectSpecification(
     byte classGroupCode,
     byte classCode
@@ -101,36 +136,4 @@ public sealed class EchonetObjectSpecification {
       return keyedSpecs;
     }
   }
-
-  /// <summary>
-  /// クラスグループ情報
-  /// クラスグループコード
-  /// </summary>
-  public EchonetClassGroupSpecification ClassGroup { get; }
-
-  /// <summary>
-  /// クラス情報
-  /// クラスコード
-  /// </summary>
-  public EchonetClassSpecification Class { get; }
-
-  /// <summary>
-  /// 仕様上定義済みのプロパティの一覧
-  /// </summary>
-  public IReadOnlyDictionary<byte, EchonetPropertySpecification> AllProperties { get; }
-
-  /// <summary>
-  /// 仕様上定義済みのGETプロパティの一覧
-  /// </summary>
-  public IReadOnlyDictionary<byte, EchonetPropertySpecification> GetProperties { get; }
-
-  /// <summary>
-  /// 仕様上定義済みのSETプロパティの一覧
-  /// </summary>
-  public IReadOnlyDictionary<byte, EchonetPropertySpecification> SetProperties { get; }
-
-  /// <summary>
-  /// 仕様上定義済みのANNOプロパティの一覧
-  /// </summary>
-  public IReadOnlyDictionary<byte, EchonetPropertySpecification> AnnoProperties { get; }
 }

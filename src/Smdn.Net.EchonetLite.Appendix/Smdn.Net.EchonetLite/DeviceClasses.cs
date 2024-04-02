@@ -17,97 +17,6 @@ namespace Smdn.Net.EchonetLite;
 /// </summary>
 public static class DeviceClasses {
   /// <summary>
-  /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトを取得します。
-  /// </summary>
-  /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
-  /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
-  /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
-  /// <param name="echonetObject">取得できた場合は、そのECHONET Lite オブジェクト。　取得できなかった場合は、<see langword="null"/>。</param>
-  /// <returns>指定されたクラスグループコード・クラスコードと一致するCHONET Lite オブジェクトを取得できた場合は<see langword="true"/>、取得できなかった場合は<see langword="false"/>。</returns>
-  public static bool TryLookupClass(
-    byte classGroupCode,
-    byte classCode,
-    bool includeProfiles,
-#if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
-    [NotNullWhen(true)]
-#endif
-    out EchonetObjectSpecification? echonetObject
-  )
-  {
-    echonetObject = default;
-
-    if (includeProfiles) {
-      echonetObject = Profiles.All.FirstOrDefault(
-        g => g.ClassGroup.Code == classGroupCode && g.Class.Code == classCode
-      );
-
-      if (echonetObject is not null)
-        return true;
-    }
-
-    echonetObject = DeviceClasses.All.FirstOrDefault(
-      g => g.ClassGroup.Code == classGroupCode && g.Class.Code == classCode
-    );
-
-    return echonetObject is not null;
-  }
-
-  /// <summary>
-  /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトを取得または作成します。
-  /// </summary>
-  /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
-  /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
-  /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
-  /// <returns>
-  /// 一致するECHONET Lite オブジェクトを取得できた場合は、そのオブジェクトを返します。
-  /// 一致するECHONET Lite オブジェクトが存在しない場合は、指定されたクラスグループコード・クラスコードをもつオブジェクトを作成して返します。
-  /// </returns>
-  public static EchonetObjectSpecification LookupOrCreateClass(
-    byte classGroupCode,
-    byte classCode,
-    bool includeProfiles
-  )
-    => TryLookupClass(classGroupCode, classCode, includeProfiles, out var classObject)
-      ?
-        classObject
-#if !NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
-        !
-#endif
-      : EchonetObjectSpecification.CreateUnknown(classGroupCode, classCode);
-
-  /// <summary>
-  /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトから、指定されたプロパティコードをもつECHONET プロパティを取得または作成します。
-  /// </summary>
-  /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
-  /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
-  /// <param name="propertyCode">取得するECHONET プロパティのプロパティコード。</param>
-  /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
-  /// <returns>
-  /// 一致するECHONET プロパティを取得できた場合は、そのオブジェクトを返します。
-  /// 一致するECHONET プロパティが存在しない場合は、指定されたプロパティコードをもつプロパティを作成して返します。
-  /// </returns>
-  public static EchonetPropertySpecification LookupOrCreateProperty(
-    byte classGroupCode,
-    byte classCode,
-    byte propertyCode,
-    bool includeProfiles
-  )
-  {
-    if (TryLookupClass(classGroupCode, classCode, includeProfiles, out var obj)) {
-      var allProps = obj
-#if !NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
-        !
-#endif
-        .AllProperties;
-
-      if (allProps.TryGetValue(propertyCode, out var prop))
-        return prop;
-    }
-
-    return EchonetPropertySpecification.CreateUnknown(propertyCode);
-  }
-
-  /// <summary>
   /// 一覧
   /// </summary>
   public static IReadOnlyList<EchonetObjectSpecification> All { get; } =
@@ -728,5 +637,96 @@ public static class DeviceClasses {
     /// 0x04 ネットワークカメラ
     /// </summary>
     public static EchonetObjectSpecification ネットワークカメラ { get; } = new(0x06, 0x04);
+  }
+
+  /// <summary>
+  /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトを取得します。
+  /// </summary>
+  /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
+  /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
+  /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
+  /// <param name="echonetObject">取得できた場合は、そのECHONET Lite オブジェクト。　取得できなかった場合は、<see langword="null"/>。</param>
+  /// <returns>指定されたクラスグループコード・クラスコードと一致するCHONET Lite オブジェクトを取得できた場合は<see langword="true"/>、取得できなかった場合は<see langword="false"/>。</returns>
+  public static bool TryLookupClass(
+    byte classGroupCode,
+    byte classCode,
+    bool includeProfiles,
+#if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
+    [NotNullWhen(true)]
+#endif
+    out EchonetObjectSpecification? echonetObject
+  )
+  {
+    echonetObject = default;
+
+    if (includeProfiles) {
+      echonetObject = Profiles.All.FirstOrDefault(
+        g => g.ClassGroup.Code == classGroupCode && g.Class.Code == classCode
+      );
+
+      if (echonetObject is not null)
+        return true;
+    }
+
+    echonetObject = DeviceClasses.All.FirstOrDefault(
+      g => g.ClassGroup.Code == classGroupCode && g.Class.Code == classCode
+    );
+
+    return echonetObject is not null;
+  }
+
+  /// <summary>
+  /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトを取得または作成します。
+  /// </summary>
+  /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
+  /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
+  /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
+  /// <returns>
+  /// 一致するECHONET Lite オブジェクトを取得できた場合は、そのオブジェクトを返します。
+  /// 一致するECHONET Lite オブジェクトが存在しない場合は、指定されたクラスグループコード・クラスコードをもつオブジェクトを作成して返します。
+  /// </returns>
+  public static EchonetObjectSpecification LookupOrCreateClass(
+    byte classGroupCode,
+    byte classCode,
+    bool includeProfiles
+  )
+    => TryLookupClass(classGroupCode, classCode, includeProfiles, out var classObject)
+      ?
+        classObject
+#if !NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
+        !
+#endif
+      : EchonetObjectSpecification.CreateUnknown(classGroupCode, classCode);
+
+  /// <summary>
+  /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトから、指定されたプロパティコードをもつECHONET プロパティを取得または作成します。
+  /// </summary>
+  /// <param name="classGroupCode">取得するECHONET Lite オブジェクトのクラスグループコード。</param>
+  /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
+  /// <param name="propertyCode">取得するECHONET プロパティのプロパティコード。</param>
+  /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
+  /// <returns>
+  /// 一致するECHONET プロパティを取得できた場合は、そのオブジェクトを返します。
+  /// 一致するECHONET プロパティが存在しない場合は、指定されたプロパティコードをもつプロパティを作成して返します。
+  /// </returns>
+  public static EchonetPropertySpecification LookupOrCreateProperty(
+    byte classGroupCode,
+    byte classCode,
+    byte propertyCode,
+    bool includeProfiles
+  )
+  {
+    if (TryLookupClass(classGroupCode, classCode, includeProfiles, out var obj)) {
+      var allProps = obj
+#if !NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
+        !
+#endif
+        .AllProperties;
+
+      if (allProps.TryGetValue(propertyCode, out var prop))
+        return prop;
+    }
+
+    return EchonetPropertySpecification.CreateUnknown(propertyCode);
   }
 }

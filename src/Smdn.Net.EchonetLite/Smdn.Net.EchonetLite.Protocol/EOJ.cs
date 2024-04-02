@@ -13,19 +13,6 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// </summary>
 public readonly struct EOJ : IEquatable<EOJ> {
   /// <summary>
-  /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
-  /// </summary>
-  /// <param name="classGroupCode"><see cref="ClassGroupCode"/>に指定する値。</param>
-  /// <param name="classCode"><see cref="ClassCode"/>に指定する値。</param>
-  /// <param name="instanceCode"><see cref="InstanceCode"/>に指定する値。</param>
-  public EOJ(byte classGroupCode, byte classCode, byte instanceCode)
-  {
-    ClassGroupCode = classGroupCode;
-    ClassCode = classCode;
-    InstanceCode = instanceCode;
-  }
-
-  /// <summary>
   /// クラスグループコード
   /// </summary>
   [JsonConverter(typeof(SingleByteJsonConverterFactory))]
@@ -42,6 +29,19 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// </summary>
   [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte InstanceCode { get; }
+
+  /// <summary>
+  /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
+  /// </summary>
+  /// <param name="classGroupCode"><see cref="ClassGroupCode"/>に指定する値。</param>
+  /// <param name="classCode"><see cref="ClassCode"/>に指定する値。</param>
+  /// <param name="instanceCode"><see cref="InstanceCode"/>に指定する値。</param>
+  public EOJ(byte classGroupCode, byte classCode, byte instanceCode)
+  {
+    ClassGroupCode = classGroupCode;
+    ClassCode = classCode;
+    InstanceCode = instanceCode;
+  }
 
   public bool Equals(EOJ other)
     =>

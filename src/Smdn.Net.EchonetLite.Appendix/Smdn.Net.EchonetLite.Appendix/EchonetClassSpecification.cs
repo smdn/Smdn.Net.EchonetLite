@@ -11,29 +11,6 @@ namespace Smdn.Net.EchonetLite.Appendix;
 /// </summary>
 public sealed class EchonetClassSpecification {
   /// <summary>
-  /// JSONデシリアライズ用のコンストラクタ
-  /// </summary>
-  /// <param name="isDefined"><see cref="IsDefined"/>に設定する値。</param>
-  /// <param name="code"><see cref="Code"/>に設定する値。</param>
-  /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
-  /// <param name="propertyName"><see cref="PropertyName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
-  /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
-  /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
-  [JsonConstructor]
-  public EchonetClassSpecification(
-    bool isDefined,
-    byte code,
-    string? name,
-    string? propertyName
-  )
-  {
-    IsDefined = isDefined;
-    Code = code;
-    Name = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(name, nameof(name));
-    PropertyName = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(propertyName, nameof(propertyName));
-  }
-
-  /// <summary>
   /// 詳細仕様有無
   /// </summary>
   [JsonPropertyName("Status")]
@@ -57,4 +34,27 @@ public sealed class EchonetClassSpecification {
   /// </summary>
   [JsonPropertyName("ClassName")]
   public string PropertyName { get; }
+
+  /// <summary>
+  /// JSONデシリアライズ用のコンストラクタ
+  /// </summary>
+  /// <param name="isDefined"><see cref="IsDefined"/>に設定する値。</param>
+  /// <param name="code"><see cref="Code"/>に設定する値。</param>
+  /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+  /// <param name="propertyName"><see cref="PropertyName"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+  /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
+  /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
+  [JsonConstructor]
+  public EchonetClassSpecification(
+    bool isDefined,
+    byte code,
+    string? name,
+    string? propertyName
+  )
+  {
+    IsDefined = isDefined;
+    Code = code;
+    Name = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(name, nameof(name));
+    PropertyName = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(propertyName, nameof(propertyName));
+  }
 }

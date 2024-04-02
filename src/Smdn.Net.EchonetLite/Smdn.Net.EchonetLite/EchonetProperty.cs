@@ -13,6 +13,51 @@ namespace Smdn.Net.EchonetLite;
 /// プロパティクラス
 /// </summary>
 public sealed class EchonetProperty {
+  /// <summary>
+  /// EPC
+  /// ECHONET機器オブジェクト詳細規定がある場合、詳細仕様
+  /// </summary>
+  public EchonetPropertySpecification Spec { get; }
+
+  /// <summary>
+  /// プロパティ値の読み出し・通知要求のサービスを処理する。
+  /// プロパティ値読み出し要求(0x62)、プロパティ値書き込み・読み出し要求(0x6E)、プロパティ値通知要求(0x63)の要求受付処理を実施する。
+  /// </summary>
+  public bool CanGet { get; }
+
+  /// <summary>
+  /// プロパティ値の書き込み要求のサービスを処理する。
+  /// プロパティ値書き込み要求(応答不要)(0x60)、プロパティ値書き込み要求(応答要)(0x61)、プロパティ値書き込み・読み出し要求(0x6E)の要求受付処理を実施する。
+  /// </summary>
+  public bool CanSet { get; }
+
+  /// <summary>
+  /// プロパティ値の通知要求のサービスを処理する。
+  /// プロパティ値通知要求（0x63）の要求受付処理を実施する。
+  /// </summary>
+  public bool CanAnnounceStatusChange { get; }
+
+  private ArrayBufferWriter<byte>? _value = null;
+
+  /// <summary>
+  /// プロパティ値を表す<see cref="ReadOnlyMemory{Byte}"/>を取得します。
+  /// </summary>
+  public ReadOnlyMemory<byte> ValueMemory => _value is null ? ReadOnlyMemory<byte>.Empty : _value.WrittenMemory;
+
+  /// <summary>
+  /// プロパティ値を表す<see cref="ReadOnlySpan{Byte}"/>を取得します。
+  /// </summary>
+  public ReadOnlySpan<byte> ValueSpan => _value is null ? ReadOnlySpan<byte>.Empty : _value.WrittenSpan;
+
+  /// <summary>
+  /// プロパティ値に変更があった場合に発生するイベント。
+  /// </summary>
+  /// <remarks>
+  /// このイベントは、プロパティに異なる値が設定された場合にのみ発生します。
+  /// プロパティに値が設定される際、その値が以前と同じ値だった場合には発生しません。
+  /// </remarks>
+  public event EventHandler<(ReadOnlyMemory<byte> OldValue, ReadOnlyMemory<byte> NewValue)>? ValueChanged;
+
   public EchonetProperty(
     byte classGroupCode,
     byte classCode,
@@ -68,51 +113,6 @@ public sealed class EchonetProperty {
     CanSet = canSet;
     CanGet = canGet;
   }
-
-  /// <summary>
-  /// EPC
-  /// ECHONET機器オブジェクト詳細規定がある場合、詳細仕様
-  /// </summary>
-  public EchonetPropertySpecification Spec { get; }
-
-  /// <summary>
-  /// プロパティ値の読み出し・通知要求のサービスを処理する。
-  /// プロパティ値読み出し要求(0x62)、プロパティ値書き込み・読み出し要求(0x6E)、プロパティ値通知要求(0x63)の要求受付処理を実施する。
-  /// </summary>
-  public bool CanGet { get; }
-
-  /// <summary>
-  /// プロパティ値の書き込み要求のサービスを処理する。
-  /// プロパティ値書き込み要求(応答不要)(0x60)、プロパティ値書き込み要求(応答要)(0x61)、プロパティ値書き込み・読み出し要求(0x6E)の要求受付処理を実施する。
-  /// </summary>
-  public bool CanSet { get; }
-
-  /// <summary>
-  /// プロパティ値の通知要求のサービスを処理する。
-  /// プロパティ値通知要求（0x63）の要求受付処理を実施する。
-  /// </summary>
-  public bool CanAnnounceStatusChange { get; }
-
-  private ArrayBufferWriter<byte>? _value = null;
-
-  /// <summary>
-  /// プロパティ値を表す<see cref="ReadOnlyMemory{Byte}"/>を取得します。
-  /// </summary>
-  public ReadOnlyMemory<byte> ValueMemory => _value is null ? ReadOnlyMemory<byte>.Empty : _value.WrittenMemory;
-
-  /// <summary>
-  /// プロパティ値を表す<see cref="ReadOnlySpan{Byte}"/>を取得します。
-  /// </summary>
-  public ReadOnlySpan<byte> ValueSpan => _value is null ? ReadOnlySpan<byte>.Empty : _value.WrittenSpan;
-
-  /// <summary>
-  /// プロパティ値に変更があった場合に発生するイベント。
-  /// </summary>
-  /// <remarks>
-  /// このイベントは、プロパティに異なる値が設定された場合にのみ発生します。
-  /// プロパティに値が設定される際、その値が以前と同じ値だった場合には発生しません。
-  /// </remarks>
-  public event EventHandler<(ReadOnlyMemory<byte> OldValue, ReadOnlyMemory<byte> NewValue)>? ValueChanged;
 
   /// <summary>
   /// プロパティ値を設定します。

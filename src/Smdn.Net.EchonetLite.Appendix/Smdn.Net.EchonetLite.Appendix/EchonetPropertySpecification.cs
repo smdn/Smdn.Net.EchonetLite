@@ -48,75 +48,9 @@ public sealed class EchonetPropertySpecification {
       unit: null
     );
 
-  /// <summary>
-  /// JSONデシリアライズ用のコンストラクタ
-  /// </summary>
-  /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>の値。</param>
-  /// <param name="code"><see cref="Code"/>に設定する値。</param>
-  /// <param name="detail"><see cref="Detail"/>に設定する非<see langword="null"/>の値。</param>
-  /// <param name="valueRange"><see cref="ValueRange"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
-  /// <param name="dataType"><see cref="DataType"/>に設定する非<see langword="null"/>の値。</param>
-  /// <param name="logicalDataType"><see cref="LogicalDataType"/>に設定する非<see langword="null"/>の値。</param>
-  /// <param name="minSize"><see cref="MinSize"/>に設定する値。</param>
-  /// <param name="maxSize"><see cref="MaxSize"/>に設定する値。</param>
-  /// <param name="canGet"><see cref="CanGet"/>に設定する値。</param>
-  /// <param name="isGetMandatory"><see cref="IsGetMandatory"/>に設定する値。</param>
-  /// <param name="canSet"><see cref="CanSet"/>に設定する値。</param>
-  /// <param name="isSetMandatory"><see cref="IsSetMandatory"/>に設定する値。</param>
-  /// <param name="canAnnounceStatusChange"><see cref="CanAnnounceStatusChange"/>に設定する値。</param>
-  /// <param name="isStatusChangeAnnouncementMandatory"><see cref="IsStatusChangeAnnouncementMandatory"/>に設定する値。</param>
-  /// <param name="optionRequired"><see cref="OptionRequired"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{ApplicationServiceName}"/>を設定します。</param>
-  /// <param name="description"><see cref="Description"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
-  /// <param name="unit"><see cref="Unit"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
-  /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
-  /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
-  [JsonConstructor]
-  public EchonetPropertySpecification(
-    string? name,
-    byte code,
-    string? detail,
-    string? valueRange,
-    string? dataType,
-    string? logicalDataType,
-    int? minSize,
-    int? maxSize,
-    bool canGet,
-    bool isGetMandatory,
-    bool canSet,
-    bool isSetMandatory,
-    bool canAnnounceStatusChange,
-    bool isStatusChangeAnnouncementMandatory,
-    IReadOnlyList<ApplicationServiceName>? optionRequired,
-    string? description,
-    string? unit
-  )
-  {
-    Name = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(name, nameof(name));
-    Code = code;
-    Detail = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(detail, nameof(detail));
-    ValueRange = string.IsNullOrEmpty(valueRange) ? null : valueRange;
-    DataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(dataType, nameof(dataType));
-    LogicalDataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(logicalDataType, nameof(logicalDataType));
-    MinSize = minSize;
-    MaxSize = maxSize;
-    CanGet = canGet;
-    IsGetMandatory = isGetMandatory;
-    CanSet = canSet;
-    IsSetMandatory = isSetMandatory;
-    CanAnnounceStatusChange = canAnnounceStatusChange;
-    IsStatusChangeAnnouncementMandatory = isStatusChangeAnnouncementMandatory;
-    OptionRequired = optionRequired ?? Array.Empty<ApplicationServiceName>();
-    Description = string.IsNullOrEmpty(description) ? null : description;
-    Unit = string.IsNullOrEmpty(unit) ? null : unit;
-
-    if (string.IsNullOrEmpty(unit) || "－".Equals(Unit, StringComparison.Ordinal)) {
-      Unit = null;
-      HasUnit = false;
-    }
-    else {
-      HasUnit = true;
-    }
-  }
+  /*
+   * instance members
+   */
 
   /// <summary>
   /// プロパティ名称
@@ -249,4 +183,74 @@ public sealed class EchonetPropertySpecification {
   [MemberNotNullWhen(true, nameof(Unit))]
 #endif
   public bool HasUnit { get; }
+
+  /// <summary>
+  /// JSONデシリアライズ用のコンストラクタ
+  /// </summary>
+  /// <param name="name"><see cref="Name"/>に設定する非<see langword="null"/>の値。</param>
+  /// <param name="code"><see cref="Code"/>に設定する値。</param>
+  /// <param name="detail"><see cref="Detail"/>に設定する非<see langword="null"/>の値。</param>
+  /// <param name="valueRange"><see cref="ValueRange"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
+  /// <param name="dataType"><see cref="DataType"/>に設定する非<see langword="null"/>の値。</param>
+  /// <param name="logicalDataType"><see cref="LogicalDataType"/>に設定する非<see langword="null"/>の値。</param>
+  /// <param name="minSize"><see cref="MinSize"/>に設定する値。</param>
+  /// <param name="maxSize"><see cref="MaxSize"/>に設定する値。</param>
+  /// <param name="canGet"><see cref="CanGet"/>に設定する値。</param>
+  /// <param name="isGetMandatory"><see cref="IsGetMandatory"/>に設定する値。</param>
+  /// <param name="canSet"><see cref="CanSet"/>に設定する値。</param>
+  /// <param name="isSetMandatory"><see cref="IsSetMandatory"/>に設定する値。</param>
+  /// <param name="canAnnounceStatusChange"><see cref="CanAnnounceStatusChange"/>に設定する値。</param>
+  /// <param name="isStatusChangeAnnouncementMandatory"><see cref="IsStatusChangeAnnouncementMandatory"/>に設定する値。</param>
+  /// <param name="optionRequired"><see cref="OptionRequired"/>に設定する値。　<see langword="null"/>が指定された場合は、空の<see cref="IReadOnlyList{ApplicationServiceName}"/>を設定します。</param>
+  /// <param name="description"><see cref="Description"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
+  /// <param name="unit"><see cref="Unit"/>に設定する値。　<see langword="null"/>または空の場合は、<see langword="null"/>として設定されます。</param>
+  /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
+  /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
+  [JsonConstructor]
+  public EchonetPropertySpecification(
+    string? name,
+    byte code,
+    string? detail,
+    string? valueRange,
+    string? dataType,
+    string? logicalDataType,
+    int? minSize,
+    int? maxSize,
+    bool canGet,
+    bool isGetMandatory,
+    bool canSet,
+    bool isSetMandatory,
+    bool canAnnounceStatusChange,
+    bool isStatusChangeAnnouncementMandatory,
+    IReadOnlyList<ApplicationServiceName>? optionRequired,
+    string? description,
+    string? unit
+  )
+  {
+    Name = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(name, nameof(name));
+    Code = code;
+    Detail = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(detail, nameof(detail));
+    ValueRange = string.IsNullOrEmpty(valueRange) ? null : valueRange;
+    DataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(dataType, nameof(dataType));
+    LogicalDataType = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(logicalDataType, nameof(logicalDataType));
+    MinSize = minSize;
+    MaxSize = maxSize;
+    CanGet = canGet;
+    IsGetMandatory = isGetMandatory;
+    CanSet = canSet;
+    IsSetMandatory = isSetMandatory;
+    CanAnnounceStatusChange = canAnnounceStatusChange;
+    IsStatusChangeAnnouncementMandatory = isStatusChangeAnnouncementMandatory;
+    OptionRequired = optionRequired ?? Array.Empty<ApplicationServiceName>();
+    Description = string.IsNullOrEmpty(description) ? null : description;
+    Unit = string.IsNullOrEmpty(unit) ? null : unit;
+
+    if (string.IsNullOrEmpty(unit) || "－".Equals(Unit, StringComparison.Ordinal)) {
+      Unit = null;
+      HasUnit = false;
+    }
+    else {
+      HasUnit = true;
+    }
+  }
 }

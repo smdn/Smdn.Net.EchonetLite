@@ -9,6 +9,25 @@ using Smdn.Net.EchonetLite.Serialization.Json;
 namespace Smdn.Net.EchonetLite.Protocol;
 
 public readonly struct PropertyRequest {
+
+  /// <summary>
+  /// ECHONET Liteプロパティ(1B)
+  /// </summary>
+  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
+  public byte EPC { get; }
+
+  /// <summary>
+  /// EDTのバイト数(1B)
+  /// </summary>
+  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
+  public byte PDC => (byte)EDT.Length;
+
+  /// <summary>
+  /// プロパティ値データ(PDCで指定)
+  /// </summary>
+  [JsonConverter(typeof(ByteSequenceJsonConverter))]
+  public ReadOnlyMemory<byte> EDT { get; }
+
   /// <summary>
   /// <see cref="EPC"/>のみを指定して、<see cref="PropertyRequest"/>を作成します。
   /// </summary>
@@ -39,22 +58,4 @@ public readonly struct PropertyRequest {
     EPC = epc;
     EDT = edt;
   }
-
-  /// <summary>
-  /// ECHONET Liteプロパティ(1B)
-  /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-  public byte EPC { get; }
-
-  /// <summary>
-  /// EDTのバイト数(1B)
-  /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-  public byte PDC => (byte)EDT.Length;
-
-  /// <summary>
-  /// プロパティ値データ(PDCで指定)
-  /// </summary>
-  [JsonConverter(typeof(ByteSequenceJsonConverter))]
-  public ReadOnlyMemory<byte> EDT { get; }
 }

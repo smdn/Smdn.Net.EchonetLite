@@ -13,6 +13,32 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// </summary>
 public readonly struct Frame {
   /// <summary>
+  /// ECHONET Lite電文ヘッダー１(1B)
+  /// ECHONETのプロトコル種別を指定する。
+  /// </summary>
+  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
+  public EHD1 EHD1 { get; }
+
+  /// <summary>
+  /// ECHONET Lite電文ヘッダー２(1B)
+  /// EDATA部の電文形式を指定する。
+  /// </summary>
+  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
+  public EHD2 EHD2 { get; }
+
+  /// <summary>
+  /// トランザクションID(2B)
+  /// </summary>
+  [JsonConverter(typeof(SingleUInt16JsonConverter))]
+  public ushort TID { get; }
+
+  /// <summary>
+  /// ECHONET Liteデータ
+  /// ECHONET Lite 通信ミドルウェアにてやり取りされる電文のデータ領域。
+  /// </summary>
+  public IEData? EData { get; }
+
+  /// <summary>
   /// ECHONET Liteフレームを記述する<see cref="Frame"/>を作成します。
   /// </summary>
   /// <param name="ehd1"><see cref="EHD1"/>に指定する値。</param>
@@ -49,30 +75,4 @@ public readonly struct Frame {
     TID = tid;
     EData = edata;
   }
-
-  /// <summary>
-  /// ECHONET Lite電文ヘッダー１(1B)
-  /// ECHONETのプロトコル種別を指定する。
-  /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-  public EHD1 EHD1 { get; }
-
-  /// <summary>
-  /// ECHONET Lite電文ヘッダー２(1B)
-  /// EDATA部の電文形式を指定する。
-  /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-  public EHD2 EHD2 { get; }
-
-  /// <summary>
-  /// トランザクションID(2B)
-  /// </summary>
-  [JsonConverter(typeof(SingleUInt16JsonConverter))]
-  public ushort TID { get; }
-
-  /// <summary>
-  /// ECHONET Liteデータ
-  /// ECHONET Lite 通信ミドルウェアにてやり取りされる電文のデータ領域。
-  /// </summary>
-  public IEData? EData { get; }
 }

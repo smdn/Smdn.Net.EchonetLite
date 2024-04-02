@@ -18,11 +18,6 @@ namespace Smdn.Net.EchonetLite.Appendix;
 /// </summary>
 internal sealed class SpecificationMaster {
   /// <summary>
-  /// シングルトンイスタンス
-  /// </summary>
-  private static SpecificationMaster? _Instance;
-
-  /// <summary>
   /// JSONデシリアライズ用のオブジェクト
   /// </summary>
   private sealed class SpecificationMasterJsonObject {
@@ -72,6 +67,26 @@ internal sealed class SpecificationMaster {
     }
   }
 
+  /// <summary>
+  /// ECHONET Lite SPECIFICATIONのバージョン
+  /// </summary>
+  public string Version { get; }
+
+  /// <summary>
+  /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
+  /// </summary>
+  public string AppendixRelease { get; }
+
+  /// <summary>
+  /// プロファイルオブジェクト
+  /// </summary>
+  public IReadOnlyDictionary<byte, EchonetClassGroupSpecification> Profiles { get; }
+
+  /// <summary>
+  /// 機器オブジェクト
+  /// </summary>
+  public IReadOnlyDictionary<byte, EchonetClassGroupSpecification> DeviceClasses { get; }
+
   private SpecificationMaster(SpecificationMasterJsonObject master)
   {
     Version = master.Version;
@@ -93,6 +108,11 @@ internal sealed class SpecificationMaster {
       return keyedSpecs;
     }
   }
+
+  /// <summary>
+  /// シングルトンイスタンス
+  /// </summary>
+  private static SpecificationMaster? _Instance;
 
   /// <summary>
   /// インスタンス取得
@@ -179,24 +199,4 @@ internal sealed class SpecificationMaster {
       properties
     );
   }
-
-  /// <summary>
-  /// ECHONET Lite SPECIFICATIONのバージョン
-  /// </summary>
-  public string Version { get; }
-
-  /// <summary>
-  /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
-  /// </summary>
-  public string AppendixRelease { get; }
-
-  /// <summary>
-  /// プロファイルオブジェクト
-  /// </summary>
-  public IReadOnlyDictionary<byte, EchonetClassGroupSpecification> Profiles { get; }
-
-  /// <summary>
-  /// 機器オブジェクト
-  /// </summary>
-  public IReadOnlyDictionary<byte, EchonetClassGroupSpecification> DeviceClasses { get; }
 }

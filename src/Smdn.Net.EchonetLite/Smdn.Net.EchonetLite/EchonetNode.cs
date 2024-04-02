@@ -13,23 +13,6 @@ namespace Smdn.Net.EchonetLite;
 /// ECHONET Liteノード
 /// </summary>
 public sealed class EchonetNode {
-  public EchonetNode(IPAddress address, EchonetObject nodeProfile)
-  {
-    Address = address ?? throw new ArgumentNullException(nameof(address));
-    NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
-
-    var devices = new ObservableCollection<EchonetObject>();
-
-    devices.CollectionChanged += (_, e) => OnDevicesChanged(e);
-
-    Devices = devices;
-  }
-
-  private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
-  {
-    DevicesChanged?.Invoke(this, e);
-  }
-
   /// <summary>
   /// 下位スタックのアドレス
   /// </summary>
@@ -53,4 +36,21 @@ public sealed class EchonetNode {
   /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
   /// </remarks>
   public event NotifyCollectionChangedEventHandler? DevicesChanged;
+
+  public EchonetNode(IPAddress address, EchonetObject nodeProfile)
+  {
+    Address = address ?? throw new ArgumentNullException(nameof(address));
+    NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
+
+    var devices = new ObservableCollection<EchonetObject>();
+
+    devices.CollectionChanged += (_, e) => OnDevicesChanged(e);
+
+    Devices = devices;
+  }
+
+  private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
+  {
+    DevicesChanged?.Invoke(this, e);
+  }
 }

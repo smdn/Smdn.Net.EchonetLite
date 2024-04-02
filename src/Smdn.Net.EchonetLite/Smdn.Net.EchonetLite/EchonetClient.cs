@@ -15,6 +15,16 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   private IEchonetLiteHandler _echonetLiteHandler; // null if disposed
   private readonly ILogger? _logger;
 
+  /// <summary>
+  /// 現在の<see cref="EchonetClient"/>インスタンスが扱う自ノードを表す<see cref="SelfNode"/>。
+  /// </summary>
+  public EchonetNode SelfNode { get; }
+
+  /// <summary>
+  /// 既知のECHONET Lite ノードのコレクションを表す<see cref="ICollection{EchonetNode}"/>。
+  /// </summary>
+  public ICollection<EchonetNode> Nodes { get; }
+
   /// <inheritdoc cref="EchonetClient(IPAddress, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
   public EchonetClient(
     IPAddress nodeAddress,
@@ -60,16 +70,6 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     // 自己消費用
     FrameReceived += HandleFrameReceived;
   }
-
-  /// <summary>
-  /// 現在の<see cref="EchonetClient"/>インスタンスが扱う自ノードを表す<see cref="SelfNode"/>。
-  /// </summary>
-  public EchonetNode SelfNode { get; }
-
-  /// <summary>
-  /// 既知のECHONET Lite ノードのコレクションを表す<see cref="ICollection{EchonetNode}"/>。
-  /// </summary>
-  public ICollection<EchonetNode> Nodes { get; }
 
   /// <summary>
   /// 現在の<see cref="EchonetClient"/>インスタンスによって使用されているリソースを解放して、インスタンスを破棄します。

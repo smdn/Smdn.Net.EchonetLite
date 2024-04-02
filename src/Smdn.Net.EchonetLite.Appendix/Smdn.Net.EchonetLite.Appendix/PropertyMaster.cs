@@ -11,6 +11,21 @@ namespace Smdn.Net.EchonetLite.Appendix;
 
 internal sealed class PropertyMaster {
   /// <summary>
+  /// ECHONET Lite SPECIFICATIONのバージョン
+  /// </summary>
+  public string Version { get; }
+
+  /// <summary>
+  /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
+  /// </summary>
+  public string AppendixRelease { get; }
+
+  /// <summary>
+  /// プロパティのリスト
+  /// </summary>
+  public IReadOnlyList<EchonetPropertySpecification> Properties { get; }
+
+  /// <summary>
   /// JSONデシリアライズ用のコンストラクタ
   /// </summary>
   /// <param name="version"><see cref="Version"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
@@ -29,19 +44,4 @@ internal sealed class PropertyMaster {
     AppendixRelease = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(appendixRelease, nameof(appendixRelease));
     Properties = properties ?? throw new ArgumentNullException(nameof(properties));
   }
-
-  /// <summary>
-  /// ECHONET Lite SPECIFICATIONのバージョン
-  /// </summary>
-  public string Version { get; }
-
-  /// <summary>
-  /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
-  /// </summary>
-  public string AppendixRelease { get; }
-
-  /// <summary>
-  /// プロパティのリスト
-  /// </summary>
-  public IReadOnlyList<EchonetPropertySpecification> Properties { get; }
 }

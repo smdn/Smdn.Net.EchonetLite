@@ -18,6 +18,45 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// </summary>
 public sealed class EData1 : IEData {
   /// <summary>
+  /// 送信元ECHONET Liteオブジェクト指定(3B)
+  /// </summary>
+  public EOJ SEOJ { get; }
+
+  /// <summary>
+  /// 相手先ECHONET Liteオブジェクト指定(3B)
+  /// </summary>
+  public EOJ DEOJ { get; }
+
+  /// <summary>
+  /// ECHONET Liteサービス(1B)
+  /// ECHONET Liteサービスコード
+  /// </summary>
+  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
+  public ESV ESV { get; }
+
+  public IReadOnlyCollection<PropertyRequest>? OPCList { get; }
+
+  /// <summary>
+  /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+  /// のみ使用
+  /// </summary>
+  public IReadOnlyCollection<PropertyRequest>? OPCGetList { get; }
+
+  /// <summary>
+  /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+  /// のみ使用
+  /// </summary>
+  public IReadOnlyCollection<PropertyRequest>? OPCSetList { get; }
+
+  [JsonIgnore]
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
+  [MemberNotNullWhen(false, nameof(OPCList))]
+  [MemberNotNullWhen(true, nameof(OPCGetList))]
+  [MemberNotNullWhen(true, nameof(OPCSetList))]
+#endif
+  public bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
+
+  /// <summary>
   /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EData1"/>を作成します。
   /// </summary>
   /// <remarks>
@@ -70,45 +109,6 @@ public sealed class EData1 : IEData {
     OPCSetList = opcSetList ?? throw new ArgumentNullException(nameof(opcSetList));
     OPCGetList = opcGetList ?? throw new ArgumentNullException(nameof(opcGetList));
   }
-
-  /// <summary>
-  /// 送信元ECHONET Liteオブジェクト指定(3B)
-  /// </summary>
-  public EOJ SEOJ { get; }
-
-  /// <summary>
-  /// 相手先ECHONET Liteオブジェクト指定(3B)
-  /// </summary>
-  public EOJ DEOJ { get; }
-
-  /// <summary>
-  /// ECHONET Liteサービス(1B)
-  /// ECHONET Liteサービスコード
-  /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
-  public ESV ESV { get; }
-
-  public IReadOnlyCollection<PropertyRequest>? OPCList { get; }
-
-  /// <summary>
-  /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
-  /// のみ使用
-  /// </summary>
-  public IReadOnlyCollection<PropertyRequest>? OPCGetList { get; }
-
-  /// <summary>
-  /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
-  /// のみ使用
-  /// </summary>
-  public IReadOnlyCollection<PropertyRequest>? OPCSetList { get; }
-
-  [JsonIgnore]
-#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-  [MemberNotNullWhen(false, nameof(OPCList))]
-  [MemberNotNullWhen(true, nameof(OPCGetList))]
-  [MemberNotNullWhen(true, nameof(OPCSetList))]
-#endif
-  public bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
 
   internal IReadOnlyCollection<PropertyRequest> GetOPCList()
   {
