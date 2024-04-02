@@ -41,7 +41,9 @@ namespace Smdn.Net.EchonetLite.Appendix
                SpecificationMaster.GetInstance().DeviceClasses.FirstOrDefault(p => p.Code == classGroupCode) ??
                throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
 
-            var properties = new List<EchonetPropertySpecification>();
+            const int MaxNumberOfProperty = 0x80; // EPC: 0b_1XXX_XXXX (0x80~0xFF)
+
+            var properties = new List<EchonetPropertySpecification>(capacity: MaxNumberOfProperty);
 
             //スーパークラスのプロパティを列挙
             using (var stream = SpecificationMaster.GetSpecificationMasterDataStream($"{ClassGroup.SuperClassName}.json"))
@@ -68,6 +70,8 @@ namespace Smdn.Net.EchonetLite.Appendix
                     }
                 }
             }
+
+            properties.TrimExcess(); // reduce capacity
 
             Properties = properties;
         }
