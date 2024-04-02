@@ -43,15 +43,15 @@ namespace Smdn.Net.EchonetLite
 
             properties = new();
 
-            foreach (var prop in classObject.GetProperties)
+            foreach (var prop in classObject.GetProperties.Values)
             {
                 properties.Add(new(prop));
             }
-            foreach (var prop in classObject.SetProperties)
+            foreach (var prop in classObject.SetProperties.Values)
             {
                 properties.Add(new(prop));
             }
-            foreach (var prop in classObject.AnnoProperties)
+            foreach (var prop in classObject.AnnoProperties.Values)
             {
                 properties.Add(new(prop));
             }

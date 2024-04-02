@@ -131,8 +131,6 @@ namespace Smdn.Net.EchonetLite.Appendix
                 }
             }
 
-            properties.TrimExcess(); // reduce capacity
-
             return (
                 classGroupSpec,
                 classSpec,

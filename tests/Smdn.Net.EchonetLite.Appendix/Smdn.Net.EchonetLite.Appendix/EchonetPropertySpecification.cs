@@ -167,25 +167,21 @@ public class EchoPropertyTests {
   {
     var obj = DeviceClasses.住宅設備関連機器.低圧スマート電力量メータ;
 
-    var epc8E = obj.GetProperties.First(static prop => prop.Code == 0x8E); // 製造年月日 Unit: ""
+    Assert.That(obj.GetProperties.TryGetValue(0x8E, out var epc8E), Is.True); // 製造年月日 Unit: ""
+    Assert.That(epc8E!.Unit, Is.Null, "EPC 8E");
+    Assert.That(epc8E!.HasUnit, Is.False, "EPC 8E");
 
-    Assert.That(epc8E.Unit, Is.Null, "EPC 8E");
-    Assert.That(epc8E.HasUnit, Is.False, "EPC 8E");
+    Assert.That(obj.GetProperties.TryGetValue(0xD3, out var epcD3), Is.True); // 係数 Unit: ""
+    Assert.That(epcD3!.Unit, Is.Null, "EPC D3");
+    Assert.That(epcD3!.HasUnit, Is.False, "EPC D3");
 
-    var epcD3 = obj.GetProperties.First(static prop => prop.Code == 0xD3); // 係数 Unit: ""
+    Assert.That(obj.GetProperties.TryGetValue(0xE1, out var epcE1), Is.True); // 積算電力量単位 （正方向、逆方向計測値） Unit: "－"
+    Assert.That(epcE1!.Unit, Is.Null, "EPC E1");
+    Assert.That(epcE1!.HasUnit, Is.False, "EPC E1");
 
-    Assert.That(epcD3.Unit, Is.Null, "EPC D3");
-    Assert.That(epcD3.HasUnit, Is.False, "EPC D3");
-
-    var epcE1 = obj.GetProperties.First(static prop => prop.Code == 0xE1); // 積算電力量単位 （正方向、逆方向計測値） Unit: "－"
-
-    Assert.That(epcE1.Unit, Is.Null, "EPC E1");
-    Assert.That(epcE1.HasUnit, Is.False, "EPC E1");
-
-    var epcE7 = obj.GetProperties.First(static prop => prop.Code == 0xE7); // 瞬時電力計測値 Unit: "W"
-
-    Assert.That(epcE7.Unit, Is.EqualTo("W"), "EPC E7");
-    Assert.That(epcE7.HasUnit, Is.True, "EPC E7");
+    Assert.That(obj.GetProperties.TryGetValue(0xE7, out var epcE7), Is.True); // 瞬時電力計測値 Unit: "W"
+    Assert.That(epcE7!.Unit, Is.EqualTo("W"), "EPC E7");
+    Assert.That(epcE7!.HasUnit, Is.True, "EPC E7");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Deserialize()
