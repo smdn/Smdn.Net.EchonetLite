@@ -24,27 +24,73 @@ namespace Smdn.Net.EchonetLite.Appendix
         private static SpecificationMaster? _Instance;
 
         /// <summary>
-        /// JSONデシリアライズ用のコンストラクタ
+        /// JSONデシリアライズ用のオブジェクト
         /// </summary>
-        /// <param name="version"><see cref="Version"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
-        /// <param name="appendixRelease"><see cref="AppendixRelease"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
-        /// <param name="profiles"><see cref="Profiles"/>に設定する非<see langword="null"/>の値。</param>
-        /// <param name="deviceClasses"><see cref="DeviceClasses"/>に設定する非<see langword="null"/>の値。</param>
-        /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
-        /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
-        [JsonConstructor]
-        public SpecificationMaster
-        (
-            string? version,
-            string? appendixRelease,
-            IReadOnlyList<EchonetClassGroupSpecification>? profiles,
-            IReadOnlyList<EchonetClassGroupSpecification>? deviceClasses
-        )
+        private sealed class SpecificationMasterJsonObject {
+            /// <summary>
+            /// ECHONET Lite SPECIFICATIONのバージョン
+            /// </summary>
+            public string Version { get; }
+            /// <summary>
+            /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
+            /// </summary>
+            public string AppendixRelease { get; }
+            /// <summary>
+            /// プロファイルオブジェクト
+            /// </summary>
+            [JsonPropertyName("プロファイル")]
+            public IReadOnlyList<EchonetClassGroupSpecification> Profiles { get; }
+            /// <summary>
+            /// 機器オブジェクト
+            /// </summary>
+            [JsonPropertyName("機器")]
+            public IReadOnlyList<EchonetClassGroupSpecification> DeviceClasses { get; }
+
+            /// <summary>
+            /// JSONデシリアライズ用のコンストラクタ
+            /// </summary>
+            /// <param name="version"><see cref="Version"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            /// <param name="appendixRelease"><see cref="AppendixRelease"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
+            /// <param name="profiles"><see cref="Profiles"/>に設定する非<see langword="null"/>の値。</param>
+            /// <param name="deviceClasses"><see cref="DeviceClasses"/>に設定する非<see langword="null"/>の値。</param>
+            /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
+            /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
+            [JsonConstructor]
+            public SpecificationMasterJsonObject
+            (
+                string? version,
+                string? appendixRelease,
+                IReadOnlyList<EchonetClassGroupSpecification>? profiles,
+                IReadOnlyList<EchonetClassGroupSpecification>? deviceClasses
+            )
+            {
+                Version = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(version, nameof(version));
+                AppendixRelease = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(appendixRelease, nameof(appendixRelease));
+                Profiles = profiles ?? throw new ArgumentNullException(nameof(profiles));
+                DeviceClasses = deviceClasses ?? throw new ArgumentNullException(nameof(deviceClasses));
+            }
+        }
+
+        private SpecificationMaster(SpecificationMasterJsonObject master)
         {
-            Version = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(version, nameof(version));
-            AppendixRelease = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(appendixRelease, nameof(appendixRelease));
-            this.Profiles = profiles ?? throw new ArgumentNullException(nameof(profiles));
-            this.DeviceClasses = deviceClasses ?? throw new ArgumentNullException(nameof(deviceClasses));
+            Version = master.Version;
+            AppendixRelease = master.AppendixRelease;
+            Profiles = ToDictionary(master.Profiles);
+            DeviceClasses = ToDictionary(master.DeviceClasses);
+
+            // EchonetClassGroupSpecification.Codeをキーとするディクショナリに変換する
+            static IReadOnlyDictionary<byte, EchonetClassGroupSpecification> ToDictionary(
+                IReadOnlyList<EchonetClassGroupSpecification> specs
+            )
+            {
+                var keyedSpecs = specs.ToDictionary(static spec => spec.Code);
+
+#if SYSTEM_COLLECTIONS_GENERIC_DICTIONARY_TRIMEXCESS
+                keyedSpecs.TrimExcess(); // reduce capacity
+#endif
+
+                return keyedSpecs;
+            }
         }
 
         /// <summary>
@@ -59,7 +105,9 @@ namespace Smdn.Net.EchonetLite.Appendix
 
                 using (var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName))
                 {
-                    _Instance = JsonSerializer.Deserialize<SpecificationMaster>(stream) ?? throw new InvalidOperationException($"failed to deserialize {specificationMasterJsonFileName}");
+                    _Instance = new(
+                        JsonSerializer.Deserialize<SpecificationMasterJsonObject>(stream) ?? throw new InvalidOperationException($"failed to deserialize {specificationMasterJsonFileName}")
+                    );
                 }
             }
             return _Instance;
@@ -96,10 +144,12 @@ namespace Smdn.Net.EchonetLite.Appendix
             byte classCode
         )
         {
-            var classGroupSpec =
-               GetInstance().Profiles.FirstOrDefault(p => p.Code == classGroupCode) ??
-               GetInstance().DeviceClasses.FirstOrDefault(p => p.Code == classGroupCode) ??
+            if (
+                !GetInstance().Profiles.TryGetValue(classGroupCode, out var classGroupSpec) &&
+                !GetInstance().DeviceClasses.TryGetValue(classGroupCode, out classGroupSpec)
+            ) {
                throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
+            }
 
             const int MaxNumberOfProperty = 0x80; // EPC: 0b_1XXX_XXXX (0x80~0xFF)
 
@@ -142,19 +192,20 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// ECHONET Lite SPECIFICATIONのバージョン
         /// </summary>
         public string Version { get; }
+
         /// <summary>
         /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
         /// </summary>
         public string AppendixRelease { get; }
+
         /// <summary>
         /// プロファイルオブジェクト
         /// </summary>
-        [JsonPropertyName("プロファイル")]
-        public IReadOnlyList<EchonetClassGroupSpecification> Profiles { get; }
+        public IReadOnlyDictionary<byte, EchonetClassGroupSpecification> Profiles { get; }
+
         /// <summary>
         /// 機器オブジェクト
         /// </summary>
-        [JsonPropertyName("機器")]
-        public IReadOnlyList<EchonetClassGroupSpecification> DeviceClasses { get; }
+        public IReadOnlyDictionary<byte, EchonetClassGroupSpecification> DeviceClasses { get; }
     }
 }
