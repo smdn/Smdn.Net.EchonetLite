@@ -117,7 +117,7 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// 仕様上定義済みのプロパティの一覧
         /// </summary>
-        internal IReadOnlyDictionary<byte, EchonetPropertySpecification> AllProperties { get; }
+        public IReadOnlyDictionary<byte, EchonetPropertySpecification> AllProperties { get; }
 
         /// <summary>
         /// 仕様上定義済みのGETプロパティの一覧
