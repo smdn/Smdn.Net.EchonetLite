@@ -57,7 +57,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
       nodeProfile: new(Profiles.NodeProfile, 0x01)
     );
     Nodes = new List<EchonetNode>();
-    //自己消費用
+    // 自己消費用
     FrameReceived += HandleFrameReceived;
   }
 

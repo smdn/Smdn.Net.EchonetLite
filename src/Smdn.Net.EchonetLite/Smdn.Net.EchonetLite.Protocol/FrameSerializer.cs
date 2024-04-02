@@ -74,7 +74,7 @@ public static class FrameSerializer {
     // EDTのバイト数(1B)
     // プロパティ値データ(PDCで指定)
 
-    //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+    // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
     // OPCSet 処理プロパティ数(1B)
     // ECHONET Liteプロパティ(1B)
     // EDTのバイト数(1B)
@@ -120,11 +120,11 @@ public static class FrameSerializer {
   {
     frame = default;
 
-    //ECHONETLiteフレームとしての最小長に満たない
+    // ECHONETLiteフレームとしての最小長に満たない
     if (bytes.Length < 4)
       return false;
 
-    //EHD1が0x1*(0001***)以外の場合、ECHONETLiteフレームではない
+    // EHD1が0x1*(0001***)以外の場合、ECHONETLiteフレームではない
     if ((bytes[0] & 0xF0) != (byte)EHD1.EchonetLite)
       return false;
 
@@ -183,7 +183,7 @@ public static class FrameSerializer {
     bytes = bytes.Slice(7);
 
     if (IsESVWriteOrReadService(esv)) {
-      //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+      // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
       // OPCSet 処理プロパティ数(1B)
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)

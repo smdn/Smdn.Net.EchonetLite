@@ -150,7 +150,7 @@ internal sealed class SpecificationMaster {
 
     var properties = new List<EchonetPropertySpecification>(capacity: MaxNumberOfProperty);
 
-    //スーパークラスのプロパティを列挙
+    // スーパークラスのプロパティを列挙
     using (var stream = GetSpecificationMasterDataStream($"{classGroupSpec.SuperClassName}.json")) {
       var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
       properties.AddRange(superClassProperties.Properties);
@@ -163,7 +163,7 @@ internal sealed class SpecificationMaster {
       var classGroupDirectoryName = $"0x{classGroupSpec.Code:X2}-{classGroupSpec.PropertyName}";
       var classFileName = $"0x{classSpec.Code:X2}-{classSpec.PropertyName}.json";
 
-      //クラスのプロパティを列挙
+      // クラスのプロパティを列挙
       using (var stream = GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName)) {
         if (stream is not null) {
           var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");

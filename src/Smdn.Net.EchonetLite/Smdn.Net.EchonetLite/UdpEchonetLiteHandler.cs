@@ -43,7 +43,7 @@ public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable {
           var receivedResults = await receiveUdpClient.ReceiveAsync().ConfigureAwait(false);
 
           if (selfAddresses.Contains(receivedResults.RemoteEndPoint.Address)) {
-            //ブロードキャストを自分で受信(無視)
+            // ブロードキャストを自分で受信(無視)
             continue;
           }
 
@@ -53,7 +53,7 @@ public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable {
         }
       }
       catch (System.ObjectDisposedException) {
-        //握りつぶす
+        // 握りつぶす
       }
       catch (Exception ex) {
         _logger.LogDebug(ex, "Exception");
