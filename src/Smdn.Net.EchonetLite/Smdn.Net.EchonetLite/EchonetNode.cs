@@ -3,56 +3,54 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Net;
 
-namespace Smdn.Net.EchonetLite
-{
-    /// <summary>
-    /// ECHONET Liteノード
-    /// </summary>
-    public sealed class EchonetNode
-    {
-        public EchonetNode(IPAddress address, EchonetObject nodeProfile)
-        {
-            Address = address ?? throw new ArgumentNullException(nameof(address));
-            NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
+namespace Smdn.Net.EchonetLite;
 
-            var devices = new ObservableCollection<EchonetObject>();
+/// <summary>
+/// ECHONET Liteノード
+/// </summary>
+public sealed class EchonetNode {
+  /// <summary>
+  /// 下位スタックのアドレス
+  /// </summary>
+  public IPAddress Address { get; }
 
-            devices.CollectionChanged += (_, e) => OnDevicesChanged(e);
+  /// <summary>
+  /// ノードプロファイルオブジェクト
+  /// </summary>
+  public EchonetObject NodeProfile { get; }
 
-            Devices = devices;
-        }
+  /// <summary>
+  /// 機器オブジェクトのリスト
+  /// </summary>
+  public ICollection<EchonetObject> Devices { get; }
 
-        private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
-        {
-            DevicesChanged?.Invoke(this, e);
-        }
+  /// <summary>
+  /// 機器オブジェクトのリスト<see cref="Devices"/>に変更があったときに発生するイベント。
+  /// </summary>
+  /// <remarks>
+  /// 現在のノードにECHONET Lite オブジェクトが追加・削除された際にイベントが発生します。
+  /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
+  /// </remarks>
+  public event NotifyCollectionChangedEventHandler? DevicesChanged;
 
-        /// <summary>
-        /// 下位スタックのアドレス
-        /// </summary>
-        public IPAddress Address { get; }
+  public EchonetNode(IPAddress address, EchonetObject nodeProfile)
+  {
+    Address = address ?? throw new ArgumentNullException(nameof(address));
+    NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
 
-        /// <summary>
-        /// ノードプロファイルオブジェクト
-        /// </summary>
-        public EchonetObject NodeProfile { get; }
+    var devices = new ObservableCollection<EchonetObject>();
 
-        /// <summary>
-        /// 機器オブジェクトのリスト
-        /// </summary>
-        public ICollection<EchonetObject> Devices { get;  }
+    devices.CollectionChanged += (_, e) => OnDevicesChanged(e);
 
-        /// <summary>
-        /// 機器オブジェクトのリスト<see cref="Devices"/>に変更があったときに発生するイベント。
-        /// </summary>
-        /// <remarks>
-        /// 現在のノードにECHONET Lite オブジェクトが追加・削除された際にイベントが発生します。
-        /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
-        /// </remarks>
-        public event NotifyCollectionChangedEventHandler? DevicesChanged;
-    }
+    Devices = devices;
+  }
+
+  private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
+  {
+    DevicesChanged?.Invoke(this, e);
+  }
 }
