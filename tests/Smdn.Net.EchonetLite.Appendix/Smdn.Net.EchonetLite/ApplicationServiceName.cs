@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
-public class ApplicationServiceTests {
+public class ApplicationServiceNameTests {
   [TestCase(ApplicationServiceName.MobileServices, "モバイルサービス")]
   [TestCase(ApplicationServiceName.EnergyServices, "エネルギーサービス")]
   [TestCase(ApplicationServiceName.HomeAmenityServices, "快適生活支援サービス")]

@@ -11,7 +11,7 @@ namespace Smdn.Net.EchonetLite;
 [TestFixture]
 public class ProfilesTests {
   [Test]
-  public void ノードプロファイル()
+  public void NodeProfile()
   {
     var p = Profiles.NodeProfile;
 

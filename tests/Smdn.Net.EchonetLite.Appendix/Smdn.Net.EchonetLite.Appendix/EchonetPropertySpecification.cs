@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.Appendix;
 
 [TestFixture]
-public class EchoPropertyTests {
+public class EchonetPropertySpecificationTests {
   private static System.Collections.IEnumerable YieldTestCases_Ctor_JsonConstructor()
   {
     yield return new object?[] {

@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.Appendix;
 
 [TestFixture]
-public class EchoClassTests {
+public class EchonetClassSpecificationTests {
   private static System.Collections.IEnumerable YieldTestCases_Ctor_JsonConstructor()
   {
     yield return new object?[] {
