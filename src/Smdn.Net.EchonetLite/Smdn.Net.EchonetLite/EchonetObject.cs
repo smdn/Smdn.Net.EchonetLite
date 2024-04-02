@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 using Smdn.Net.EchonetLite.Appendix;
@@ -16,14 +16,12 @@ namespace Smdn.Net.EchonetLite;
 /// <summary>
 /// ECHONET Lite オブジェクトインスタンス
 /// </summary>
-public sealed class EchonetObject
-{
+public sealed class EchonetObject {
   /// <summary>
   /// デフォルトコンストラクタ
   /// </summary>
   public EchonetObject(EOJ eoj)
-    : this
-    (
+    : this(
       classObject: DeviceClasses.LookupOrCreateClass(eoj.ClassGroupCode, eoj.ClassCode, includeProfiles: true),
       instanceCode: eoj.InstanceCode
     )
@@ -36,15 +34,14 @@ public sealed class EchonetObject
   /// </summary>
   /// <param name="classObject">オブジェクトクラス</param>
   /// <param name="instanceCode"></param>
-  public EchonetObject(EchonetObjectSpecification classObject,byte instanceCode)
+  public EchonetObject(EchonetObjectSpecification classObject, byte instanceCode)
   {
     Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
     InstanceCode = instanceCode;
 
     properties = new();
 
-    foreach (var prop in classObject.AllProperties.Values)
-    {
+    foreach (var prop in classObject.AllProperties.Values) {
       properties.Add(new(prop));
     }
 
@@ -63,8 +60,7 @@ public sealed class EchonetObject
   {
     properties.Clear();
 
-    foreach (var prop in props)
-    {
+    foreach (var prop in props) {
       properties.Add(prop);
     }
   }
@@ -72,8 +68,7 @@ public sealed class EchonetObject
   /// <summary>
   /// EOJ
   /// </summary>
-  public EOJ EOJ => new
-  (
+  public EOJ EOJ => new(
     classGroupCode: Spec.ClassGroup.Code,
     classCode: Spec.Class.Code,
     instanceCode: InstanceCode

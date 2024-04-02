@@ -23,8 +23,7 @@ namespace Smdn.Net.EchonetLite.Appendix;
 /// <seealso href="https://echonet.jp/spec_g/">
 /// APPENDIX ECHONET 機器オブジェクト詳細規定 第２章 機器オブジェクトスーパークラス規定
 /// </seealso>
-public sealed class EchonetPropertySpecification
-{
+public sealed class EchonetPropertySpecification {
   /// <summary>
   /// 指定されたプロパティコードをもつ、未知のECHONET プロパティを作成します。
   /// </summary>
@@ -72,8 +71,7 @@ public sealed class EchonetPropertySpecification
   /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
   /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
   [JsonConstructor]
-  public EchonetPropertySpecification
-  (
+  public EchonetPropertySpecification(
     string? name,
     byte code,
     string? detail,
@@ -111,13 +109,11 @@ public sealed class EchonetPropertySpecification
     Description = string.IsNullOrEmpty(description) ? null : description;
     Unit = string.IsNullOrEmpty(unit) ? null : unit;
 
-    if (string.IsNullOrEmpty(unit) || "－".Equals(Unit, StringComparison.Ordinal))
-    {
+    if (string.IsNullOrEmpty(unit) || "－".Equals(Unit, StringComparison.Ordinal)) {
       Unit = null;
       HasUnit = false;
     }
-    else
-    {
+    else {
       HasUnit = true;
     }
   }

@@ -87,19 +87,15 @@ partial class EchonetClient
 
     await _requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-    try
-    {
+    try {
       writeFrame(_requestFrameBuffer);
 
-      if (_logger is not null && _logger.IsEnabled(LogLevel.Trace))
-      {
-        if (FrameSerializer.TryDeserialize(_requestFrameBuffer.WrittenSpan, out var frame))
-        {
+      if (_logger is not null && _logger.IsEnabled(LogLevel.Trace)) {
+        if (FrameSerializer.TryDeserialize(_requestFrameBuffer.WrittenSpan, out var frame)) {
           _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
         }
 #if DEBUG
-        else
-        {
+        else {
           throw new InvalidOperationException("attempted to request an invalid format of frame");
         }
 #endif

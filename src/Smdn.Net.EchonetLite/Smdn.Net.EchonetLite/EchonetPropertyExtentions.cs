@@ -5,16 +5,13 @@ using System.Text;
 
 namespace Smdn.Net.EchonetLite;
 
-internal static class EchonetPropertyExtentions
-{
+internal static class EchonetPropertyExtentions {
   public static string GetDebugString(this EchonetProperty property)
   {
-    if (property == null)
-    {
+    if (property == null) {
       return "null";
     }
-    if (property.Spec == null)
-    {
+    if (property.Spec == null) {
       return "Spec null";
     }
     var sb = new StringBuilder();

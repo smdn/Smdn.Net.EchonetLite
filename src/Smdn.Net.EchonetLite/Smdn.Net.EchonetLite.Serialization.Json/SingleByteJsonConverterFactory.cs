@@ -3,14 +3,13 @@
 #pragma warning disable CA1812
 
 using System;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Reflection;
 
 namespace Smdn.Net.EchonetLite.Serialization.Json;
 
-internal sealed class SingleByteJsonConverterFactory : JsonConverterFactory
-{
+internal sealed class SingleByteJsonConverterFactory : JsonConverterFactory {
   public override bool CanConvert(Type typeToConvert)
   {
     if (typeToConvert == typeof(byte))
@@ -27,8 +26,7 @@ internal sealed class SingleByteJsonConverterFactory : JsonConverterFactory
     if (typeToConvert == typeof(byte))
       return new SingleByteJsonConverter<byte>();
 
-    if (typeToConvert.IsEnum && Enum.GetUnderlyingType(typeToConvert) == typeof(byte))
-    {
+    if (typeToConvert.IsEnum && Enum.GetUnderlyingType(typeToConvert) == typeof(byte)) {
       return (JsonConverter)Activator.CreateInstance(
         type: typeof(SingleByteJsonConverter<>).MakeGenericType(typeToConvert),
         bindingAttr: BindingFlags.Instance | BindingFlags.Public,

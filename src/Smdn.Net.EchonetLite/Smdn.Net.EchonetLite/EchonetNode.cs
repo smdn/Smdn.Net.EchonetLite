@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Net;
 
 namespace Smdn.Net.EchonetLite;
@@ -12,8 +12,7 @@ namespace Smdn.Net.EchonetLite;
 /// <summary>
 /// ECHONET Liteノード
 /// </summary>
-public sealed class EchonetNode
-{
+public sealed class EchonetNode {
   public EchonetNode(IPAddress address, EchonetObject nodeProfile)
   {
     Address = address ?? throw new ArgumentNullException(nameof(address));
@@ -44,7 +43,7 @@ public sealed class EchonetNode
   /// <summary>
   /// 機器オブジェクトのリスト
   /// </summary>
-  public ICollection<EchonetObject> Devices { get;  }
+  public ICollection<EchonetObject> Devices { get; }
 
   /// <summary>
   /// 機器オブジェクトのリスト<see cref="Devices"/>に変更があったときに発生するイベント。

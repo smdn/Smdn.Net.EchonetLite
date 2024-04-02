@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: MIT
 namespace Smdn.Net.EchonetLite.Protocol;
 
-public enum ESV : byte
-{
+public enum ESV : byte {
   //表 ３-９ 要求用 ESV コード一覧表
   ///<summary>0x60　プロパティ値書き込み要求（応答不要）　SetI　一斉同報可</summary>
   SetI = 0x60,

@@ -6,8 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
-public static class PropertyContentSerializer
-{
+public static class PropertyContentSerializer {
   /// <summary>
   /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)のプロパティ内容をシリアライズします。
   /// </summary>
@@ -25,8 +24,7 @@ public static class PropertyContentSerializer
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
   /// </seealso>
-  public static bool TrySerializeInstanceListNotification
-  (
+  public static bool TrySerializeInstanceListNotification(
     IEnumerable<EOJ> instanceList,
     Span<byte> destination,
     out int bytesWritten
@@ -49,8 +47,7 @@ public static class PropertyContentSerializer
     //2～253 バイト目：ECHONET オブジェクトコード（EOJ3 バイト）を列挙。
     var numberOfInstances = 0;
 
-    foreach (var instance in instanceList)
-    {
+    foreach (var instance in instanceList) {
       if (253 <= bytesWritten)
         break;
 
@@ -84,8 +81,7 @@ public static class PropertyContentSerializer
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
   /// </seealso>
-  public static bool TryDeserializeInstanceListNotification
-  (
+  public static bool TryDeserializeInstanceListNotification(
     ReadOnlySpan<byte> content,
     [NotNullWhen(true)] out IReadOnlyList<EOJ>? instanceList
   )
@@ -102,13 +98,11 @@ public static class PropertyContentSerializer
     content = content.Slice(1);
 
     //2～253 バイト目：ECHONET オブジェクトコード（EOJ3 バイト）を列挙。
-    for (var i = 0; i < numberOfInstance; i++)
-    {
+    for (var i = 0; i < numberOfInstance; i++) {
       if (content.Length < 3)
         return false;
 
-      var eoj = new EOJ
-      (
+      var eoj = new EOJ(
         classGroupCode: content[0],
         classCode: content[1],
         instanceCode: content[2]
@@ -146,8 +140,7 @@ public static class PropertyContentSerializer
   /// <seealso href="https://echonet.jp/spec_g/">
   /// APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
   /// </seealso>
-  public static bool TryDeserializePropertyMap
-  (
+  public static bool TryDeserializePropertyMap(
     ReadOnlySpan<byte> content,
     [NotNullWhen(true)] out IReadOnlyList<byte>? propertyMap
   )
@@ -160,8 +153,7 @@ public static class PropertyContentSerializer
 
     var numberOfProperties = (int)content[0];
 
-    if (numberOfProperties == 0)
-    {
+    if (numberOfProperties == 0) {
       propertyMap = Array.Empty<byte>();
       return true;
     }
@@ -170,8 +162,7 @@ public static class PropertyContentSerializer
 
     content = content.Slice(1);
 
-    if (numberOfProperties < 0x10)
-    {
+    if (numberOfProperties < 0x10) {
       // 記述形式（1）
       // 1 バイト目：プロパティの数。バイナリ表示。
       // 2 バイト目以降：プロパティのコード（1 バイトコード）をそのまま列挙する。
@@ -181,14 +172,12 @@ public static class PropertyContentSerializer
 #if SYSTEM_COLLECTIONS_GENERIC_COLLECTIONEXTENSIONS_ADDRANGE
       props.AddRange(content.Slice(0, numberOfProperties));
 #else
-      for (var i = 0; i < numberOfProperties; i++)
-      {
+      for (var i = 0; i < numberOfProperties; i++) {
         props.Add(content[i]);
       }
 #endif
     }
-    else
-    {
+    else {
       // 記述形式（2）
       // 1 バイト目：プロパティの数。バイナリ表示。
       // 2～17 バイト目：下図の 16 バイトのテーブルにおいて、存在するプロパティコードを示
@@ -196,18 +185,15 @@ public static class PropertyContentSerializer
       if (content.Length < 16)
         return false;
 
-      for (var i = 0; i < 16; i++)
-      {
+      for (var i = 0; i < 16; i++) {
         var propertyBits = content[i];
         var lower = i;
 
-        for (var j = 0; j < 8; j++)
-        {
+        for (var j = 0; j < 8; j++) {
           var upper = 0x80 + (0x10 * j);
           var bitMask = 1 << j;
 
-          if ((propertyBits & bitMask) != 0)
-          {
+          if ((propertyBits & bitMask) != 0) {
             props.Add((byte)(upper | lower));
           }
         }

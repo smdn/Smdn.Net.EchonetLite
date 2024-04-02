@@ -12,16 +12,13 @@ namespace Smdn.Net.EchonetLite;
 /// <summary>
 /// プロパティクラス
 /// </summary>
-public sealed class EchonetProperty
-{
-  public EchonetProperty
-  (
+public sealed class EchonetProperty {
+  public EchonetProperty(
     byte classGroupCode,
     byte classCode,
     byte epc
   )
-    : this
-    (
+    : this(
       classGroupCode: classGroupCode,
       classCode: classCode,
       epc: epc,
@@ -32,8 +29,7 @@ public sealed class EchonetProperty
   {
   }
 
-  public EchonetProperty
-  (
+  public EchonetProperty(
     byte classGroupCode,
     byte classCode,
     byte epc,
@@ -41,8 +37,7 @@ public sealed class EchonetProperty
     bool canSet,
     bool canGet
   )
-    : this
-    (
+    : this(
       spec: DeviceClasses.LookupOrCreateProperty(classGroupCode, classCode, epc, includeProfiles: true),
       canAnnounceStatusChange: canAnnounceStatusChange,
       canSet: canSet,
@@ -52,8 +47,7 @@ public sealed class EchonetProperty
   }
 
   public EchonetProperty(EchonetPropertySpecification spec)
-    : this
-    (
+    : this(
       spec: spec,
       canAnnounceStatusChange: false,
       canSet: false,
@@ -62,8 +56,7 @@ public sealed class EchonetProperty
   {
   }
 
-  public EchonetProperty
-  (
+  public EchonetProperty(
     EchonetPropertySpecification spec,
     bool canAnnounceStatusChange,
     bool canSet,
@@ -149,18 +142,15 @@ public sealed class EchonetProperty
     var valueChangedHandlers = ValueChanged;
     byte[]? oldValue = null;
 
-    try
-    {
+    try {
       var oldValueLength = 0;
 
-      if (_value is null)
-      {
+      if (_value is null) {
         var initialCapacity = 0 < newValueSize ? newValueSize : 8; // TODO: best initial capacity
 
         _value = new(initialCapacity);
       }
-      else
-      {
+      else {
         oldValueLength = _value.WrittenSpan.Length;
 
         oldValue = ArrayPool<byte>.Shared.Rent(oldValueLength);
@@ -176,11 +166,9 @@ public sealed class EchonetProperty
 
       write(_value);
 
-      if (valueChangedHandlers is not null)
-      {
+      if (valueChangedHandlers is not null) {
         // 値が新規に設定される場合、以前の値から変更がある場合はValueChangedイベントを起こす
-        if (oldValue is null || !oldValue.AsSpan(0, oldValueLength).SequenceEqual(_value.WrittenSpan))
-        {
+        if (oldValue is null || !oldValue.AsSpan(0, oldValueLength).SequenceEqual(_value.WrittenSpan)) {
           var oldValueMemory = oldValue is null ? ReadOnlyMemory<byte>.Empty : oldValue.AsMemory(0, oldValueLength);
           var newValueMemory = _value.WrittenMemory;
 
@@ -188,8 +176,7 @@ public sealed class EchonetProperty
         }
       }
     }
-    finally
-    {
+    finally {
       if (oldValue is not null)
         ArrayPool<byte>.Shared.Return(oldValue);
     }

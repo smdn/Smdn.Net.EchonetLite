@@ -15,8 +15,7 @@ namespace Smdn.Net.EchonetLite;
 /// ECHONET Lite クラスグループ定義
 /// 機器
 /// </summary>
-public static class DeviceClasses
-{
+public static class DeviceClasses {
   /// <summary>
   /// 指定されたクラスグループコード・クラスコードをもつECHONET Lite オブジェクトを取得します。
   /// </summary>
@@ -232,8 +231,7 @@ public static class DeviceClasses
   /// ECHONET Lite クラスグループ定義
   /// センサ関連機器クラスグループ
   /// </summary>
-  public static class センサ関連機器
-  {
+  public static class センサ関連機器 {
     /// <summary>
     /// 0x01 ガス漏れセンサ
     /// </summary>
@@ -416,8 +414,7 @@ public static class DeviceClasses
   /// ECHONET Lite クラスグループ定義
   /// 空調関連機器 クラスグループ
   /// </summary>
-  public static class 空調関連機器
-  {
+  public static class 空調関連機器 {
     /// <summary>
     /// 0x30 家庭用エアコン
     /// </summary>
@@ -471,8 +468,7 @@ public static class DeviceClasses
   /// ECHONET Lite クラスグループ定義
   /// 住宅設備関連機器クラスグループ
   /// </summary>
-  public static class 住宅設備関連機器
-  {
+  public static class 住宅設備関連機器 {
     /// <summary>
     /// 0x60 電動ブラインド・日よけ
     /// </summary>
@@ -626,8 +622,7 @@ public static class DeviceClasses
   /// ECHONET Lite クラスグループ定義
   /// 調理家事関連機器 クラスグループ
   /// </summary>
-  public static class 調理家事関連機器
-  {
+  public static class 調理家事関連機器 {
     /// <summary>
     /// 0xB2 電気ポット
     /// </summary>
@@ -674,8 +669,7 @@ public static class DeviceClasses
   /// ECHONET Lite クラスグループ定義
   /// 健康関連機器 クラスグループ
   /// </summary>
-  public static class 健康関連機器
-  {
+  public static class 健康関連機器 {
     /// <summary>
     /// 0x01 体重計
     /// </summary>
@@ -685,8 +679,7 @@ public static class DeviceClasses
   /// ECHONET Lite クラスグループ定義
   /// 管理操作関連機器 クラスグループ
   /// </summary>
-  public static class 管理操作関連機器
-  {
+  public static class 管理操作関連機器 {
     /// <summary>
     /// 0xFA 並列処理併用型電力制御
     /// </summary>
@@ -712,8 +705,7 @@ public static class DeviceClasses
   /// ECHONET Lite クラスグループ定義
   /// ＡＶ関連機器 クラスグループ
   /// </summary>
-  public static class ＡＶ関連機器
-  {
+  public static class ＡＶ関連機器 {
     /// <summary>
     /// 0x01 ディスプレー
     /// </summary>

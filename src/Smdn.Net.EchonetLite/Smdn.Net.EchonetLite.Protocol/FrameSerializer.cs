@@ -9,8 +9,7 @@ using System.Linq;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
-public static class FrameSerializer
-{
+public static class FrameSerializer {
   public static void Serialize(Frame frame, IBufferWriter<byte> buffer)
   {
     if (buffer is null)
@@ -19,8 +18,7 @@ public static class FrameSerializer
     if (!frame.EHD1.HasFlag(EHD1.EchonetLite))
       throw new InvalidOperationException($"undefined EHD1 ({(byte)frame.EHD1:X2})");
 
-    switch (frame.EHD2)
-    {
+    switch (frame.EHD2) {
       case EHD2.Type1:
         if (frame.EData is not EData1 edata1)
           throw new ArgumentException($"{nameof(EData1)} must be set to {nameof(Frame)}.{nameof(Frame.EData)}.", paramName: nameof(frame));
@@ -28,8 +26,7 @@ public static class FrameSerializer
 #if !NET5_0_OR_GREATER // NotNullWhenAttribute
 #pragma warning disable CS8604
 #endif
-        SerializeEchonetLiteFrameFormat1
-        (
+        SerializeEchonetLiteFrameFormat1(
           buffer,
           frame.TID,
           edata1.SEOJ,
@@ -91,8 +88,7 @@ public static class FrameSerializer
     if (!TryWriteEDataType1ProcessingTargetProperties(buffer, opcListOrOpcSetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
       throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
 
-    if (IsESVWriteOrReadService(esv))
-    {
+    if (IsESVWriteOrReadService(esv)) {
       if (opcGetList is null)
         throw new ArgumentNullException(nameof(opcGetList));
 
@@ -146,24 +142,20 @@ public static class FrameSerializer
     // ECHONET Liteデータ(残り全部)
     var edataSpan = bytes.Slice(4);
 
-    switch (ehd2)
-    {
+    switch (ehd2) {
       case EHD2.Type1:
-        if (TryReadEDataType1(edataSpan, out var edata))
-        {
-          frame = new Frame(ehd1, ehd2, tid, edata);
+        if (TryReadEDataType1(edataSpan, out var edata)) {
+          frame = new(ehd1, ehd2, tid, edata);
           return true;
         }
         break;
 
       case EHD2.Type2:
-        frame = new Frame
-        (
+        frame = new(
           ehd1,
           ehd2,
           tid,
-          new EData2
-          (
+          new EData2(
             edataSpan.ToArray() // TODO: reduce allocation
           )
         );
@@ -194,8 +186,7 @@ public static class FrameSerializer
 
     bytes = bytes.Slice(7);
 
-    if (IsESVWriteOrReadService(esv))
-    {
+    if (IsESVWriteOrReadService(esv)) {
       //４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
       // OPCSet 処理プロパティ数(1B)
       // ECHONET Liteプロパティ(1B)
@@ -213,8 +204,7 @@ public static class FrameSerializer
       if (!TryReadEData1ProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
         return false;
 
-      edata = new
-      (
+      edata = new(
         seoj,
         deoj,
         esv,
@@ -224,8 +214,7 @@ public static class FrameSerializer
 
       // bytes = bytes.Slice(bytesReadForOPCGetList);
     }
-    else
-    {
+    else {
       // OPC 処理プロパティ数(1B)
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)
@@ -235,8 +224,7 @@ public static class FrameSerializer
 
       // bytes = bytes.Slice(bytesRead);
 
-      edata = new
-      (
+      edata = new(
         seoj,
         deoj,
         esv,
@@ -254,8 +242,7 @@ public static class FrameSerializer
       throw new InvalidOperationException("input too short");
 #endif
 
-    return new EOJ
-    (
+    return new(
       classGroupCode: bytes[0],
       classCode: bytes[1],
       instanceCode: bytes[2]
@@ -286,8 +273,7 @@ public static class FrameSerializer
 
     bytes = bytes.Slice(1);
 
-    for (byte i = 0; i < opc; i++)
-    {
+    for (byte i = 0; i < opc; i++) {
       if (bytes.Length < 2)
         return false;
 
@@ -301,8 +287,7 @@ public static class FrameSerializer
       if (bytes.Length < pdc)
         return false;
 
-      if (0 < pdc)
-      {
+      if (0 < pdc) {
         // プロパティ値データ(PDCで指定)
         var edt = bytes.Slice(0, pdc).ToArray(); // TODO: reduce allocation
 
@@ -310,8 +295,7 @@ public static class FrameSerializer
 
         bytes = bytes.Slice(pdc);
       }
-      else
-      {
+      else {
         props.Add(new(epc));
       }
     }
@@ -391,15 +375,13 @@ public static class FrameSerializer
 
     Write(buffer, (byte)countOfProps);
 
-    foreach (var prp in opcListNonEnumerated)
-    {
+    foreach (var prp in opcListNonEnumerated) {
       // ECHONET Liteプロパティ(1B)
       Write(buffer, prp.EPC);
       // EDTのバイト数(1B)
       Write(buffer, prp.PDC);
 
-      if (prp.PDC != 0)
-      {
+      if (prp.PDC != 0) {
         // プロパティ値データ(PDCで指定)
         var edtSpan = buffer.GetSpan(prp.PDC);
 

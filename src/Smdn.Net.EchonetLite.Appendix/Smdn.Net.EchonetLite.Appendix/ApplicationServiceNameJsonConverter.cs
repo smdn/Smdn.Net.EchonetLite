@@ -17,10 +17,7 @@ internal sealed class ApplicationServiceNameJsonConverter : JsonConverter<Applic
     if (reader.TokenType != JsonTokenType.String)
       throw new JsonException($"expected {nameof(JsonTokenType)}.{nameof(JsonTokenType.String)}, but was {reader.TokenType}");
 
-    var str = reader.GetString();
-
-    if (str is null)
-      throw new JsonException("property value can not be null");
+    var str = reader.GetString() ?? throw new JsonException("property value can not be null");
 
     return str switch {
       "モバイルサービス" => ApplicationServiceName.MobileServices,

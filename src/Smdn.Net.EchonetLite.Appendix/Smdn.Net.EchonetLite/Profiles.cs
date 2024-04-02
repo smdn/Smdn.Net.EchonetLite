@@ -11,8 +11,7 @@ namespace Smdn.Net.EchonetLite;
 /// ECHONET Lite クラスグループ定義
 /// プロファイルクラスグループ
 /// </summary>
-public static class Profiles
-{
+public static class Profiles {
   /// <summary>
   /// 0xF0 ノードプロファイル
   /// </summary>

@@ -10,8 +10,7 @@ namespace Smdn.Net.EchonetLite.Appendix;
 /// <summary>
 /// クラスグループ
 /// </summary>
-public sealed class EchonetClassGroupSpecification
-{
+public sealed class EchonetClassGroupSpecification {
   /// <summary>
   /// JSONデシリアライズ用のコンストラクタ
   /// </summary>
@@ -23,8 +22,7 @@ public sealed class EchonetClassGroupSpecification
   /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
   /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
   [JsonConstructor]
-  public EchonetClassGroupSpecification
-  (
+  public EchonetClassGroupSpecification(
     byte code,
     string? name,
     string? propertyName,

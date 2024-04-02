@@ -11,8 +11,7 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// <summary>
 /// ECHONET オブジェクト（EOJ）
 /// </summary>
-public readonly struct EOJ:IEquatable<EOJ>
-{
+public readonly struct EOJ : IEquatable<EOJ> {
   /// <summary>
   /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
   /// </summary>

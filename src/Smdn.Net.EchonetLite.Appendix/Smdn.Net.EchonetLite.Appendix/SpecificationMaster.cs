@@ -16,8 +16,7 @@ namespace Smdn.Net.EchonetLite.Appendix;
 /// <summary>
 /// ECHONETオブジェクト詳細マスタ
 /// </summary>
-internal sealed class SpecificationMaster
-{
+internal sealed class SpecificationMaster {
   /// <summary>
   /// シングルトンイスタンス
   /// </summary>
@@ -56,8 +55,7 @@ internal sealed class SpecificationMaster
     /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
     /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
     [JsonConstructor]
-    public SpecificationMasterJsonObject
-    (
+    public SpecificationMasterJsonObject(
       string? version,
       string? appendixRelease,
       IReadOnlyList<EchonetClassGroupSpecification>? profiles,
@@ -99,12 +97,10 @@ internal sealed class SpecificationMaster
   /// <returns></returns>
   public static SpecificationMaster GetInstance()
   {
-    if (_Instance == null)
-    {
+    if (_Instance == null) {
       const string specificationMasterJsonFileName = "SpecificationMaster.json";
 
-      using (var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName))
-      {
+      using (var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName)) {
         _Instance = new(
           JsonSerializer.Deserialize<SpecificationMasterJsonObject>(stream) ?? throw new InvalidOperationException($"failed to deserialize {specificationMasterJsonFileName}")
         );
@@ -119,12 +115,8 @@ internal sealed class SpecificationMaster
   {
     var logicalName = SpecificationMasterDataLogicalRootName + file;
 
-    var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(logicalName);
-
-    if (stream is null)
-      throw new InvalidOperationException($"resource not found: {logicalName}");
-
-    return stream;
+    return Assembly.GetExecutingAssembly().GetManifestResourceStream(logicalName)
+      ?? throw new InvalidOperationException($"resource not found: {logicalName}");
   }
 
   private static Stream? GetSpecificationMasterDataStream(string classGroupDirectoryName, string classFileName)
@@ -148,7 +140,7 @@ internal sealed class SpecificationMaster
       !GetInstance().Profiles.TryGetValue(classGroupCode, out var classGroupSpec) &&
       !GetInstance().DeviceClasses.TryGetValue(classGroupCode, out classGroupSpec)
     ) {
-       throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
+      throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
     }
 
     const int MaxNumberOfProperty = 0x80; // EPC: 0b_1XXX_XXXX (0x80~0xFF)
@@ -156,8 +148,7 @@ internal sealed class SpecificationMaster
     var properties = new List<EchonetPropertySpecification>(capacity: MaxNumberOfProperty);
 
     //スーパークラスのプロパティを列挙
-    using (var stream = GetSpecificationMasterDataStream($"{classGroupSpec.SuperClassName}.json"))
-    {
+    using (var stream = GetSpecificationMasterDataStream($"{classGroupSpec.SuperClassName}.json")) {
       var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
       properties.AddRange(superClassProperties.Properties);
     }
@@ -165,16 +156,13 @@ internal sealed class SpecificationMaster
     var classSpec = classGroupSpec.Classes?.FirstOrDefault(c => c.IsDefined && c.Code == classCode)
       ?? throw new ArgumentException($"unknown class: 0x{classCode:X2}");
 
-    if (classSpec.IsDefined)
-    {
+    if (classSpec.IsDefined) {
       var classGroupDirectoryName = $"0x{classGroupSpec.Code:X2}-{classGroupSpec.PropertyName}";
       var classFileName = $"0x{classSpec.Code:X2}-{classSpec.PropertyName}.json";
 
       //クラスのプロパティを列挙
-      using (var stream = GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName))
-      {
-        if (stream is not null)
-        {
+      using (var stream = GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName)) {
+        if (stream is not null) {
           var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
           properties.AddRange(classProperties.Properties);
         }

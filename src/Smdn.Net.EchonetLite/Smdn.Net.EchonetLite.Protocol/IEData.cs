@@ -3,6 +3,5 @@
 // SPDX-License-Identifier: MIT
 namespace Smdn.Net.EchonetLite.Protocol;
 
-public interface IEData
-{
+public interface IEData {
 }

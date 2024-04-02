@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +8,8 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
 
 using Smdn.Net.EchonetLite.Protocol;
 
@@ -43,8 +44,7 @@ partial class EchonetClient
   private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchonetProperty p)
     => new(epc: p.Spec.Code);
 
-  private class PropertyCapability
-  {
+  private class PropertyCapability {
     public bool Anno { get; set; }
     public bool Set { get; set; }
     public bool Get { get; set; }
@@ -69,8 +69,7 @@ partial class EchonetClient
     property.WriteValue(writer => {
       var contents = writer.GetSpan(253); // インスタンスリスト通知 0xD5 unsigned char×(MAX)253
 
-      _ = PropertyContentSerializer.TrySerializeInstanceListNotification
-      (
+      _ = PropertyContentSerializer.TrySerializeInstanceListNotification(
         SelfNode.Devices.Select(static o => o.EOJ),
         contents,
         out var bytesWritten
@@ -106,10 +105,8 @@ partial class EchonetClient
     CancellationToken cancellationToken = default
   )
   {
-    var properties = Enumerable.Repeat
-    (
-      new EchonetProperty
-      (
+    var properties = Enumerable.Repeat(
+      new EchonetProperty(
         Profiles.NodeProfile.ClassGroup.Code,
         Profiles.NodeProfile.Class.Code,
         0xD5//インスタンスリスト通知
@@ -120,14 +117,16 @@ partial class EchonetClient
     await PerformPropertyValueNotificationRequestAsync(
       SelfNode.NodeProfile//ノードプロファイルから
       , null//一斉通知
-      , new(new EOJ(
-        classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
-        classCode: Profiles.NodeProfile.Class.Code,
-        instanceCode: 0x01
-      ))
+      , new(
+        new EOJ(
+          classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
+          classCode: Profiles.NodeProfile.Class.Code,
+          instanceCode: 0x01
+        )
+      )
       , properties
       , cancellationToken
-      ).ConfigureAwait(false);
+    ).ConfigureAwait(false);
   }
 
   /// <summary>
@@ -171,10 +170,8 @@ partial class EchonetClient
 
     void HandleFrameSetISNA(object? _, (IPAddress address, Frame response) value)
     {
-      try
-      {
-        if (cancellationToken.IsCancellationRequested)
-        {
+      try {
+        if (cancellationToken.IsCancellationRequested) {
           _ = responseTCS.TrySetCanceled(cancellationToken);
           return;
         }
@@ -190,12 +187,11 @@ partial class EchonetClient
 
         var opcList = edata.GetOPCList();
 
-        foreach (var prop in opcList)
-        {
+        foreach (var prop in opcList) {
           //一部成功した書き込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-          if (prop.PDC == 0x00)
-          {
+
+          if (prop.PDC == 0x00) {
             //書き込み成功
             target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueMemory);
           }
@@ -205,19 +201,16 @@ partial class EchonetClient
 
         //TODO 一斉通知の不可応答の扱いが…
       }
-      finally
-      {
+      finally {
         FrameReceived -= HandleFrameSetISNA;
       }
     };
 
     FrameReceived += HandleFrameSetISNA;
 
-    await SendFrameAsync
-    (
+    await SendFrameAsync(
       destinationNode?.Address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: GetNewTid(),
         sourceObject: sourceObject.EOJ,
@@ -234,10 +227,8 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch (Exception ex) {
-      if (ex is OperationCanceledException exOperationCanceled && cancellationToken.Equals(exOperationCanceled.CancellationToken))
-      {
-        foreach (var prop in properties)
-        {
+      if (ex is OperationCanceledException exOperationCanceled && cancellationToken.Equals(exOperationCanceled.CancellationToken)) {
+        foreach (var prop in properties) {
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.Spec.Code);
           //成功した書き込みを反映(全部OK)
           target.SetValue(prop.ValueMemory);
@@ -292,10 +283,8 @@ partial class EchonetClient
 
     void HandleFrameSetResOrSetCSNA(object? _, (IPAddress address, Frame response) value)
     {
-      try
-      {
-        if (cancellationToken.IsCancellationRequested)
-        {
+      try {
+        if (cancellationToken.IsCancellationRequested) {
           _ = responseTCS.TrySetCanceled(cancellationToken);
           return;
         }
@@ -311,33 +300,30 @@ partial class EchonetClient
 
         var opcList = edata.GetOPCList();
 
-        foreach (var prop in opcList)
-        {
+        foreach (var prop in opcList) {
           //成功した書き込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-          if(prop.PDC == 0x00)
-          {
+
+          if (prop.PDC == 0x00) {
             //書き込み成功
             target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueMemory);
           }
         }
+
         responseTCS.SetResult((edata.ESV == ESV.SetResponse, opcList));
 
         //TODO 一斉通知の応答の扱いが…
       }
-      finally
-      {
+      finally {
         FrameReceived -= HandleFrameSetResOrSetCSNA;
       }
     };
 
     FrameReceived += HandleFrameSetResOrSetCSNA;
 
-    await SendFrameAsync
-    (
+    await SendFrameAsync(
       destinationNode?.Address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: GetNewTid(),
         sourceObject: sourceObject.EOJ,
@@ -402,10 +388,8 @@ partial class EchonetClient
 
     void HandleFrameGetResOrGetSNA(object? _, (IPAddress address, Frame response) value)
     {
-      try
-      {
-        if (cancellationToken.IsCancellationRequested)
-        {
+      try {
+        if (cancellationToken.IsCancellationRequested) {
           _ = responseTCS.TrySetCanceled(cancellationToken);
           return;
         }
@@ -421,33 +405,29 @@ partial class EchonetClient
 
         var opcList = edata.GetOPCList();
 
-        foreach (var prop in opcList)
-        {
+        foreach (var prop in opcList) {
           //成功した読み込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-          if (prop.PDC != 0x00)
-          {
+          if (prop.PDC != 0x00) {
             //読み込み成功
             target.SetValue(prop.EDT);
           }
         }
+
         responseTCS.SetResult((edata.ESV == ESV.GetResponse, opcList));
 
         //TODO 一斉通知の応答の扱いが…
       }
-      finally
-      {
+      finally {
         FrameReceived -= HandleFrameGetResOrGetSNA;
       }
     };
 
     FrameReceived += HandleFrameGetResOrGetSNA;
 
-    await SendFrameAsync
-    (
+    await SendFrameAsync(
       destinationNode?.Address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: GetNewTid(),
         sourceObject: sourceObject.EOJ,
@@ -517,10 +497,8 @@ partial class EchonetClient
 
     void HandleFrameSetGetResOrSetGetSNA(object? _, (IPAddress address, Frame response) value)
     {
-      try
-      {
-        if (cancellationToken.IsCancellationRequested)
-        {
+      try {
+        if (cancellationToken.IsCancellationRequested) {
           _ = responseTCS.TrySetCanceled(cancellationToken);
           return;
         }
@@ -536,43 +514,40 @@ partial class EchonetClient
 
         var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
 
-        foreach (var prop in opcSetList)
-        {
+        foreach (var prop in opcSetList) {
           //成功した書き込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-          if (prop.PDC == 0x00)
-          {
+
+          if (prop.PDC == 0x00) {
             //書き込み成功
             target.SetValue(propertiesSet.First(p => p.Spec.Code == prop.EPC).ValueMemory);
           }
         }
-        foreach (var prop in opcGetList)
-        {
+
+        foreach (var prop in opcGetList) {
           //成功した読み込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
-          if (prop.PDC != 0x00)
-          {
+
+          if (prop.PDC != 0x00) {
             //読み込み成功
             target.SetValue(prop.EDT);
           }
         }
+
         responseTCS.SetResult((edata.ESV == ESV.SetGetResponse, opcSetList, opcGetList));
 
         //TODO 一斉通知の応答の扱いが…
       }
-      finally
-      {
+      finally {
         FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
       }
     };
 
     FrameReceived += HandleFrameSetGetResOrSetGetSNA;
 
-    await SendFrameAsync
-    (
+    await SendFrameAsync(
       destinationNode?.Address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: GetNewTid(),
         sourceObject: sourceObject.EOJ,
@@ -633,11 +608,9 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
-    return SendFrameAsync
-    (
+    return SendFrameAsync(
       destinationNode?.Address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: GetNewTid(),
         sourceObject: sourceObject.EOJ,
@@ -686,11 +659,9 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
-    return SendFrameAsync
-    (
+    return SendFrameAsync(
       destinationNode?.Address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: GetNewTid(),
         sourceObject: sourceObject.EOJ,
@@ -746,10 +717,8 @@ partial class EchonetClient
 
     void HandleFrameINFCRes(object? _, (IPAddress address, Frame response) value)
     {
-      try
-      {
-        if (cancellationToken.IsCancellationRequested)
-        {
+      try {
+        if (cancellationToken.IsCancellationRequested) {
           _ = responseTCS.TrySetCanceled(cancellationToken);
           return;
         }
@@ -765,19 +734,16 @@ partial class EchonetClient
 
         responseTCS.SetResult(edata.GetOPCList());
       }
-      finally
-      {
+      finally {
         FrameReceived -= HandleFrameINFCRes;
       }
     };
 
     FrameReceived += HandleFrameINFCRes;
 
-    await SendFrameAsync
-    (
+    await SendFrameAsync(
       destinationNode.Address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: GetNewTid(),
         sourceObject: sourceObject.EOJ,
@@ -818,11 +784,9 @@ partial class EchonetClient
 
     var instances = new List<EchonetObject>(capacity: instanceList.Count);
 
-    foreach (var eoj in instanceList)
-    {
+    foreach (var eoj in instanceList) {
       var device = sourceNode.Devices.FirstOrDefault(d => d.EOJ == eoj);
-      if (device == null)
-      {
+      if (device == null) {
         device = new(eoj);
         sourceNode.Devices.Add(device);
       }
@@ -832,17 +796,14 @@ partial class EchonetClient
 
     OnInstanceListPropertyMapAcquiring(sourceNode, instances);
 
-    foreach (var device in instances)
-    {
-      if (!device.HasPropertyMapAcquired)
-      {
+    foreach (var device in instances) {
+      if (!device.HasPropertyMapAcquired) {
         _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
         await AcquirePropertyMapsAsync(sourceNode, device).ConfigureAwait(false);
       }
     }
 
-    if (!sourceNode.NodeProfile.HasPropertyMapAcquired)
-    {
+    if (!sourceNode.NodeProfile.HasPropertyMapAcquired) {
       _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
       await AcquirePropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
     }
@@ -867,10 +828,8 @@ partial class EchonetClient
     bool result;
     IReadOnlyCollection<PropertyRequest> props;
 
-    try
-    {
-      (result, props) = await PerformPropertyValueReadRequestAsync
-      (
+    try {
+      (result, props) = await PerformPropertyValueReadRequestAsync(
         sourceObject: SelfNode.NodeProfile,
         destinationNode: sourceNode,
         destinationObject: device,
@@ -882,15 +841,13 @@ partial class EchonetClient
         cancellationToken: ctsTimeout.Token
       ).ConfigureAwait(false);
     }
-    catch (OperationCanceledException ex) when (ctsTimeout.Token.Equals(ex.CancellationToken))
-    {
+    catch (OperationCanceledException ex) when (ctsTimeout.Token.Equals(ex.CancellationToken)) {
       _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りがタイムアウトしました");
       return;
     }
 
     //不可応答は無視
-    if (!result)
-    {
+    if (!result) {
       _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りで不可応答が返答されました");
       return;
     }
@@ -898,18 +855,14 @@ partial class EchonetClient
     _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
 
     var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
-    foreach (var pr in props)
-    {
-      switch (pr.EPC)
-      {
+    foreach (var pr in props) {
+      switch (pr.EPC) {
         //状変アナウンスプロパティマップ
-        case 0x9D:
-        {
+        case 0x9D: {
           if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
             throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
 
-          foreach (var propertyCode in propertyMap)
-          {
+          foreach (var propertyCode in propertyMap) {
             if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
               cap.Anno = true;
             else
@@ -918,13 +871,11 @@ partial class EchonetClient
           break;
         }
         //Set プロパティマップ
-        case 0x9E:
-        {
+        case 0x9E: {
           if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
             throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
 
-          foreach (var propertyCode in propertyMap)
-          {
+          foreach (var propertyCode in propertyMap) {
             if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
               cap.Set = true;
             else
@@ -933,13 +884,11 @@ partial class EchonetClient
           break;
         }
         //Get プロパティマップ
-        case 0x9F:
-        {
+        case 0x9F: {
           if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
             throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
 
-          foreach (var propertyCode in propertyMap)
-          {
+          foreach (var propertyCode in propertyMap) {
             if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
               cap.Get = true;
             else
@@ -950,16 +899,12 @@ partial class EchonetClient
       }
     }
 
-    device.ResetProperties
-    (
-      propertyCapabilityMap.Select
-      (
-        map =>
-        {
+    device.ResetProperties(
+      propertyCapabilityMap.Select(
+        map => {
           var (code, caps) = map;
 
-          return new EchonetProperty
-          (
+          return new EchonetProperty(
             device.Spec.ClassGroup.Code,
             device.Spec.Class.Code,
             code,
@@ -971,12 +916,10 @@ partial class EchonetClient
       )
     );
 
-    if (_logger is not null)
-    {
+    if (_logger is not null) {
       var sb = new StringBuilder();
       sb.AppendLine("------");
-      foreach (var temp in device.Properties)
-      {
+      foreach (var temp in device.Properties) {
         sb.Append('\t').Append(temp.GetDebugString()).AppendLine();
       }
       sb.AppendLine("------");
@@ -1009,33 +952,34 @@ partial class EchonetClient
     if (value.frame.EData is not EData1 edata)
       throw new InvalidOperationException($"expected {nameof(EData1)}, but was {value.frame.EData?.GetType()}");
 
-      var sourceNode = Nodes.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
-      //未知のノードの場合
-      if (sourceNode == null)
-      {
-        //ノードを生成
-        sourceNode = new
-        (
-          address: value.address,
-          nodeProfile: new(Profiles.NodeProfile, 0x01)
-        );
-        Nodes.Add(sourceNode);
-        NodeJoined?.Invoke(this,sourceNode);
-      }
-      EchonetObject? destObject = null;
-      //自ノードプロファイル宛てのリクエストの場合
-      if (SelfNode.NodeProfile.EOJ == edata.DEOJ)
-      {
-        destObject = SelfNode.NodeProfile;
-      }
-      else
-      {
-        destObject = SelfNode.Devices.FirstOrDefault(d => d.EOJ == edata.DEOJ);
-      }
-      Task? task = null;
+    var sourceNode = Nodes.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
 
-    switch (edata.ESV)
-    {
+    //未知のノードの場合
+    if (sourceNode == null) {
+      //ノードを生成
+      sourceNode = new(
+        address: value.address,
+        nodeProfile: new(Profiles.NodeProfile, 0x01)
+      );
+
+      Nodes.Add(sourceNode);
+
+      NodeJoined?.Invoke(this, sourceNode);
+    }
+
+    EchonetObject? destObject = null;
+
+    //自ノードプロファイル宛てのリクエストの場合
+    if (SelfNode.NodeProfile.EOJ == edata.DEOJ) {
+      destObject = SelfNode.NodeProfile;
+    }
+    else {
+      destObject = SelfNode.Devices.FirstOrDefault(d => d.EOJ == edata.DEOJ);
+    }
+
+    Task? task = null;
+
+    switch (edata.ESV) {
       case ESV.SetI://プロパティ値書き込み要求（応答不要）
         //あれば、書き込んでおわり
         //なければ、プロパティ値書き込み要求不可応答 SetI_SNA
@@ -1101,10 +1045,8 @@ partial class EchonetClient
         break;
     }
 
-    task?.ContinueWith((t) =>
-    {
-      if (t.Exception != null)
-      {
+    task?.ContinueWith((t) => {
+      if (t.Exception != null) {
         _logger?.LogTrace(t.Exception, "Exception");
       }
     });
@@ -1137,41 +1079,37 @@ partial class EchonetClient
     if (edata.OPCList is null)
       throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
-    if (destObject == null)
-    {
+    if (destObject == null) {
       //対象となるオブジェクト自体が存在しない場合には、「不可応答」も返さないものとする。
       return false;
     }
 
     var hasError = false;
     var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
-    foreach (var opc in edata.OPCList)
-    {
+
+    foreach (var opc in edata.OPCList) {
       var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+
       if (property == null
           || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-          || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
-      {
+          || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
         hasError = true;
         //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
         //要求された EDT を付け、要求を受理できなかったことを示す。
         opcList.Add(opc);
       }
-      else
-      {
+      else {
         //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
         property.SetValue(opc.EDT);
 
         opcList.Add(new(opc.EPC));
       }
     }
-    if (hasError)
-    {
-      await SendFrameAsync
-      (
+
+    if (hasError) {
+      await SendFrameAsync(
         request.address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-        (
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
           tid: request.frame.TID,
           sourceObject: edata.DEOJ, //入れ替え
@@ -1184,6 +1122,7 @@ partial class EchonetClient
 
       return false;
     }
+
     return true;
   }
 
@@ -1215,28 +1154,24 @@ partial class EchonetClient
 
     var hasError = false;
     var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
-    if (destObject == null)
-    {
+
+    if (destObject == null) {
       //DEOJがない場合、全OPCをそのまま返す
       hasError = true;
       opcList.AddRange(edata.OPCList);
     }
-    else
-    {
-      foreach (var opc in edata.OPCList)
-      {
+    else {
+      foreach (var opc in edata.OPCList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
         if (property == null
             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
-        {
+            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
           hasError = true;
           //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           //要求された EDT を付け、要求を受理できなかったことを示す。
           opcList.Add(opc);
         }
-        else
-        {
+        else {
           //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
           property.SetValue(opc.EDT);
 
@@ -1244,13 +1179,11 @@ partial class EchonetClient
         }
       }
     }
-    if (hasError)
-    {
-      await SendFrameAsync
-      (
+
+    if (hasError) {
+      await SendFrameAsync(
         request.address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-        (
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
           tid: request.frame.TID,
           sourceObject: edata.DEOJ, //入れ替え
@@ -1264,11 +1197,9 @@ partial class EchonetClient
       return false;
     }
 
-    await SendFrameAsync
-    (
+    await SendFrameAsync(
       request.address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: request.frame.TID,
         sourceObject: edata.DEOJ, //入れ替え
@@ -1310,42 +1241,37 @@ partial class EchonetClient
 
     var hasError = false;
     var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
-    if (destObject == null)
-    {
+
+    if (destObject == null) {
       //DEOJがない場合、全OPCをそのまま返す
       hasError = true;
       opcList.AddRange(edata.OPCList);
     }
-    else
-    {
-      foreach (var opc in edata.OPCList)
-      {
+    else {
+      foreach (var opc in edata.OPCList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+
         if (property == null
             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
-        {
+            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
           hasError = true;
           //要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           //EDT はつけず、要求を受理できなかったことを示す。
           //(そのままでよい)
           opcList.Add(opc);
         }
-        else
-        {
+        else {
           //要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
           //EDT には読み出したプロパティ値を設定する
           opcList.Add(new(opc.EPC, property.ValueMemory));
         }
       }
     }
-    if (hasError)
-    {
-      await SendFrameAsync
-      (
+
+    if (hasError) {
+      await SendFrameAsync(
         request.address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-        (
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
           tid: request.frame.TID,
           sourceObject: edata.DEOJ, //入れ替え
@@ -1359,11 +1285,9 @@ partial class EchonetClient
       return false;
     }
 
-    await SendFrameAsync
-    (
+    await SendFrameAsync(
       request.address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: request.frame.TID,
         sourceObject: edata.DEOJ, //入れ替え
@@ -1411,63 +1335,56 @@ partial class EchonetClient
     var hasError = false;
     var opcSetList = new List<PropertyRequest>(capacity: edata.OPCSetList.Count);
     var opcGetList = new List<PropertyRequest>(capacity: edata.OPCGetList.Count);
-    if (destObject == null)
-    {
+
+    if (destObject == null) {
       //DEOJがない場合、全OPCをそのまま返す
       hasError = true;
       opcSetList.AddRange(edata.OPCSetList);
       opcGetList.AddRange(edata.OPCGetList);
     }
-    else
-    {
-      foreach (var opc in edata.OPCSetList)
-      {
+    else {
+      foreach (var opc in edata.OPCSetList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+
         if (property == null
             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
-        {
+            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
           hasError = true;
           //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           //要求された EDT を付け、要求を受理できなかったことを示す。
           opcSetList.Add(opc);
         }
-        else
-        {
+        else {
           //要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
           property.SetValue(opc.EDT);
 
           opcSetList.Add(new(opc.EPC));
         }
       }
-      foreach (var opc in edata.OPCGetList)
-      {
+
+      foreach (var opc in edata.OPCGetList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
         if (property == null
             || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
-        {
+            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
           hasError = true;
           //要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           //EDT はつけず、要求を受理できなかったことを示す。
           //(そのままでよい)
           opcGetList.Add(opc);
         }
-        else
-        {
+        else {
           //要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
           //EDT には読み出したプロパティ値を設定する
           opcSetList.Add(new(opc.EPC, property.ValueMemory));
         }
       }
     }
-    if (hasError)
-    {
-      await SendFrameAsync
-      (
+
+    if (hasError) {
+      await SendFrameAsync(
         request.address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-        (
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
           tid: request.frame.TID,
           sourceObject: edata.DEOJ, //入れ替え
@@ -1482,11 +1399,9 @@ partial class EchonetClient
       return false;
     }
 
-    await SendFrameAsync
-    (
+    await SendFrameAsync(
       request.address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-      (
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
         tid: request.frame.TID,
         sourceObject: edata.DEOJ, //入れ替え
@@ -1534,44 +1449,36 @@ partial class EchonetClient
 
     var hasError = false;
     var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
-    if (sourceObject == null)
-    {
+    if (sourceObject == null) {
       //ノードプロファイルからの通知の場合
-      if (sourceNode.NodeProfile.EOJ == edata.SEOJ)
-      {
+      if (sourceNode.NodeProfile.EOJ == edata.SEOJ) {
         sourceObject = sourceNode.NodeProfile;
       }
-      else
-      {
+      else {
         //未知のオブジェクト
         //新規作成(プロパティはない状態)
         sourceObject = new(edata.SEOJ);
         sourceNode.Devices.Add(sourceObject);
       }
     }
-    foreach (var opc in edata.OPCList)
-    {
+    foreach (var opc in edata.OPCList) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
-      if (property == null)
-      {
+      if (property == null) {
         //未知のプロパティ
         //新規作成
         property = new(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
         sourceObject.AddProperty(property);
       }
       if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-        || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
-      {
+        || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
         //スペック外なので、格納しない
         hasError = true;
       }
-      else
-      {
+      else {
         property.SetValue(opc.EDT);
         //ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject
-          && opc.EPC == 0xD5)
-        {
+          && opc.EPC == 0xD5) {
           await HandleInstanceListNotificationReceivedAsync(sourceNode, opc.EDT).ConfigureAwait(false);
         }
       }
@@ -1608,67 +1515,63 @@ partial class EchonetClient
 
     var hasError = false;
     var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
-    if (destObject == null)
-    {
+
+    if (destObject == null) {
       //指定された DEOJ が存在しない場合には電文を廃棄する。
       //"けどこっそり保持する"
       hasError = true;
     }
+
     var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
-    if (sourceObject == null)
-    {
+
+    if (sourceObject == null) {
       //ノードプロファイルからの通知の場合
-      if (sourceNode.NodeProfile.EOJ == edata.SEOJ)
-      {
+      if (sourceNode.NodeProfile.EOJ == edata.SEOJ) {
         sourceObject = sourceNode.NodeProfile;
       }
-      else
-      {
+      else {
         //未知のオブジェクト
         //新規作成(プロパティはない状態)
         sourceObject = new(edata.SEOJ);
         sourceNode.Devices.Add(sourceObject);
       }
     }
-    foreach (var opc in edata.OPCList)
-    {
+
+    foreach (var opc in edata.OPCList) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
-      if (property == null)
-      {
+
+      if (property == null) {
         //未知のプロパティ
         //新規作成
         property = new(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
         sourceObject.AddProperty(property);
       }
 
-      if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-        || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize))
-      {
+      if (
+        (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize) ||
+        (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)
+      ) {
         //スペック外なので、格納しない
         hasError = true;
-
       }
-      else
-      {
+      else {
         property.SetValue(opc.EDT);
         //ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject
-          && opc.EPC == 0xD5)
-        {
+          && opc.EPC == 0xD5) {
           await HandleInstanceListNotificationReceivedAsync(sourceNode, opc.EDT).ConfigureAwait(false);
         }
       }
+
       //EPC には通知時と同じプロパティコードを設定するが、
       //通知を受信したことを示すため、PDCには 0 を設定し、EDT は付けない。
       opcList.Add(new(opc.EPC));
     }
-    if (destObject != null)
-    {
-      await SendFrameAsync
-      (
+
+    if (destObject != null) {
+      await SendFrameAsync(
         request.address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1
-        (
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
           tid: request.frame.TID,
           sourceObject: edata.DEOJ, //入れ替え
@@ -1679,7 +1582,7 @@ partial class EchonetClient
         cancellationToken: default
       ).ConfigureAwait(false);
     }
-    return !hasError;
 
+    return !hasError;
   }
 }

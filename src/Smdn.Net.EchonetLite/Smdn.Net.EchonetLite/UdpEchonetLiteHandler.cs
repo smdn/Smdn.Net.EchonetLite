@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using Microsoft.Extensions.Logging;
+
 using System;
 using System.Linq;
 using System.Net;
@@ -15,8 +16,7 @@ using System.Threading.Tasks;
 
 namespace Smdn.Net.EchonetLite;
 
-public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable
-{
+public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable {
   private readonly UdpClient receiveUdpClient;
   private readonly ILogger _logger;
   private const int DefaultUdpPort = 3610;
@@ -24,27 +24,20 @@ public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable
   {
     var selfAddresses = NetworkInterface.GetAllNetworkInterfaces().SelectMany(ni => ni.GetIPProperties().UnicastAddresses.Select(ua => ua.Address));
     _logger = logger;
-    try
-    {
-      receiveUdpClient = new UdpClient(DefaultUdpPort)
-      {
+    try {
+      receiveUdpClient = new UdpClient(DefaultUdpPort) {
         EnableBroadcast = true
       };
     }
-    catch (Exception ex)
-    {
+    catch (Exception ex) {
       _logger.LogDebug(ex, "Exception");
       throw;
     }
-    Task.Run(async () =>
-    {
-      try
-      {
-        while (true)
-        {
+    Task.Run(async () => {
+      try {
+        while (true) {
           var receivedResults = await receiveUdpClient.ReceiveAsync().ConfigureAwait(false);
-          if (selfAddresses.Contains(receivedResults.RemoteEndPoint.Address))
-          {
+          if (selfAddresses.Contains(receivedResults.RemoteEndPoint.Address)) {
             //ブロードキャストを自分で受信(無視)
             continue;
           }
@@ -52,12 +45,10 @@ public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable
           Received?.Invoke(this, (receivedResults.RemoteEndPoint.Address, receivedResults.Buffer.AsMemory()));
         }
       }
-      catch (System.ObjectDisposedException)
-      {
+      catch (System.ObjectDisposedException) {
         //握りつぶす
       }
-      catch (Exception ex)
-      {
+      catch (Exception ex) {
         _logger.LogDebug(ex, "Exception");
       }
     });
@@ -68,37 +59,28 @@ public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable
   public void Dispose()
   {
     _logger.LogDebug("Dispose");
-    try
-    {
+
+    try {
       receiveUdpClient?.Close();
     }
-    catch (Exception ex)
-    {
+    catch (Exception ex) {
       _logger.LogDebug(ex, "Exception");
     }
   }
 
   public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
   {
-    IPEndPoint remote;
-    if (address == null)
-    {
-      remote = new IPEndPoint(IPAddress.Broadcast, DefaultUdpPort);
-    }
-    else
-    {
-      remote = new IPEndPoint(address, DefaultUdpPort);
-    }
+    var remote = address is null
+      ? new IPEndPoint(IPAddress.Broadcast, DefaultUdpPort)
+      : new IPEndPoint(address, DefaultUdpPort);
 
 #if SYSTEM_CONVERT_TOHEXSTRING
     _logger.LogDebug($"UDP送信:{remote.Address} {Convert.ToHexString(data.Span)}");
 #else
-    if (MemoryMarshal.TryGetArray(data, out var segment))
-    {
+    if (MemoryMarshal.TryGetArray(data, out var segment)) {
       _logger.LogDebug($"UDP送信:{remote.Address} {BitConverter.ToString(segment.Array!, segment.Offset, segment.Count)}");
     }
-    else
-    {
+    else {
       _logger.LogDebug($"UDP送信:{remote.Address} {BitConverter.ToString(data.ToArray())}");
     }
 #endif

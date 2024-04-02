@@ -9,15 +9,13 @@ using System.Text.Json.Serialization;
 
 namespace Smdn.Net.EchonetLite.Serialization.Json;
 
-internal sealed class ByteSequenceJsonConverter : JsonConverter<ReadOnlyMemory<byte>>
-{
+internal sealed class ByteSequenceJsonConverter : JsonConverter<ReadOnlyMemory<byte>> {
   public override ReadOnlyMemory<byte> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     => throw new NotSupportedException();
 
   public override void Write(Utf8JsonWriter writer, ReadOnlyMemory<byte> value, JsonSerializerOptions options)
   {
-    if (value.Length == 0)
-    {
+    if (value.Length == 0) {
       writer.WriteStringValue(string.Empty);
       return;
     }
@@ -25,8 +23,7 @@ internal sealed class ByteSequenceJsonConverter : JsonConverter<ReadOnlyMemory<b
     var sb = new StringBuilder(capacity: value.Length * 2);
     var span = value.Span;
 
-    for (var i = 0; i < span.Length; i++)
-    {
+    for (var i = 0; i < span.Length; i++) {
       sb.Append(Hexadecimals.ToHexChar(span[i] >> 4));
       sb.Append(Hexadecimals.ToHexChar(span[i] & 0xF));
     }

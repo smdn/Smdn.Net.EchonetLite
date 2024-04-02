@@ -14,8 +14,7 @@ namespace Smdn.Net.EchonetLite;
 /// APPENDIX ECHONET機器オブジェクト詳細規定 Release R 第１章 本書の概要 表１アプリケーションサービスと「オプション必須」プロパティ表記記号一覧
 /// </seealso>
 [JsonConverter(typeof(ApplicationServiceNameJsonConverter))]
-public enum ApplicationServiceName
-{
+public enum ApplicationServiceName {
   /// <summary>
   /// モバイルサービス(Mobile services)○M
   /// </summary>

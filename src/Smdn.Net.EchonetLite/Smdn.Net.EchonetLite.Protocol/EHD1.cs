@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: MIT
 namespace Smdn.Net.EchonetLite.Protocol;
 
-public enum EHD1 : byte
-{
+public enum EHD1 : byte {
   //図 ３-２ EHD1 詳細規定
   //プロトコル種別
   //1* * * :従来のECHONET規格

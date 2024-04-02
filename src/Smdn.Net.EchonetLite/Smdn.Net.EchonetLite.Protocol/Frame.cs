@@ -11,8 +11,7 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// <summary>
 /// ECHONET Liteフレーム
 /// </summary>
-public readonly struct Frame
-{
+public readonly struct Frame {
   /// <summary>
   /// ECHONET Liteフレームを記述する<see cref="Frame"/>を作成します。
   /// </summary>
@@ -30,8 +29,7 @@ public readonly struct Frame
     if (edata is null)
       throw new ArgumentNullException(nameof(edata));
 
-    switch (ehd2)
-    {
+    switch (ehd2) {
       case EHD2.Type1:
         if (edata is not EData1)
           throw new ArgumentException(message: "type mismatch", paramName: nameof(edata));

@@ -4,8 +4,7 @@ using System;
 
 namespace Smdn.Net.EchonetLite.Serialization.Json;
 
-internal static class Hexadecimals
-{
+internal static class Hexadecimals {
   internal static char ToHexChar(int value)
     => value switch {
       >= 0x0 and <= 0x9 => (char)('0' + value),

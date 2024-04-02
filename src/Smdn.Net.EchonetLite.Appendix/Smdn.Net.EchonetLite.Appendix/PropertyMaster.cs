@@ -9,8 +9,7 @@ using System.Text.Json.Serialization;
 
 namespace Smdn.Net.EchonetLite.Appendix;
 
-internal sealed class PropertyMaster
-{
+internal sealed class PropertyMaster {
   /// <summary>
   /// JSONデシリアライズ用のコンストラクタ
   /// </summary>
@@ -20,8 +19,7 @@ internal sealed class PropertyMaster
   /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
   /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
   [JsonConstructor]
-  public PropertyMaster
-  (
+  public PropertyMaster(
     string? version,
     string? appendixRelease,
     IReadOnlyList<EchonetPropertySpecification>? properties

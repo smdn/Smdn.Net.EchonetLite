@@ -16,8 +16,7 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// <summary>
 /// 電文形式 1（規定電文形式）
 /// </summary>
-public sealed class EData1 : IEData
-{
+public sealed class EData1 : IEData {
   /// <summary>
   /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EData1"/>を作成します。
   /// </summary>

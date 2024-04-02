@@ -11,8 +11,7 @@ namespace Smdn.Net.EchonetLite;
 /// <summary>
 /// ECHONET Lite プロトコルおよび同通信ミドルウェアにおける下位通信層を抽象化し、ECHONET Lite フレームを送受信するためのメカニズムを提供します。
 /// </summary>
-public interface IEchonetLiteHandler
-{
+public interface IEchonetLiteHandler {
   /// <summary>
   /// ECHONET Lite フレームを送信します。
   /// </summary>

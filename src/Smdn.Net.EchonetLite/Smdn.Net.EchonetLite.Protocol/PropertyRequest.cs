@@ -8,8 +8,7 @@ using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
-public readonly struct PropertyRequest
-{
+public readonly struct PropertyRequest {
   /// <summary>
   /// <see cref="EPC"/>のみを指定して、<see cref="PropertyRequest"/>を作成します。
   /// </summary>

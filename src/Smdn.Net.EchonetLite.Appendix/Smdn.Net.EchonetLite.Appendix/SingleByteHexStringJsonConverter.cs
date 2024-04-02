@@ -10,8 +10,7 @@ using System.Text.Json.Serialization;
 
 namespace Smdn.Net.EchonetLite.Appendix;
 
-internal sealed class SingleByteHexStringJsonConverter : JsonConverter<byte>
-{
+internal sealed class SingleByteHexStringJsonConverter : JsonConverter<byte> {
   private const string SingleByteHexStringPrefix = "0x";
   private const NumberStyles SingleByteHexNumberStyles = NumberStyles.AllowHexSpecifier;
 
@@ -20,10 +19,7 @@ internal sealed class SingleByteHexStringJsonConverter : JsonConverter<byte>
     if (reader.TokenType != JsonTokenType.String)
       throw new JsonException($"expected {nameof(JsonTokenType)}.{nameof(JsonTokenType.String)}, but was {reader.TokenType}");
 
-    var str = reader.GetString();
-
-    if (str is null)
-      throw new JsonException("property value can not be null");
+    var str = reader.GetString() ?? throw new JsonException("property value can not be null");
 
     if (!str.StartsWith(SingleByteHexStringPrefix, StringComparison.Ordinal))
       throw new JsonException($"property value must have a prefix '{SingleByteHexStringPrefix}'");

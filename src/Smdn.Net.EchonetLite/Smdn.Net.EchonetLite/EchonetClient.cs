@@ -10,21 +10,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.EchonetLite;
 
-public partial class EchonetClient : IDisposable, IAsyncDisposable
-{
+public partial class EchonetClient : IDisposable, IAsyncDisposable {
   private readonly bool _shouldDisposeEchonetLiteHandler;
   private IEchonetLiteHandler _echonetLiteHandler; // null if disposed
   private readonly ILogger? _logger;
 
   /// <inheritdoc cref="EchonetClient(IPAddress, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
-  public EchonetClient
-  (
+  public EchonetClient(
     IPAddress nodeAddress,
     IEchonetLiteHandler echonetLiteHandler,
     ILogger<EchonetClient>? logger = null
   )
-    : this
-    (
+    : this(
       nodeAddress: nodeAddress,
       echonetLiteHandler: echonetLiteHandler,
       shouldDisposeEchonetLiteHandler: false,
@@ -44,8 +41,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable
   /// <paramref name="nodeAddress"/>が<see langword="null"/>です。
   /// あるいは、<paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
   /// </exception>
-  public EchonetClient
-  (
+  public EchonetClient(
     IPAddress nodeAddress,
     IEchonetLiteHandler echonetLiteHandler,
     bool shouldDisposeEchonetLiteHandler,
@@ -56,8 +52,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable
     _shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
     _echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
     _echonetLiteHandler.Received += EchonetDataReceived;
-    SelfNode = new
-    (
+    SelfNode = new(
       address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
       nodeProfile: new(Profiles.NodeProfile, 0x01)
     );
@@ -108,12 +103,10 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable
   /// </param>
   protected virtual void Dispose(bool disposing)
   {
-    if (disposing)
-    {
+    if (disposing) {
       FrameReceived = null; // unsubscribe
 
-      if (_echonetLiteHandler is not null)
-      {
+      if (_echonetLiteHandler is not null) {
         _echonetLiteHandler.Received -= EchonetDataReceived;
 
         if (_shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IDisposable disposableEchonetLiteHandler)
@@ -132,8 +125,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable
   {
     FrameReceived = null; // unsubscribe
 
-    if (_echonetLiteHandler is not null)
-    {
+    if (_echonetLiteHandler is not null) {
       _echonetLiteHandler.Received -= EchonetDataReceived;
 
       if (_shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IAsyncDisposable disposableEchonetLiteHandler)

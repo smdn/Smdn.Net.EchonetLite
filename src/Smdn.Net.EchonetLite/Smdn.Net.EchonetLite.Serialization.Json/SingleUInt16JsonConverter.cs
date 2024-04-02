@@ -8,8 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace Smdn.Net.EchonetLite.Serialization.Json;
 
-internal sealed class SingleUInt16JsonConverter : JsonConverter<ushort>
-{
+internal sealed class SingleUInt16JsonConverter : JsonConverter<ushort> {
   public override ushort Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     => throw new NotSupportedException();
 
