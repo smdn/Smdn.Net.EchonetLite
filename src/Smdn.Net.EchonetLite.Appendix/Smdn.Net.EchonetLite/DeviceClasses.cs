@@ -227,6 +227,7 @@ public static class DeviceClasses {
     ＡＶ関連機器.ネットワークカメラ,
     Profiles.NodeProfile,
   ];
+
   /// <summary>
   /// ECHONET Lite クラスグループ定義
   /// センサ関連機器クラスグループ
@@ -410,6 +411,7 @@ public static class DeviceClasses {
     /// </summary>
     public static EchonetObjectSpecification 気圧センサ { get; } = new(0x00, 0x2D);
   }
+
   /// <summary>
   /// ECHONET Lite クラスグループ定義
   /// 空調関連機器 クラスグループ
@@ -464,6 +466,7 @@ public static class DeviceClasses {
     /// </summary>
     public static EchonetObjectSpecification 業務用ガスヒートポンプエアコン室外機 { get; } = new(0x01, 0x59);
   }
+
   /// <summary>
   /// ECHONET Lite クラスグループ定義
   /// 住宅設備関連機器クラスグループ
@@ -618,6 +621,7 @@ public static class DeviceClasses {
     /// </summary>
     public static EchonetObjectSpecification マルチ入力PCS { get; } = new(0x02, 0xA5);
   }
+
   /// <summary>
   /// ECHONET Lite クラスグループ定義
   /// 調理家事関連機器 クラスグループ
@@ -675,6 +679,7 @@ public static class DeviceClasses {
     /// </summary>
     public static EchonetObjectSpecification 体重計 { get; } = new(0x04, 0x01);
   }
+
   /// <summary>
   /// ECHONET Lite クラスグループ定義
   /// 管理操作関連機器 クラスグループ
@@ -701,6 +706,7 @@ public static class DeviceClasses {
     /// </summary>
     public static EchonetObjectSpecification コントローラ { get; } = new(0x05, 0xFF);
   }
+
   /// <summary>
   /// ECHONET Lite クラスグループ定義
   /// ＡＶ関連機器 クラスグループ

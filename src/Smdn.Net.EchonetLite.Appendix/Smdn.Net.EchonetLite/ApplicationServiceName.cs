@@ -19,22 +19,27 @@ public enum ApplicationServiceName {
   /// モバイルサービス(Mobile services)○M
   /// </summary>
   MobileServices,
+
   /// <summary>
   /// エネルギーサービス(Energy services)○E
   /// </summary>
   EnergyServices,
+
   /// <summary>
   /// 快適生活支援サービス(Home amenity services)○Ha
   /// </summary>
   HomeAmenityServices,
+
   /// <summary>
   /// ホームヘルスケアサービス(Home health-care services)○Hh
   /// </summary>
   HomeHealthcareServices,
+
   /// <summary>
   /// セキュリティサービス(Security services)○S
   /// </summary>
   SecurityServices,
+
   /// <summary>
   /// 機器リモートメンテナンスサービス(Remote appliance maintenance services)○R
   /// </summary>

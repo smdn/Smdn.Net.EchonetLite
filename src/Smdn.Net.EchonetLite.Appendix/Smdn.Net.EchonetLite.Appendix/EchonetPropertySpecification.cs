@@ -122,32 +122,39 @@ public sealed class EchonetPropertySpecification {
   /// プロパティ名称
   /// </summary>
   public string Name { get; }
+
   /// <summary>
   /// EPC(ECHONET プロパティコード)
   /// </summary>
   [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
   public byte Code { get; }
+
   /// <summary>
   /// プロパティ内容
   /// </summary>
   public string Detail { get; }
+
   /// <summary>
   /// 値域(10 進表記)
   /// </summary>
   [JsonPropertyName("Value")]
   public string? ValueRange { get; }
+
   /// <summary>
   /// データ型
   /// </summary>
   public string DataType { get; }
+
   /// <summary>
   /// C#論理データ型
   /// </summary>
   public string LogicalDataType { get; }
+
   /// <summary>
   /// 最小サイズ
   /// </summary>
   public int? MinSize { get; }
+
   /// <summary>
   /// 最大サイズ
   /// </summary>
@@ -223,10 +230,12 @@ public sealed class EchonetPropertySpecification {
   // MasterDataのJSONファイルでは、プロパティ名がOptionRequiredではなくOptionRequierdとなっていることに注意
   [JsonPropertyName("OptionRequierd")]
   public IReadOnlyList<ApplicationServiceName> OptionRequired { get; }
+
   /// <summary>
   /// 備考
   /// </summary>
   public string? Description { get; }
+
   /// <summary>
   /// 単位
   /// </summary>

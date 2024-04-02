@@ -56,17 +56,20 @@ public readonly struct Frame {
   /// </summary>
   [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public EHD1 EHD1 { get; }
+
   /// <summary>
   /// ECHONET Lite電文ヘッダー２(1B)
   /// EDATA部の電文形式を指定する。
   /// </summary>
   [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public EHD2 EHD2 { get; }
+
   /// <summary>
   /// トランザクションID(2B)
   /// </summary>
   [JsonConverter(typeof(SingleUInt16JsonConverter))]
   public ushort TID { get; }
+
   /// <summary>
   /// ECHONET Liteデータ
   /// ECHONET Lite 通信ミドルウェアにてやり取りされる電文のデータ領域。

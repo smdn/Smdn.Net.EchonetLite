@@ -80,16 +80,18 @@ partial class EchonetClient
 
     //インスタンスリスト通知
     await PerformPropertyValueNotificationAsync(
-      SelfNode.NodeProfile//ノードプロファイルから
-      , null//一斉通知
-      , new(new EOJ(
-        classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
-        classCode: Profiles.NodeProfile.Class.Code,
-        instanceCode: 0x01
-      ))
-      , Enumerable.Repeat(property, 1)
-      , cancellationToken
-      ).ConfigureAwait(false);
+      SelfNode.NodeProfile, //ノードプロファイルから
+      null, //一斉通知
+      new(
+        new EOJ(
+          classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
+          classCode: Profiles.NodeProfile.Class.Code,
+          instanceCode: 0x01
+        )
+      ),
+      Enumerable.Repeat(property, 1),
+      cancellationToken
+    ).ConfigureAwait(false);
   }
 
   /// <summary>
@@ -115,17 +117,17 @@ partial class EchonetClient
     );
 
     await PerformPropertyValueNotificationRequestAsync(
-      SelfNode.NodeProfile//ノードプロファイルから
-      , null//一斉通知
-      , new(
+      SelfNode.NodeProfile, //ノードプロファイルから
+      null, //一斉通知
+      new(
         new EOJ(
           classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
           classCode: Profiles.NodeProfile.Class.Code,
           instanceCode: 0x01
         )
-      )
-      , properties
-      , cancellationToken
+      ),
+      properties,
+      cancellationToken
     ).ConfigureAwait(false);
   }
 
@@ -153,11 +155,12 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
   public async Task<IReadOnlyCollection<PropertyRequest>> PerformPropertyValueWriteRequestAsync(
-    EchonetObject sourceObject
-    , EchonetNode? destinationNode
-    , EchonetObject destinationObject
-    , IEnumerable<EchonetProperty> properties
-    , CancellationToken cancellationToken = default)
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<EchonetProperty> properties,
+    CancellationToken cancellationToken = default
+  )
   {
     if (sourceObject is null)
       throw new ArgumentNullException(nameof(sourceObject));
@@ -266,11 +269,12 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
   /// </seealso>
   public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueWriteRequestResponseRequiredAsync(
-    EchonetObject sourceObject
-    , EchonetNode? destinationNode
-    , EchonetObject destinationObject
-    , IEnumerable<EchonetProperty> properties
-    , CancellationToken cancellationToken = default)
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<EchonetProperty> properties,
+    CancellationToken cancellationToken = default
+  )
   {
     if (sourceObject is null)
       throw new ArgumentNullException(nameof(sourceObject));
@@ -371,11 +375,12 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
   public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueReadRequestAsync(
-    EchonetObject sourceObject
-    , EchonetNode? destinationNode
-    , EchonetObject destinationObject
-    , IEnumerable<EchonetProperty> properties
-    , CancellationToken cancellationToken = default)
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<EchonetProperty> properties,
+    CancellationToken cancellationToken = default
+  )
   {
     if (sourceObject is null)
       throw new ArgumentNullException(nameof(sourceObject));
@@ -477,12 +482,13 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// </seealso>
   public async Task<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueWriteReadRequestAsync(
-    EchonetObject sourceObject
-    , EchonetNode? destinationNode
-    , EchonetObject destinationObject
-    , IEnumerable<EchonetProperty> propertiesSet
-    , IEnumerable<EchonetProperty> propertiesGet
-    , CancellationToken cancellationToken = default)
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<EchonetProperty> propertiesSet,
+    IEnumerable<EchonetProperty> propertiesGet,
+    CancellationToken cancellationToken = default
+  )
   {
     if (sourceObject is null)
       throw new ArgumentNullException(nameof(sourceObject));
@@ -595,11 +601,12 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
   public ValueTask PerformPropertyValueNotificationRequestAsync(
-    EchonetObject sourceObject
-    , EchonetNode? destinationNode
-    , EchonetObject destinationObject
-    , IEnumerable<EchonetProperty> properties
-    , CancellationToken cancellationToken = default)
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<EchonetProperty> properties,
+    CancellationToken cancellationToken = default
+  )
   {
     if (sourceObject is null)
       throw new ArgumentNullException(nameof(sourceObject));
@@ -646,11 +653,12 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
   public ValueTask PerformPropertyValueNotificationAsync(
-    EchonetObject sourceObject
-    , EchonetNode? destinationNode
-    , EchonetObject destinationObject
-    , IEnumerable<EchonetProperty> properties
-    , CancellationToken cancellationToken = default)
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<EchonetProperty> properties,
+    CancellationToken cancellationToken = default
+  )
   {
     if (sourceObject is null)
       throw new ArgumentNullException(nameof(sourceObject));
@@ -698,11 +706,12 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
   /// </seealso>
   public async Task<IReadOnlyCollection<PropertyRequest>> PerformPropertyValueNotificationResponseRequiredAsync(
-    EchonetObject sourceObject
-    , EchonetNode destinationNode
-    , EchonetObject destinationObject
-    , IEnumerable<EchonetProperty> properties
-    , CancellationToken cancellationToken = default)
+    EchonetObject sourceObject,
+    EchonetNode destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<EchonetProperty> properties,
+    CancellationToken cancellationToken = default
+  )
   {
     if (sourceObject is null)
       throw new ArgumentNullException(nameof(sourceObject));
@@ -834,9 +843,9 @@ partial class EchonetClient
         destinationNode: sourceNode,
         destinationObject: device,
         properties: device.Properties.Where(static p =>
-          p.Spec.Code == 0x9D //状変アナウンスプロパティマップ
-          || p.Spec.Code == 0x9E //Set プロパティマップ
-          || p.Spec.Code == 0x9F //Get プロパティマップ
+          p.Spec.Code == 0x9D || //状変アナウンスプロパティマップ
+          p.Spec.Code == 0x9E || //Set プロパティマップ
+          p.Spec.Code == 0x9F //Get プロパティマップ
         ),
         cancellationToken: ctsTimeout.Token
       ).ConfigureAwait(false);
@@ -1090,9 +1099,11 @@ partial class EchonetClient
     foreach (var opc in edata.OPCList) {
       var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
-      if (property == null
-          || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-          || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
+      if (
+        property is null ||
+        opc.EDT.Length > property.Spec.MaxSize ||
+        opc.EDT.Length < property.Spec.MinSize
+      ) {
         hasError = true;
         //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
         //要求された EDT を付け、要求を受理できなかったことを示す。
@@ -1163,9 +1174,12 @@ partial class EchonetClient
     else {
       foreach (var opc in edata.OPCList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
-        if (property == null
-            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
+
+        if (
+          property is null ||
+          opc.EDT.Length > property.Spec.MaxSize ||
+          opc.EDT.Length < property.Spec.MinSize
+        ) {
           hasError = true;
           //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           //要求された EDT を付け、要求を受理できなかったことを示す。
@@ -1251,9 +1265,11 @@ partial class EchonetClient
       foreach (var opc in edata.OPCList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
-        if (property == null
-            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
+        if (
+          property is null ||
+          opc.EDT.Length > property.Spec.MaxSize ||
+          opc.EDT.Length < property.Spec.MinSize
+        ) {
           hasError = true;
           //要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           //EDT はつけず、要求を受理できなかったことを示す。
@@ -1346,9 +1362,11 @@ partial class EchonetClient
       foreach (var opc in edata.OPCSetList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
-        if (property == null
-            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
+        if (
+          property is null ||
+          opc.EDT.Length > property.Spec.MaxSize ||
+          opc.EDT.Length < property.Spec.MinSize
+        ) {
           hasError = true;
           //要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           //要求された EDT を付け、要求を受理できなかったことを示す。
@@ -1364,9 +1382,12 @@ partial class EchonetClient
 
       foreach (var opc in edata.OPCGetList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
-        if (property == null
-            || (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-            || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
+
+        if (
+          property is null ||
+          opc.EDT.Length > property.Spec.MaxSize ||
+          opc.EDT.Length < property.Spec.MinSize
+        ) {
           hasError = true;
           //要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           //EDT はつけず、要求を受理できなかったことを示す。
@@ -1463,24 +1484,27 @@ partial class EchonetClient
     }
     foreach (var opc in edata.OPCList) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
-      if (property == null) {
+
+      if (property is null) {
         //未知のプロパティ
         //新規作成
         property = new(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
         sourceObject.AddProperty(property);
       }
-      if ((property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize)
-        || (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)) {
+
+      if (
+        opc.EDT.Length > property.Spec.MaxSize ||
+        opc.EDT.Length < property.Spec.MinSize
+      ) {
         //スペック外なので、格納しない
         hasError = true;
       }
       else {
         property.SetValue(opc.EDT);
+
         //ノードプロファイルのインスタンスリスト通知の場合
-        if (sourceNode.NodeProfile == sourceObject
-          && opc.EPC == 0xD5) {
+        if (sourceNode.NodeProfile == sourceObject && opc.EPC == 0xD5)
           await HandleInstanceListNotificationReceivedAsync(sourceNode, opc.EDT).ConfigureAwait(false);
-        }
       }
     }
     return !hasError;
@@ -1556,11 +1580,10 @@ partial class EchonetClient
       }
       else {
         property.SetValue(opc.EDT);
+
         //ノードプロファイルのインスタンスリスト通知の場合
-        if (sourceNode.NodeProfile == sourceObject
-          && opc.EPC == 0xD5) {
+        if (sourceNode.NodeProfile == sourceObject && opc.EPC == 0xD5)
           await HandleInstanceListNotificationReceivedAsync(sourceNode, opc.EDT).ConfigureAwait(false);
-        }
       }
 
       //EPC には通知時と同じプロパティコードを設定するが、

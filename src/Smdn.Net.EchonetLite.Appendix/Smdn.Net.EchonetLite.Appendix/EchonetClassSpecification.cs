@@ -38,12 +38,14 @@ public sealed class EchonetClassSpecification {
   /// </summary>
   [JsonPropertyName("Status")]
   public bool IsDefined { get; }
+
   /// <summary>
   /// クラスコード
   /// </summary>
   [JsonPropertyName("ClassCode")]
   [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
   public byte Code { get; }
+
   /// <summary>
   /// クラス名
   /// </summary>

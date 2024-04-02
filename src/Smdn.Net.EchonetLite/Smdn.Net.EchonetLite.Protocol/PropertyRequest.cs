@@ -45,11 +45,13 @@ public readonly struct PropertyRequest {
   /// </summary>
   [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte EPC { get; }
+
   /// <summary>
   /// EDTのバイト数(1B)
   /// </summary>
   [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte PDC => (byte)EDT.Length;
+
   /// <summary>
   /// プロパティ値データ(PDCで指定)
   /// </summary>

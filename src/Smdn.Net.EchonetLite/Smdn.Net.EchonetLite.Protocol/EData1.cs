@@ -75,10 +75,12 @@ public sealed class EData1 : IEData {
   /// 送信元ECHONET Liteオブジェクト指定(3B)
   /// </summary>
   public EOJ SEOJ { get; }
+
   /// <summary>
   /// 相手先ECHONET Liteオブジェクト指定(3B)
   /// </summary>
   public EOJ DEOJ { get; }
+
   /// <summary>
   /// ECHONET Liteサービス(1B)
   /// ECHONET Liteサービスコード
@@ -87,11 +89,13 @@ public sealed class EData1 : IEData {
   public ESV ESV { get; }
 
   public IReadOnlyCollection<PropertyRequest>? OPCList { get; }
+
   /// <summary>
   /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// のみ使用
   /// </summary>
   public IReadOnlyCollection<PropertyRequest>? OPCGetList { get; }
+
   /// <summary>
   /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// のみ使用

@@ -23,19 +23,15 @@ public static class FrameSerializer {
         if (frame.EData is not EData1 edata1)
           throw new ArgumentException($"{nameof(EData1)} must be set to {nameof(Frame)}.{nameof(Frame.EData)}.", paramName: nameof(frame));
 
-#if !NET5_0_OR_GREATER // NotNullWhenAttribute
-#pragma warning disable CS8604
-#endif
         SerializeEchonetLiteFrameFormat1(
           buffer,
           frame.TID,
           edata1.SEOJ,
           edata1.DEOJ,
           edata1.ESV,
-          edata1.IsWriteOrReadService ? edata1.OPCSetList : edata1.OPCList,
+          edata1.IsWriteOrReadService ? edata1.OPCSetList! : edata1.OPCList!,
           edata1.IsWriteOrReadService ? edata1.OPCGetList : null
         );
-#pragma warning restore CS8604
 
         break;
 

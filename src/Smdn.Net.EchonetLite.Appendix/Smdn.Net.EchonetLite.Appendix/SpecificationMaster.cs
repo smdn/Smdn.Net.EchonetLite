@@ -30,15 +30,18 @@ internal sealed class SpecificationMaster {
     /// ECHONET Lite SPECIFICATIONのバージョン
     /// </summary>
     public string Version { get; }
+
     /// <summary>
     /// APPENDIX ECHONET 機器オブジェクト詳細規定のリリース番号
     /// </summary>
     public string AppendixRelease { get; }
+
     /// <summary>
     /// プロファイルオブジェクト
     /// </summary>
     [JsonPropertyName("プロファイル")]
     public IReadOnlyList<EchonetClassGroupSpecification> Profiles { get; }
+
     /// <summary>
     /// 機器オブジェクト
     /// </summary>

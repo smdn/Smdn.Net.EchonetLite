@@ -8,13 +8,14 @@ namespace Smdn.Net.EchonetLite;
 internal static class EchonetPropertyExtentions {
   public static string GetDebugString(this EchonetProperty property)
   {
-    if (property == null) {
+    if (property is null)
       return "null";
-    }
-    if (property.Spec == null) {
+
+    if (property.Spec is null)
       return "Spec null";
-    }
+
     var sb = new StringBuilder();
+
     sb.AppendFormat(provider: null, "0x{0:X2}", property.Spec.Code);
     sb.Append(property.Spec.Name);
     sb.Append(' ');
@@ -26,6 +27,7 @@ internal static class EchonetPropertyExtentions {
     sb.Append(' ');
     sb.Append(property.CanAnnounceStatusChange ? "Anno" : "");
     sb.Append(property.Spec.IsStatusChangeAnnouncementMandatory ? "(Req)" : "");
+
     return sb.ToString();
   }
 }

@@ -43,6 +43,7 @@ public sealed class EchonetClassGroupSpecification {
   [JsonPropertyName("ClassGroupCode")]
   [JsonConverter(typeof(SingleByteHexStringJsonConverter))]
   public byte Code { get; }
+
   /// <summary>
   /// クラスグループ名
   /// </summary>
@@ -60,6 +61,7 @@ public sealed class EchonetClassGroupSpecification {
   /// </summary>
   [JsonPropertyName("SuperClass")]
   public string? SuperClassName { get; }
+
   /// <summary>
   /// クラスグループに属するクラスのリスト
   /// </summary>

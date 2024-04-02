@@ -107,6 +107,7 @@ public sealed class EchonetObjectSpecification {
   /// クラスグループコード
   /// </summary>
   public EchonetClassGroupSpecification ClassGroup { get; }
+
   /// <summary>
   /// クラス情報
   /// クラスコード
