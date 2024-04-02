@@ -63,14 +63,13 @@ public class DeviceClassesTests {
   [TestCaseSource(nameof(YieldTestCases_機器オブジェクトスーパークラスJson))]
   public void 機器オブジェクトスーパークラスJson(EchonetObjectSpecification obj)
   {
-    var epc80 = obj.GetProperties.FirstOrDefault(static prop => prop.Name == "動作状態");
+    var epc80 = obj.GetProperties.Values.FirstOrDefault(static prop => prop.Name == "動作状態");
 
     Assert.That(epc80, Is.Not.Null);
     Assert.That(epc80!.Code, Is.EqualTo(0x80), nameof(epc80.Code));
     Assert.That(epc80.DataType, Is.EqualTo("unsigned char"), nameof(epc80.DataType));
 
-    var epc9D = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0x9D);
-
+    Assert.That(obj.GetProperties.TryGetValue(0x9D, out var epc9D), Is.True);
     Assert.That(epc9D, Is.Not.Null);
     Assert.That(epc9D!.Name, Is.EqualTo("状変アナウンスプロパティマップ"), nameof(epc9D.Code));
     Assert.That(epc9D.DataType, Is.EqualTo("unsigned char×(MAX17)"), nameof(epc9D.DataType));
@@ -81,16 +80,14 @@ public class DeviceClassesTests {
   {
     var obj = DeviceClasses.住宅設備関連機器.低圧スマート電力量メータ;
 
-    var epcE0 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xE0);
-
+    Assert.That(obj.GetProperties.TryGetValue(0xE0, out var epcE0), Is.True);
     Assert.That(epcE0, Is.Not.Null);
     Assert.That(epcE0!.Code, Is.EqualTo(0xE0), nameof(epcE0.Code));
     Assert.That(epcE0.Name, Is.EqualTo("積算電力量計測値 (正方向計測値)"), nameof(epcE0.Name));
     Assert.That(epcE0.DataType, Is.EqualTo("unsigned long"), nameof(epcE0.DataType));
     Assert.That(epcE0.Unit, Is.EqualTo("kWh"), nameof(epcE0.Unit));
 
-    var epcE7 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xE7);
-
+    Assert.That(obj.GetProperties.TryGetValue(0xE7, out var epcE7), Is.True);
     Assert.That(epcE7, Is.Not.Null);
     Assert.That(epcE7!.Code, Is.EqualTo(0xE7), nameof(epcE7.Code));
     Assert.That(epcE7!.Name, Is.EqualTo("瞬時電力計測値"), nameof(epcE7.Name));
@@ -103,8 +100,7 @@ public class DeviceClassesTests {
   {
     var obj = DeviceClasses.ＡＶ関連機器.テレビ;
 
-    var epc80 = obj.GetProperties.LastOrDefault(static prop => prop.Code == 0x80); // overrides properties from super class
-
+    Assert.That(obj.GetProperties.TryGetValue(0x80, out var epc80), Is.True); // overrides properties from super class
     Assert.That(epc80, Is.Not.Null);
     Assert.That(epc80!.Code, Is.EqualTo(0x80), nameof(epc80.Code));
     Assert.That(epc80.Name, Is.EqualTo("動作状態"), nameof(epc80.Name));
@@ -115,15 +111,13 @@ public class DeviceClassesTests {
       nameof(epc80.OptionRequired)
     );
 
-    var epcB0 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xB0);
-
+    Assert.That(obj.GetProperties.TryGetValue(0xB0, out var epcB0), Is.True);
     Assert.That(epcB0, Is.Not.Null);
     Assert.That(epcB0!.Code, Is.EqualTo(0xB0), nameof(epcB0.Code));
     Assert.That(epcB0.Name, Is.EqualTo("表示制御設定"), nameof(epcB0.Name));
     Assert.That(epcB0.OptionRequired ?? Enumerable.Empty<ApplicationServiceName>(), Is.Empty, nameof(epcB0.OptionRequired));
 
-    var epcB1 = obj.GetProperties.FirstOrDefault(static prop => prop.Code == 0xB1);
-
+    Assert.That(obj.GetProperties.TryGetValue(0xB1, out var epcB1), Is.True);
     Assert.That(epcB1, Is.Not.Null);
     Assert.That(epcB1!.Code, Is.EqualTo(0xB1), nameof(epcB1.Code));
     Assert.That(epcB1.Name, Is.EqualTo("文字列設定受付可能状態"), nameof(epcB1.Name));

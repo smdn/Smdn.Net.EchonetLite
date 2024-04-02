@@ -32,19 +32,21 @@ public class ProfilesTests {
     Assert.That(c.Name, Is.EqualTo("ノードプロファイル"), nameof(EchonetClassSpecification.Name));
 
     Assert.That(
-      p.GetProperties.First(static prop => prop.Name == "状変アナウンスプロパティマップ").Code,
+      p.GetProperties.Values.First(static prop => prop.Name == "状変アナウンスプロパティマップ").Code,
       Is.EqualTo(0x9D),
       "状変アナウンスプロパティマップ"
     );
 
+    Assert.That(p.GetProperties.TryGetValue(0x9E, out var epc9E), Is.True);
     Assert.That(
-      p.GetProperties.First(static prop => prop.Code == 0x9E).Name,
+      epc9E!.Name,
       Is.EqualTo("Set プロパティマップ"),
       "Set プロパティマップ"
     );
 
+    Assert.That(p.GetProperties.TryGetValue(0x9F, out var epc9F), Is.True);
     Assert.That(
-      p.GetProperties.First(static prop => prop.Code == 0x9F).Name,
+      epc9F!.Name,
       Is.EqualTo("Get プロパティマップ"),
       "Get プロパティマップ"
     );
@@ -53,14 +55,13 @@ public class ProfilesTests {
   [Test]
   public void プロファイルオブジェクトスーパークラスJson()
   {
-    var epc88 = Profiles.NodeProfile.GetProperties.FirstOrDefault(static prop => prop.Name == "異常発生状態");
+    var epc88 = Profiles.NodeProfile.GetProperties.Values.FirstOrDefault(static prop => prop.Name == "異常発生状態");
 
     Assert.That(epc88, Is.Not.Null);
     Assert.That(epc88!.Code, Is.EqualTo(0x88), nameof(epc88.Code));
     Assert.That(epc88.DataType, Is.EqualTo("unsigned char"), nameof(epc88.DataType));
 
-    var epc9D = Profiles.NodeProfile.GetProperties.FirstOrDefault(static prop => prop.Code == 0x9D);
-
+    Assert.That(Profiles.NodeProfile.GetProperties.TryGetValue(0x9D, out var epc9D), Is.True);
     Assert.That(epc9D, Is.Not.Null);
     Assert.That(epc9D!.Name, Is.EqualTo("状変アナウンスプロパティマップ"), nameof(epc9D.Code));
     Assert.That(epc9D.DataType, Is.EqualTo("unsigned char×(MAX17)"), nameof(epc9D.DataType));
@@ -69,8 +70,7 @@ public class ProfilesTests {
   [Test]
   public void MasterData_プロファイル_ノードプロファイルJson()
   {
-    var epc82 = Profiles.NodeProfile.GetProperties.FirstOrDefault(static prop => prop.Code == 0x82);
-
+    Assert.That(Profiles.NodeProfile.GetProperties.TryGetValue(0x82, out var epc82), Is.True);
     Assert.That(epc82, Is.Not.Null);
     Assert.That(epc82!.Code, Is.EqualTo(0x82), nameof(epc82.Code));
     Assert.That(epc82.Name, Is.EqualTo("Version 情報"), nameof(epc82.Name));
@@ -78,8 +78,7 @@ public class ProfilesTests {
     Assert.That(epc82.Unit, Is.Null, nameof(epc82.Unit));
     Assert.That(epc82.HasUnit, Is.False, nameof(epc82.Unit));
 
-    var epcD3 = Profiles.NodeProfile.GetProperties.FirstOrDefault(static prop => prop.Code == 0xD3);
-
+    Assert.That(Profiles.NodeProfile.GetProperties.TryGetValue(0xD3, out var epcD3), Is.True);
     Assert.That(epcD3, Is.Not.Null);
     Assert.That(epcD3!.Code, Is.EqualTo(0xD3), nameof(epcD3.Code));
     Assert.That(epcD3!.Name, Is.EqualTo("自ノードインスタンス数"), nameof(epcD3.Name));
