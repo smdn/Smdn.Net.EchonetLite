@@ -103,12 +103,13 @@ internal sealed class SpecificationMaster {
     if (_Instance is null) {
       const string specificationMasterJsonFileName = "SpecificationMaster.json";
 
-      using (var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName)) {
-        _Instance = new(
-          JsonSerializer.Deserialize<SpecificationMasterJsonObject>(stream) ?? throw new InvalidOperationException($"failed to deserialize {specificationMasterJsonFileName}")
-        );
-      }
+      using var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName);
+
+      _Instance = new(
+        JsonSerializer.Deserialize<SpecificationMasterJsonObject>(stream) ?? throw new InvalidOperationException($"failed to deserialize {specificationMasterJsonFileName}")
+      );
     }
+
     return _Instance;
   }
 
