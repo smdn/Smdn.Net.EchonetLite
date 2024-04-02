@@ -795,7 +795,8 @@ partial class EchonetClient
 
     foreach (var eoj in instanceList) {
       var device = sourceNode.Devices.FirstOrDefault(d => d.EOJ == eoj);
-      if (device == null) {
+
+      if (device is null) {
         device = new(eoj);
         sourceNode.Devices.Add(device);
       }
@@ -964,7 +965,7 @@ partial class EchonetClient
     var sourceNode = Nodes.SingleOrDefault(n => value.address is not null && value.address.Equals(n.Address));
 
     //未知のノードの場合
-    if (sourceNode == null) {
+    if (sourceNode is null) {
       //ノードを生成
       sourceNode = new(
         address: value.address,
@@ -1055,7 +1056,7 @@ partial class EchonetClient
     }
 
     task?.ContinueWith((t) => {
-      if (t.Exception != null) {
+      if (t.Exception is not null) {
         _logger?.LogTrace(t.Exception, "Exception");
       }
     });
@@ -1088,7 +1089,7 @@ partial class EchonetClient
     if (edata.OPCList is null)
       throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
 
-    if (destObject == null) {
+    if (destObject is null) {
       //対象となるオブジェクト自体が存在しない場合には、「不可応答」も返さないものとする。
       return false;
     }
@@ -1166,7 +1167,7 @@ partial class EchonetClient
     var hasError = false;
     var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
 
-    if (destObject == null) {
+    if (destObject is null) {
       //DEOJがない場合、全OPCをそのまま返す
       hasError = true;
       opcList.AddRange(edata.OPCList);
@@ -1256,7 +1257,7 @@ partial class EchonetClient
     var hasError = false;
     var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
 
-    if (destObject == null) {
+    if (destObject is null) {
       //DEOJがない場合、全OPCをそのまま返す
       hasError = true;
       opcList.AddRange(edata.OPCList);
@@ -1352,7 +1353,7 @@ partial class EchonetClient
     var opcSetList = new List<PropertyRequest>(capacity: edata.OPCSetList.Count);
     var opcGetList = new List<PropertyRequest>(capacity: edata.OPCGetList.Count);
 
-    if (destObject == null) {
+    if (destObject is null) {
       //DEOJがない場合、全OPCをそのまま返す
       hasError = true;
       opcSetList.AddRange(edata.OPCSetList);
@@ -1470,7 +1471,8 @@ partial class EchonetClient
 
     var hasError = false;
     var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
-    if (sourceObject == null) {
+
+    if (sourceObject is null) {
       //ノードプロファイルからの通知の場合
       if (sourceNode.NodeProfile.EOJ == edata.SEOJ) {
         sourceObject = sourceNode.NodeProfile;
@@ -1482,6 +1484,7 @@ partial class EchonetClient
         sourceNode.Devices.Add(sourceObject);
       }
     }
+
     foreach (var opc in edata.OPCList) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
@@ -1507,6 +1510,7 @@ partial class EchonetClient
           await HandleInstanceListNotificationReceivedAsync(sourceNode, opc.EDT).ConfigureAwait(false);
       }
     }
+
     return !hasError;
   }
 
@@ -1540,7 +1544,7 @@ partial class EchonetClient
     var hasError = false;
     var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
 
-    if (destObject == null) {
+    if (destObject is null) {
       //指定された DEOJ が存在しない場合には電文を廃棄する。
       //"けどこっそり保持する"
       hasError = true;
@@ -1548,7 +1552,7 @@ partial class EchonetClient
 
     var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
 
-    if (sourceObject == null) {
+    if (sourceObject is null) {
       //ノードプロファイルからの通知の場合
       if (sourceNode.NodeProfile.EOJ == edata.SEOJ) {
         sourceObject = sourceNode.NodeProfile;
@@ -1564,7 +1568,7 @@ partial class EchonetClient
     foreach (var opc in edata.OPCList) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
-      if (property == null) {
+      if (property is null) {
         //未知のプロパティ
         //新規作成
         property = new(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
@@ -1591,7 +1595,7 @@ partial class EchonetClient
       opcList.Add(new(opc.EPC));
     }
 
-    if (destObject != null) {
+    if (destObject is not null) {
       await SendFrameAsync(
         request.address,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(

@@ -100,7 +100,7 @@ internal sealed class SpecificationMaster {
   /// <returns></returns>
   public static SpecificationMaster GetInstance()
   {
-    if (_Instance == null) {
+    if (_Instance is null) {
       const string specificationMasterJsonFileName = "SpecificationMaster.json";
 
       using (var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName)) {
