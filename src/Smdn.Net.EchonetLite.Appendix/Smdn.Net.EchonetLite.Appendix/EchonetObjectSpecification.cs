@@ -37,8 +37,8 @@ namespace Smdn.Net.EchonetLite.Appendix
         internal EchonetObjectSpecification(byte classGroupCode, byte classCode)
         {
             ClassGroup =
-               SpecificationMaster.GetInstance().プロファイル.FirstOrDefault(p => p.Code == classGroupCode) ??
-               SpecificationMaster.GetInstance().機器.FirstOrDefault(p => p.Code == classGroupCode) ??
+               SpecificationMaster.GetInstance().Profiles.FirstOrDefault(p => p.Code == classGroupCode) ??
+               SpecificationMaster.GetInstance().DeviceClasses.FirstOrDefault(p => p.Code == classGroupCode) ??
                throw new ArgumentException($"unknown class group: 0x{classGroupCode:X2}");
 
             var properties = new List<EchonetPropertySpecification>();

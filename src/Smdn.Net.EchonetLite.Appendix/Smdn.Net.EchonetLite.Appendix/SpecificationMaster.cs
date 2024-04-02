@@ -27,8 +27,8 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// </summary>
         /// <param name="version"><see cref="Version"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
         /// <param name="appendixRelease"><see cref="AppendixRelease"/>に設定する非<see langword="null"/>・長さ非ゼロの値。</param>
-        /// <param name="プロファイル"><see cref="プロファイル"/>に設定する非<see langword="null"/>の値。</param>
-        /// <param name="機器"><see cref="機器"/>に設定する非<see langword="null"/>の値。</param>
+        /// <param name="profiles"><see cref="Profiles"/>に設定する非<see langword="null"/>の値。</param>
+        /// <param name="deviceClasses"><see cref="DeviceClasses"/>に設定する非<see langword="null"/>の値。</param>
         /// <exception cref="ArgumentNullException"><see langword="null"/>非許容のプロパティに<see langword="null"/>を設定しようとしました。</exception>
         /// <exception cref="ArgumentException">プロパティに空の文字列を設定しようとしました。</exception>
         [JsonConstructor]
@@ -36,14 +36,14 @@ namespace Smdn.Net.EchonetLite.Appendix
         (
             string? version,
             string? appendixRelease,
-            IReadOnlyList<EchonetClassGroupSpecification>? プロファイル,
-            IReadOnlyList<EchonetClassGroupSpecification>? 機器
+            IReadOnlyList<EchonetClassGroupSpecification>? profiles,
+            IReadOnlyList<EchonetClassGroupSpecification>? deviceClasses
         )
         {
             Version = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(version, nameof(version));
             AppendixRelease = JsonValidationUtils.ThrowIfValueIsNullOrEmpty(appendixRelease, nameof(appendixRelease));
-            this.プロファイル = プロファイル ?? throw new ArgumentNullException(nameof(プロファイル));
-            this.機器 = 機器 ?? throw new ArgumentNullException(nameof(機器));
+            this.Profiles = profiles ?? throw new ArgumentNullException(nameof(profiles));
+            this.DeviceClasses = deviceClasses ?? throw new ArgumentNullException(nameof(deviceClasses));
         }
 
         /// <summary>
@@ -96,10 +96,12 @@ namespace Smdn.Net.EchonetLite.Appendix
         /// <summary>
         /// プロファイルオブジェクト
         /// </summary>
-        public IReadOnlyList<EchonetClassGroupSpecification> プロファイル { get; }
+        [JsonPropertyName("プロファイル")]
+        public IReadOnlyList<EchonetClassGroupSpecification> Profiles { get; }
         /// <summary>
         /// 機器オブジェクト
         /// </summary>
-        public IReadOnlyList<EchonetClassGroupSpecification> 機器 { get; }
+        [JsonPropertyName("機器")]
+        public IReadOnlyList<EchonetClassGroupSpecification> DeviceClasses { get; }
     }
 }
