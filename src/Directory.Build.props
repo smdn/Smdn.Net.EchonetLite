@@ -44,7 +44,6 @@ SPDX-License-Identifier: MIT
   <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Common -->
   <PropertyGroup>
     <NoWarn>IDE0055;$(NoWarn)</NoWarn> <!-- IDE0055: 書式設定を修正 -->
-    <NoWarn>IDE0161;$(NoWarn)</NoWarn> <!-- IDE0161: 範囲指定されたファイルが設定された namespace に変換 -->
     <NoWarn>IDE1006;$(NoWarn)</NoWarn> <!-- IDE1006: 名前付けルール違反 -->
     <NoWarn>CA1008;$(NoWarn)</NoWarn> <!-- CA1008: 提案された名前 'None' を伴う、値 0 を含む メンバーを追加します -->
     <NoWarn>CA1031;$(NoWarn)</NoWarn> <!-- CA1031: 'Dispose' を変更してより具体的な許可された例外の種類をキャッチするか、例外を再スローしてください -->
