@@ -22,7 +22,7 @@
 
 [Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)は、「[ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様](https://echonet.jp/spec_g/)」(en:[Part II ECHONET Lite Communication Middleware Specifications](https://echonet.jp/spec_g/))に記載されている仕様に基づく実装を提供します。
 
-同仕様書における**通信ミドルウェア**(**Communication Middleware**)に相当する機能を.NETで実装した`EchoClient`、および**下位通信層**(**Lower Communication Layers**)との通信エンドポイントを実装するためのインターフェース`IEchonetLiteHandler`などのAPIを提供します。
+同仕様書における**通信ミドルウェア**(**Communication Middleware**)に相当する機能を.NETで実装した`EchonetClient`、および**下位通信層**(**Lower Communication Layers**)との通信エンドポイントを実装するためのインターフェース`IEchonetLiteHandler`などのAPIを提供します。
 
 version 1.0.0時点では、[同仕様Ver.1.13](https://echonet.jp/spec_v113_lite/)をもとに全サービスを実装しています。　また`IEchonetLiteHandler`の実装として、下位通信層としてUDPを使用する、いわゆるLANのブリッジクラス`UdpEchonetLiteHandler`を同梱しています。
 
