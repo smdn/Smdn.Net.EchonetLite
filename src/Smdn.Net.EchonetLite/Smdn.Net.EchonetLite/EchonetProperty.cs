@@ -74,16 +74,19 @@ public sealed class EchonetProperty {
   /// ECHONET機器オブジェクト詳細規定がある場合、詳細仕様
   /// </summary>
   public EchonetPropertySpecification Spec { get; }
+
   /// <summary>
   /// プロパティ値の読み出し・通知要求のサービスを処理する。
   /// プロパティ値読み出し要求(0x62)、プロパティ値書き込み・読み出し要求(0x6E)、プロパティ値通知要求(0x63)の要求受付処理を実施する。
   /// </summary>
   public bool CanGet { get; }
+
   /// <summary>
   /// プロパティ値の書き込み要求のサービスを処理する。
   /// プロパティ値書き込み要求(応答不要)(0x60)、プロパティ値書き込み要求(応答要)(0x61)、プロパティ値書き込み・読み出し要求(0x6E)の要求受付処理を実施する。
   /// </summary>
   public bool CanSet { get; }
+
   /// <summary>
   /// プロパティ値の通知要求のサービスを処理する。
   /// プロパティ値通知要求（0x63）の要求受付処理を実施する。

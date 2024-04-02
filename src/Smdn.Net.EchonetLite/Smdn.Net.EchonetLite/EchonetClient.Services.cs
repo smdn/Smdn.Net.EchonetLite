@@ -865,6 +865,7 @@ partial class EchonetClient
     _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
 
     var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
+
     foreach (var pr in props) {
       switch (pr.EPC) {
         // 状変アナウンスプロパティマップ
@@ -880,6 +881,7 @@ partial class EchonetClient
           }
           break;
         }
+
         // Set プロパティマップ
         case 0x9E: {
           if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
@@ -893,6 +895,7 @@ partial class EchonetClient
           }
           break;
         }
+
         // Get プロパティマップ
         case 0x9F: {
           if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
@@ -928,11 +931,15 @@ partial class EchonetClient
 
     if (_logger is not null) {
       var sb = new StringBuilder();
+
       sb.AppendLine("------");
+
       foreach (var temp in device.Properties) {
         sb.Append('\t').Append(temp.GetDebugString()).AppendLine();
       }
+
       sb.AppendLine("------");
+
       _logger.LogTrace(sb.ToString());
     }
 
@@ -995,31 +1002,37 @@ partial class EchonetClient
         // なければ、プロパティ値書き込み要求不可応答 SetI_SNA
         task = Task.Run(() => HandlePropertyValueWriteRequestAsync(value, edata, destObject));
         break;
+
       case ESV.SetC:// プロパティ値書き込み要求（応答要）
         // あれば、書き込んで プロパティ値書き込み応答 Set_Res
         // なければ、プロパティ値書き込み要求不可応答 SetC_SNA
         task = Task.Run(() => HandlePropertyValueWriteRequestResponseRequiredAsync(value, edata, destObject));
         break;
+
       case ESV.Get:// プロパティ値読み出し要求
         // あれば、プロパティ値読み出し応答 Get_Res
         // なければ、プロパティ値読み出し不可応答 Get_SNA
         task = Task.Run(() => HandlePropertyValueReadRequest(value, edata, destObject));
         break;
+
       case ESV.InfRequest:// プロパティ値通知要求
         // あれば、プロパティ値通知 INF
         // なければ、プロパティ値通知不可応答 INF_SNA
         break;
+
       case ESV.SetGet: // プロパティ値書き込み・読み出し要求
         // あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
         // なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
         task = Task.Run(() => HandlePropertyValueWriteReadRequestAsync(value, edata, destObject));
         break;
+
       case ESV.Inf: // プロパティ値通知
         // プロパティ値通知要求 INF_REQのレスポンス
         // または、自発的な通知のケースがある。
         // なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
         task = Task.Run(() => HandlePropertyValueNotificationRequestAsync(value, edata, sourceNode));
         break;
+
       case ESV.InfC: // プロパティ値通知（応答要）
         // プロパティ値通知応答 INFC_Res
         task = Task.Run(() => HandlePropertyValueNotificationResponseRequiredAsync(value, edata, sourceNode, destObject));
@@ -1051,6 +1064,7 @@ partial class EchonetClient
       case ESV.SetGetServiceNotAvailable: // プロパティ値書き込み・読み出し不可応答
         // プロパティ値書き込み・読み出し要求 SetGet のレスポンスなので、要求送信(SETGET)のハンドラで対処
         break;
+
       default:
         break;
     }
