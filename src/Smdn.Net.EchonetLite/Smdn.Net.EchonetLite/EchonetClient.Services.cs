@@ -207,7 +207,7 @@ partial class EchonetClient
       finally {
         FrameReceived -= HandleFrameSetISNA;
       }
-    };
+    }
 
     FrameReceived += HandleFrameSetISNA;
 
@@ -321,7 +321,7 @@ partial class EchonetClient
       finally {
         FrameReceived -= HandleFrameSetResOrSetCSNA;
       }
-    };
+    }
 
     FrameReceived += HandleFrameSetResOrSetCSNA;
 
@@ -426,7 +426,7 @@ partial class EchonetClient
       finally {
         FrameReceived -= HandleFrameGetResOrGetSNA;
       }
-    };
+    }
 
     FrameReceived += HandleFrameGetResOrGetSNA;
 
@@ -547,7 +547,7 @@ partial class EchonetClient
       finally {
         FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
       }
-    };
+    }
 
     FrameReceived += HandleFrameSetGetResOrSetGetSNA;
 
@@ -746,7 +746,7 @@ partial class EchonetClient
       finally {
         FrameReceived -= HandleFrameINFCRes;
       }
-    };
+    }
 
     FrameReceived += HandleFrameINFCRes;
 
