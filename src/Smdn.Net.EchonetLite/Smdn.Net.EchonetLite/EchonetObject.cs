@@ -12,7 +12,6 @@ using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
 
-
 /// <summary>
 /// ECHONET Lite オブジェクトインスタンス
 /// </summary>

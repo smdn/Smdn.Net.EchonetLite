@@ -8,7 +8,6 @@ using Smdn.Net.EchonetLite.Appendix;
 
 namespace Smdn.Net.EchonetLite;
 
-
 /// <summary>
 /// プロパティクラス
 /// </summary>

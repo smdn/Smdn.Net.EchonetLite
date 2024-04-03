@@ -593,7 +593,6 @@ partial class EchonetClient
     }
   }
 
-
   /// <summary>
   /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を行います。　このサービスは一斉同報が可能です。
   /// </summary>
@@ -644,7 +643,6 @@ partial class EchonetClient
       cancellationToken
     );
   }
-
 
   /// <summary>
   /// ECHONET Lite サービス「INF:プロパティ値通知」(ESV <c>0x73</c>)を行います。　このサービスは個別通知・一斉同報通知ともに可能です。
@@ -895,6 +893,7 @@ partial class EchonetClient
             else
               propertyCapabilityMap[propertyCode] = new() { Anno = true };
           }
+
           break;
         }
 
@@ -909,6 +908,7 @@ partial class EchonetClient
             else
               propertyCapabilityMap[propertyCode] = new() { Set = true };
           }
+
           break;
         }
 
@@ -923,6 +923,7 @@ partial class EchonetClient
             else
               propertyCapabilityMap[propertyCode] = new() { Get = true };
           }
+
           break;
         }
       }

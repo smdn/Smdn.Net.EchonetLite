@@ -12,7 +12,6 @@ using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
-
 /// <summary>
 /// 電文形式 1（規定電文形式）
 /// </summary>
