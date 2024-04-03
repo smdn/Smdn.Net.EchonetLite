@@ -60,15 +60,15 @@ partial class EchonetClient
   /// イベントデータを格納している<see cref="ValueTuple{T1,T2}"/>。
   /// データの送信元を表す<see cref="IPAddress"/>と、受信したデータを表す<see cref="ReadOnlyMemory{Byte}"/>を保持します。
   /// </param>
-  private void EchonetDataReceived(object? sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
+  private void EchonetDataReceived(object? sender, (IPAddress Address, ReadOnlyMemory<byte> Data) value)
   {
-    if (!FrameSerializer.TryDeserialize(value.data.Span, out var frame))
+    if (!FrameSerializer.TryDeserialize(value.Data.Span, out var frame))
       // ECHONETLiteフレームではないため無視
       return;
 
-    logger?.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
+    logger?.LogTrace($"Echonet Lite Frame受信: address:{value.Address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
 
-    FrameReceived?.Invoke(this, (value.address, frame));
+    FrameReceived?.Invoke(this, (value.Address, frame));
   }
 
   /// <summary>

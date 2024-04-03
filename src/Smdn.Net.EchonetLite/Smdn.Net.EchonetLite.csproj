@@ -38,7 +38,7 @@ SPDX-License-Identifier: MIT
 
   <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Library -->
   <PropertyGroup>
-    <NoWarn>SA1309;SA1313;SA1316;SA1402;SA1413;SA1414;$(NoWarn)</NoWarn>
+    <NoWarn>SA1402;SA1413;SA1414;$(NoWarn)</NoWarn>
     <NoWarn>SA1505;SA1507;SA1508;SA1513;SA1514;SA1614;SA1623;SA1629;SA1642;$(NoWarn)</NoWarn>
   </PropertyGroup>
 
