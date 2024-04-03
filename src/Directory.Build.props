@@ -41,7 +41,5 @@ SPDX-License-Identifier: MIT
     />
   </ItemGroup>
 
-  <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Common -->
-  <PropertyGroup>
-  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)NoWarn.props" />
 </Project>

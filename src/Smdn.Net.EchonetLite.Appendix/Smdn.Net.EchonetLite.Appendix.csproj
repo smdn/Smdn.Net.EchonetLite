@@ -51,11 +51,6 @@ SPDX-License-Identifier: MIT
     <Message Text="MasterData: '%(EmbeddedResource.LogicalName)'" Importance="low"/>
   </Target>
 
-  <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Library -->
-  <PropertyGroup>
-    <NoWarn>SA1623;SA1629;SA1642;$(NoWarn)</NoWarn>
-  </PropertyGroup>
-
   <Target Name="GenerateReadmeFileContent">
     <PropertyGroup>
       <PackageReadmeFileContent><![CDATA[# $(PackageId) $(PackageVersion)
