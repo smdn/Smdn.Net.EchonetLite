@@ -19,13 +19,13 @@ internal sealed class SingleUInt16JsonConverter : JsonConverter<ushort> {
         Hexadecimals.ToHexChar((value >> 4) & 0xF),
         Hexadecimals.ToHexChar(value & 0xF),
         Hexadecimals.ToHexChar(value >> 12),
-        Hexadecimals.ToHexChar((value >> 8) & 0xF)
+        Hexadecimals.ToHexChar((value >> 8) & 0xF),
       }
       : stackalloc char[4] {
         Hexadecimals.ToHexChar(value >> 12),
         Hexadecimals.ToHexChar((value >> 8) & 0xF),
         Hexadecimals.ToHexChar((value >> 4) & 0xF),
-        Hexadecimals.ToHexChar(value & 0xF)
+        Hexadecimals.ToHexChar(value & 0xF),
       };
 
     writer.WriteStringValue(hex);

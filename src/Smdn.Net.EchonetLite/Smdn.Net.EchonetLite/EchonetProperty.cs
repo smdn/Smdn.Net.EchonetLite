@@ -8,7 +8,6 @@ using Smdn.Net.EchonetLite.Appendix;
 
 namespace Smdn.Net.EchonetLite;
 
-
 /// <summary>
 /// プロパティクラス
 /// </summary>
@@ -37,17 +36,17 @@ public sealed class EchonetProperty {
   /// </summary>
   public bool CanAnnounceStatusChange { get; }
 
-  private ArrayBufferWriter<byte>? _value = null;
+  private ArrayBufferWriter<byte>? value = null;
 
   /// <summary>
   /// プロパティ値を表す<see cref="ReadOnlyMemory{Byte}"/>を取得します。
   /// </summary>
-  public ReadOnlyMemory<byte> ValueMemory => _value is null ? ReadOnlyMemory<byte>.Empty : _value.WrittenMemory;
+  public ReadOnlyMemory<byte> ValueMemory => value is null ? ReadOnlyMemory<byte>.Empty : value.WrittenMemory;
 
   /// <summary>
   /// プロパティ値を表す<see cref="ReadOnlySpan{Byte}"/>を取得します。
   /// </summary>
-  public ReadOnlySpan<byte> ValueSpan => _value is null ? ReadOnlySpan<byte>.Empty : _value.WrittenSpan;
+  public ReadOnlySpan<byte> ValueSpan => value is null ? ReadOnlySpan<byte>.Empty : value.WrittenSpan;
 
   /// <summary>
   /// プロパティ値に変更があった場合に発生するイベント。
@@ -148,32 +147,32 @@ public sealed class EchonetProperty {
     try {
       var oldValueLength = 0;
 
-      if (_value is null) {
+      if (value is null) {
         var initialCapacity = 0 < newValueSize ? newValueSize : 8; // TODO: best initial capacity
 
-        _value = new(initialCapacity);
+        value = new(initialCapacity);
       }
       else {
-        oldValueLength = _value.WrittenSpan.Length;
+        oldValueLength = value.WrittenSpan.Length;
 
         oldValue = ArrayPool<byte>.Shared.Rent(oldValueLength);
 
-        _value.WrittenSpan.CopyTo(oldValue.AsSpan(0, oldValueLength));
+        value.WrittenSpan.CopyTo(oldValue.AsSpan(0, oldValueLength));
 
 #if SYSTEM_BUFFERS_ARRAYBUFFERWRITER_RESETWRITTENCOUNT
-        _value.ResetWrittenCount();
+        value.ResetWrittenCount();
 #else
-        _value.Clear();
+        value.Clear();
 #endif
       }
 
-      write(_value);
+      write(value);
 
       if (valueChangedHandlers is not null) {
         // 値が新規に設定される場合、以前の値から変更がある場合はValueChangedイベントを起こす
-        if (oldValue is null || !oldValue.AsSpan(0, oldValueLength).SequenceEqual(_value.WrittenSpan)) {
+        if (oldValue is null || !oldValue.AsSpan(0, oldValueLength).SequenceEqual(value.WrittenSpan)) {
           var oldValueMemory = oldValue is null ? ReadOnlyMemory<byte>.Empty : oldValue.AsMemory(0, oldValueLength);
-          var newValueMemory = _value.WrittenMemory;
+          var newValueMemory = value.WrittenMemory;
 
           valueChangedHandlers.Invoke(this, (oldValueMemory, newValueMemory));
         }

@@ -12,7 +12,6 @@ using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
-
 /// <summary>
 /// 電文形式 1（規定電文形式）
 /// </summary>
@@ -122,7 +121,11 @@ public sealed class EData1 : IEData {
 #endif
   }
 
-  public (IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>) GetOPCSetGetList()
+  public (
+    IReadOnlyCollection<PropertyRequest> OPCSetList,
+    IReadOnlyCollection<PropertyRequest> OPCGetList
+  )
+  GetOPCSetGetList()
   {
     if (!IsWriteOrReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");

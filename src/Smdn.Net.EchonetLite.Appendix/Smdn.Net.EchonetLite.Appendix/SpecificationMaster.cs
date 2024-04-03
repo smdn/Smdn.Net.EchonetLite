@@ -20,7 +20,7 @@ internal sealed class SpecificationMaster {
   /// <summary>
   /// JSONデシリアライズ用のオブジェクト
   /// </summary>
-  private sealed class SpecificationMasterJsonObject {
+  internal sealed class SpecificationMasterJsonObject {
     /// <summary>
     /// ECHONET Lite SPECIFICATIONのバージョン
     /// </summary>
@@ -112,25 +112,27 @@ internal sealed class SpecificationMaster {
   /// <summary>
   /// シングルトンイスタンス
   /// </summary>
-  private static SpecificationMaster? _Instance;
+  private static SpecificationMaster? instance;
 
   /// <summary>
   /// インスタンス取得
   /// </summary>
-  /// <returns></returns>
   public static SpecificationMaster GetInstance()
   {
-    if (_Instance is null) {
-      const string specificationMasterJsonFileName = "SpecificationMaster.json";
+    if (instance is null) {
+      const string SpecificationMasterJsonFileName = "SpecificationMaster.json";
 
-      using var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName);
+      using var stream = GetSpecificationMasterDataStream(SpecificationMasterJsonFileName);
 
-      _Instance = new(
-        JsonSerializer.Deserialize<SpecificationMasterJsonObject>(stream) ?? throw new InvalidOperationException($"failed to deserialize {specificationMasterJsonFileName}")
+      instance = new(
+        JsonSerializer.Deserialize<SpecificationMasterJsonObject>(
+          stream,
+          JsonSerializerSourceGenerationContext.Default.SpecificationMasterJsonObject
+        ) ?? throw new InvalidOperationException($"failed to deserialize {SpecificationMasterJsonFileName}")
       );
     }
 
-    return _Instance;
+    return instance;
   }
 
   private static readonly string SpecificationMasterDataLogicalRootName = "MasterData/";
@@ -173,7 +175,10 @@ internal sealed class SpecificationMaster {
 
     // スーパークラスのプロパティを列挙
     using (var stream = GetSpecificationMasterDataStream($"{classGroupSpec.SuperClassName}.json")) {
-      var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
+      var superClassProperties = JsonSerializer.Deserialize<PropertyMaster>(
+        stream,
+        JsonSerializerSourceGenerationContext.Default.PropertyMaster
+      ) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
       properties.AddRange(superClassProperties.Properties);
     }
 
@@ -187,7 +192,11 @@ internal sealed class SpecificationMaster {
       // クラスのプロパティを列挙
       using (var stream = GetSpecificationMasterDataStream(classGroupDirectoryName, classFileName)) {
         if (stream is not null) {
-          var classProperties = JsonSerializer.Deserialize<PropertyMaster>(stream) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
+          var classProperties = JsonSerializer.Deserialize<PropertyMaster>(
+            stream,
+            JsonSerializerSourceGenerationContext.Default.PropertyMaster
+          ) ?? throw new InvalidOperationException($"{nameof(PropertyMaster)} can not be null");
+
           properties.AddRange(classProperties.Properties);
         }
       }

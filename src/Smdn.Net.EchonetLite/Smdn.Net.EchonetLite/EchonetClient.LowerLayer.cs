@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
+#pragma warning disable CA2254 // CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
+
 using System;
 using System.Buffers;
 using System.Net;
@@ -11,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Smdn.Net.EchonetLite.Protocol;
+using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite;
 
@@ -20,15 +24,15 @@ partial class EchonetClient
 {
   /// <summary>
   /// 送信するECHONET Lite フレームを書き込むバッファ。
-  /// <see cref="_echonetLiteHandler"/>によって送信する内容を書き込むために使用する。
+  /// <see cref="echonetLiteHandler"/>によって送信する内容を書き込むために使用する。
   /// </summary>
-  private readonly ArrayBufferWriter<byte> _requestFrameBuffer = new(initialCapacity: 0x100);
+  private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
 
   /// <summary>
   /// ECHONET Lite フレームのリクエスト送信時の排他区間を定義するセマフォ。
-  /// <see cref="_requestFrameBuffer"/>への書き込み、および<see cref="_echonetLiteHandler"/>による送信を排他制御するために使用する。
+  /// <see cref="requestFrameBuffer"/>への書き込み、および<see cref="echonetLiteHandler"/>による送信を排他制御するために使用する。
   /// </summary>
-  private readonly SemaphoreSlim _requestSemaphore = new(initialCount: 1, maxCount: 1);
+  private SemaphoreSlim requestSemaphore = new(initialCount: 1, maxCount: 1);
 
   /// <summary>
   /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
@@ -59,15 +63,15 @@ partial class EchonetClient
   /// イベントデータを格納している<see cref="ValueTuple{T1,T2}"/>。
   /// データの送信元を表す<see cref="IPAddress"/>と、受信したデータを表す<see cref="ReadOnlyMemory{Byte}"/>を保持します。
   /// </param>
-  private void EchonetDataReceived(object? sender, (IPAddress address, ReadOnlyMemory<byte> data) value)
+  private void EchonetDataReceived(object? sender, (IPAddress Address, ReadOnlyMemory<byte> Data) value)
   {
-    if (!FrameSerializer.TryDeserialize(value.data.Span, out var frame))
+    if (!FrameSerializer.TryDeserialize(value.Data.Span, out var frame))
       // ECHONETLiteフレームではないため無視
       return;
 
-    _logger?.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
+    logger?.LogTrace($"Echonet Lite Frame受信: address:{value.Address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
 
-    FrameReceived?.Invoke(this, (value.address, frame));
+    FrameReceived?.Invoke(this, (value.Address, frame));
   }
 
   /// <summary>
@@ -85,14 +89,14 @@ partial class EchonetClient
   {
     ThrowIfDisposed();
 
-    await _requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+    await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
     try {
-      writeFrame(_requestFrameBuffer);
+      writeFrame(requestFrameBuffer);
 
-      if (_logger is not null && _logger.IsEnabled(LogLevel.Trace)) {
-        if (FrameSerializer.TryDeserialize(_requestFrameBuffer.WrittenSpan, out var frame)) {
-          _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
+      if (logger is not null && logger.IsEnabled(LogLevel.Trace)) {
+        if (FrameSerializer.TryDeserialize(requestFrameBuffer.WrittenSpan, out var frame)) {
+          logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
         }
 #if DEBUG
         else {
@@ -101,16 +105,16 @@ partial class EchonetClient
 #endif
       }
 
-      await _echonetLiteHandler.SendAsync(address, _requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
+      await echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }
     finally {
       // reset written count to reuse the buffer for the next write
 #if SYSTEM_BUFFERS_ARRAYBUFFERWRITER_RESETWRITTENCOUNT
-      _requestFrameBuffer.ResetWrittenCount();
+      requestFrameBuffer.ResetWrittenCount();
 #else
-      _requestFrameBuffer.Clear();
+      requestFrameBuffer.Clear();
 #endif
-      _requestSemaphore.Release();
+      requestSemaphore.Release();
     }
   }
 }

@@ -46,6 +46,7 @@ public sealed class EchonetObjectSpecification {
   /*
    * instance members
    */
+
   /// <summary>
   /// クラスグループ情報
   /// クラスグループコード

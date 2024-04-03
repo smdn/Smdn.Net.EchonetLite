@@ -5,7 +5,6 @@ using System;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
-
 /// <summary>
 /// 電文形式２（任意電文形式）
 /// </summary>

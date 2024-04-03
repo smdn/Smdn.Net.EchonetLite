@@ -1,0 +1,12 @@
+<!--
+SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Project>
+  <!-- suppress warnings relevant to XML comment documents as defined by StyleCop Analyzers -->
+  <PropertyGroup>
+    <NoWarn>SA1623;$(NoWarn)</NoWarn> <!-- SA1623: The property's documentation summary text should begin with: 'Gets' -->
+    <NoWarn>SA1629;$(NoWarn)</NoWarn> <!-- SA1629: Documentation text should end with a period -->
+    <NoWarn>SA1642;$(NoWarn)</NoWarn> <!-- SA1642: Constructor summary documentation should begin with standard text -->
+  </PropertyGroup>
+</Project>

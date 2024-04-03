@@ -9,7 +9,6 @@ using Smdn.Net.EchonetLite.Serialization.Json;
 namespace Smdn.Net.EchonetLite.Protocol;
 
 public readonly struct PropertyRequest {
-
   /// <summary>
   /// ECHONET Liteプロパティ(1B)
   /// </summary>

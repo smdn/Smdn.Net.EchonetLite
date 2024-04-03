@@ -48,6 +48,7 @@ public static class FrameSerializer {
     }
   }
 
+  [CLSCompliant(false)]
   public static void SerializeEchonetLiteFrameFormat1(
     IBufferWriter<byte> buffer,
     ushort tid,
@@ -97,6 +98,7 @@ public static class FrameSerializer {
     }
   }
 
+  [CLSCompliant(false)]
   public static void SerializeEchonetLiteFrameFormat2(
     IBufferWriter<byte> buffer,
     ushort tid,
@@ -114,7 +116,6 @@ public static class FrameSerializer {
 
     buffer.Advance(edata.Length);
   }
-
 
   public static bool TryDeserialize(ReadOnlySpan<byte> bytes, out Frame frame)
   {
@@ -144,6 +145,7 @@ public static class FrameSerializer {
           frame = new(ehd1, ehd2, tid, edata);
           return true;
         }
+
         break;
 
       case EHD2.Type2:
@@ -301,7 +303,6 @@ public static class FrameSerializer {
 
     return true;
   }
-
 
   private static void Write(IBufferWriter<byte> buffer, byte value)
   {
