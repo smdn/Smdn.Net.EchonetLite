@@ -268,7 +268,11 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
   /// </seealso>
-  public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueWriteRequestResponseRequiredAsync(
+  public async Task<(
+    bool Result,
+    IReadOnlyCollection<PropertyRequest> Properties
+  )>
+  PerformPropertyValueWriteRequestResponseRequiredAsync(
     EchonetObject sourceObject,
     EchonetNode? destinationNode,
     EchonetObject destinationObject,
@@ -374,7 +378,11 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
-  public async Task<(bool, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueReadRequestAsync(
+  public async Task<(
+    bool Result,
+    IReadOnlyCollection<PropertyRequest> Properties
+  )>
+  PerformPropertyValueReadRequestAsync(
     EchonetObject sourceObject,
     EchonetNode? destinationNode,
     EchonetObject destinationObject,
@@ -481,7 +489,12 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// </seealso>
-  public async Task<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)> PerformPropertyValueWriteReadRequestAsync(
+  public async Task<(
+    bool Result,
+    IReadOnlyCollection<PropertyRequest> PropertiesSet,
+    IReadOnlyCollection<PropertyRequest> PropertiesGet
+  )>
+  PerformPropertyValueWriteReadRequestAsync(
     EchonetObject sourceObject,
     EchonetNode? destinationNode,
     EchonetObject destinationObject,
