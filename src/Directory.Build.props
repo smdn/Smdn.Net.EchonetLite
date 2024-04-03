@@ -43,11 +43,7 @@ SPDX-License-Identifier: MIT
 
   <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Common -->
   <PropertyGroup>
-    <NoWarn>CA1031;$(NoWarn)</NoWarn> <!-- CA1031: 'Dispose' を変更してより具体的な許可された例外の種類をキャッチするか、例外を再スローしてください -->
-    <NoWarn>CA1063;$(NoWarn)</NoWarn> <!-- CA1063: Dispose(bool) のオーバーライド可能な実装を提供するか、型を sealed としてマークします。Dispose(false) を呼び出す場合は、ネイティブ リソースのみがクリーンアップされます。Dispose(true) を呼び出す場合には、マネージド リソースとネイティブ リソースの両方がクリーンアップされます。  -->
-    <NoWarn>CA1816;$(NoWarn)</NoWarn> <!-- CA1816: GC.SuppressFinalize(object) を呼び出すように Dispose() を変更します。これにより、ファイナライザーを導入する派生型で、その呼び出しのために 'IDisposable' を再実装する必要がなくなります。-->
     <NoWarn>CA1848;$(NoWarn)</NoWarn> <!-- CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-    <NoWarn>CA2213;$(NoWarn)</NoWarn> <!-- CA2213: Dispose メソッドを変更して、このフィールドで Close または Dispose を呼び出します。 -->
     <NoWarn>CA2254;$(NoWarn)</NoWarn> <!-- CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
   </PropertyGroup>
 </Project>
