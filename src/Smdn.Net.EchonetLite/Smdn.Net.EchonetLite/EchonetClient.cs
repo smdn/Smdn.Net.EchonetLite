@@ -11,9 +11,9 @@ using Microsoft.Extensions.Logging;
 namespace Smdn.Net.EchonetLite;
 
 public partial class EchonetClient : IDisposable, IAsyncDisposable {
-  private readonly bool _shouldDisposeEchonetLiteHandler;
-  private IEchonetLiteHandler _echonetLiteHandler; // null if disposed
-  private readonly ILogger? _logger;
+  private readonly bool shouldDisposeEchonetLiteHandler;
+  private IEchonetLiteHandler echonetLiteHandler; // null if disposed
+  private readonly ILogger? logger;
 
   /// <summary>
   /// 現在の<see cref="EchonetClient"/>インスタンスが扱う自ノードを表す<see cref="SelfNode"/>。
@@ -58,10 +58,10 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     ILogger<EchonetClient>? logger
   )
   {
-    _logger = logger;
-    _shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
-    _echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
-    _echonetLiteHandler.Received += EchonetDataReceived;
+    this.logger = logger;
+    this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
+    this.echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
+    this.echonetLiteHandler.Received += EchonetDataReceived;
     SelfNode = new(
       address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
       nodeProfile: new(Profiles.NodeProfile, 0x01)
@@ -106,13 +106,13 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     if (disposing) {
       FrameReceived = null; // unsubscribe
 
-      if (_echonetLiteHandler is not null) {
-        _echonetLiteHandler.Received -= EchonetDataReceived;
+      if (echonetLiteHandler is not null) {
+        echonetLiteHandler.Received -= EchonetDataReceived;
 
-        if (_shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IDisposable disposableEchonetLiteHandler)
+        if (shouldDisposeEchonetLiteHandler && echonetLiteHandler is IDisposable disposableEchonetLiteHandler)
           disposableEchonetLiteHandler.Dispose();
 
-        _echonetLiteHandler = null!;
+        echonetLiteHandler = null!;
       }
     }
   }
@@ -125,13 +125,13 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   {
     FrameReceived = null; // unsubscribe
 
-    if (_echonetLiteHandler is not null) {
-      _echonetLiteHandler.Received -= EchonetDataReceived;
+    if (echonetLiteHandler is not null) {
+      echonetLiteHandler.Received -= EchonetDataReceived;
 
-      if (_shouldDisposeEchonetLiteHandler && _echonetLiteHandler is IAsyncDisposable disposableEchonetLiteHandler)
+      if (shouldDisposeEchonetLiteHandler && echonetLiteHandler is IAsyncDisposable disposableEchonetLiteHandler)
         await disposableEchonetLiteHandler.DisposeAsync().ConfigureAwait(false);
 
-      _echonetLiteHandler = null!;
+      echonetLiteHandler = null!;
     }
   }
 
@@ -141,7 +141,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   /// <exception cref="ObjectDisposedException">現在のインスタンスはすでに破棄されています。</exception>
   protected void ThrowIfDisposed()
   {
-    if (_echonetLiteHandler is null)
+    if (echonetLiteHandler is null)
       throw new ObjectDisposedException(GetType().FullName);
   }
 }

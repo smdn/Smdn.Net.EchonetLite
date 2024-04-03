@@ -112,7 +112,7 @@ internal sealed class SpecificationMaster {
   /// <summary>
   /// シングルトンイスタンス
   /// </summary>
-  private static SpecificationMaster? _Instance;
+  private static SpecificationMaster? instance;
 
   /// <summary>
   /// インスタンス取得
@@ -120,20 +120,20 @@ internal sealed class SpecificationMaster {
   /// <returns></returns>
   public static SpecificationMaster GetInstance()
   {
-    if (_Instance is null) {
-      const string specificationMasterJsonFileName = "SpecificationMaster.json";
+    if (instance is null) {
+      const string SpecificationMasterJsonFileName = "SpecificationMaster.json";
 
-      using var stream = GetSpecificationMasterDataStream(specificationMasterJsonFileName);
+      using var stream = GetSpecificationMasterDataStream(SpecificationMasterJsonFileName);
 
-      _Instance = new(
+      instance = new(
         JsonSerializer.Deserialize<SpecificationMasterJsonObject>(
           stream,
           JsonSerializerSourceGenerationContext.Default.SpecificationMasterJsonObject
-        ) ?? throw new InvalidOperationException($"failed to deserialize {specificationMasterJsonFileName}")
+        ) ?? throw new InvalidOperationException($"failed to deserialize {SpecificationMasterJsonFileName}")
       );
     }
 
-    return _Instance;
+    return instance;
   }
 
   private static readonly string SpecificationMasterDataLogicalRootName = "MasterData/";

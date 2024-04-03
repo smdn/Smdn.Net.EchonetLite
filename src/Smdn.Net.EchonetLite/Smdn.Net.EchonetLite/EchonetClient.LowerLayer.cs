@@ -21,15 +21,15 @@ partial class EchonetClient
 {
   /// <summary>
   /// 送信するECHONET Lite フレームを書き込むバッファ。
-  /// <see cref="_echonetLiteHandler"/>によって送信する内容を書き込むために使用する。
+  /// <see cref="echonetLiteHandler"/>によって送信する内容を書き込むために使用する。
   /// </summary>
-  private readonly ArrayBufferWriter<byte> _requestFrameBuffer = new(initialCapacity: 0x100);
+  private readonly ArrayBufferWriter<byte> requestFrameBuffer = new(initialCapacity: 0x100);
 
   /// <summary>
   /// ECHONET Lite フレームのリクエスト送信時の排他区間を定義するセマフォ。
-  /// <see cref="_requestFrameBuffer"/>への書き込み、および<see cref="_echonetLiteHandler"/>による送信を排他制御するために使用する。
+  /// <see cref="requestFrameBuffer"/>への書き込み、および<see cref="echonetLiteHandler"/>による送信を排他制御するために使用する。
   /// </summary>
-  private readonly SemaphoreSlim _requestSemaphore = new(initialCount: 1, maxCount: 1);
+  private readonly SemaphoreSlim requestSemaphore = new(initialCount: 1, maxCount: 1);
 
   /// <summary>
   /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
@@ -66,7 +66,7 @@ partial class EchonetClient
       // ECHONETLiteフレームではないため無視
       return;
 
-    _logger?.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
+    logger?.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
 
     FrameReceived?.Invoke(this, (value.address, frame));
   }
@@ -86,14 +86,14 @@ partial class EchonetClient
   {
     ThrowIfDisposed();
 
-    await _requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+    await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
     try {
-      writeFrame(_requestFrameBuffer);
+      writeFrame(requestFrameBuffer);
 
-      if (_logger is not null && _logger.IsEnabled(LogLevel.Trace)) {
-        if (FrameSerializer.TryDeserialize(_requestFrameBuffer.WrittenSpan, out var frame)) {
-          _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
+      if (logger is not null && logger.IsEnabled(LogLevel.Trace)) {
+        if (FrameSerializer.TryDeserialize(requestFrameBuffer.WrittenSpan, out var frame)) {
+          logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
         }
 #if DEBUG
         else {
@@ -102,16 +102,16 @@ partial class EchonetClient
 #endif
       }
 
-      await _echonetLiteHandler.SendAsync(address, _requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
+      await echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }
     finally {
       // reset written count to reuse the buffer for the next write
 #if SYSTEM_BUFFERS_ARRAYBUFFERWRITER_RESETWRITTENCOUNT
-      _requestFrameBuffer.ResetWrittenCount();
+      requestFrameBuffer.ResetWrittenCount();
 #else
-      _requestFrameBuffer.Clear();
+      requestFrameBuffer.Clear();
 #endif
-      _requestSemaphore.Release();
+      requestSemaphore.Release();
     }
   }
 }

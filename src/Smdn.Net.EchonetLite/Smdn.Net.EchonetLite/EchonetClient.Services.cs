@@ -784,7 +784,7 @@ partial class EchonetClient
   /// <seealso cref="AcquirePropertyMapsAsync"/>
   private async ValueTask HandleInstanceListNotificationReceivedAsync(EchonetNode sourceNode, ReadOnlyMemory<byte> edt)
   {
-    _logger?.LogTrace("インスタンスリスト通知を受信しました");
+    logger?.LogTrace("インスタンスリスト通知を受信しました");
 
     if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt.Span, out var instanceList))
       return; // XXX
@@ -808,13 +808,13 @@ partial class EchonetClient
 
     foreach (var device in instances) {
       if (!device.HasPropertyMapAcquired) {
-        _logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
+        logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
         await AcquirePropertyMapsAsync(sourceNode, device).ConfigureAwait(false);
       }
     }
 
     if (!sourceNode.NodeProfile.HasPropertyMapAcquired) {
-      _logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
+      logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
       await AcquirePropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
     }
 
@@ -852,17 +852,17 @@ partial class EchonetClient
       ).ConfigureAwait(false);
     }
     catch (OperationCanceledException ex) when (ctsTimeout.Token.Equals(ex.CancellationToken)) {
-      _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りがタイムアウトしました");
+      logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りがタイムアウトしました");
       return;
     }
 
     // 不可応答は無視
     if (!result) {
-      _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りで不可応答が返答されました");
+      logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りで不可応答が返答されました");
       return;
     }
 
-    _logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
+    logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
 
     var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
 
@@ -929,7 +929,7 @@ partial class EchonetClient
       )
     );
 
-    if (_logger is not null) {
+    if (logger is not null) {
       var sb = new StringBuilder();
 
       sb.AppendLine("------");
@@ -940,7 +940,7 @@ partial class EchonetClient
 
       sb.AppendLine("------");
 
-      _logger.LogTrace(sb.ToString());
+      logger.LogTrace(sb.ToString());
     }
 
     device.HasPropertyMapAcquired = true;
@@ -1065,7 +1065,7 @@ partial class EchonetClient
 
     task?.ContinueWith((t) => {
       if (t.Exception is not null) {
-        _logger?.LogTrace(t.Exception, "Exception");
+        logger?.LogTrace(t.Exception, "Exception");
       }
     });
   }
