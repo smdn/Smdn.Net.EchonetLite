@@ -106,6 +106,9 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     if (disposing) {
       FrameReceived = null; // unsubscribe
 
+      requestSemaphore?.Dispose();
+      requestSemaphore = null!;
+
       if (echonetLiteHandler is not null) {
         echonetLiteHandler.Received -= EchonetDataReceived;
 
@@ -124,6 +127,9 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   protected virtual async ValueTask DisposeAsyncCore()
   {
     FrameReceived = null; // unsubscribe
+
+    requestSemaphore?.Dispose();
+    requestSemaphore = null!;
 
     if (echonetLiteHandler is not null) {
       echonetLiteHandler.Received -= EchonetDataReceived;

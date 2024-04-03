@@ -29,7 +29,7 @@ partial class EchonetClient
   /// ECHONET Lite フレームのリクエスト送信時の排他区間を定義するセマフォ。
   /// <see cref="requestFrameBuffer"/>への書き込み、および<see cref="echonetLiteHandler"/>による送信を排他制御するために使用する。
   /// </summary>
-  private readonly SemaphoreSlim requestSemaphore = new(initialCount: 1, maxCount: 1);
+  private SemaphoreSlim requestSemaphore = new(initialCount: 1, maxCount: 1);
 
   /// <summary>
   /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
