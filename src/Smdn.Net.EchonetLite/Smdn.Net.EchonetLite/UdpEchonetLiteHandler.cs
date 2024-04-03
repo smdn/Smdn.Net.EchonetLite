@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using Microsoft.Extensions.Logging;
-
 using System;
 using System.Linq;
 using System.Net;
@@ -13,6 +11,8 @@ using System.Runtime.InteropServices; // MemoryMarshal
 #endif
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.EchonetLite;
 
