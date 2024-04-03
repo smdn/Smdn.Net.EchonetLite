@@ -53,7 +53,7 @@ SPDX-License-Identifier: MIT
 
   <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Library -->
   <PropertyGroup>
-    <NoWarn>SA1616;SA1623;SA1629;SA1642;SA1649;$(NoWarn)</NoWarn>
+    <NoWarn>SA1623;SA1629;SA1642;$(NoWarn)</NoWarn>
   </PropertyGroup>
 
   <Target Name="GenerateReadmeFileContent">

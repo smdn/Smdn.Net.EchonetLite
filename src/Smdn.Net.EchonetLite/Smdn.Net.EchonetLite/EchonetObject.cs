@@ -91,7 +91,7 @@ public sealed class EchonetObject {
   /// プロパティは仕様から取得する
   /// </summary>
   /// <param name="classObject">オブジェクトクラス</param>
-  /// <param name="instanceCode"></param>
+  /// <param name="instanceCode">インスタンスコード</param>
   public EchonetObject(EchonetObjectSpecification classObject, byte instanceCode)
   {
     Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));

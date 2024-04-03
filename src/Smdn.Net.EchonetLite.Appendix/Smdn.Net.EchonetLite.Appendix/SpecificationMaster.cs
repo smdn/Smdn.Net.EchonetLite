@@ -117,7 +117,6 @@ internal sealed class SpecificationMaster {
   /// <summary>
   /// インスタンス取得
   /// </summary>
-  /// <returns></returns>
   public static SpecificationMaster GetInstance()
   {
     if (instance is null) {
