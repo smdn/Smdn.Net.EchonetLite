@@ -53,7 +53,7 @@ public readonly struct EOJ : IEquatable<EOJ> {
     => other switch {
       EOJ otherEOJ => Equals(otherEOJ),
       null => false,
-      _ => false
+      _ => false,
     };
 
   public override int GetHashCode()

@@ -21,7 +21,7 @@ internal sealed class SingleByteJsonConverter<TByte> : JsonConverter<TByte>
 
     Span<char> hex = stackalloc char[2] {
       Hexadecimals.ToHexChar(by >> 4),
-      Hexadecimals.ToHexChar(by & 0xF)
+      Hexadecimals.ToHexChar(by & 0xF),
     };
 
     writer.WriteStringValue(hex);

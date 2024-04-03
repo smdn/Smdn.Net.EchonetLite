@@ -29,7 +29,7 @@ public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable {
 
     try {
       receiveUdpClient = new UdpClient(DefaultUdpPort) {
-        EnableBroadcast = true
+        EnableBroadcast = true,
       };
     }
     catch (Exception ex) {
@@ -91,7 +91,7 @@ public class UdpEchonetLiteHandler : IEchonetLiteHandler, IDisposable {
 #endif
 
     var sendUdpClient = new UdpClient() {
-      EnableBroadcast = true
+      EnableBroadcast = true,
     };
 
     sendUdpClient.Connect(remote);
