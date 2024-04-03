@@ -43,7 +43,5 @@ SPDX-License-Identifier: MIT
 
   <!-- disables code style/code analysis warnings configured by Smdn.MSBuild.ProjectAssets.Common -->
   <PropertyGroup>
-    <NoWarn>CA1848;$(NoWarn)</NoWarn> <!-- CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-    <NoWarn>CA2254;$(NoWarn)</NoWarn> <!-- CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
   </PropertyGroup>
 </Project>
