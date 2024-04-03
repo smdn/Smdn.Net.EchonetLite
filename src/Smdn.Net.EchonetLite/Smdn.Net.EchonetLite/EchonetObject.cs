@@ -69,7 +69,7 @@ public sealed class EchonetObject {
   /// <summary>
   /// EOJ
   /// </summary>
-  public EOJ EOJ => new(
+  internal EOJ EOJ => new(
     classGroupCode: Spec.ClassGroup.Code,
     classCode: Spec.Class.Code,
     instanceCode: InstanceCode
