@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Smdn.Net.EchonetLite.Protocol;
+using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite;
 
@@ -65,7 +66,7 @@ partial class EchonetClient
       // ECHONETLiteフレームではないため無視
       return;
 
-    _logger?.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame)}");
+    _logger?.LogTrace($"Echonet Lite Frame受信: address:{value.address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
 
     FrameReceived?.Invoke(this, (value.address, frame));
   }
@@ -92,7 +93,7 @@ partial class EchonetClient
 
       if (_logger is not null && _logger.IsEnabled(LogLevel.Trace)) {
         if (FrameSerializer.TryDeserialize(_requestFrameBuffer.WrittenSpan, out var frame)) {
-          _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame)}");
+          _logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
         }
 #if DEBUG
         else {
