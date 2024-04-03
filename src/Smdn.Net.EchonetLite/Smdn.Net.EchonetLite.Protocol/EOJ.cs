@@ -49,9 +49,9 @@ public readonly struct EOJ : IEquatable<EOJ> {
       ClassCode == other.ClassCode &&
       InstanceCode == other.InstanceCode;
 
-  public override bool Equals(object? other)
-    => other switch {
-      EOJ otherEOJ => Equals(otherEOJ),
+  public override bool Equals(object? obj)
+    => obj switch {
+      EOJ other => Equals(other),
       null => false,
       _ => false,
     };
