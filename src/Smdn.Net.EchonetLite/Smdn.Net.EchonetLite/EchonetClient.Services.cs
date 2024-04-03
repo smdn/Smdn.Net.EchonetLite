@@ -984,15 +984,9 @@ partial class EchonetClient
       NodeJoined?.Invoke(this, sourceNode);
     }
 
-    EchonetObject? destObject = null;
-
-    // 自ノードプロファイル宛てのリクエストの場合
-    if (SelfNode.NodeProfile.EOJ == edata.DEOJ) {
-      destObject = SelfNode.NodeProfile;
-    }
-    else {
-      destObject = SelfNode.Devices.FirstOrDefault(d => d.EOJ == edata.DEOJ);
-    }
+    var destObject = SelfNode.NodeProfile.EOJ == edata.DEOJ
+      ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
+      : SelfNode.Devices.FirstOrDefault(d => d.EOJ == edata.DEOJ);
 
     Task? task = null;
 
