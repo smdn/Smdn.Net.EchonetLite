@@ -48,6 +48,7 @@ public static class FrameSerializer {
     }
   }
 
+  [CLSCompliant(false)]
   public static void SerializeEchonetLiteFrameFormat1(
     IBufferWriter<byte> buffer,
     ushort tid,
@@ -97,6 +98,7 @@ public static class FrameSerializer {
     }
   }
 
+  [CLSCompliant(false)]
   public static void SerializeEchonetLiteFrameFormat2(
     IBufferWriter<byte> buffer,
     ushort tid,

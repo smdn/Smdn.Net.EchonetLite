@@ -29,6 +29,7 @@ public readonly struct Frame {
   /// <summary>
   /// トランザクションID(2B)
   /// </summary>
+  [CLSCompliant(false)]
   [JsonConverter(typeof(SingleUInt16JsonConverter))]
   public ushort TID { get; }
 
@@ -50,6 +51,7 @@ public readonly struct Frame {
   /// <paramref name="edata"/>の型が<paramref name="ehd2"/>と矛盾しています。
   /// または<paramref name="ehd2"/>に不正な値が指定されています。
   /// </exception>
+  [CLSCompliant(false)]
   public Frame(EHD1 ehd1, EHD2 ehd2, ushort tid, IEData edata)
   {
     if (edata is null)
