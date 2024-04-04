@@ -101,6 +101,90 @@ partial class EchonetClient
   /// インスタンスリスト通知要求を行います。
   /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)に対するECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を送信します。
   /// </summary>
+  /// <param name="onInstanceListPropertyMapAcquiring">
+  /// インスタンスリスト受信後・プロパティマップの取得前に呼び出されるコールバックを表すデリゲートを指定します。
+  /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
+  /// </param>
+  /// <param name="onInstanceListUpdated">
+  /// インスタンスリスト受信後・プロパティマップの取得完了後に呼び出されるコールバックを表すデリゲートを指定します。
+  /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
+  /// </param>
+  /// <param name="onPropertyMapAcquired">
+  /// ノードの各インスタンスに対するプロパティマップの取得完了後に呼び出されるコールバックを表すデリゲートを指定します。
+  /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
+  /// </param>
+  /// <param name="state">各コールバックに共通して渡される状態変数を指定します。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <typeparam name="TState">各コールバックに共通して渡される状態変数<paramref name="state"/>の型を指定します。</typeparam>
+  /// <returns>非同期の操作を表す<see cref="Task"/>。</returns>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
+  /// </seealso>
+  public async Task PerformInstanceListNotificationRequestAsync<TState>(
+    Func<EchonetClient, EchonetNode, TState, bool>? onInstanceListPropertyMapAcquiring,
+    Func<EchonetClient, EchonetNode, TState, bool>? onInstanceListUpdated,
+    Func<EchonetClient, EchonetNode, EchonetObject, TState, bool>? onPropertyMapAcquired,
+    TState state,
+    CancellationToken cancellationToken = default
+  )
+  {
+    const bool RetVoid = default;
+
+    var tcs = new TaskCompletionSource<bool>();
+
+    // インスタンスリスト受信後・プロパティマップの取得前に発生するイベントをハンドリングする
+    void HandleInstanceListPropertyMapAcquiring(object? sender, (EchonetNode Node, IReadOnlyList<EchonetObject> Instances) e)
+    {
+      // この時点で条件がtrueとなったら、結果を確定する
+      if (onInstanceListPropertyMapAcquiring(this, e.Node, state))
+        _ = tcs.TrySetResult(RetVoid);
+    }
+
+    // インスタンスリスト受信後・プロパティマップの取得完了後に発生するイベントをハンドリングする
+    void HandleInstanceListUpdated(object? sender, (EchonetNode Node, IReadOnlyList<EchonetObject> Instances) e)
+    {
+      // この時点で条件がtrueとなったら、結果を確定する
+      if (onInstanceListUpdated(this, e.Node, state))
+        _ = tcs.TrySetResult(RetVoid);
+    }
+
+    // ノードの各インスタンスに対するプロパティマップの取得完了後に発生するイベントをハンドリングする
+    void HandlePropertyMapAcquired(object? sender, (EchonetNode Node, EchonetObject Device) e)
+    {
+      // この時点で条件がtrueとなったら、結果を確定する
+      if (onPropertyMapAcquired(this, e.Node, e.Device, state))
+        _ = tcs.TrySetResult(RetVoid);
+    }
+
+    try {
+      using var ctr = cancellationToken.Register(() => _ = tcs.TrySetCanceled(cancellationToken));
+
+      if (onInstanceListPropertyMapAcquiring is not null)
+        InstanceListPropertyMapAcquiring += HandleInstanceListPropertyMapAcquiring;
+      if (onInstanceListUpdated is not null)
+        InstanceListUpdated += HandleInstanceListUpdated;
+      if (onPropertyMapAcquired is not null)
+        PropertyMapAcquired += HandlePropertyMapAcquired;
+
+      await PerformInstanceListNotificationRequestAsync(cancellationToken).ConfigureAwait(false);
+
+      // イベントの発生およびコールバックの処理を待機する
+      _ = await tcs.Task.ConfigureAwait(false);
+    }
+    finally {
+      if (onInstanceListPropertyMapAcquiring is not null)
+        InstanceListPropertyMapAcquiring -= HandleInstanceListPropertyMapAcquiring;
+      if (onInstanceListUpdated is not null)
+        InstanceListUpdated -= HandleInstanceListUpdated;
+      if (onPropertyMapAcquired is not null)
+        PropertyMapAcquired -= HandlePropertyMapAcquired;
+    }
+  }
+
+  /// <summary>
+  /// インスタンスリスト通知要求を行います。
+  /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)に対するECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を送信します。
+  /// </summary>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
@@ -110,11 +194,11 @@ partial class EchonetClient
     CancellationToken cancellationToken = default
   )
   {
-    var properties = Enumerable.Repeat(
+    var propsInstanceListNotification = Enumerable.Repeat(
       new EchonetProperty(
         Profiles.NodeProfile.ClassGroup.Code,
         Profiles.NodeProfile.Class.Code,
-        0xD5// インスタンスリスト通知
+        0xD5 // インスタンスリスト通知
       ),
       1
     );
@@ -129,7 +213,7 @@ partial class EchonetClient
           instanceCode: 0x01
         )
       ),
-      properties,
+      propsInstanceListNotification,
       cancellationToken
     ).ConfigureAwait(false);
   }
