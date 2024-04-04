@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#pragma warning disable CA1031, CA1063, CA1816, CA2213
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
 #pragma warning disable CA2254 // CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
 
@@ -23,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.EchonetLite.Transport;
 
-public class UdpEchonetLiteHandler : EchonetLiteHandler, IDisposable {
+public class UdpEchonetLiteHandler : EchonetLiteHandler {
   private UdpClient? receiveUdpClient;
   private readonly IReadOnlyList<IPAddress> selfAddresses;
   private readonly ILogger logger;
@@ -60,11 +59,13 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler, IDisposable {
         receiveUdpClient?.Dispose();
         receiveUdpClient = null;
       }
+#pragma warning disable CA1031
       catch (Exception ex) {
         logger.LogWarning(ex, $"unexpected exception occured while disposing {nameof(UdpClient)} for receiving");
 
         // swallow all exceptions
       }
+#pragma warning restore CA1031
     }
 
     base.Dispose(disposing);
@@ -77,11 +78,13 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler, IDisposable {
       receiveUdpClient?.Dispose();
       receiveUdpClient = null;
     }
+#pragma warning disable CA1031
     catch (Exception ex) {
       logger.LogWarning(ex, $"unexpected exception occured while disposing {nameof(UdpClient)} for receiving");
 
       // swallow all exceptions
     }
+#pragma warning restore CA1031
 
     return base.DisposeAsyncCore();
   }
