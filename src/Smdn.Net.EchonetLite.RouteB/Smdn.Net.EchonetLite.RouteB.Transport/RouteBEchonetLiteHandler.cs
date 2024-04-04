@@ -12,7 +12,7 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport;
 
 public abstract class RouteBEchonetLiteHandler : EchonetLiteHandler {
   /// <summary>
-  /// Gets the <see cref="IPAddress"/> represents the IPv6 address address of the peer device (i.e., smart electricity meter) to which this handler is currently connected.
+  /// Gets the <see cref="IPAddress"/> represents the IP address of the peer device (i.e., smart electricity meter) to which this handler is currently connected.
   /// </summary>
   public abstract IPAddress? PeerAddress { get; }
 
