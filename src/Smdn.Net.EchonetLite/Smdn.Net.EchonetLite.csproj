@@ -7,8 +7,8 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;net6.0;net8.0</TargetFrameworks>
-    <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
+    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionSuffix>preview1</VersionSuffix>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -33,8 +33,8 @@ SPDX-License-Identifier: MIT
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectOrPackageReference ReferencePackageVersion="1.0.0" Include="..\Smdn.Net.EchonetLite.Appendix\Smdn.Net.EchonetLite.Appendix.csproj" />
-    <ProjectOrPackageReference ReferencePackageVersion="1.0.0" Include="..\Smdn.Net.EchonetLite.Transport\Smdn.Net.EchonetLite.Transport.csproj" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Include="..\Smdn.Net.EchonetLite.Appendix\Smdn.Net.EchonetLite.Appendix.csproj" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Include="..\Smdn.Net.EchonetLite.Transport\Smdn.Net.EchonetLite.Transport.csproj" />
   </ItemGroup>
 
   <Target Name="GenerateReadmeFileContent">
