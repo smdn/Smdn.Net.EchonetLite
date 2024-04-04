@@ -1,6 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2018 HiroyukiSakoh
-SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
+SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 SPDX-License-Identifier: MIT
 -->
 <Project Sdk="Microsoft.NET.Sdk">
@@ -18,24 +17,16 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup Label="assembly attributes">
     <Description>
-<![CDATA[Provides the implementation based on the specifications described in the "ECHONET Lite SPECIFICATION II ECHONET Lite Communication Middleware Specifications". Including APIs such as `EchonetClient`, which is an implementation corresponding to the "Communication Middleware" in the specification.
+<![CDATA[Provides the APIs based on the specifications described in the "ECHONET Lite SPECIFICATION II ECHONET Lite Communication Middleware Specifications". Including APIs such as `IEchonetLiteHandler`, which is the interface for implementing the communication endpoint to the "Lower Communication Layers".
 
-「ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様」に記載されている仕様に基づく実装を提供します。　同仕様書における「通信ミドルウェア」に相当する`EchonetClient`などのAPIを提供します。]]>
+「ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様」に記載されている「下位通信層」との通信エンドポイントを実装するための抽象インターフェース`IEchonetLiteHandler`などのAPIを提供します。]]>
     </Description>
   </PropertyGroup>
 
   <PropertyGroup Label="package properties">
+    <PackageTags>transport;connection;$(PackageTags)</PackageTags>
     <GenerateNupkgReadmeFileDependsOnTargets>$(GenerateNupkgReadmeFileDependsOnTargets);GenerateReadmeFileContent</GenerateNupkgReadmeFileDependsOnTargets>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectOrPackageReference ReferencePackageVersion="1.0.0" Include="..\Smdn.Net.EchonetLite.Appendix\Smdn.Net.EchonetLite.Appendix.csproj" />
-    <ProjectOrPackageReference ReferencePackageVersion="1.0.0" Include="..\Smdn.Net.EchonetLite.Transport\Smdn.Net.EchonetLite.Transport.csproj" />
-  </ItemGroup>
 
   <Target Name="GenerateReadmeFileContent">
     <PropertyGroup>
