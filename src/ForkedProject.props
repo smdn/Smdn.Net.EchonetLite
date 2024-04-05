@@ -1,0 +1,14 @@
+<!--
+SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Project>
+  <!-- property settings for the project inherited from the original repository -->
+  <PropertyGroup Label="assembly attributes">
+    <Copyright>Copyright © 2018 HiroyukiSakoh, Copyright © 2023 smdn.</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Label="package properties">
+    <Authors>HiroyukiSakoh,smdn</Authors>
+  </PropertyGroup>
+</Project>
