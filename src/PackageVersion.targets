@@ -1,0 +1,22 @@
+<!--
+SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Project>
+  <!--
+    Central Package Management (Directory.Packages.props) can not be used along with Smdn.MSBuild.ProjectAssets.*
+    so use PackageReference@Update instead.
+  -->
+  <ItemGroup>
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageReference Update="System.Text.Json" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite\Smdn.Net.EchonetLite.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.Appendix\Smdn.Net.EchonetLite.Appendix.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB\Smdn.Net.EchonetLite.RouteB.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.Transport\Smdn.Net.EchonetLite.Transport.csproj'))" />
+  </ItemGroup>
+</Project>
