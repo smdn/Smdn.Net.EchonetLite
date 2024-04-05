@@ -4,7 +4,7 @@ SPDX-License-Identifier: MIT
 -->
 <Project>
   <ImportGroup Label="project assets">
-    <Import Project="$(SmdnProjectAssets_TargetsImports)" />
     <Import Project="$(MSBuildThisFileDirectory)PackageVersion.targets" />
+    <Import Project="$(SmdnProjectAssets_TargetsImports)" />
   </ImportGroup>
 </Project>
