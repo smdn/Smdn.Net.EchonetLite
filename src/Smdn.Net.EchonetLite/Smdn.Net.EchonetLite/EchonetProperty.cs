@@ -174,6 +174,7 @@ public sealed class EchonetProperty {
           var oldValueMemory = oldValue is null ? ReadOnlyMemory<byte>.Empty : oldValue.AsMemory(0, oldValueLength);
           var newValueMemory = value.WrittenMemory;
 
+          // TODO: use ISynchronizeInvoke
           valueChangedHandlers.Invoke(this, (oldValueMemory, newValueMemory));
         }
       }
