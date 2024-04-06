@@ -108,6 +108,7 @@ public sealed class EchonetObject {
 
   private void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
   {
+    // TODO: use ISynchronizeInvoke
     PropertiesChanged?.Invoke(this, e);
   }
 
