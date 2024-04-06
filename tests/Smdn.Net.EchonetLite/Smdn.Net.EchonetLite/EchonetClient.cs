@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.ComponentModel;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace Smdn.Net.EchonetLite;
 [TestFixture]
 public class EchonetClientTests {
   private class ReceiveEDATA2EchonetLiteHandler : IEchonetLiteHandler {
+    public ISynchronizeInvoke? SynchronizingObject { get; set; }
+
     public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
@@ -40,6 +43,8 @@ public class EchonetClientTests {
   }
 
   private class DisposableEchonetLiteHandler : IEchonetLiteHandler, IDisposable {
+    public ISynchronizeInvoke? SynchronizingObject { get; set; }
+
     public bool IsDisposed { get; private set; }
 
     public void Dispose()
@@ -56,6 +61,8 @@ public class EchonetClientTests {
   }
 
   private class AsyncDisposableEchonetLiteHandler : IEchonetLiteHandler, IAsyncDisposable {
+    public ISynchronizeInvoke? SynchronizingObject { get; set; }
+
     public bool IsDisposed { get; private set; }
 
     public ValueTask DisposeAsync()
