@@ -1082,7 +1082,7 @@ partial class EchonetClient
 
       Nodes.Add(sourceNode);
 
-      NodeJoined?.Invoke(this, sourceNode);
+      OnNodeJoined(sourceNode);
     }
 
     var destObject = SelfNode.NodeProfile.EOJ == edata.DEOJ

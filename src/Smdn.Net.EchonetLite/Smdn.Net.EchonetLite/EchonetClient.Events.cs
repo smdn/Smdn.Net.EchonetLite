@@ -12,7 +12,13 @@ partial class EchonetClient
   /// <summary>
   /// 新しいECHONET Lite ノードが発見されたときに発生するイベント。
   /// </summary>
+  /// <remarks>
+  /// イベント引数には、発見されたノードを表す<see cref="EchonetNode"/>が設定されます。
+  /// </remarks>
   public event EventHandler<EchonetNode>? NodeJoined;
+
+  protected virtual void OnNodeJoined(EchonetNode node)
+    => NodeJoined?.Invoke(this, node);
 
   /// <summary>
   /// インスタンスリスト通知の受信による更新を開始するときに発生するイベント。
