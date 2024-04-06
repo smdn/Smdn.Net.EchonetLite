@@ -195,7 +195,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
       Func<SkStackClient, CancellationToken, ValueTask<SkStackPanaSessionInfo>> authenticateAsPanaClientAsync
     )
     {
-      await PrepareConnectionAsync(cancellationToken).ConfigureAwait(false);
+      await PrepareSessionAsync(cancellationToken).ConfigureAwait(false);
 
       panaSessionInfo = await authenticateAsPanaClientAsync(
         client,
@@ -205,7 +205,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 #pragma warning restore CS8604
   }
 
-  private protected abstract ValueTask PrepareConnectionAsync(CancellationToken cancellationToken);
+  private protected abstract ValueTask PrepareSessionAsync(CancellationToken cancellationToken);
 
   protected override async ValueTask DisconnectAsyncCore(
     CancellationToken cancellationToken

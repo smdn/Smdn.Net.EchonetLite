@@ -30,7 +30,7 @@ public sealed class SkStackRouteBTcpEchonetLiteHandler : SkStackRouteBEchonetLit
     throw new NotImplementedException();
   }
 
-  private protected override ValueTask PrepareConnectionAsync(CancellationToken cancellationToken)
+  private protected override ValueTask PrepareSessionAsync(CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
   private protected override ValueTask<IPAddress> ReceiveEchonetLiteAsync(

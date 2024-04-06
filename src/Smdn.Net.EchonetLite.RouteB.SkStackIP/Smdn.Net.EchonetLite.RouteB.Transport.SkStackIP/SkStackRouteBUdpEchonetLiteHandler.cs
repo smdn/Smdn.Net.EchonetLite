@@ -29,7 +29,7 @@ public sealed class SkStackRouteBUdpEchonetLiteHandler : SkStackRouteBEchonetLit
   {
   }
 
-  private protected override async ValueTask PrepareConnectionAsync(CancellationToken cancellationToken)
+  private protected override async ValueTask PrepareSessionAsync(CancellationToken cancellationToken)
   {
     _ = await Client.PrepareUdpPortAsync(
       port: SkStackKnownPortNumbers.Pana,
