@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.ComponentModel;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,4 +29,9 @@ public interface IEchonetLiteHandler {
   /// イベント引数<see cref="ValueTuple{T1,T2}"/>は、送信元を表す<see cref="IPAddress"/>、および受信内容を表す<see cref="ReadOnlyMemory{Byte}"/>を保持します。
   /// </remarks>
   event EventHandler<(IPAddress Address, ReadOnlyMemory<byte> Data)> Received;
+
+  /// <summary>
+  /// <see cref="Received"/>イベントの結果として発行されるイベントハンドラー呼び出しをマーシャリングするために使用する<see cref="ISynchronizeInvoke"/>オブジェクトを取得または設定します。
+  /// </summary>
+  ISynchronizeInvoke? SynchronizingObject { get; set; }
 }
