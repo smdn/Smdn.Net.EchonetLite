@@ -3,7 +3,7 @@
 [![CodeQL](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/codeql-analysis.yml)
 
 # Smdn.Net.EchonetLite
-`Smdn.Net.EchonetLite`は、ECHONET Liteやその周辺の規格/仕様を.NETで使用できるように実装したものです。
+`Smdn.Net.EchonetLite`は、[ECHONET Lite](https://echonet.jp/)やその周辺の規格/仕様を.NETで使用できるように実装したものです。 `Smdn.Net.EchonetLite` is the implementation of [ECHONET Lite](https://echonet.jp/english/) and its related standards/specifications for .NET.
 
 ## Introduction
 このプロジェクトは[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をフォークしたものです。　This is a project forked from [HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite).
