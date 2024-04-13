@@ -6,8 +6,4 @@ SPDX-License-Identifier: MIT
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\src\Smdn.Net.EchonetLite.Appendix\Smdn.Net.EchonetLite.Appendix.csproj" />
-  </ItemGroup>
 </Project>
