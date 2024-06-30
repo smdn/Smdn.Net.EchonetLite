@@ -20,7 +20,7 @@ public static class RouteBCredentialServiceCollectionExtensions {
     string id,
     string password
   )
-    => AddRouteBCredential(
+    => AddRouteBCredentialProvider(
       services: services ?? throw new ArgumentNullException(nameof(services)),
 #pragma warning disable CA2000
       credentialProvider: new SingleIdentityPlainTextRouteBCredentialProvider(
@@ -35,7 +35,7 @@ public static class RouteBCredentialServiceCollectionExtensions {
   /// </summary>
   /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
   /// <param name="credentialProvider">A <see cref="IRouteBCredentialProvider"/> used for authentication to the route B for the smart meter.</param>
-  public static IServiceCollection AddRouteBCredential(
+  public static IServiceCollection AddRouteBCredentialProvider(
     this IServiceCollection services,
     IRouteBCredentialProvider credentialProvider
   )
