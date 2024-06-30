@@ -19,8 +19,8 @@ SPDX-License-Identifier: MIT
   <ItemGroup>
     <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite\Smdn.Net.EchonetLite.csproj'))" />
     <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.Appendix\Smdn.Net.EchonetLite.Appendix.csproj'))" />
-    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB\Smdn.Net.EchonetLite.RouteB.csproj'))" />
-    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB.SkStackIP\Smdn.Net.EchonetLite.RouteB.SkStackIP.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview2" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB\Smdn.Net.EchonetLite.RouteB.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview2" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB.SkStackIP\Smdn.Net.EchonetLite.RouteB.SkStackIP.csproj'))" />
     <ProjectOrPackageReference ReferencePackageVersion="2.0.0-preview1" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.Transport\Smdn.Net.EchonetLite.Transport.csproj'))" />
   </ItemGroup>
 </Project>
