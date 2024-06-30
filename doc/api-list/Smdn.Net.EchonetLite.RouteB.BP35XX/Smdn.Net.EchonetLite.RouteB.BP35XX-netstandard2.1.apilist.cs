@@ -1,7 +1,7 @@
-// Smdn.Net.EchonetLite.RouteB.BP35XX.dll (Smdn.Net.EchonetLite.RouteB.BP35XX-2.0.0-preview1)
+// Smdn.Net.EchonetLite.RouteB.BP35XX.dll (Smdn.Net.EchonetLite.RouteB.BP35XX-2.0.0-preview2)
 //   Name: Smdn.Net.EchonetLite.RouteB.BP35XX
 //   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0-preview1+7e4ec0f9f1fc7e96046c9643ab2a9a07aa113c90
+//   InformationalVersion: 2.0.0-preview2+aaf89dd76b82384b6126644a027a919432f09930
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
@@ -9,7 +9,7 @@
 //     Smdn.Devices.BP35XX, Version=1.0.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.RouteB, Version=2.0.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.RouteB.SkStackIP, Version=2.0.0.0, Culture=neutral
-//     Smdn.Net.SkStackIP, Version=1.0.0.0, Culture=neutral
+//     Smdn.Net.SkStackIP, Version=1.2.0.0, Culture=neutral
 //     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 #nullable enable annotations
 
