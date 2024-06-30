@@ -1,11 +1,11 @@
-// Smdn.Net.EchonetLite.RouteB.dll (Smdn.Net.EchonetLite.RouteB-2.0.0-preview1)
+// Smdn.Net.EchonetLite.RouteB.dll (Smdn.Net.EchonetLite.RouteB-2.0.0-preview2)
 //   Name: Smdn.Net.EchonetLite.RouteB
 //   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0-preview1+72e57d7daf6b52fc6ecc4ed745e175a1893e8d90
+//   InformationalVersion: 2.0.0-preview2+c9161acca48757584c059440b4e2b704c3a80505
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
-//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Smdn.Net.EchonetLite.Transport, Version=2.0.0.0, Culture=neutral
 //     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 #nullable enable annotations
@@ -34,8 +34,9 @@ namespace Smdn.Net.EchonetLite.RouteB.Credentials {
   }
 
   public static class RouteBCredentialServiceCollectionExtensions {
-    public static IServiceCollection AddRouteBCredential(this IServiceCollection services, IRouteBCredentialProvider credentialProvider) {}
     public static IServiceCollection AddRouteBCredential(this IServiceCollection services, string id, string password) {}
+    public static IServiceCollection AddRouteBCredentialFromEnvironmentVariable(this IServiceCollection services, string envVarForId, string envVarForPassword) {}
+    public static IServiceCollection AddRouteBCredentialProvider(this IServiceCollection services, IRouteBCredentialProvider credentialProvider) {}
   }
 
   public static class RouteBCredentials {
