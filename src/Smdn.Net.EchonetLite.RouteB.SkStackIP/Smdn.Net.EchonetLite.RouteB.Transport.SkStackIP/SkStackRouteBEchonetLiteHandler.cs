@@ -141,19 +141,12 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
         sessionConfiguration.PaaAddress is null
       );
 
-    // TODO: reduce allocation
-    var rbidBufferWriter = new ArrayBufferWriter<byte>(initialCapacity: RouteBCredentials.AuthenticationIdLength);
-    var passwordBufferWriter = new ArrayBufferWriter<byte>(initialCapacity: RouteBCredentials.PasswordLength);
-
-    credential.WriteIdTo(rbidBufferWriter);
-    credential.WritePasswordTo(passwordBufferWriter);
-
     if (shouldPerformActiveScan) {
       // obtain PAN information by active scan prior to initialization
       return Core(
         authenticateAsPanaClientAsync: (device, ct) => device.AuthenticateAsPanaClientAsync(
-          rbid: rbidBufferWriter.WrittenMemory,
-          password: passwordBufferWriter.WrittenMemory,
+          writeRBID: writer => credential.WriteIdTo(writer),
+          writePassword: writer => credential.WritePasswordTo(writer),
           scanOptions: sessionConfiguration.ActiveScanOptions,
           cancellationToken: ct
         )
@@ -165,8 +158,8 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
       if (shouldResolvePaaAddress) {
         return Core(
           authenticateAsPanaClientAsync: (device, ct) => device.AuthenticateAsPanaClientAsync(
-            rbid: rbidBufferWriter.WrittenMemory,
-            password: passwordBufferWriter.WrittenMemory,
+            writeRBID: writer => credential.WriteIdTo(writer),
+            writePassword: writer => credential.WritePasswordTo(writer),
             paaMacAddress: sessionConfiguration.PaaMacAddress!,
             channel: sessionConfiguration.Channel!.Value,
             panId: sessionConfiguration.PanId!.Value,
@@ -177,8 +170,8 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
       else {
         return Core(
           authenticateAsPanaClientAsync: (device, ct) => device.AuthenticateAsPanaClientAsync(
-            rbid: rbidBufferWriter.WrittenMemory,
-            password: passwordBufferWriter.WrittenMemory,
+            writeRBID: writer => credential.WriteIdTo(writer),
+            writePassword: writer => credential.WritePasswordTo(writer),
             paaAddress: sessionConfiguration.PaaAddress!,
             channel: sessionConfiguration.Channel!.Value,
             panId: sessionConfiguration.PanId!.Value,
