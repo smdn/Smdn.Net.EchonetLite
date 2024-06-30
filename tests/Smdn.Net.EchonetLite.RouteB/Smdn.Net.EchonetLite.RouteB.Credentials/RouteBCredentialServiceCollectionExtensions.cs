@@ -15,6 +15,9 @@ public class RouteBCredentialServiceCollectionExtensions {
   private const string ID = "00112233445566778899AABBCCDDEEFF";
   private const string Password = "0123456789AB";
 
+  private const string EnvVarForId = "SMDN_NET_ECHONETLITE_ROUTEB_ROUTEB_ID";
+  private const string EnvVarForPassword = "SMDN_NET_ECHONETLITE_ROUTEB_ROUTEB_PASSWORD";
+
   private static (string ID, string Password) GetCredential(
     IRouteBCredentialProvider provider,
     IRouteBCredentialIdentity identity
@@ -88,6 +91,127 @@ public class RouteBCredentialServiceCollectionExtensions {
       () => services.AddRouteBCredential(
         id: id!,
         password: password!
+      )
+    );
+  }
+
+  [Test]
+  public void AddRouteBCredentialFromEnvironmentVariable()
+  {
+    var services = new ServiceCollection();
+
+    Assert.DoesNotThrow(
+      () => services.AddRouteBCredentialFromEnvironmentVariable(
+        envVarForId: EnvVarForId,
+        envVarForPassword: EnvVarForPassword
+      )
+    );
+
+    var credentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
+
+    Assert.That(credentialProvider, Is.Not.Null, nameof(credentialProvider));
+
+    try {
+      Environment.SetEnvironmentVariable(EnvVarForId, ID);
+      Environment.SetEnvironmentVariable(EnvVarForPassword, Password);
+
+      var (id, password) = GetCredential(credentialProvider, identity: null!);
+
+      Assert.That(id, Is.EqualTo(ID));
+      Assert.That(password, Is.EqualTo(Password));
+    }
+    finally {
+      Environment.SetEnvironmentVariable(EnvVarForId, null);
+      Environment.SetEnvironmentVariable(EnvVarForPassword, null);
+    }
+  }
+
+  [TestCase(ID, null)]
+  [TestCase(null, Password)]
+  public void AddRouteBCredentialFromEnvironmentVariable_EnvVarNotSet(string? id, string? password)
+  {
+    var services = new ServiceCollection();
+
+    Assert.DoesNotThrow(
+      () => services.AddRouteBCredentialFromEnvironmentVariable(
+        envVarForId: EnvVarForId,
+        envVarForPassword: EnvVarForPassword
+      )
+    );
+
+    var credentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
+
+    Assert.That(credentialProvider, Is.Not.Null, nameof(credentialProvider));
+
+    try {
+      Environment.SetEnvironmentVariable(EnvVarForId, id);
+      Environment.SetEnvironmentVariable(EnvVarForPassword, password);
+
+      Assert.Throws<InvalidOperationException>(
+        () => GetCredential(credentialProvider, identity: null!)
+      );
+    }
+    finally {
+      Environment.SetEnvironmentVariable(EnvVarForId, null);
+      Environment.SetEnvironmentVariable(EnvVarForPassword, null);
+    }
+  }
+
+  [Test]
+  public void AddRouteBCredentialFromEnvironmentVariable_TryAddMultiple()
+  {
+    var services = new ServiceCollection();
+
+    Assert.DoesNotThrow(
+      () => services.AddRouteBCredentialFromEnvironmentVariable(
+        envVarForId: EnvVarForId,
+        envVarForPassword: EnvVarForPassword
+      )
+    );
+
+    Assert.DoesNotThrow(
+      () => services.AddRouteBCredentialFromEnvironmentVariable(
+        envVarForId: "this_must_not_be_selected",
+        envVarForPassword: "this_must_not_be_selected"
+      )
+    );
+
+    var credentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
+
+    Assert.That(credentialProvider, Is.Not.Null, nameof(credentialProvider));
+
+    try {
+      Environment.SetEnvironmentVariable(EnvVarForId, ID);
+      Environment.SetEnvironmentVariable(EnvVarForPassword, Password);
+
+      var (id, password) = GetCredential(credentialProvider, identity: null!);
+
+      Assert.That(id, Is.EqualTo(ID));
+      Assert.That(password, Is.EqualTo(Password));
+    }
+    finally {
+      Environment.SetEnvironmentVariable(EnvVarForId, null);
+      Environment.SetEnvironmentVariable(EnvVarForPassword, null);
+    }
+  }
+
+  [TestCase(EnvVarForId, null, typeof(ArgumentNullException))]
+  [TestCase(EnvVarForId, "", typeof(ArgumentException))]
+  [TestCase(null, EnvVarForPassword, typeof(ArgumentNullException))]
+  [TestCase("", EnvVarForPassword, typeof(ArgumentException))]
+  public void AddRouteBCredentialFromEnvironmentVariable_ArgumentNullOrEmpty(
+    string? envVarForId,
+    string? envVarForPassword,
+    Type typeOfExpectedException
+  )
+  {
+    var services = new ServiceCollection();
+
+    Assert.Throws(
+      typeOfExpectedException,
+      () => services.AddRouteBCredentialFromEnvironmentVariable(
+        envVarForId: envVarForId!,
+        envVarForPassword: envVarForPassword!
       )
     );
   }

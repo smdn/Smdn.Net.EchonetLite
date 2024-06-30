@@ -32,6 +32,28 @@ public static class RouteBCredentialServiceCollectionExtensions {
 
   /// <summary>
   /// Adds <see cref="IRouteBCredentialProvider"/> to <see cref="IServiceCollection"/>.
+  /// This overload creates <see cref="IRouteBCredentialProvider"/> that retrieves route-B ID and password from environment variables.
+  /// </summary>
+  /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+  /// <param name="envVarForId">An environment variable name for the route-B ID used for the route-B authentication.</param>
+  /// <param name="envVarForPassword">An environment variable name for the password used for the route-B authentication.</param>
+  public static IServiceCollection AddRouteBCredentialFromEnvironmentVariable(
+    this IServiceCollection services,
+    string envVarForId,
+    string envVarForPassword
+  )
+    => AddRouteBCredentialProvider(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+#pragma warning disable CA2000
+      credentialProvider: new SingleIdentityEnvironmentVariableRouteBCredentialProvider(
+        envVarForId: envVarForId,
+        envVarForPassword: envVarForPassword
+      )
+#pragma warning restore CA2000
+    );
+
+  /// <summary>
+  /// Adds <see cref="IRouteBCredentialProvider"/> to <see cref="IServiceCollection"/>.
   /// </summary>
   /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
   /// <param name="credentialProvider">A <see cref="IRouteBCredentialProvider"/> used for authentication to the route B for the smart meter.</param>
