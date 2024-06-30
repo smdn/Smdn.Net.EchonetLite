@@ -91,4 +91,57 @@ public class RouteBCredentialServiceCollectionExtensions {
       )
     );
   }
+
+  private class ConcreteRouteBCredentialProvider : IRouteBCredentialProvider {
+    public IRouteBCredential GetCredential(IRouteBCredentialIdentity identity)
+      => throw new NotSupportedException();
+  }
+
+  [Test]
+  public void AddRouteBCredentialProvider()
+  {
+    var services = new ServiceCollection();
+    var credentialProvider = new ConcreteRouteBCredentialProvider();
+
+    services.AddRouteBCredentialProvider(
+      credentialProvider: credentialProvider
+    );
+
+    var registeredCredentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
+
+    Assert.That(registeredCredentialProvider, Is.Not.Null, nameof(registeredCredentialProvider));
+    Assert.That(registeredCredentialProvider, Is.SameAs(credentialProvider));
+  }
+
+  [Test]
+  public void AddRouteBCredentialProvider_TryAddMultiple()
+  {
+    var services = new ServiceCollection();
+    var firstCredentialProvider = new ConcreteRouteBCredentialProvider();
+    var secondCredentialProvider = new ConcreteRouteBCredentialProvider();
+
+    services.AddRouteBCredentialProvider(
+      credentialProvider: firstCredentialProvider
+    );
+    services.AddRouteBCredentialProvider(
+      credentialProvider: secondCredentialProvider
+    );
+
+    var registeredCredentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
+
+    Assert.That(registeredCredentialProvider, Is.Not.Null, nameof(registeredCredentialProvider));
+    Assert.That(registeredCredentialProvider, Is.SameAs(firstCredentialProvider));
+  }
+
+  [Test]
+  public void AddRouteBCredentialProvider_ArgumentNull()
+  {
+    var services = new ServiceCollection();
+
+    Assert.Throws<ArgumentNullException>(
+      () => services.AddRouteBCredentialProvider(
+        credentialProvider: null!
+      )
+    );
+  }
 }
