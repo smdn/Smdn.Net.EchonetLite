@@ -133,69 +133,64 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     ThrowIfDisposed();
     ThrowIfReceiving();
 
-    var shouldPerformActiveScan =
-      !sessionConfiguration.Channel.HasValue ||
-      !sessionConfiguration.PanId.HasValue ||
-      (
-        sessionConfiguration.PaaMacAddress is null &&
-        sessionConfiguration.PaaAddress is null
-      );
+    return CoreAsync();
 
-    if (shouldPerformActiveScan) {
-      // obtain PAN information by active scan prior to initialization
-      return Core(
-        authenticateAsPanaClientAsync: (device, ct) => device.AuthenticateAsPanaClientAsync(
-          writeRBID: writer => credential.WriteIdTo(writer),
-          writePassword: writer => credential.WritePasswordTo(writer),
-          scanOptions: sessionConfiguration.ActiveScanOptions,
-          cancellationToken: ct
-        )
-      );
-    }
-    else {
-      var shouldResolvePaaAddress = sessionConfiguration.PaaAddress is null;
-
-      if (shouldResolvePaaAddress) {
-        return Core(
-          authenticateAsPanaClientAsync: (device, ct) => device.AuthenticateAsPanaClientAsync(
-            writeRBID: writer => credential.WriteIdTo(writer),
-            writePassword: writer => credential.WritePasswordTo(writer),
-            paaMacAddress: sessionConfiguration.PaaMacAddress!,
-            channel: sessionConfiguration.Channel!.Value,
-            panId: sessionConfiguration.PanId!.Value,
-            cancellationToken: ct
-          )
-        );
-      }
-      else {
-        return Core(
-          authenticateAsPanaClientAsync: (device, ct) => device.AuthenticateAsPanaClientAsync(
-            writeRBID: writer => credential.WriteIdTo(writer),
-            writePassword: writer => credential.WritePasswordTo(writer),
-            paaAddress: sessionConfiguration.PaaAddress!,
-            channel: sessionConfiguration.Channel!.Value,
-            panId: sessionConfiguration.PanId!.Value,
-            cancellationToken: ct
-          )
-        );
-      }
-    }
-
-#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
-#pragma warning disable CS8604
-#endif
-    async ValueTask Core(
-      Func<SkStackClient, CancellationToken, ValueTask<SkStackPanaSessionInfo>> authenticateAsPanaClientAsync
-    )
+    async ValueTask CoreAsync()
     {
       await PrepareSessionAsync(cancellationToken).ConfigureAwait(false);
 
-      panaSessionInfo = await authenticateAsPanaClientAsync(
-        client,
-        cancellationToken
-      ).ConfigureAwait(false);
+      panaSessionInfo = await AuthenticateAsPanaClientAsync(cancellationToken).ConfigureAwait(false);
     }
-#pragma warning restore CS8604
+
+#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
+#pragma warning disable CS8602
+#endif
+    ValueTask<SkStackPanaSessionInfo> AuthenticateAsPanaClientAsync(
+      CancellationToken ct
+    )
+    {
+      var shouldObtainPanInformationByActiveScan =
+        !sessionConfiguration.Channel.HasValue ||
+        !sessionConfiguration.PanId.HasValue ||
+        (
+          sessionConfiguration.PaaMacAddress is null &&
+          sessionConfiguration.PaaAddress is null
+        );
+
+      if (shouldObtainPanInformationByActiveScan) {
+        // obtain PAN information by active scan prior to initialization
+        return client.AuthenticateAsPanaClientAsync(
+          writeRBID: credential.WriteIdTo,
+          writePassword: credential.WritePasswordTo,
+          scanOptions: sessionConfiguration.ActiveScanOptions,
+          cancellationToken: ct
+        );
+      }
+
+      var shouldResolvePaaAddress = sessionConfiguration.PaaAddress is null;
+
+      if (shouldResolvePaaAddress) {
+        return client.AuthenticateAsPanaClientAsync(
+          writeRBID: credential.WriteIdTo,
+          writePassword: credential.WritePasswordTo,
+          paaMacAddress: sessionConfiguration.PaaMacAddress!,
+          channel: sessionConfiguration.Channel!.Value,
+          panId: sessionConfiguration.PanId!.Value,
+          cancellationToken: ct
+        );
+      }
+      else {
+        return client.AuthenticateAsPanaClientAsync(
+          writeRBID: credential.WriteIdTo,
+          writePassword: credential.WritePasswordTo,
+          paaAddress: sessionConfiguration.PaaAddress!,
+          channel: sessionConfiguration.Channel!.Value,
+          panId: sessionConfiguration.PanId!.Value,
+          cancellationToken: ct
+        );
+      }
+    }
+#pragma warning restore CS8602
   }
 
   private protected abstract ValueTask PrepareSessionAsync(CancellationToken cancellationToken);
