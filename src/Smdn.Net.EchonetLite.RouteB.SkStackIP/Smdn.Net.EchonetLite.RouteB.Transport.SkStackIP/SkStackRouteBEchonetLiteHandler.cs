@@ -23,11 +23,16 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler {
+  public static readonly string ResiliencePipelineKeyForAuthenticate = nameof(SkStackRouteBEchonetLiteHandler) + "." + nameof(resiliencePipelineAuthenticate);
   public static readonly string ResiliencePipelineKeyForSend = nameof(SkStackRouteBEchonetLiteHandler) + "." + nameof(resiliencePipelineSend);
+
+  [CLSCompliant(false)]
+  public static readonly ResiliencePropertyKey<SkStackClient?> ResiliencePropertyKeyForClient = new(nameof(ResiliencePropertyKeyForClient));
 
   private SkStackClient? client;
   private readonly bool shouldDisposeClient;
   private readonly SkStackRouteBSessionConfiguration sessionConfiguration;
+  private readonly ResiliencePipeline? resiliencePipelineAuthenticate;
   private readonly ResiliencePipeline? resiliencePipelineSend;
   private SkStackPanaSessionInfo? panaSessionInfo;
   private SemaphoreSlim semaphore = new(initialCount: 1, maxCount: 1);
@@ -75,6 +80,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 
     var resiliencePipelineProvider = serviceProvider?.GetService<ResiliencePipelineProvider<string>>();
 
+    _ = resiliencePipelineProvider?.TryGetPipeline(ResiliencePipelineKeyForAuthenticate, out resiliencePipelineAuthenticate);
     _ = resiliencePipelineProvider?.TryGetPipeline(ResiliencePipelineKeyForSend, out resiliencePipelineSend);
   }
 
@@ -137,9 +143,24 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 
     async ValueTask CoreAsync()
     {
-      await PrepareSessionAsync(cancellationToken).ConfigureAwait(false);
+      var resiliencePipeline = resiliencePipelineAuthenticate ?? ResiliencePipeline.Empty;
+      var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
-      panaSessionInfo = await AuthenticateAsPanaClientAsync(cancellationToken).ConfigureAwait(false);
+      try {
+        resilienceContext.Properties.Set(ResiliencePropertyKeyForClient, client);
+
+        panaSessionInfo = await resiliencePipeline.ExecuteAsync(
+          callback: async ctx => {
+            await PrepareSessionAsync(ctx.CancellationToken).ConfigureAwait(false);
+
+            return await AuthenticateAsPanaClientAsync(ctx.CancellationToken).ConfigureAwait(false);
+          },
+          context: resilienceContext
+        ).ConfigureAwait(false);
+      }
+      finally {
+        ResilienceContextPool.Shared.Return(resilienceContext);
+      }
     }
 
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
