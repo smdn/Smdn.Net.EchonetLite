@@ -1,7 +1,7 @@
-// Smdn.Net.EchonetLite.RouteB.BP35XX.dll (Smdn.Net.EchonetLite.RouteB.BP35XX-2.0.0-preview2)
+// Smdn.Net.EchonetLite.RouteB.BP35XX.dll (Smdn.Net.EchonetLite.RouteB.BP35XX-2.0.0-preview3)
 //   Name: Smdn.Net.EchonetLite.RouteB.BP35XX
 //   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0-preview2+aaf89dd76b82384b6126644a027a919432f09930
+//   InformationalVersion: 2.0.0-preview3+f083b2de6dc07603893bff9d4a263609fd1a919e
 //   TargetFramework: .NETCoreApp,Version=v6.0
 //   Configuration: Release
 //   Referenced assemblies:
