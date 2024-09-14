@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: MIT
 using System;
 
+using Smdn.Net.SkStackIP;
+
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 public interface ISkStackRouteBEchonetLiteHandlerFactory : IRouteBEchonetLiteHandlerFactory {
+  Action<SkStackClient>? ConfigureSkStackClient { get; set; }
   Action<SkStackRouteBSessionConfiguration>? ConfigureRouteBSessionConfiguration { get; set; }
 }

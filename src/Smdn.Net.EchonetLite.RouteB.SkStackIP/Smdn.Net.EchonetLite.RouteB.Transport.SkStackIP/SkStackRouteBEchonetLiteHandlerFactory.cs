@@ -13,6 +13,7 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection services) : ISkStackRouteBEchonetLiteHandlerFactory {
   private readonly IServiceCollection services = services;
 
+  public Action<SkStackClient>? ConfigureSkStackClient { get; set; }
   public Action<SkStackRouteBSessionConfiguration>? ConfigureRouteBSessionConfiguration { get; set; }
 
   /// <summary>
@@ -40,8 +41,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
 
-    client.ReceiveResponseDelay = TimeSpan.FromMilliseconds(20); // TODO: make configurable
-    client.ReceiveUdpPollingInterval = TimeSpan.FromMilliseconds(50); // TODO: make configurable
+    ConfigureSkStackClient?.Invoke(client);
 
     return TransportProtocol switch {
       SkStackRouteBTransportProtocol.Tcp => new SkStackRouteBTcpEchonetLiteHandler(
