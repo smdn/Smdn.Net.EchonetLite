@@ -103,8 +103,17 @@ IssueやPull Requestを送る際は、[Contribution guidelines](./CONTRIBUTING.m
 
 
 # Notice
+(An English translation for the reference follows the text written in Japanese.)
+
 ## License
-本プロジェクトは[MIT License](./LICENSE.txt)の条件に基づきライセンスされています。　This project is licensed under the terms of the [MIT License](./LICENSE.txt).
+本プロジェクトは[MIT License](./LICENSE.txt)の条件に基づきライセンスされています。
+
+This project is licensed under the terms of the [MIT License](./LICENSE.txt).
 
 ## Third-Party Notices
 TO BE ADDED
+
+## Trademark Notices
+「ECHONET」、「エコーネット」、「ECHONET Lite」は、[エコーネットコンソーシアム](https://echonet.jp/organization/)の商標または登録商標です。
+
+**ECHONET**, **エコーネット**, **ECHONET Lite** are registered trademarks or trademarks of [ECHONET Consortium](https://echonet.jp/organization_en/).
