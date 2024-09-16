@@ -113,6 +113,11 @@ This project is licensed under the terms of the [MIT License](./LICENSE.txt).
 ## Third-Party Notices
 TO BE ADDED
 
+## Disclaimer
+本プロジェクトは、[エコーネットコンソーシアム](https://echonet.jp/organization/)、およびエコーネット対応製品の製造元・供給元・販売元とは無関係の、非公式なものです。
+
+This is an unofficial project that has no affiliation with [ECHONET Consortium](https://echonet.jp/organization_en/) and the manufacturers/vendors/suppliers of ECHONET compliant products.
+
 ## Trademark Notices
 「ECHONET」、「エコーネット」、「ECHONET Lite」は、[エコーネットコンソーシアム](https://echonet.jp/organization/)の商標または登録商標です。
 
