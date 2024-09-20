@@ -82,16 +82,12 @@ partial class EchonetClient
     });
 
     // インスタンスリスト通知
+    // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
+    // > 自発的「通知」の場合は、DEOJに特に明示的に指定する EOJ がない場合は、ノードプロファイルクラスを格納することとする。
     await PerformPropertyValueNotificationAsync(
       SelfNode.NodeProfile, // ノードプロファイルから
       null, // 一斉通知
-      new(
-        new EOJ(
-          classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
-          classCode: Profiles.NodeProfile.Class.Code,
-          instanceCode: 0x01
-        )
-      ),
+      SelfNode.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
       Enumerable.Repeat(property, 1),
       cancellationToken
     ).ConfigureAwait(false);
@@ -203,16 +199,13 @@ partial class EchonetClient
       1
     );
 
+    // インスタンスリスト通知要求
+    // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
+    // > 自発的「通知」の場合は、DEOJに特に明示的に指定する EOJ がない場合は、ノードプロファイルクラスを格納することとする。
     await PerformPropertyValueNotificationRequestAsync(
       SelfNode.NodeProfile, // ノードプロファイルから
       null, // 一斉通知
-      new(
-        new EOJ(
-          classGroupCode: Profiles.NodeProfile.ClassGroup.Code,
-          classCode: Profiles.NodeProfile.Class.Code,
-          instanceCode: 0x01
-        )
-      ),
+      SelfNode.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
       propsInstanceListNotification,
       cancellationToken
     ).ConfigureAwait(false);
