@@ -1068,9 +1068,10 @@ partial class EchonetClient
     // 未知のノードの場合
     if (sourceNode is null) {
       // ノードを生成
+      // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
       sourceNode = new(
         address: value.Address,
-        nodeProfile: EchonetObject.CreateGeneralNodeProfile()
+        nodeProfile: EchonetObject.CreateNodeProfile(instanceCode: 0x00)
       );
 
       Nodes.Add(sourceNode);
