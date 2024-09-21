@@ -1070,7 +1070,7 @@ partial class EchonetClient
       // ノードを生成
       sourceNode = new(
         address: value.Address,
-        nodeProfile: new(Profiles.NodeProfile, 0x01)
+        nodeProfile: EchonetObject.CreateGeneralNodeProfile()
       );
 
       Nodes.Add(sourceNode);

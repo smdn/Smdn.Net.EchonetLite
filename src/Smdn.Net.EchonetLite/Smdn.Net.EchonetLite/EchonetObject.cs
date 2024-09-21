@@ -15,7 +15,7 @@ namespace Smdn.Net.EchonetLite;
 /// <summary>
 /// ECHONET Lite オブジェクトインスタンス
 /// </summary>
-public sealed class EchonetObject {
+public sealed partial class EchonetObject {
   /// <summary>
   /// プロパティの一覧<see cref="Properties"/>に変更があったときに発生するイベント。
   /// </summary>

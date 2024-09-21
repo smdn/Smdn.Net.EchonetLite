@@ -64,7 +64,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     this.echonetLiteHandler.Received += EchonetDataReceived;
     SelfNode = new(
       address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
-      nodeProfile: new(Profiles.NodeProfile, 0x01)
+      nodeProfile: EchonetObject.CreateGeneralNodeProfile()
     );
     Nodes = new List<EchonetNode>();
     // 自己消費用
