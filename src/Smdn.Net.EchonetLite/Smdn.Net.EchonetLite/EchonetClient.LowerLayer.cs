@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-#pragma warning disable CA2254 // CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
 
 using System;
 using System.Buffers;
@@ -69,27 +68,65 @@ partial class EchonetClient
       // ECHONETLiteフレームではないため無視
       return;
 
-#if false
-    logger?.LogTrace($"Echonet Lite Frame受信: address:{value.Address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
+    using var scope = logger?.BeginScope("Receive");
+
+    logger?.LogTrace(
+      "ECHONET Lite frame (From: {Address}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
+      value.Address,
+      (byte)ehd1,
+      (byte)ehd2,
+      (byte)tid,
+#if SYSTEM_CONVERT_TOHEXSTRING
+      Convert.ToHexString(edata)
+#else
+      BitConverter.ToString(edata.ToArray())
 #endif
+    );
 
     switch (ehd2) {
       case EHD2.Format1:
         if (!FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
-          logger?.LogWarning("Received invalid ECHONET Lite frame (Format 1)");
+          logger?.LogWarning(
+            "Invalid Format 1 message (From: {Address})",
+            value.Address
+          );
           return;
         }
+
+        logger?.LogDebug(
+          "Format 1 message (From: {Address}, Message: {Message})",
+          value.Address,
+          JsonSerializer.Serialize(format1Message, JsonSerializerSourceGenerationContext.Default.Format1Message)
+        );
 
         Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
 
         break;
 
       case EHD2.Format2:
-        // TODO
+        // TODO: process format 2 messages
+        logger?.LogDebug(
+          "Format 2 message (From: {Address}, Message: {Message})",
+          value.Address,
+#if SYSTEM_CONVERT_TOHEXSTRING
+          Convert.ToHexString(edata)
+#else
+          BitConverter.ToString(edata.ToArray())
+#endif
+        );
         break;
 
       default:
         // undefined message format, do nothing
+        logger?.LogDebug(
+          "Undefined format message (From: {Address}, Message: {Message})",
+          value.Address,
+#if SYSTEM_CONVERT_TOHEXSTRING
+          Convert.ToHexString(edata)
+#else
+          BitConverter.ToString(edata.ToArray())
+#endif
+        );
         break;
     }
   }
@@ -112,20 +149,12 @@ partial class EchonetClient
     await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
     try {
+      using var scope = logger?.BeginScope("Send");
+
       writeFrame(requestFrameBuffer);
 
-#if false
-      if (logger is not null && logger.IsEnabled(LogLevel.Trace)) {
-        if (FrameSerializer.TryDeserialize(requestFrameBuffer.WrittenSpan, out var frame)) {
-          logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
-        }
-#if DEBUG
-        else {
-          throw new InvalidOperationException("attempted to request an invalid format of frame");
-        }
-#endif
-      }
-#endif
+      if (logger is not null)
+        LogFrame(requestFrameBuffer.WrittenSpan);
 
       await echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }
@@ -137,6 +166,43 @@ partial class EchonetClient
       requestFrameBuffer.Clear();
 #endif
       requestSemaphore.Release();
+    }
+
+    void LogFrame(ReadOnlySpan<byte> frame)
+    {
+      if (!FrameSerializer.TryDeserialize(frame, out var ehd1, out var ehd2, out var tid, out var edata))
+        throw new InvalidOperationException("attempted to send an invalid format of ECHONET Lite frame");
+
+      if (logger.IsEnabled(LogLevel.Trace)) {
+        logger.LogTrace(
+          "ECHONET Lite frame (To: {Address}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
+          address,
+          (byte)ehd1,
+          (byte)ehd2,
+          (byte)tid,
+#if SYSTEM_CONVERT_TOHEXSTRING
+          Convert.ToHexString(edata)
+#else
+          BitConverter.ToString(edata.ToArray())
+#endif
+        );
+      }
+
+      if (ehd2 == EHD2.Format1) {
+        if (logger.IsEnabled(LogLevel.Debug) && FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
+          logger.LogDebug(
+            "Format 1 message (To: {Address}, Message: {Message})",
+            address,
+            JsonSerializer.Serialize(format1Message, JsonSerializerSourceGenerationContext.Default.Format1Message)
+          );
+        }
+        else {
+          logger.LogWarning(
+            "Invalid Format 1 message (To: {Address})",
+            address
+          );
+        }
+      }
     }
   }
 }
