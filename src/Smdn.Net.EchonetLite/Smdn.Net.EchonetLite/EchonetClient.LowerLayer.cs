@@ -35,10 +35,10 @@ partial class EchonetClient
   private SemaphoreSlim requestSemaphore = new(initialCount: 1, maxCount: 1);
 
   /// <summary>
-  /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
+  /// <see cref="IEchonetLiteHandler.Received"/>イベントにて電文形式 1（規定電文形式）の電文を受信した場合に発生するイベント。
   /// ECHONET Lite ノードに対して送信されてくる要求を処理するほか、他ノードに対する要求への応答を待機する場合にも使用する。
   /// </summary>
-  private event EventHandler<(IPAddress, Frame)>? FrameReceived;
+  private event EventHandler<(IPAddress Address, ushort TID, EData1 EData)>? FrameReceived;
 
   private ushort tid;
 
@@ -55,7 +55,7 @@ partial class EchonetClient
   /// イベント<see cref="IEchonetLiteHandler.Received"/>をハンドルするメソッドを実装します。
   /// </summary>
   /// <remarks>
-  /// 受信したデータがECHONET Lite フレームの場合は、イベント<see cref="FrameReceived"/>をトリガします。
+  /// 受信したデータが電文形式 1（規定電文形式）の電文を含むECHONET Lite フレームの場合は、イベント<see cref="FrameReceived"/>をトリガします。
   /// それ以外の場合は、無視して処理を中断します。
   /// </remarks>
   /// <param name="sender">イベントのソース。</param>
@@ -71,7 +71,8 @@ partial class EchonetClient
 
     logger?.LogTrace($"Echonet Lite Frame受信: address:{value.Address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
 
-    FrameReceived?.Invoke(this, (value.Address, frame));
+    if (frame.EData is EData1 edata1)
+      FrameReceived?.Invoke(this, (value.Address, frame.TID, edata1));
   }
 
   /// <summary>
