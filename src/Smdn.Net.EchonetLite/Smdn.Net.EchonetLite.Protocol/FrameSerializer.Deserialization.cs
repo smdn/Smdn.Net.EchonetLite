@@ -33,15 +33,15 @@ partial class FrameSerializer {
     var edataSpan = bytes.Slice(4);
 
     switch (ehd2) {
-      case EHD2.Type1:
-        if (TryReadEDataType1(edataSpan, out var edata)) {
+      case EHD2.Format1:
+        if (TryParseEDataAsFormat1Message(edataSpan, out var edata)) {
           frame = new(ehd1, ehd2, tid, edata);
           return true;
         }
 
         break;
 
-      case EHD2.Type2:
+      case EHD2.Format2:
         frame = new(
           ehd1,
           ehd2,
@@ -56,15 +56,15 @@ partial class FrameSerializer {
     return false;
   }
 
-  private static bool TryReadEDataType1(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out EData1? edata)
+  private static bool TryParseEDataAsFormat1Message(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out EData1? edata)
   {
     edata = null;
 
     if (bytes.Length < 7)
       return false;
 
-    var seoj = ReadEData1EOJ(bytes.Slice(0, 3));
-    var deoj = ReadEData1EOJ(bytes.Slice(3, 3));
+    var seoj = ToEOJ(bytes.Slice(0, 3));
+    var deoj = ToEOJ(bytes.Slice(3, 3));
     var esv = (ESV)bytes[6];
 
     bytes = bytes.Slice(7);
@@ -75,7 +75,7 @@ partial class FrameSerializer {
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)
       // プロパティ値データ(PDCで指定)
-      if (!TryReadEData1ProcessingTargetProperties(bytes, out var opcSetList, out var bytesReadForOPCSetList))
+      if (!TryParseProcessingTargetProperties(bytes, out var opcSetList, out var bytesReadForOPCSetList))
         return false;
 
       bytes = bytes.Slice(bytesReadForOPCSetList);
@@ -84,7 +84,7 @@ partial class FrameSerializer {
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)
       // プロパティ値データ(PDCで指定)
-      if (!TryReadEData1ProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
+      if (!TryParseProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
         return false;
 
       edata = new(
@@ -102,7 +102,7 @@ partial class FrameSerializer {
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)
       // プロパティ値データ(PDCで指定)
-      if (!TryReadEData1ProcessingTargetProperties(bytes, out var opcList, out _ /* var bytesRead */))
+      if (!TryParseProcessingTargetProperties(bytes, out var opcList, out _ /* var bytesRead */))
         return false;
 
       // bytes = bytes.Slice(bytesRead);
@@ -118,7 +118,7 @@ partial class FrameSerializer {
     return true;
   }
 
-  private static EOJ ReadEData1EOJ(ReadOnlySpan<byte> bytes)
+  private static EOJ ToEOJ(ReadOnlySpan<byte> bytes)
   {
 #if DEBUG
     if (bytes.Length < 3)
@@ -132,7 +132,7 @@ partial class FrameSerializer {
     );
   }
 
-  private static bool TryReadEData1ProcessingTargetProperties(
+  private static bool TryParseProcessingTargetProperties(
     ReadOnlySpan<byte> bytes,
     [NotNullWhen(true)] out IReadOnlyCollection<PropertyRequest>? processingTargetProperties,
     out int bytesRead

@@ -46,7 +46,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: ehd1,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(default, default, default, Array.Empty<PropertyRequest>())
       )
@@ -64,7 +64,7 @@ partial class FrameSerializerTests {
       () => SerializeFrameAsByteArray(
         new Frame(
           ehd1: ehd1,
-          ehd2: EHD2.Type1,
+          ehd2: EHD2.Format1,
           tid: ZeroTID,
           edata: new EData1(default, default, default, Array.Empty<PropertyRequest>())
         )
@@ -75,13 +75,13 @@ partial class FrameSerializerTests {
   private static System.Collections.IEnumerable YieldTestCases_Serialize_EHD2()
   {
     yield return new object?[] {
-      EHD2.Type1,
+      EHD2.Format1,
       new EData1(default, default, default, Array.Empty<PropertyRequest>()),
       (byte)0x81
     };
 
     yield return new object?[] {
-      EHD2.Type2,
+      EHD2.Format2,
       new EData2(default),
       (byte)0x82
     };
@@ -129,7 +129,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: tid,
         edata: new EData1(default, default, default, Array.Empty<PropertyRequest>())
       )
@@ -166,7 +166,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: seoj, deoj: default, esv: default, opcList: Array.Empty<PropertyRequest>())
       )
@@ -188,7 +188,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: default, deoj: deoj, esv: default, opcList: Array.Empty<PropertyRequest>())
       )
@@ -222,7 +222,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: esv switch {
           ESV.SetGet or ESV.SetGetResponse or ESV.SetGetServiceNotAvailable => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: new List<PropertyRequest>() { new() }, opcGetList: new List<PropertyRequest>() { new() }),
@@ -260,7 +260,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: default, deoj: default, esv: esv, opcList: opc)
       )
@@ -292,7 +292,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: default, deoj: default, esv: esv, opcList: opc)
       )
@@ -331,7 +331,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
@@ -376,7 +376,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
@@ -424,7 +424,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
@@ -472,7 +472,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
@@ -514,7 +514,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type1,
+        ehd2: EHD2.Format1,
         tid: ZeroTID,
         edata: new EData1(seoj: default, deoj: default, esv: esv, opcSetList: opcSet, opcGetList: opcGet)
       )
@@ -541,7 +541,7 @@ partial class FrameSerializerTests {
     var frameBytes = SerializeFrameAsByteArray(
       new Frame(
         ehd1: EHD1.EchonetLite,
-        ehd2: EHD2.Type2,
+        ehd2: EHD2.Format2,
         tid: (ushort)0xBEAFu,
         edata: new EData2(edata)
       )

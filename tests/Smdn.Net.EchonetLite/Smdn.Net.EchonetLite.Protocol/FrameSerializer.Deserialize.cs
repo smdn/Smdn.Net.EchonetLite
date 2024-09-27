@@ -12,8 +12,8 @@ namespace Smdn.Net.EchonetLite.Protocol;
 
 partial class FrameSerializerTests {
   private const byte EHD1_ECHONETLite = 0x10;
-  private const byte EHD2_Type1 = 0x81;
-  private const byte EHD2_Type2 = 0x82;
+  private const byte EHD2_Format1 = 0x81;
+  private const byte EHD2_Format2 = 0x82;
   private const byte TID_ZERO_0 = 0x00;
   private const byte TID_ZERO_1 = 0x00;
 
@@ -38,12 +38,12 @@ partial class FrameSerializerTests {
 
   private static System.Collections.IEnumerable YieldTestCases_TryDeserialize_EHD1()
   {
-    yield return new object?[] { new byte[5] { 0b0001_0000, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, true };
-    yield return new object?[] { new byte[5] { 0b0001_0001, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, true };
-    yield return new object?[] { new byte[5] { 0b0001_1111, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, true };
-    yield return new object?[] { new byte[5] { 0b0010_0000, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, false };
-    yield return new object?[] { new byte[5] { 0b1000_0000, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, false };
-    yield return new object?[] { new byte[5] { 0b1111_1111, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0xFF }, false };
+    yield return new object?[] { new byte[5] { 0b0001_0000, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0xFF }, true };
+    yield return new object?[] { new byte[5] { 0b0001_0001, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0xFF }, true };
+    yield return new object?[] { new byte[5] { 0b0001_1111, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0xFF }, true };
+    yield return new object?[] { new byte[5] { 0b0010_0000, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0xFF }, false };
+    yield return new object?[] { new byte[5] { 0b1000_0000, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0xFF }, false };
+    yield return new object?[] { new byte[5] { 0b1111_1111, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0xFF }, false };
   }
 
   [TestCaseSource(nameof(YieldTestCases_TryDeserialize_EHD1))]
@@ -89,7 +89,7 @@ partial class FrameSerializerTests {
 
     var input = new byte[] {
       EHD1_ECHONETLite,
-      EHD2_Type1,
+      EHD2_Format1,
       TID_ZERO_0,
       TID_ZERO_1,
       seojClassGroupCode,
@@ -133,7 +133,7 @@ partial class FrameSerializerTests {
 
     var input = new byte[] {
       EHD1_ECHONETLite,
-      EHD2_Type1,
+      EHD2_Format1,
       TID_ZERO_0,
       TID_ZERO_1,
       SEOJ_ClassGroupCode,
@@ -169,7 +169,7 @@ partial class FrameSerializerTests {
 
     var header = new byte[] {
       EHD1_ECHONETLite,
-      EHD2_Type1,
+      EHD2_Format1,
       TID_ZERO_0,
       TID_ZERO_1,
       SEOJ_ClassGroupCode,
@@ -386,15 +386,15 @@ partial class FrameSerializerTests {
   private static System.Collections.IEnumerable YieldTestCases_TryDeserialize_EHD2Type2_EDATA()
   {
     yield return new object?[] {
-      new byte[] { EHD1_ECHONETLite, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0x00 },
+      new byte[] { EHD1_ECHONETLite, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0x00 },
       new byte[] { 0x00 }
     };
     yield return new object?[] {
-      new byte[] { EHD1_ECHONETLite, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0x00, 0x01 },
+      new byte[] { EHD1_ECHONETLite, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0x00, 0x01 },
       new byte[] { 0x00, 0x01 }
     };
     yield return new object?[] {
-      new byte[] { EHD1_ECHONETLite, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, 0x00, 0x01, 0x02 },
+      new byte[] { EHD1_ECHONETLite, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0x00, 0x01, 0x02 },
       new byte[] { 0x00, 0x01, 0x02 }
     };
   }
@@ -414,7 +414,7 @@ partial class FrameSerializerTests {
   [Test]
   public void TryDeserialize_EHD2Type2_EDATA_Empty()
   {
-    var input = new byte[] { EHD1_ECHONETLite, EHD2_Type2, TID_ZERO_0, TID_ZERO_1, /* no EDATA */ };
+    var input = new byte[] { EHD1_ECHONETLite, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, /* no EDATA */ };
 
     Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
 

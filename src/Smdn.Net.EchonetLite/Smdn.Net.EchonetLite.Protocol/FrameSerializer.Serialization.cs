@@ -20,7 +20,7 @@ partial class FrameSerializer {
       throw new InvalidOperationException($"undefined EHD1 ({(byte)frame.EHD1:X2})");
 
     switch (frame.EHD2) {
-      case EHD2.Type1:
+      case EHD2.Format1:
         if (frame.EData is not EData1 edata1)
           throw new ArgumentException($"{nameof(EData1)} must be set to {nameof(Frame)}.{nameof(Frame.EData)}.", paramName: nameof(frame));
 
@@ -36,7 +36,7 @@ partial class FrameSerializer {
 
         break;
 
-      case EHD2.Type2:
+      case EHD2.Format2:
         if (frame.EData is not EData2 edata2)
           throw new ArgumentException($"{nameof(EData2)} must be set to {nameof(Frame)}.{nameof(Frame.EData)}.", paramName: nameof(frame));
 
@@ -65,7 +65,7 @@ partial class FrameSerializer {
     if (opcListOrOpcSetList is null)
       throw new ArgumentNullException(nameof(opcListOrOpcSetList));
 
-    WriteEchonetLiteEHDAndTID(buffer, EHD1.EchonetLite, EHD2.Type1, tid);
+    WriteEchonetLiteEHDAndTID(buffer, EHD1.EchonetLite, EHD2.Format1, tid);
 
     WriteEOJ(buffer, sourceObject); // SEOJ
     WriteEOJ(buffer, destinationObject); // DEOJ
@@ -109,7 +109,7 @@ partial class FrameSerializer {
     if (buffer is null)
       throw new ArgumentNullException(nameof(buffer));
 
-    WriteEchonetLiteEHDAndTID(buffer, EHD1.EchonetLite, EHD2.Type2, tid);
+    WriteEchonetLiteEHDAndTID(buffer, EHD1.EchonetLite, EHD2.Format2, tid);
 
     var bufferEDataSpan = buffer.GetSpan(edata.Length);
 

@@ -58,12 +58,12 @@ public readonly struct Frame {
       throw new ArgumentNullException(nameof(edata));
 
     switch (ehd2) {
-      case EHD2.Type1:
+      case EHD2.Format1:
         if (edata is not EData1)
           throw new ArgumentException(message: "type mismatch", paramName: nameof(edata));
         break;
 
-      case EHD2.Type2:
+      case EHD2.Format2:
         if (edata is not EData2)
           throw new ArgumentException(message: "type mismatch", paramName: nameof(edata));
         break;
