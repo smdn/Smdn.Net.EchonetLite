@@ -68,7 +68,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     );
     Nodes = new List<EchonetNode>();
     // 自己消費用
-    FrameReceived += HandleFrameReceived;
+    Format1MessageReceived += HandleFormat1Message;
   }
 
   /// <summary>
@@ -104,7 +104,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   protected virtual void Dispose(bool disposing)
   {
     if (disposing) {
-      FrameReceived = null; // unsubscribe
+      Format1MessageReceived = null; // unsubscribe
 
       requestSemaphore?.Dispose();
       requestSemaphore = null!;
@@ -126,7 +126,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   /// <returns>非同期の破棄操作を表す<see cref="ValueTask"/>。</returns>
   protected virtual async ValueTask DisposeAsyncCore()
   {
-    FrameReceived = null; // unsubscribe
+    Format1MessageReceived = null; // unsubscribe
 
     requestSemaphore?.Dispose();
     requestSemaphore = null!;

@@ -251,7 +251,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
 
-    void HandleFrameSetISNA(object? sender, (IPAddress Address, ushort TID, EData1 EData) value)
+    void HandleSetISNA(object? sender, (IPAddress Address, ushort TID, EData1 EData) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -283,11 +283,11 @@ partial class EchonetClient
         // TODO 一斉通知の不可応答の扱いが…
       }
       finally {
-        FrameReceived -= HandleFrameSetISNA;
+        Format1MessageReceived -= HandleSetISNA;
       }
     }
 
-    FrameReceived += HandleFrameSetISNA;
+    Format1MessageReceived += HandleSetISNA;
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -316,7 +316,7 @@ partial class EchonetClient
         }
       }
 
-      FrameReceived -= HandleFrameSetISNA;
+      Format1MessageReceived -= HandleSetISNA;
 
       throw;
     }
@@ -367,7 +367,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
 
-    void HandleFrameSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, EData1 EData) value)
+    void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, EData1 EData) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -399,11 +399,11 @@ partial class EchonetClient
         // TODO 一斉通知の応答の扱いが…
       }
       finally {
-        FrameReceived -= HandleFrameSetResOrSetCSNA;
+        Format1MessageReceived -= HandleSetResOrSetCSNA;
       }
     }
 
-    FrameReceived += HandleFrameSetResOrSetCSNA;
+    Format1MessageReceived += HandleSetResOrSetCSNA;
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -424,7 +424,7 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
-      FrameReceived -= HandleFrameSetResOrSetCSNA;
+      Format1MessageReceived -= HandleSetResOrSetCSNA;
 
       throw;
     }
@@ -475,7 +475,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
 
-    void HandleFrameGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, EData1 EData) value)
+    void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, EData1 EData) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -506,11 +506,11 @@ partial class EchonetClient
         // TODO 一斉通知の応答の扱いが…
       }
       finally {
-        FrameReceived -= HandleFrameGetResOrGetSNA;
+        Format1MessageReceived -= HandleGetResOrGetSNA;
       }
     }
 
-    FrameReceived += HandleFrameGetResOrGetSNA;
+    Format1MessageReceived += HandleGetResOrGetSNA;
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -531,7 +531,7 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
-      FrameReceived -= HandleFrameGetResOrGetSNA;
+      Format1MessageReceived -= HandleGetResOrGetSNA;
 
       throw;
     }
@@ -588,7 +588,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)>();
 
-    void HandleFrameSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, EData1 EData) value)
+    void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, EData1 EData) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -630,11 +630,11 @@ partial class EchonetClient
         // TODO 一斉通知の応答の扱いが…
       }
       finally {
-        FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
+        Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
       }
     }
 
-    FrameReceived += HandleFrameSetGetResOrSetGetSNA;
+    Format1MessageReceived += HandleSetGetResOrSetGetSNA;
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -656,7 +656,7 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
-      FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
+      Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
 
       throw;
     }
@@ -807,7 +807,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
 
-    void HandleFrameINFCRes(object? sender, (IPAddress Address, ushort TID, EData1 EData) value)
+    void HandleINFCRes(object? sender, (IPAddress Address, ushort TID, EData1 EData) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -825,11 +825,11 @@ partial class EchonetClient
         responseTCS.SetResult(value.EData.GetOPCList());
       }
       finally {
-        FrameReceived -= HandleFrameINFCRes;
+        Format1MessageReceived -= HandleINFCRes;
       }
     }
 
-    FrameReceived += HandleFrameINFCRes;
+    Format1MessageReceived += HandleINFCRes;
 
     await SendFrameAsync(
       destinationNode.Address,
@@ -850,7 +850,7 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
-      FrameReceived -= HandleFrameINFCRes;
+      Format1MessageReceived -= HandleINFCRes;
 
       throw;
     }
@@ -1033,7 +1033,7 @@ partial class EchonetClient
   }
 
   /// <summary>
-  /// イベント<see cref="FrameReceived"/>をハンドルするメソッドを実装します。
+  /// イベント<see cref="Format1MessageReceived"/>をハンドルするメソッドを実装します。
   /// 受信した電文形式 1（規定電文形式）の電文を処理し、必要に応じて要求に対する応答を返します。
   /// </summary>
   /// <param name="sender">イベントのソース。</param>
@@ -1042,7 +1042,7 @@ partial class EchonetClient
   /// ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームのTIDを表す<see langword="ushort"/>、規定電文形式の電文を表す<see cref="EData1"/>を保持します。
   /// </param>
 #pragma warning disable CA1502 // TODO: reduce complexity
-  private void HandleFrameReceived(object? sender, (IPAddress Address, ushort TID, EData1 EData) value)
+  private void HandleFormat1Message(object? sender, (IPAddress Address, ushort TID, EData1 EData) value)
   {
     var (address, tid, edata) = value;
     var sourceNode = Nodes.SingleOrDefault(n => address is not null && address.Equals(n.Address));
