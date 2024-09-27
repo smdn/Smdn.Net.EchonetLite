@@ -13,7 +13,7 @@ using Smdn.Net.EchonetLite.Serialization.Json;
 namespace Smdn.Net.EchonetLite.Protocol;
 
 /// <summary>
-/// ECHONET Liteフレームにおける、電文形式 1（規定電文形式）のEDATA(ECHONET Lite データ)を表すクラスです。
+/// ECHONET Liteフレームにおける、電文形式 1（規定電文形式）のEDATA(ECHONET Lite データ)を表す読み取り専用の構造体です。
 /// </summary>
 /// <seealso href="https://echonet.jp/spec_v114_lite/">
 /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 第３章 電文構成（フレームフォーマット）
@@ -21,7 +21,7 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// <seealso href="https://echonet.jp/spec_v114_lite/">
 /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３.２.１.２ ECHONET Lite ヘッダ２（EHD２）
 /// </seealso>
-public sealed class EData1 : IEData {
+public readonly struct EData1 {
   /// <summary>
   /// 送信元ECHONET Liteオブジェクト指定(3B)
   /// </summary>

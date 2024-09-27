@@ -11,44 +11,6 @@ namespace Smdn.Net.EchonetLite.Protocol;
 #pragma warning disable IDE0040
 partial class FrameSerializer {
 #pragma warning restore IDE0040
-  public static void Serialize(Frame frame, IBufferWriter<byte> buffer)
-  {
-    if (buffer is null)
-      throw new ArgumentNullException(nameof(buffer));
-
-    if (!frame.EHD1.HasFlag(EHD1.EchonetLite))
-      throw new InvalidOperationException($"undefined EHD1 ({(byte)frame.EHD1:X2})");
-
-    switch (frame.EHD2) {
-      case EHD2.Format1:
-        if (frame.EData is not EData1 edata1)
-          throw new ArgumentException($"{nameof(EData1)} must be set to {nameof(Frame)}.{nameof(Frame.EData)}.", paramName: nameof(frame));
-
-        SerializeEchonetLiteFrameFormat1(
-          buffer,
-          frame.TID,
-          edata1.SEOJ,
-          edata1.DEOJ,
-          edata1.ESV,
-          edata1.IsWriteOrReadService ? edata1.OPCSetList! : edata1.OPCList!,
-          edata1.IsWriteOrReadService ? edata1.OPCGetList : null
-        );
-
-        break;
-
-      case EHD2.Format2:
-        if (frame.EData is not EData2 edata2)
-          throw new ArgumentException($"{nameof(EData2)} must be set to {nameof(Frame)}.{nameof(Frame.EData)}.", paramName: nameof(frame));
-
-        SerializeEchonetLiteFrameFormat2(buffer, frame.TID, edata2.Message.Span);
-
-        break;
-
-      default:
-        throw new InvalidOperationException($"undefined EHD2 ({(byte)frame.EHD2:X2})");
-    }
-  }
-
   [CLSCompliant(false)]
   public static void SerializeEchonetLiteFrameFormat1(
     IBufferWriter<byte> buffer,

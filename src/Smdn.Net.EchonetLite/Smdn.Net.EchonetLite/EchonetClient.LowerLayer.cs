@@ -65,14 +65,33 @@ partial class EchonetClient
   /// </param>
   private void EchonetDataReceived(object? sender, (IPAddress Address, ReadOnlyMemory<byte> Data) value)
   {
-    if (!FrameSerializer.TryDeserialize(value.Data.Span, out var frame))
+    if (!FrameSerializer.TryDeserialize(value.Data.Span, out var ehd1, out var ehd2, out var tid, out var edata))
       // ECHONETLiteフレームではないため無視
       return;
 
+#if false
     logger?.LogTrace($"Echonet Lite Frame受信: address:{value.Address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
+#endif
 
-    if (frame.EData is EData1 edata1)
-      Format1MessageReceived?.Invoke(this, (value.Address, frame.TID, edata1));
+    switch (ehd2) {
+      case EHD2.Format1:
+        if (!FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
+          logger?.LogWarning("Received invalid ECHONET Lite frame (Format 1)");
+          return;
+        }
+
+        Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
+
+        break;
+
+      case EHD2.Format2:
+        // TODO
+        break;
+
+      default:
+        // undefined message format, do nothing
+        break;
+    }
   }
 
   /// <summary>
@@ -95,6 +114,7 @@ partial class EchonetClient
     try {
       writeFrame(requestFrameBuffer);
 
+#if false
       if (logger is not null && logger.IsEnabled(LogLevel.Trace)) {
         if (FrameSerializer.TryDeserialize(requestFrameBuffer.WrittenSpan, out var frame)) {
           logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
@@ -105,6 +125,7 @@ partial class EchonetClient
         }
 #endif
       }
+#endif
 
       await echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }

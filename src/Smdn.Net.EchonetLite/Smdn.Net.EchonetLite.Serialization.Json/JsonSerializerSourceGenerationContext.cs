@@ -8,5 +8,5 @@ namespace Smdn.Net.EchonetLite.Serialization.Json;
 
 // use source generation in System.Text.Json
 // ref: https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation
-[JsonSerializable(typeof(Frame))]
+[JsonSerializable(typeof(EData1))]
 internal partial class JsonSerializerSourceGenerationContext : JsonSerializerContext { }

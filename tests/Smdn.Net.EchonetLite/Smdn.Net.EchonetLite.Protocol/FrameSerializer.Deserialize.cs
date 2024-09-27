@@ -17,6 +17,33 @@ partial class FrameSerializerTests {
   private const byte TID_ZERO_0 = 0x00;
   private const byte TID_ZERO_1 = 0x00;
 
+  private static System.Collections.IEnumerable YieldTestCases_TryDeserialize()
+  {
+    yield return new object?[] { new byte[4] { EHD1_ECHONETLite, EHD2_Format1, 0x00, 0x00 }, EHD1.EchonetLite, EHD2.Format1, (ushort)0x0000u, Array.Empty<byte>() };
+    yield return new object?[] { new byte[4] { EHD1_ECHONETLite, EHD2_Format2, 0x00, 0x00 }, EHD1.EchonetLite, EHD2.Format2, (ushort)0x0000u, Array.Empty<byte>() };
+
+    // The specification does not clearly define endianness of TID.
+    // ref: ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様 第３章 電文構成（フレームフォーマット）
+    yield return new object?[] { new byte[4] { EHD1_ECHONETLite, EHD2_Format2, 0x00, 0x01 }, EHD1.EchonetLite, EHD2.Format2, BitConverter.IsLittleEndian ? (ushort)0x0100u : (ushort)0x0001u, Array.Empty<byte>() };
+    yield return new object?[] { new byte[4] { EHD1_ECHONETLite, EHD2_Format1, 0xBE, 0xAF }, EHD1.EchonetLite, EHD2.Format1, BitConverter.IsLittleEndian ? (ushort)0xAFBEu : (ushort)0xBEAFu, Array.Empty<byte>() };
+
+    yield return new object?[] { new byte[5] { EHD1_ECHONETLite, EHD2_Format1, 0x00, 0x00, 0x00 }, EHD1.EchonetLite, EHD2.Format1, (ushort)0x0000u, new byte[1] { 0x00 } };
+    yield return new object?[] { new byte[6] { EHD1_ECHONETLite, EHD2_Format1, 0x00, 0x00, 0x00, 0x01 }, EHD1.EchonetLite, EHD2.Format1, (ushort)0x0000u, new byte[2] { 0x00, 0x01 } };
+
+    yield return new object?[] { new byte[5] { EHD1_ECHONETLite, EHD2_Format2, 0x00, 0x00, 0x00 }, EHD1.EchonetLite, EHD2.Format2, (ushort)0x0000u, new byte[1] { 0x00 } };
+    yield return new object?[] { new byte[6] { EHD1_ECHONETLite, EHD2_Format2, 0x00, 0x00, 0x00, 0x01 }, EHD1.EchonetLite, EHD2.Format2, (ushort)0x0000u, new byte[2] { 0x00, 0x01 } };
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_TryDeserialize))]
+  public void TryDeserialize(byte[] input, EHD1 expectedEHD1, EHD2 expectedEHD2, ushort expectedTID, byte[] expectedEDATA)
+  {
+    Assert.That(FrameSerializer.TryDeserialize(input, out var ehd1, out var ehd2, out var tid, out var edata), Is.True);
+    Assert.That(ehd1, Is.EqualTo(expectedEHD1));
+    Assert.That(ehd2, Is.EqualTo(expectedEHD2));
+    Assert.That(unchecked((ushort)tid), Is.EqualTo(expectedTID));
+    Assert.That(edata.ToArray(), SequenceIs.EqualTo(expectedEDATA));
+  }
+
   private static System.Collections.IEnumerable YieldTestCases_TryDeserialize_InputTooShort()
   {
     yield return new object?[] { Array.Empty<byte>() };
@@ -30,7 +57,7 @@ partial class FrameSerializerTests {
   public void TryDeserialize_InputTooShort(byte[] input)
   {
     Assert.That(
-      FrameSerializer.TryDeserialize(input, out _),
+      FrameSerializer.TryDeserialize(input, out _, out _, out _, out _),
       Is.False,
       message: "The length of input must be greater than 4 bytes."
     );
@@ -50,11 +77,11 @@ partial class FrameSerializerTests {
   public void TryDeserialize_EHD1(byte[] input, bool expectAsEchonetLiteFrame)
   {
     if (expectAsEchonetLiteFrame) {
-      Assert.That(FrameSerializer.TryDeserialize(input, out _), Is.True);
+      Assert.That(FrameSerializer.TryDeserialize(input, out _, out _, out _, out _), Is.True);
     }
     else {
       Assert.That(
-        FrameSerializer.TryDeserialize(input, out _),
+        FrameSerializer.TryDeserialize(input, out _, out _, out _, out _),
         Is.False,
         message: "The input byte sequence is not an ECHONETLite frame."
       );
@@ -67,7 +94,7 @@ partial class FrameSerializerTests {
   {
     var input = new byte[] { EHD1_ECHONETLite, ehd2, TID_ZERO_0, TID_ZERO_1 };
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out _), Is.False);
+    Assert.That(FrameSerializer.TryDeserialize(input, out _, out _, out _, out _), Is.True);
   }
 
   [TestCase((byte)0x00, (byte)0x00, (byte)0x00)]
@@ -77,7 +104,7 @@ partial class FrameSerializerTests {
   [TestCase((byte)0xFF, (byte)0x00, (byte)0x00)]
   [TestCase((byte)0xFF, (byte)0xFF, (byte)0x00)]
   [TestCase((byte)0xFF, (byte)0xFF, (byte)0xFF)]
-  public void TryDeserialize_EHD2Type1_EDATA_SEOJ(
+  public void TryParseEDataAsFormat1Message_SEOJ(
     byte seojClassGroupCode,
     byte seojClassCode,
     byte seojInstanceCode
@@ -88,10 +115,6 @@ partial class FrameSerializerTests {
     const byte DEOJ_InstanceCode = 0x00;
 
     var input = new byte[] {
-      EHD1_ECHONETLite,
-      EHD2_Format1,
-      TID_ZERO_0,
-      TID_ZERO_1,
       seojClassGroupCode,
       seojClassCode,
       seojInstanceCode,
@@ -103,11 +126,7 @@ partial class FrameSerializerTests {
       0x00, // OPCSet
     };
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
-
-    var edata = (EData1)frame.EData!;
+    Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
     Assert.That(edata.SEOJ.ClassGroupCode, Is.EqualTo(seojClassGroupCode), nameof(edata.SEOJ.ClassGroupCode));
     Assert.That(edata.SEOJ.ClassCode, Is.EqualTo(seojClassCode), nameof(edata.SEOJ.ClassCode));
@@ -121,7 +140,7 @@ partial class FrameSerializerTests {
   [TestCase((byte)0xFF, (byte)0x00, (byte)0x00)]
   [TestCase((byte)0xFF, (byte)0xFF, (byte)0x00)]
   [TestCase((byte)0xFF, (byte)0xFF, (byte)0xFF)]
-  public void TryDeserialize_EHD2Type1_EDATA_DEOJ(
+  public void TryParseEDataAsFormat1Message_DEOJ(
     byte deojClassGroupCode,
     byte deojClassCode,
     byte deojInstanceCode
@@ -132,10 +151,6 @@ partial class FrameSerializerTests {
     const byte SEOJ_InstanceCode = 0x00;
 
     var input = new byte[] {
-      EHD1_ECHONETLite,
-      EHD2_Format1,
-      TID_ZERO_0,
-      TID_ZERO_1,
       SEOJ_ClassGroupCode,
       SEOJ_ClassCode,
       SEOJ_InstanceCode,
@@ -147,18 +162,14 @@ partial class FrameSerializerTests {
       0x00, // OPCSet
     };
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
-
-    var edata = (EData1)frame.EData!;
+    Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
     Assert.That(edata.DEOJ.ClassGroupCode, Is.EqualTo(deojClassGroupCode), nameof(edata.DEOJ.ClassGroupCode));
     Assert.That(edata.DEOJ.ClassCode, Is.EqualTo(deojClassCode), nameof(edata.DEOJ.ClassCode));
     Assert.That(edata.DEOJ.InstanceCode, Is.EqualTo(deojInstanceCode), nameof(edata.DEOJ.InstanceCode));
   }
 
-  private static byte[] CreateEHD2Type1Frame(byte esv, params byte[] extraFrameSequence)
+  private static byte[] CreateEDATAFormat1(byte esv, params byte[] extraFrameSequence)
   {
     const byte SEOJ_ClassGroupCode = 0x00;
     const byte SEOJ_ClassCode = 0x00;
@@ -168,10 +179,6 @@ partial class FrameSerializerTests {
     const byte DEOJ_InstanceCode = 0x00;
 
     var header = new byte[] {
-      EHD1_ECHONETLite,
-      EHD2_Format1,
-      TID_ZERO_0,
-      TID_ZERO_1,
       SEOJ_ClassGroupCode,
       SEOJ_ClassCode,
       SEOJ_InstanceCode,
@@ -194,19 +201,15 @@ partial class FrameSerializerTests {
   [TestCase((byte)0x5E, ESV.SetGetServiceNotAvailable)]
   [TestCase((byte)0x62, ESV.Get)]
   [TestCase((byte)0x7E, ESV.SetGetResponse)]
-  public void TryDeserialize_EHD2Type1_EDATA_ESV(byte esv, ESV expectedESV)
+  public void TryParseEDataAsFormat1Message_ESV(byte esv, ESV expectedESV)
   {
-    var input = CreateEHD2Type1Frame(
+    var input = CreateEDATAFormat1(
       esv,
       0x00, // OPCSet
       0x00  // OPCGet
     );
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
-
-    var edata = (EData1)frame.EData!;
+    Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
     Assert.That(edata.ESV, Is.EqualTo(expectedESV), nameof(edata.ESV));
   }
@@ -214,9 +217,9 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGetResponse)]
   [TestCase(ESV.SetGetServiceNotAvailable)]
-  public void TryDeserialize_EHD2Type1_EDATA_OPC_OfESVSetGet(ESV esv)
+  public void TryParseEDataAsFormat1Message_OPC_OfESVSetGet(ESV esv)
   {
-    var input = CreateEHD2Type1Frame(
+    var input = CreateEDATAFormat1(
       (byte)esv,
       0x02, // OPCSet
       0x10, // EPC #1
@@ -240,11 +243,7 @@ partial class FrameSerializerTests {
       0x44  // EDT #2 [3]
     );
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
-
-    var edata = (EData1)frame.EData!;
+    Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
     Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
@@ -278,9 +277,9 @@ partial class FrameSerializerTests {
   [TestCase(ESV.Get)]
   [TestCase(ESV.SetI)]
   [TestCase(ESV.Inf)]
-  public void TryDeserialize_EHD2Type1_EDATA_OPC_OfESVOtherThanSetGet(ESV esv)
+  public void TryParseEDataAsFormat1Message_OPC_OfESVOtherThanSetGet(ESV esv)
   {
-    var input = CreateEHD2Type1Frame(
+    var input = CreateEDATAFormat1(
       (byte)esv,
       0x02, // OPC
       0x10, // EPC #1
@@ -292,11 +291,7 @@ partial class FrameSerializerTests {
       0x22  // EDT #2 [1]
     );
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
-
-    var edata = (EData1)frame.EData!;
+    Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
     Assert.That(edata.OPCGetList, Is.Null, nameof(edata.OPCGetList));
     Assert.That(edata.OPCSetList, Is.Null, nameof(edata.OPCSetList));
@@ -316,9 +311,9 @@ partial class FrameSerializerTests {
   }
 
   [Test]
-  public void TryDeserialize_EHD2Type1_EDATA_ESVSetGetSNA_OPCSetZero()
+  public void TryParseEDataAsFormat1Message_ESVSetGetSNA_OPCSetZero()
   {
-    var input = CreateEHD2Type1Frame(
+    var input = CreateEDATAFormat1(
       (byte)ESV.SetGetServiceNotAvailable,
       0x00, // OPCSet
       0x01, // OPCGet
@@ -329,11 +324,7 @@ partial class FrameSerializerTests {
       0x33  // EDT #1 [2]
     );
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
-
-    var edata = (EData1)frame.EData!;
+    Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
     Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
@@ -351,9 +342,9 @@ partial class FrameSerializerTests {
   }
 
   [Test]
-  public void TryDeserialize_EHD2Type1_EDATA_ESVSetGetSNA_OPCGetZero()
+  public void TryParseEDataAsFormat1Message_ESVSetGetSNA_OPCGetZero()
   {
-    var input = CreateEHD2Type1Frame(
+    var input = CreateEDATAFormat1(
       (byte)ESV.SetGetServiceNotAvailable,
       0x01, // OPCSet
       0x10, // EPC #1
@@ -362,11 +353,7 @@ partial class FrameSerializerTests {
       0x00  // OPCGet
     );
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData1>(), nameof(frame.EData));
-
-    var edata = (EData1)frame.EData!;
+    Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
     Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
 
@@ -381,47 +368,5 @@ partial class FrameSerializerTests {
 
     Assert.That(edata.OPCGetList, Is.Not.Null, nameof(edata.OPCGetList));
     Assert.That(edata.OPCGetList, Is.Empty, nameof(edata.OPCGetList));
-  }
-
-  private static System.Collections.IEnumerable YieldTestCases_TryDeserialize_EHD2Type2_EDATA()
-  {
-    yield return new object?[] {
-      new byte[] { EHD1_ECHONETLite, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0x00 },
-      new byte[] { 0x00 }
-    };
-    yield return new object?[] {
-      new byte[] { EHD1_ECHONETLite, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0x00, 0x01 },
-      new byte[] { 0x00, 0x01 }
-    };
-    yield return new object?[] {
-      new byte[] { EHD1_ECHONETLite, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, 0x00, 0x01, 0x02 },
-      new byte[] { 0x00, 0x01, 0x02 }
-    };
-  }
-
-  [TestCaseSource(nameof(YieldTestCases_TryDeserialize_EHD2Type2_EDATA))]
-  public void TryDeserialize_EHD2Type2_EDATA(byte[] input, byte[] expectedEDATA)
-  {
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData2>(), nameof(frame.EData));
-
-    var edata = (EData2)frame.EData!;
-
-    Assert.That(edata.Message, SequenceIs.EqualTo(expectedEDATA), nameof(edata.Message));
-  }
-
-  [Test]
-  public void TryDeserialize_EHD2Type2_EDATA_Empty()
-  {
-    var input = new byte[] { EHD1_ECHONETLite, EHD2_Format2, TID_ZERO_0, TID_ZERO_1, /* no EDATA */ };
-
-    Assert.That(FrameSerializer.TryDeserialize(input, out var frame), Is.True);
-
-    Assert.That(frame!.EData, Is.InstanceOf<EData2>(), nameof(frame.EData));
-
-    var edata = (EData2)frame.EData!;
-
-    Assert.That(edata.Message.IsEmpty, Is.True, nameof(edata.Message));
   }
 }

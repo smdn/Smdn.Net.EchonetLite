@@ -10,9 +10,18 @@ namespace Smdn.Net.EchonetLite.Protocol;
 #pragma warning disable IDE0040
 partial class FrameSerializer {
 #pragma warning restore IDE0040
-  public static bool TryDeserialize(ReadOnlySpan<byte> bytes, out Frame frame)
+  public static bool TryDeserialize(
+    ReadOnlySpan<byte> bytes,
+    out EHD1 ehd1,
+    out EHD2 ehd2,
+    out int tid,
+    out ReadOnlySpan<byte> edata
+  )
   {
-    frame = default;
+    ehd1 = default;
+    ehd2 = default;
+    tid = default;
+    edata = default;
 
     // ECHONETLiteフレームとしての最小長に満たない
     if (bytes.Length < 4)
@@ -23,42 +32,23 @@ partial class FrameSerializer {
       return false;
 
     // ECHONET Lite電文ヘッダー１(1B)
-    var ehd1 = (EHD1)bytes[0];
+    ehd1 = (EHD1)bytes[0];
     // ECHONET Lite電文ヘッダー２(1B)
-    var ehd2 = (EHD2)bytes[1];
+    ehd2 = (EHD2)bytes[1];
     // トランザクションID(2B)
-    var tid = BitConverter.ToUInt16(bytes.Slice(2, 2));
-
+    tid = BitConverter.ToUInt16(bytes.Slice(2, 2));
     // ECHONET Liteデータ(残り全部)
-    var edataSpan = bytes.Slice(4);
+    edata = bytes.Slice(4);
 
-    switch (ehd2) {
-      case EHD2.Format1:
-        if (TryParseEDataAsFormat1Message(edataSpan, out var edata)) {
-          frame = new(ehd1, ehd2, tid, edata);
-          return true;
-        }
-
-        break;
-
-      case EHD2.Format2:
-        frame = new(
-          ehd1,
-          ehd2,
-          tid,
-          new EData2(
-            edataSpan.ToArray() // TODO: reduce allocation
-          )
-        );
-        return true;
-    }
-
-    return false;
+    return true;
   }
 
-  private static bool TryParseEDataAsFormat1Message(ReadOnlySpan<byte> bytes, [NotNullWhen(true)] out EData1? edata)
+  public static bool TryParseEDataAsFormat1Message(
+    ReadOnlySpan<byte> bytes,
+    out EData1 edata
+  )
   {
-    edata = null;
+    edata = default;
 
     if (bytes.Length < 7)
       return false;
