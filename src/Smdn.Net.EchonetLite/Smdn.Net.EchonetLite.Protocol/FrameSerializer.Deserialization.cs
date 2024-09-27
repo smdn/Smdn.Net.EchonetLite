@@ -45,10 +45,10 @@ partial class FrameSerializer {
 
   public static bool TryParseEDataAsFormat1Message(
     ReadOnlySpan<byte> bytes,
-    out EData1 edata
+    out Format1Message message
   )
   {
-    edata = default;
+    message = default;
 
     if (bytes.Length < 7)
       return false;
@@ -77,7 +77,7 @@ partial class FrameSerializer {
       if (!TryParseProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
         return false;
 
-      edata = new(
+      message = new(
         seoj,
         deoj,
         esv,
@@ -97,7 +97,7 @@ partial class FrameSerializer {
 
       // bytes = bytes.Slice(bytesRead);
 
-      edata = new(
+      message = new(
         seoj,
         deoj,
         esv,

@@ -21,7 +21,7 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// <seealso href="https://echonet.jp/spec_v114_lite/">
 /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３.２.１.２ ECHONET Lite ヘッダ２（EHD２）
 /// </seealso>
-public readonly struct EData1 {
+public readonly struct Format1Message {
   /// <summary>
   /// 送信元ECHONET Liteオブジェクト指定(3B)
   /// </summary>
@@ -62,7 +62,7 @@ public readonly struct EData1 {
   public bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
 
   /// <summary>
-  /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EData1"/>を作成します。
+  /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="Format1Message"/>を作成します。
   /// </summary>
   /// <remarks>
   /// このオーバーロードでは、<see cref="OPCGetList"/>および<see cref="OPCSetList"/>に<see langword="null"/>を設定します。
@@ -76,7 +76,7 @@ public readonly struct EData1 {
   /// この場合、<see cref="OPCSetList"/>および<see cref="OPCGetList"/>を指定する必要があります。
   /// </exception>
   /// <exception cref="ArgumentNullException"><paramref name="opcList"/>が<see langword="null"/>です。</exception>
-  public EData1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcList)
+  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcList)
   {
     if (FrameSerializer.IsESVWriteOrReadService(esv))
       throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
@@ -88,7 +88,7 @@ public readonly struct EData1 {
   }
 
   /// <summary>
-  /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="EData1"/>を作成します。
+  /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="Format1Message"/>を作成します。
   /// </summary>
   /// <remarks>
   /// このオーバーロードでは、<see cref="OPCList"/>に<see langword="null"/>を設定します。
@@ -103,7 +103,7 @@ public readonly struct EData1 {
   /// この場合、<see cref="OPCList"/>のみを指定する必要があります。
   /// </exception>
   /// <exception cref="ArgumentNullException"><paramref name="opcSetList"/>もしくは<paramref name="opcGetList"/>が<see langword="null"/>です。</exception>
-  public EData1(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcSetList, IReadOnlyCollection<PropertyRequest> opcGetList)
+  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcSetList, IReadOnlyCollection<PropertyRequest> opcGetList)
   {
     if (!FrameSerializer.IsESVWriteOrReadService(esv))
       throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));

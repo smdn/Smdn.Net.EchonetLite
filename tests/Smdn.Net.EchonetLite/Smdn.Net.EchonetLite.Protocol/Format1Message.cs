@@ -8,14 +8,14 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.Protocol;
 
 [TestFixture]
-public class EData1Tests {
+public class Format1MessageTests {
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGetResponse)]
   [TestCase(ESV.SetGetServiceNotAvailable)]
   public void Ctor_NotForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
-      () => new EData1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>())
     );
   }
 
@@ -25,10 +25,10 @@ public class EData1Tests {
   public void Ctor_ForWriteOrReadService_OPCSetOPCGetCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
-      () => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: null!, opcGetList: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: null!, opcGetList: Array.Empty<PropertyRequest>())
     );
     Assert.Throws<ArgumentNullException>(
-      () => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: null!)
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: null!)
     );
   }
 
@@ -40,7 +40,7 @@ public class EData1Tests {
   public void Ctor_ForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
-      () => new EData1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
     );
   }
 
@@ -52,7 +52,7 @@ public class EData1Tests {
   public void Ctor_NotForWriteOrReadService_OPCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
-      () => new EData1(seoj: default, deoj: default, esv: esv, opcList: null!)
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcList: null!)
     );
   }
 
@@ -74,19 +74,19 @@ public class EData1Tests {
   [TestCase(ESV.SetGetServiceNotAvailable, true)]
   public void IsWriteOrReadService(ESV esv, bool expectedAsWriteOrReadService)
   {
-    var edata = expectedAsWriteOrReadService
-      ? new EData1(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
-      : new EData1(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
+    var message = expectedAsWriteOrReadService
+      ? new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
+      : new Format1Message(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
 
-    Assert.That(edata.IsWriteOrReadService, Is.EqualTo(expectedAsWriteOrReadService), nameof(edata.IsWriteOrReadService));
+    Assert.That(message.IsWriteOrReadService, Is.EqualTo(expectedAsWriteOrReadService), nameof(message.IsWriteOrReadService));
   }
 
   [Test]
   public void Serialize_IsWriteOrReadService_MustNotBeSerialized()
   {
-    var edata1 = new EData1(default, default, ESV.Inf, Array.Empty<PropertyRequest>());
+    var message = new Format1Message(default, default, ESV.Inf, Array.Empty<PropertyRequest>());
 
-    Assert.That(JsonSerializer.Serialize(edata1), Does.Not.Contain($"\"\"{nameof(edata1.IsWriteOrReadService)}\"\""));
+    Assert.That(JsonSerializer.Serialize(message), Does.Not.Contain($"\"\"{nameof(message.IsWriteOrReadService)}\"\""));
   }
 
   [TestCase(ESV.SetI, "\"ESV\":\"60\"")]
@@ -96,8 +96,8 @@ public class EData1Tests {
   [TestCase((ESV)0xFF, "\"ESV\":\"FF\"")]
   public void Serialize_ClassGroupCode(ESV esv, string expectedJsonFragment)
   {
-    var edata1 = new EData1(default, default, esv, Array.Empty<PropertyRequest>());
+    var message = new Format1Message(default, default, esv, Array.Empty<PropertyRequest>());
 
-    Assert.That(JsonSerializer.Serialize(edata1), Does.Contain(expectedJsonFragment));
+    Assert.That(JsonSerializer.Serialize(message), Does.Contain(expectedJsonFragment));
   }
 }

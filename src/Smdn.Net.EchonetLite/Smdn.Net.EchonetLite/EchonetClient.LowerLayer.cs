@@ -38,7 +38,7 @@ partial class EchonetClient
   /// <see cref="IEchonetLiteHandler.Received"/>イベントにて電文形式 1（規定電文形式）の電文を受信した場合に発生するイベント。
   /// ECHONET Lite ノードに対して送信されてくる要求を処理するほか、他ノードに対する要求への応答を待機する場合にも使用する。
   /// </summary>
-  private event EventHandler<(IPAddress Address, ushort TID, EData1 EData)>? Format1MessageReceived;
+  private event EventHandler<(IPAddress Address, ushort TID, Format1Message Message)>? Format1MessageReceived;
 
   private ushort tid;
 
