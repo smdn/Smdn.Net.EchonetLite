@@ -6,6 +6,7 @@ using System.Collections.Generic;
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 using System.Diagnostics.CodeAnalysis;
 #endif
+using System.Linq;
 using System.Text.Json.Serialization;
 
 using Smdn.Net.EchonetLite.Serialization.Json;
@@ -166,6 +167,49 @@ public readonly struct Format1Message {
     return (propsForSetOrGet, propsForGet);
 #else
     return (propsForSetOrGet!, propsForGet!);
+#endif
+  }
+
+  public override string ToString()
+  {
+    return IsWriteOrReadService
+      ? $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESVToServiceSymbol(ESV)}"", {PropertiesToString("OPCSet", propsForSetOrGet)}, {PropertiesToString("OPCGet", propsForGet)}}}"
+      : $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESVToServiceSymbol(ESV)}"", {PropertiesToString("OPC", propsForSetOrGet)}}}";
+
+    static string ESVToServiceSymbol(ESV esv)
+      => esv switch {
+        ESV.SetI => "SetI",
+        ESV.SetC => "SetC",
+        ESV.Get => "Get",
+        ESV.InfRequest => "INF_REQ",
+        ESV.SetGet => "SetGet",
+        ESV.SetResponse => "Set_Res",
+        ESV.GetResponse => "Get_Res",
+        ESV.Inf => "INF",
+        ESV.InfC => "INFC",
+        ESV.InfCResponse => "INFC_Res",
+        ESV.SetGetResponse => "SetGet_Res",
+        ESV.SetIServiceNotAvailable => "SetI_SNA",
+        ESV.SetCServiceNotAvailable => "SetC_SNA",
+        ESV.GetServiceNotAvailable => "Get_SNA",
+        ESV.InfServiceNotAvailable => "INF_SNA",
+        ESV.SetGetServiceNotAvailable => "SetGet_SNA",
+        _ => ((byte)esv).ToString("X2", provider: null),
+      };
+
+    static string PropertiesToString(string opcName, IReadOnlyCollection<PropertyValue>? properties)
+      => properties is null || properties.Count == 0
+        ? $@"""{opcName}"": 0, ""Properties"": []"
+        : $@"""{opcName}"": {properties.Count}, ""Properties"": [{string.Join(", ", properties.Select(PropertyValueToString))}]";
+
+    static string PropertyValueToString(PropertyValue property)
+      => $@"{{""EPC"": ""{property.EPC:X2}"", ""PDC"": ""{property.PDC:X2}"", ""EDT"": ""{ToHexString(property.EDT.Span)}""}}";
+
+    static string ToHexString(ReadOnlySpan<byte> bytes)
+#if SYSTEM_CONVERT_TOHEXSTRING
+      => Convert.ToHexString(bytes);
+#else
+      => BitConverter.ToString(bytes.ToArray());
 #endif
   }
 }
