@@ -251,7 +251,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
 
-    void HandleFrameSetISNA(object? sender, (IPAddress Address, Frame Frame) value)
+    void HandleSetISNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -261,14 +261,12 @@ partial class EchonetClient
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Frame.EData is not EData1 edata)
+        if (value.Message.SEOJ != destinationObject.EOJ)
           return;
-        if (edata.SEOJ != destinationObject.EOJ)
-          return;
-        if (edata.ESV != ESV.SetIServiceNotAvailable)
+        if (value.Message.ESV != ESV.SetIServiceNotAvailable)
           return;
 
-        var opcList = edata.GetOPCList();
+        var opcList = value.Message.GetOPCList();
 
         foreach (var prop in opcList) {
           // 一部成功した書き込みを反映
@@ -285,11 +283,11 @@ partial class EchonetClient
         // TODO 一斉通知の不可応答の扱いが…
       }
       finally {
-        FrameReceived -= HandleFrameSetISNA;
+        Format1MessageReceived -= HandleSetISNA;
       }
     }
 
-    FrameReceived += HandleFrameSetISNA;
+    Format1MessageReceived += HandleSetISNA;
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -318,7 +316,7 @@ partial class EchonetClient
         }
       }
 
-      FrameReceived -= HandleFrameSetISNA;
+      Format1MessageReceived -= HandleSetISNA;
 
       throw;
     }
@@ -369,7 +367,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
 
-    void HandleFrameSetResOrSetCSNA(object? sender_, (IPAddress Address, Frame Frame) value)
+    void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -379,14 +377,12 @@ partial class EchonetClient
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Frame.EData is not EData1 edata)
+        if (value.Message.SEOJ != destinationObject.EOJ)
           return;
-        if (edata.SEOJ != destinationObject.EOJ)
-          return;
-        if (edata.ESV != ESV.SetCServiceNotAvailable && edata.ESV != ESV.SetResponse)
+        if (value.Message.ESV != ESV.SetCServiceNotAvailable && value.Message.ESV != ESV.SetResponse)
           return;
 
-        var opcList = edata.GetOPCList();
+        var opcList = value.Message.GetOPCList();
 
         foreach (var prop in opcList) {
           // 成功した書き込みを反映
@@ -398,16 +394,16 @@ partial class EchonetClient
           }
         }
 
-        responseTCS.SetResult((edata.ESV == ESV.SetResponse, opcList));
+        responseTCS.SetResult((value.Message.ESV == ESV.SetResponse, opcList));
 
         // TODO 一斉通知の応答の扱いが…
       }
       finally {
-        FrameReceived -= HandleFrameSetResOrSetCSNA;
+        Format1MessageReceived -= HandleSetResOrSetCSNA;
       }
     }
 
-    FrameReceived += HandleFrameSetResOrSetCSNA;
+    Format1MessageReceived += HandleSetResOrSetCSNA;
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -428,7 +424,7 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
-      FrameReceived -= HandleFrameSetResOrSetCSNA;
+      Format1MessageReceived -= HandleSetResOrSetCSNA;
 
       throw;
     }
@@ -479,7 +475,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
 
-    void HandleFrameGetResOrGetSNA(object? sender, (IPAddress Address, Frame Frame) value)
+    void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -489,14 +485,12 @@ partial class EchonetClient
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Frame.EData is not EData1 edata)
+        if (value.Message.SEOJ != destinationObject.EOJ)
           return;
-        if (edata.SEOJ != destinationObject.EOJ)
-          return;
-        if (edata.ESV != ESV.GetResponse && edata.ESV != ESV.GetServiceNotAvailable)
+        if (value.Message.ESV != ESV.GetResponse && value.Message.ESV != ESV.GetServiceNotAvailable)
           return;
 
-        var opcList = edata.GetOPCList();
+        var opcList = value.Message.GetOPCList();
 
         foreach (var prop in opcList) {
           // 成功した読み込みを反映
@@ -507,16 +501,16 @@ partial class EchonetClient
           }
         }
 
-        responseTCS.SetResult((edata.ESV == ESV.GetResponse, opcList));
+        responseTCS.SetResult((value.Message.ESV == ESV.GetResponse, opcList));
 
         // TODO 一斉通知の応答の扱いが…
       }
       finally {
-        FrameReceived -= HandleFrameGetResOrGetSNA;
+        Format1MessageReceived -= HandleGetResOrGetSNA;
       }
     }
 
-    FrameReceived += HandleFrameGetResOrGetSNA;
+    Format1MessageReceived += HandleGetResOrGetSNA;
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -537,7 +531,7 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
-      FrameReceived -= HandleFrameGetResOrGetSNA;
+      Format1MessageReceived -= HandleGetResOrGetSNA;
 
       throw;
     }
@@ -594,7 +588,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)>();
 
-    void HandleFrameSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, Frame Frame) value)
+    void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -604,14 +598,12 @@ partial class EchonetClient
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Frame.EData is not EData1 edata)
+        if (value.Message.SEOJ != destinationObject.EOJ)
           return;
-        if (edata.SEOJ != destinationObject.EOJ)
-          return;
-        if (edata.ESV != ESV.SetGetResponse && edata.ESV != ESV.SetGetServiceNotAvailable)
+        if (value.Message.ESV != ESV.SetGetResponse && value.Message.ESV != ESV.SetGetServiceNotAvailable)
           return;
 
-        var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
+        var (opcSetList, opcGetList) = value.Message.GetOPCSetGetList();
 
         foreach (var prop in opcSetList) {
           // 成功した書き込みを反映
@@ -633,16 +625,16 @@ partial class EchonetClient
           }
         }
 
-        responseTCS.SetResult((edata.ESV == ESV.SetGetResponse, opcSetList, opcGetList));
+        responseTCS.SetResult((value.Message.ESV == ESV.SetGetResponse, opcSetList, opcGetList));
 
         // TODO 一斉通知の応答の扱いが…
       }
       finally {
-        FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
+        Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
       }
     }
 
-    FrameReceived += HandleFrameSetGetResOrSetGetSNA;
+    Format1MessageReceived += HandleSetGetResOrSetGetSNA;
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -664,7 +656,7 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
-      FrameReceived -= HandleFrameSetGetResOrSetGetSNA;
+      Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
 
       throw;
     }
@@ -815,7 +807,7 @@ partial class EchonetClient
 
     var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
 
-    void HandleFrameINFCRes(object? sender, (IPAddress Address, Frame Frame) value)
+    void HandleINFCRes(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
       try {
         if (cancellationToken.IsCancellationRequested) {
@@ -825,21 +817,19 @@ partial class EchonetClient
 
         if (!destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Frame.EData is not EData1 edata)
+        if (value.Message.SEOJ != destinationObject.EOJ)
           return;
-        if (edata.SEOJ != destinationObject.EOJ)
-          return;
-        if (edata.ESV != ESV.InfCResponse)
+        if (value.Message.ESV != ESV.InfCResponse)
           return;
 
-        responseTCS.SetResult(edata.GetOPCList());
+        responseTCS.SetResult(value.Message.GetOPCList());
       }
       finally {
-        FrameReceived -= HandleFrameINFCRes;
+        Format1MessageReceived -= HandleINFCRes;
       }
     }
 
-    FrameReceived += HandleFrameINFCRes;
+    Format1MessageReceived += HandleINFCRes;
 
     await SendFrameAsync(
       destinationNode.Address,
@@ -860,7 +850,7 @@ partial class EchonetClient
       return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
-      FrameReceived -= HandleFrameINFCRes;
+      Format1MessageReceived -= HandleINFCRes;
 
       throw;
     }
@@ -1043,34 +1033,26 @@ partial class EchonetClient
   }
 
   /// <summary>
-  /// イベント<see cref="FrameReceived"/>をハンドルするメソッドを実装します。
-  /// 受信したECHONET Lite フレームを処理し、必要に応じて要求に対する応答を返します。
+  /// イベント<see cref="Format1MessageReceived"/>をハンドルするメソッドを実装します。
+  /// 受信した電文形式 1（規定電文形式）の電文を処理し、必要に応じて要求に対する応答を返します。
   /// </summary>
   /// <param name="sender">イベントのソース。</param>
   /// <param name="value">
-  /// イベントデータを格納している<see cref="ValueTuple{IPAddress,Frame}"/>。
-  /// ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
+  /// イベントデータを格納している<see cref="ValueTuple{IPAddress,UInt16,Format1Message}"/>。
+  /// ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームのTIDを表す<see langword="ushort"/>、規定電文形式の電文を表す<see cref="Format1Message"/>を保持します。
   /// </param>
-  /// <exception cref="InvalidOperationException">電文形式 1（規定電文形式）を期待しましたが、<see cref="EData1"/>を取得できませんでした。</exception>
 #pragma warning disable CA1502 // TODO: reduce complexity
-  private void HandleFrameReceived(object? sender, (IPAddress Address, Frame Frame) value)
+  private void HandleFormat1Message(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
   {
-    if (value.Frame.EHD1 != EHD1.EchonetLite)
-      return;
-    if (value.Frame.EHD2 != EHD2.Type1)
-      return;
-
-    if (value.Frame.EData is not EData1 edata)
-      throw new InvalidOperationException($"expected {nameof(EData1)}, but was {value.Frame.EData?.GetType()}");
-
-    var sourceNode = Nodes.SingleOrDefault(n => value.Address is not null && value.Address.Equals(n.Address));
+    var (address, tid, message) = value;
+    var sourceNode = Nodes.SingleOrDefault(n => address is not null && address.Equals(n.Address));
 
     // 未知のノードの場合
     if (sourceNode is null) {
       // ノードを生成
       // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
       sourceNode = new(
-        address: value.Address,
+        address: address,
         nodeProfile: EchonetObject.CreateNodeProfile(instanceCode: 0x00)
       );
 
@@ -1079,29 +1061,29 @@ partial class EchonetClient
       OnNodeJoined(sourceNode);
     }
 
-    var destObject = SelfNode.NodeProfile.EOJ == edata.DEOJ
+    var destObject = SelfNode.NodeProfile.EOJ == message.DEOJ
       ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
-      : SelfNode.Devices.FirstOrDefault(d => d.EOJ == edata.DEOJ);
+      : SelfNode.Devices.FirstOrDefault(d => d.EOJ == message.DEOJ);
 
     Task? task = null;
 
-    switch (edata.ESV) {
+    switch (message.ESV) {
       case ESV.SetI: // プロパティ値書き込み要求（応答不要）
         // あれば、書き込んでおわり
         // なければ、プロパティ値書き込み要求不可応答 SetI_SNA
-        task = Task.Run(() => HandlePropertyValueWriteRequestAsync(value, edata, destObject));
+        task = Task.Run(() => HandlePropertyValueWriteRequestAsync(address, tid, message, destObject));
         break;
 
       case ESV.SetC: // プロパティ値書き込み要求（応答要）
         // あれば、書き込んで プロパティ値書き込み応答 Set_Res
         // なければ、プロパティ値書き込み要求不可応答 SetC_SNA
-        task = Task.Run(() => HandlePropertyValueWriteRequestResponseRequiredAsync(value, edata, destObject));
+        task = Task.Run(() => HandlePropertyValueWriteRequestResponseRequiredAsync(address, tid, message, destObject));
         break;
 
       case ESV.Get: // プロパティ値読み出し要求
         // あれば、プロパティ値読み出し応答 Get_Res
         // なければ、プロパティ値読み出し不可応答 Get_SNA
-        task = Task.Run(() => HandlePropertyValueReadRequest(value, edata, destObject));
+        task = Task.Run(() => HandlePropertyValueReadRequest(address, tid, message, destObject));
         break;
 
       case ESV.InfRequest: // プロパティ値通知要求
@@ -1112,19 +1094,19 @@ partial class EchonetClient
       case ESV.SetGet: // プロパティ値書き込み・読み出し要求
         // あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
         // なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
-        task = Task.Run(() => HandlePropertyValueWriteReadRequestAsync(value, edata, destObject));
+        task = Task.Run(() => HandlePropertyValueWriteReadRequestAsync(address, tid, message, destObject));
         break;
 
       case ESV.Inf: // プロパティ値通知
         // プロパティ値通知要求 INF_REQのレスポンス
         // または、自発的な通知のケースがある。
         // なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
-        task = Task.Run(() => HandlePropertyValueNotificationRequestAsync(value, edata, sourceNode));
+        task = Task.Run(() => HandlePropertyValueNotificationRequestAsync(address, tid, message, sourceNode));
         break;
 
       case ESV.InfC: // プロパティ値通知（応答要）
         // プロパティ値通知応答 INFC_Res
-        task = Task.Run(() => HandlePropertyValueNotificationResponseRequiredAsync(value, edata, sourceNode, destObject));
+        task = Task.Run(() => HandlePropertyValueNotificationResponseRequiredAsync(address, tid, message, sourceNode, destObject));
         break;
 
       case ESV.SetIServiceNotAvailable: // プロパティ値書き込み要求不可応答
@@ -1169,11 +1151,9 @@ partial class EchonetClient
   /// <summary>
   /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を処理します。
   /// </summary>
-  /// <param name="request">
-  /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
-  /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
-  /// </param>
-  /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+  /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
+  /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
+  /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
   /// <returns>
   /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1188,23 +1168,22 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
   private async Task<bool> HandlePropertyValueWriteRequestAsync(
-    (IPAddress Address, Frame Frame) request,
-    EData1 edata,
+    IPAddress address,
+    ushort tid,
+    Format1Message message,
     EchonetObject? destObject
   )
   {
-    if (edata.OPCList is null)
-      throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
-
     if (destObject is null) {
       // 対象となるオブジェクト自体が存在しない場合には、「不可応答」も返さないものとする。
       return false;
     }
 
     var hasError = false;
-    var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
+    var requestOPCList = message.GetOPCList();
+    var responseOPCList = new List<PropertyRequest>(capacity: requestOPCList.Count);
 
-    foreach (var opc in edata.OPCList) {
+    foreach (var opc in requestOPCList) {
       var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
       if (
@@ -1215,26 +1194,26 @@ partial class EchonetClient
         hasError = true;
         // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
         // 要求された EDT を付け、要求を受理できなかったことを示す。
-        opcList.Add(opc);
+        responseOPCList.Add(opc);
       }
       else {
         // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
         property.SetValue(opc.EDT);
 
-        opcList.Add(new(opc.EPC));
+        responseOPCList.Add(new(opc.EPC));
       }
     }
 
     if (hasError) {
       await SendFrameAsync(
-        request.Address,
+        address,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
-          tid: request.Frame.TID,
-          sourceObject: edata.DEOJ, // 入れ替え
-          destinationObject: edata.SEOJ, // 入れ替え
+          tid: tid,
+          sourceObject: message.DEOJ, // 入れ替え
+          destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetIServiceNotAvailable, // SetI_SNA(0x50)
-          opcListOrOpcSetList: opcList
+          opcListOrOpcSetList: responseOPCList
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1248,11 +1227,9 @@ partial class EchonetClient
   /// <summary>
   /// ECHONET Lite サービス「SetC:プロパティ値書き込み要求（応答要）」(ESV <c>0x61</c>)を処理します。
   /// </summary>
-  /// <param name="request">
-  /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
-  /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
-  /// </param>
-  /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+  /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
+  /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
+  /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
   /// <returns>
   /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1267,24 +1244,23 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
   /// </seealso>
   private async Task<bool> HandlePropertyValueWriteRequestResponseRequiredAsync(
-    (IPAddress Address, Frame Frame) request,
-    EData1 edata,
+    IPAddress address,
+    ushort tid,
+    Format1Message message,
     EchonetObject? destObject
   )
   {
-    if (edata.OPCList is null)
-      throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
-
     var hasError = false;
-    var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
+    var requestOPCList = message.GetOPCList();
+    var responseOPCList = new List<PropertyRequest>(capacity: requestOPCList.Count);
 
     if (destObject is null) {
       // DEOJがない場合、全OPCをそのまま返す
       hasError = true;
-      opcList.AddRange(edata.OPCList);
+      responseOPCList.AddRange(requestOPCList);
     }
     else {
-      foreach (var opc in edata.OPCList) {
+      foreach (var opc in requestOPCList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
         if (
@@ -1295,27 +1271,27 @@ partial class EchonetClient
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
-          opcList.Add(opc);
+          responseOPCList.Add(opc);
         }
         else {
           // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
           property.SetValue(opc.EDT);
 
-          opcList.Add(new(opc.EPC));
+          responseOPCList.Add(new(opc.EPC));
         }
       }
     }
 
     if (hasError) {
       await SendFrameAsync(
-        request.Address,
+        address,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
-          tid: request.Frame.TID,
-          sourceObject: edata.DEOJ, // 入れ替え
-          destinationObject: edata.SEOJ, // 入れ替え
+          tid: tid,
+          sourceObject: message.DEOJ, // 入れ替え
+          destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetCServiceNotAvailable, // SetC_SNA(0x51)
-          opcListOrOpcSetList: opcList
+          opcListOrOpcSetList: responseOPCList
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1324,14 +1300,14 @@ partial class EchonetClient
     }
 
     await SendFrameAsync(
-      request.Address,
+      address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: request.Frame.TID,
-        sourceObject: edata.DEOJ, // 入れ替え
-        destinationObject: edata.SEOJ, // 入れ替え
+        tid: tid,
+        sourceObject: message.DEOJ, // 入れ替え
+        destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.SetResponse, // Set_Res(0x71)
-        opcListOrOpcSetList: opcList
+        opcListOrOpcSetList: responseOPCList
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1342,11 +1318,9 @@ partial class EchonetClient
   /// <summary>
   /// ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を処理します。
   /// </summary>
-  /// <param name="request">
-  /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
-  /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
-  /// </param>
-  /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+  /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
+  /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
+  /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
   /// <returns>
   /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1361,24 +1335,23 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
   private async Task<bool> HandlePropertyValueReadRequest(
-    (IPAddress Address, Frame Frame) request,
-    EData1 edata,
+    IPAddress address,
+    ushort tid,
+    Format1Message message,
     EchonetObject? destObject
   )
   {
-    if (edata.OPCList is null)
-      throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
-
     var hasError = false;
-    var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
+    var requestOPCList = message.GetOPCList();
+    var responseOPCList = new List<PropertyRequest>(capacity: requestOPCList.Count);
 
     if (destObject is null) {
       // DEOJがない場合、全OPCをそのまま返す
       hasError = true;
-      opcList.AddRange(edata.OPCList);
+      responseOPCList.AddRange(requestOPCList);
     }
     else {
-      foreach (var opc in edata.OPCList) {
+      foreach (var opc in requestOPCList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
         if (
@@ -1390,26 +1363,26 @@ partial class EchonetClient
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
-          opcList.Add(opc);
+          responseOPCList.Add(opc);
         }
         else {
           // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
           // EDT には読み出したプロパティ値を設定する
-          opcList.Add(new(opc.EPC, property.ValueMemory));
+          responseOPCList.Add(new(opc.EPC, property.ValueMemory));
         }
       }
     }
 
     if (hasError) {
       await SendFrameAsync(
-        request.Address,
+        address,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
-          tid: request.Frame.TID,
-          sourceObject: edata.DEOJ, // 入れ替え
-          destinationObject: edata.SEOJ, // 入れ替え
+          tid: tid,
+          sourceObject: message.DEOJ, // 入れ替え
+          destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.GetServiceNotAvailable, // Get_SNA(0x52)
-          opcListOrOpcSetList: opcList
+          opcListOrOpcSetList: responseOPCList
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1418,14 +1391,14 @@ partial class EchonetClient
     }
 
     await SendFrameAsync(
-      request.Address,
+      address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: request.Frame.TID,
-        sourceObject: edata.DEOJ, // 入れ替え
-        destinationObject: edata.SEOJ, // 入れ替え
+        tid: tid,
+        sourceObject: message.DEOJ, // 入れ替え
+        destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.GetResponse, // Get_Res(0x72)
-        opcListOrOpcSetList: opcList
+        opcListOrOpcSetList: responseOPCList
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1439,11 +1412,9 @@ partial class EchonetClient
   /// <remarks>
   /// 本実装は書き込み後、読み込む
   /// </remarks>
-  /// <param name="request">
-  /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
-  /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
-  /// </param>
-  /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+  /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
+  /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
+  /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
   /// <returns>
   /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1458,28 +1429,25 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// </seealso>
   private async Task<bool> HandlePropertyValueWriteReadRequestAsync(
-    (IPAddress Address, Frame Frame) request,
-    EData1 edata,
+    IPAddress address,
+    ushort tid,
+    Format1Message message,
     EchonetObject? destObject
   )
   {
-    if (edata.OPCSetList is null)
-      throw new InvalidOperationException($"{nameof(edata.OPCSetList)} is null");
-    if (edata.OPCGetList is null)
-      throw new InvalidOperationException($"{nameof(edata.OPCGetList)} is null");
-
     var hasError = false;
-    var opcSetList = new List<PropertyRequest>(capacity: edata.OPCSetList.Count);
-    var opcGetList = new List<PropertyRequest>(capacity: edata.OPCGetList.Count);
+    var (requestOPCSetList, requestOPCGetList) = message.GetOPCSetGetList();
+    var responseOPCSetList = new List<PropertyRequest>(capacity: requestOPCSetList.Count);
+    var responseOPCGetList = new List<PropertyRequest>(capacity: requestOPCGetList.Count);
 
     if (destObject is null) {
       // DEOJがない場合、全OPCをそのまま返す
       hasError = true;
-      opcSetList.AddRange(edata.OPCSetList);
-      opcGetList.AddRange(edata.OPCGetList);
+      responseOPCSetList.AddRange(requestOPCSetList);
+      responseOPCGetList.AddRange(requestOPCGetList);
     }
     else {
-      foreach (var opc in edata.OPCSetList) {
+      foreach (var opc in requestOPCSetList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
         if (
@@ -1490,17 +1458,17 @@ partial class EchonetClient
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
-          opcSetList.Add(opc);
+          responseOPCSetList.Add(opc);
         }
         else {
           // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
           property.SetValue(opc.EDT);
 
-          opcSetList.Add(new(opc.EPC));
+          responseOPCSetList.Add(new(opc.EPC));
         }
       }
 
-      foreach (var opc in edata.OPCGetList) {
+      foreach (var opc in requestOPCGetList) {
         var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
         if (
@@ -1512,27 +1480,27 @@ partial class EchonetClient
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
-          opcGetList.Add(opc);
+          responseOPCGetList.Add(opc);
         }
         else {
           // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
           // EDT には読み出したプロパティ値を設定する
-          opcSetList.Add(new(opc.EPC, property.ValueMemory));
+          responseOPCGetList.Add(new(opc.EPC, property.ValueMemory));
         }
       }
     }
 
     if (hasError) {
       await SendFrameAsync(
-        request.Address,
+        address,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
-          tid: request.Frame.TID,
-          sourceObject: edata.DEOJ, // 入れ替え
-          destinationObject: edata.SEOJ, // 入れ替え
+          tid: tid,
+          sourceObject: message.DEOJ, // 入れ替え
+          destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetGetServiceNotAvailable, // SetGet_SNA(0x5E)
-          opcListOrOpcSetList: opcSetList,
-          opcGetList: opcGetList
+          opcListOrOpcSetList: responseOPCSetList,
+          opcGetList: responseOPCGetList
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1541,15 +1509,15 @@ partial class EchonetClient
     }
 
     await SendFrameAsync(
-      request.Address,
+      address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: request.Frame.TID,
-        sourceObject: edata.DEOJ, // 入れ替え
-        destinationObject: edata.SEOJ, // 入れ替え
+        tid: tid,
+        sourceObject: message.DEOJ, // 入れ替え
+        destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.SetGetResponse, // SetGet_Res(0x7E)
-        opcListOrOpcSetList: opcSetList,
-        opcGetList: opcGetList
+        opcListOrOpcSetList: responseOPCSetList,
+        opcGetList: responseOPCGetList
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1563,11 +1531,9 @@ partial class EchonetClient
   /// <remarks>
   /// 自発なので、0x73のみ。
   /// </remarks>
-  /// <param name="request">
-  /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
-  /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
-  /// </param>
-  /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+  /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
+  /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
+  /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetNode"/>。</param>
   /// <returns>
   /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
@@ -1583,38 +1549,37 @@ partial class EchonetClient
   /// </seealso>
 #pragma warning disable IDE0060
   private async Task<bool> HandlePropertyValueNotificationRequestAsync(
-    (IPAddress Address, Frame Frame) request,
-    EData1 edata,
+    IPAddress address,
+    ushort tid,
+    Format1Message message,
     EchonetNode sourceNode
   )
 #pragma warning restore IDE0060
   {
-    if (edata.OPCList is null)
-      throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
-
     var hasError = false;
-    var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
+    var requestOPCList = message.GetOPCList();
+    var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
 
     if (sourceObject is null) {
       // ノードプロファイルからの通知の場合
-      if (sourceNode.NodeProfile.EOJ == edata.SEOJ) {
+      if (sourceNode.NodeProfile.EOJ == message.SEOJ) {
         sourceObject = sourceNode.NodeProfile;
       }
       else {
         // 未知のオブジェクト
         // 新規作成(プロパティはない状態)
-        sourceObject = new(edata.SEOJ);
+        sourceObject = new(message.SEOJ);
         sourceNode.Devices.Add(sourceObject);
       }
     }
 
-    foreach (var opc in edata.OPCList) {
+    foreach (var opc in requestOPCList) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
       if (property is null) {
         // 未知のプロパティ
         // 新規作成
-        property = new(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
+        property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, opc.EPC);
         sourceObject.AddProperty(property);
       }
 
@@ -1640,11 +1605,9 @@ partial class EchonetClient
   /// <summary>
   /// ECHONET Lite サービス「INFC:プロパティ値通知（応答要）」(ESV <c>0x74</c>)を処理します。
   /// </summary>
-  /// <param name="request">
-  /// 受信した内容を表す<see cref="ValueTuple{IPAddress,Frame}"/>。
-  /// 送信元アドレスを表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームを表す<see cref="Frame"/>を保持します。
-  /// </param>
-  /// <param name="edata">受信したEDATAを表す<see cref="EData1"/>。　ここで渡されるEDATAは電文形式 1（規定電文形式）のECHONET Lite データです。</param>
+  /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
+  /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
+  /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetNode"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
   /// <returns>
@@ -1660,17 +1623,16 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
   /// </seealso>
   private async Task<bool> HandlePropertyValueNotificationResponseRequiredAsync(
-    (IPAddress Address, Frame Frame) request,
-    EData1 edata,
+    IPAddress address,
+    ushort tid,
+    Format1Message message,
     EchonetNode sourceNode,
     EchonetObject? destObject
   )
   {
-    if (edata.OPCList is null)
-      throw new InvalidOperationException($"{nameof(edata.OPCList)} is null");
-
     var hasError = false;
-    var opcList = new List<PropertyRequest>(capacity: edata.OPCList.Count);
+    var requestOPCList = message.GetOPCList();
+    var responseOPCList = new List<PropertyRequest>(capacity: requestOPCList.Count);
 
     if (destObject is null) {
       // 指定された DEOJ が存在しない場合には電文を廃棄する。
@@ -1678,28 +1640,28 @@ partial class EchonetClient
       hasError = true;
     }
 
-    var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == edata.SEOJ);
+    var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
 
     if (sourceObject is null) {
       // ノードプロファイルからの通知の場合
-      if (sourceNode.NodeProfile.EOJ == edata.SEOJ) {
+      if (sourceNode.NodeProfile.EOJ == message.SEOJ) {
         sourceObject = sourceNode.NodeProfile;
       }
       else {
         // 未知のオブジェクト
         // 新規作成(プロパティはない状態)
-        sourceObject = new(edata.SEOJ);
+        sourceObject = new(message.SEOJ);
         sourceNode.Devices.Add(sourceObject);
       }
     }
 
-    foreach (var opc in edata.OPCList) {
+    foreach (var opc in requestOPCList) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
 
       if (property is null) {
         // 未知のプロパティ
         // 新規作成
-        property = new(edata.SEOJ.ClassGroupCode, edata.SEOJ.ClassCode, opc.EPC);
+        property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, opc.EPC);
         sourceObject.AddProperty(property);
       }
 
@@ -1720,19 +1682,19 @@ partial class EchonetClient
 
       // EPC には通知時と同じプロパティコードを設定するが、
       // 通知を受信したことを示すため、PDCには 0 を設定し、EDT は付けない。
-      opcList.Add(new(opc.EPC));
+      responseOPCList.Add(new(opc.EPC));
     }
 
     if (destObject is not null) {
       await SendFrameAsync(
-        request.Address,
+        address,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
           buffer: buffer,
-          tid: request.Frame.TID,
-          sourceObject: edata.DEOJ, // 入れ替え
-          destinationObject: edata.SEOJ, // 入れ替え
+          tid: tid,
+          sourceObject: message.DEOJ, // 入れ替え
+          destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.InfCResponse, // INFC_Res(0x74)
-          opcListOrOpcSetList: opcList
+          opcListOrOpcSetList: responseOPCList
         ),
         cancellationToken: default
       ).ConfigureAwait(false);

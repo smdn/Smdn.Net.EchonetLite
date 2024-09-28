@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-#pragma warning disable CA2254 // CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
 
 using System;
 using System.Buffers;
@@ -35,10 +34,10 @@ partial class EchonetClient
   private SemaphoreSlim requestSemaphore = new(initialCount: 1, maxCount: 1);
 
   /// <summary>
-  /// <see cref="IEchonetLiteHandler.Received"/>イベントにてECHONET Lite フレームを受信した場合に発生するイベント。
+  /// <see cref="IEchonetLiteHandler.Received"/>イベントにて電文形式 1（規定電文形式）の電文を受信した場合に発生するイベント。
   /// ECHONET Lite ノードに対して送信されてくる要求を処理するほか、他ノードに対する要求への応答を待機する場合にも使用する。
   /// </summary>
-  private event EventHandler<(IPAddress, Frame)>? FrameReceived;
+  private event EventHandler<(IPAddress Address, ushort TID, Format1Message Message)>? Format1MessageReceived;
 
   private ushort tid;
 
@@ -55,7 +54,7 @@ partial class EchonetClient
   /// イベント<see cref="IEchonetLiteHandler.Received"/>をハンドルするメソッドを実装します。
   /// </summary>
   /// <remarks>
-  /// 受信したデータがECHONET Lite フレームの場合は、イベント<see cref="FrameReceived"/>をトリガします。
+  /// 受信したデータが電文形式 1（規定電文形式）の電文を含むECHONET Lite フレームの場合は、イベント<see cref="Format1MessageReceived"/>をトリガします。
   /// それ以外の場合は、無視して処理を中断します。
   /// </remarks>
   /// <param name="sender">イベントのソース。</param>
@@ -65,13 +64,71 @@ partial class EchonetClient
   /// </param>
   private void EchonetDataReceived(object? sender, (IPAddress Address, ReadOnlyMemory<byte> Data) value)
   {
-    if (!FrameSerializer.TryDeserialize(value.Data.Span, out var frame))
+    if (!FrameSerializer.TryDeserialize(value.Data.Span, out var ehd1, out var ehd2, out var tid, out var edata))
       // ECHONETLiteフレームではないため無視
       return;
 
-    logger?.LogTrace($"Echonet Lite Frame受信: address:{value.Address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
+    using var scope = logger?.BeginScope("Receive");
 
-    FrameReceived?.Invoke(this, (value.Address, frame));
+    logger?.LogTrace(
+      "ECHONET Lite frame (From: {Address}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
+      value.Address,
+      (byte)ehd1,
+      (byte)ehd2,
+      (byte)tid,
+#if SYSTEM_CONVERT_TOHEXSTRING
+      Convert.ToHexString(edata)
+#else
+      BitConverter.ToString(edata.ToArray())
+#endif
+    );
+
+    switch (ehd2) {
+      case EHD2.Format1:
+        if (!FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
+          logger?.LogWarning(
+            "Invalid Format 1 message (From: {Address})",
+            value.Address
+          );
+          return;
+        }
+
+        logger?.LogDebug(
+          "Format 1 message (From: {Address}, Message: {Message})",
+          value.Address,
+          JsonSerializer.Serialize(format1Message, JsonSerializerSourceGenerationContext.Default.Format1Message)
+        );
+
+        Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
+
+        break;
+
+      case EHD2.Format2:
+        // TODO: process format 2 messages
+        logger?.LogDebug(
+          "Format 2 message (From: {Address}, Message: {Message})",
+          value.Address,
+#if SYSTEM_CONVERT_TOHEXSTRING
+          Convert.ToHexString(edata)
+#else
+          BitConverter.ToString(edata.ToArray())
+#endif
+        );
+        break;
+
+      default:
+        // undefined message format, do nothing
+        logger?.LogDebug(
+          "Undefined format message (From: {Address}, Message: {Message})",
+          value.Address,
+#if SYSTEM_CONVERT_TOHEXSTRING
+          Convert.ToHexString(edata)
+#else
+          BitConverter.ToString(edata.ToArray())
+#endif
+        );
+        break;
+    }
   }
 
   /// <summary>
@@ -92,18 +149,12 @@ partial class EchonetClient
     await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
     try {
+      using var scope = logger?.BeginScope("Send");
+
       writeFrame(requestFrameBuffer);
 
-      if (logger is not null && logger.IsEnabled(LogLevel.Trace)) {
-        if (FrameSerializer.TryDeserialize(requestFrameBuffer.WrittenSpan, out var frame)) {
-          logger.LogTrace($"Echonet Lite Frame送信: address:{address}\r\n,{JsonSerializer.Serialize(frame, JsonSerializerSourceGenerationContext.Default.Frame)}");
-        }
-#if DEBUG
-        else {
-          throw new InvalidOperationException("attempted to request an invalid format of frame");
-        }
-#endif
-      }
+      if (logger is not null)
+        LogFrame(requestFrameBuffer.WrittenSpan);
 
       await echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }
@@ -115,6 +166,43 @@ partial class EchonetClient
       requestFrameBuffer.Clear();
 #endif
       requestSemaphore.Release();
+    }
+
+    void LogFrame(ReadOnlySpan<byte> frame)
+    {
+      if (!FrameSerializer.TryDeserialize(frame, out var ehd1, out var ehd2, out var tid, out var edata))
+        throw new InvalidOperationException("attempted to send an invalid format of ECHONET Lite frame");
+
+      if (logger.IsEnabled(LogLevel.Trace)) {
+        logger.LogTrace(
+          "ECHONET Lite frame (To: {Address}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
+          address,
+          (byte)ehd1,
+          (byte)ehd2,
+          (byte)tid,
+#if SYSTEM_CONVERT_TOHEXSTRING
+          Convert.ToHexString(edata)
+#else
+          BitConverter.ToString(edata.ToArray())
+#endif
+        );
+      }
+
+      if (ehd2 == EHD2.Format1) {
+        if (logger.IsEnabled(LogLevel.Debug) && FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
+          logger.LogDebug(
+            "Format 1 message (To: {Address}, Message: {Message})",
+            address,
+            JsonSerializer.Serialize(format1Message, JsonSerializerSourceGenerationContext.Default.Format1Message)
+          );
+        }
+        else {
+          logger.LogWarning(
+            "Invalid Format 1 message (To: {Address})",
+            address
+          );
+        }
+      }
     }
   }
 }

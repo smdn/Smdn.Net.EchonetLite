@@ -17,12 +17,12 @@ namespace Smdn.Net.EchonetLite.Protocol;
 public enum EHD2 : byte {
 #pragma warning restore CA1008
   /// <summary>
-  /// EDATA部の電文形式として「電文形式 1（規定電文形式）」を表す値を示します。
+  /// EDATA部の電文形式として「電文形式 1（規定電文形式/specified message format）」を表す値を示します。
   /// </summary>
-  Type1 = 0b_1000_0001,
+  Format1 = 0b_1000_0001,
 
   /// <summary>
-  /// EDATA部の電文形式として「電文形式 2（任意電文形式）」を表す値を示します。
+  /// EDATA部の電文形式として「電文形式 2（任意電文形式/arbitrary message format）」を表す値を示します。
   /// </summary>
-  Type2 = 0b_1000_0010,
+  Format2 = 0b_1000_0010,
 }
