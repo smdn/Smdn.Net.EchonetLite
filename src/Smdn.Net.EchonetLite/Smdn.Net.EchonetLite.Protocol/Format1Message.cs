@@ -51,17 +51,17 @@ public readonly struct Format1Message {
   /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Set操作に対応する処理対象プロパティのコレクション。
   /// そうでない場合は、<see cref="ESV"/>で指定されるサービスにおいて処理対象となるプロパティのコレクション。
   /// </summary>
-  private readonly IReadOnlyCollection<PropertyRequest> opcListOrOpcSetList;
+  private readonly IReadOnlyCollection<PropertyRequest> propsForSetOrGet;
 
   /// <summary>
   /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Get操作に対応する処理対象プロパティのコレクション。
   /// そうでない場合は、<see langword="null"/>。
   /// </summary>
-  private readonly IReadOnlyCollection<PropertyRequest>? opcGetList;
+  private readonly IReadOnlyCollection<PropertyRequest>? propsForGet;
 
   [JsonIgnore]
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-  [MemberNotNullWhen(true, nameof(opcGetList))]
+  [MemberNotNullWhen(true, nameof(propsForGet))]
 #endif
   private bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
 
@@ -74,13 +74,13 @@ public readonly struct Format1Message {
   /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
   /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
   /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-  /// <param name="opcList"><paramref name="esv"/>で指定されるサービスにおいて処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
+  /// <param name="properties"><paramref name="esv"/>で指定されるサービスにおいて処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかです。
   /// この場合、Set操作とGet操作のそれぞれに対応する処理対象プロパティのコレクションを指定する必要があります。
   /// </exception>
-  /// <exception cref="ArgumentNullException"><paramref name="opcList"/>が<see langword="null"/>です。</exception>
-  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcList)
+  /// <exception cref="ArgumentNullException"><paramref name="properties"/>が<see langword="null"/>です。</exception>
+  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> properties)
   {
     if (FrameSerializer.IsESVWriteOrReadService(esv))
       throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
@@ -88,7 +88,7 @@ public readonly struct Format1Message {
     SEOJ = seoj;
     DEOJ = deoj;
     ESV = esv;
-    opcListOrOpcSetList = opcList ?? throw new ArgumentNullException(nameof(opcList));
+    propsForSetOrGet = properties ?? throw new ArgumentNullException(nameof(properties));
   }
 
   /// <summary>
@@ -100,14 +100,14 @@ public readonly struct Format1Message {
   /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
   /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
   /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-  /// <param name="opcSetList"><paramref name="esv"/>で指定されるサービスのSet操作において処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
-  /// <param name="opcGetList"><paramref name="esv"/>で指定されるサービスのGet操作において処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
+  /// <param name="propertiesForSet"><paramref name="esv"/>で指定されるサービスのSet操作において処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
+  /// <param name="propertiesForGet"><paramref name="esv"/>で指定されるサービスのGet操作において処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかではありません。
   /// この場合、Set操作またはGet操作のどちらかに対応する処理対象プロパティのコレクションのみを指定する必要があります。
   /// </exception>
-  /// <exception cref="ArgumentNullException"><paramref name="opcSetList"/>もしくは<paramref name="opcGetList"/>が<see langword="null"/>です。</exception>
-  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcSetList, IReadOnlyCollection<PropertyRequest> opcGetList)
+  /// <exception cref="ArgumentNullException"><paramref name="propertiesForSet"/>もしくは<paramref name="propertiesForGet"/>が<see langword="null"/>です。</exception>
+  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> propertiesForSet, IReadOnlyCollection<PropertyRequest> propertiesForGet)
   {
     if (!FrameSerializer.IsESVWriteOrReadService(esv))
       throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
@@ -115,8 +115,8 @@ public readonly struct Format1Message {
     SEOJ = seoj;
     DEOJ = deoj;
     ESV = esv;
-    opcListOrOpcSetList = opcSetList ?? throw new ArgumentNullException(nameof(opcSetList));
-    this.opcGetList = opcGetList ?? throw new ArgumentNullException(nameof(opcGetList));
+    propsForSetOrGet = propertiesForSet ?? throw new ArgumentNullException(nameof(propertiesForSet));
+    propsForGet = propertiesForGet ?? throw new ArgumentNullException(nameof(propertiesForGet));
   }
 
   /// <summary>
@@ -136,9 +136,9 @@ public readonly struct Format1Message {
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-    return opcListOrOpcSetList;
+    return propsForSetOrGet;
 #else
-    return opcListOrOpcSetList!;
+    return propsForSetOrGet!;
 #endif
   }
 
@@ -163,9 +163,9 @@ public readonly struct Format1Message {
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-    return (opcListOrOpcSetList, opcGetList);
+    return (propsForSetOrGet, propsForGet);
 #else
-    return (opcListOrOpcSetList!, opcGetList!);
+    return (propsForSetOrGet!, propsForGet!);
 #endif
   }
 }

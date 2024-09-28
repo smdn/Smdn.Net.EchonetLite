@@ -18,14 +18,14 @@ partial class FrameSerializer {
     EOJ sourceObject,
     EOJ destinationObject,
     ESV esv,
-    IEnumerable<PropertyRequest> opcListOrOpcSetList,
-    IEnumerable<PropertyRequest>? opcGetList = null
+    IEnumerable<PropertyRequest> propsForSetOrGet,
+    IEnumerable<PropertyRequest>? propsForGet = null
   )
   {
     if (buffer is null)
       throw new ArgumentNullException(nameof(buffer));
-    if (opcListOrOpcSetList is null)
-      throw new ArgumentNullException(nameof(opcListOrOpcSetList));
+    if (propsForSetOrGet is null)
+      throw new ArgumentNullException(nameof(propsForSetOrGet));
 
     WriteEchonetLiteEHDAndTID(buffer, EHD1.EchonetLite, EHD2.Format1, tid);
 
@@ -45,18 +45,18 @@ partial class FrameSerializer {
     // プロパティ値データ(PDCで指定)
     var failIfOpcSetOrOpcGetIsZero = IsESVWriteOrReadService(esv) && esv != ESV.SetGetServiceNotAvailable;
 
-    if (!TryWriteEDataType1ProcessingTargetProperties(buffer, opcListOrOpcSetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
+    if (!TryWriteEDataType1ProcessingTargetProperties(buffer, propsForSetOrGet, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
       throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
 
     if (IsESVWriteOrReadService(esv)) {
-      if (opcGetList is null)
-        throw new ArgumentNullException(nameof(opcGetList));
+      if (propsForGet is null)
+        throw new ArgumentNullException(nameof(propsForGet));
 
       // OPCGet 処理プロパティ数(1B)
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)
       // プロパティ値データ(PDCで指定)
-      if (!TryWriteEDataType1ProcessingTargetProperties(buffer, opcGetList, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
+      if (!TryWriteEDataType1ProcessingTargetProperties(buffer, propsForGet, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
         throw new InvalidOperationException("OPCGet can not be zero when ESV is other than SetGet_SNA.");
     }
   }
@@ -115,27 +115,27 @@ partial class FrameSerializer {
 
   private static bool TryWriteEDataType1ProcessingTargetProperties(
     IBufferWriter<byte> buffer,
-    IEnumerable<PropertyRequest> opcList,
+    IEnumerable<PropertyRequest> props,
     bool failIfEmpty
   )
   {
-    IEnumerable<PropertyRequest> opcListNonEnumerated;
+    IEnumerable<PropertyRequest> propsNonEnumerated;
 
 #if SYSTEM_LINQ_ENUMERABLE_TRYGETNONENUMERATEDCOUNT
-    if (opcList.TryGetNonEnumeratedCount(out var countOfProps)) {
-      opcListNonEnumerated = opcList;
+    if (props.TryGetNonEnumeratedCount(out var countOfProps)) {
+      propsNonEnumerated = props;
     }
     else {
-      var evaluatedOpcList = opcList.ToList();
+      var evaluatedProps = props.ToList();
 
-      countOfProps = evaluatedOpcList.Count;
-      opcListNonEnumerated = evaluatedOpcList;
+      countOfProps = evaluatedProps.Count;
+      propsNonEnumerated = evaluatedProps;
     }
 #else
-    var evaluatedOpcList = opcList.ToList();
-    var countOfProps = evaluatedOpcList.Count;
+    var evaluatedProps = props.ToList();
+    var countOfProps = evaluatedProps.Count;
 
-    opcListNonEnumerated = evaluatedOpcList;
+    propsNonEnumerated = evaluatedProps;
 #endif
 
     // ４．２．３ サービス内容に関する詳細シーケンス
@@ -148,7 +148,7 @@ partial class FrameSerializer {
 
     Write(buffer, (byte)countOfProps);
 
-    foreach (var prp in opcListNonEnumerated) {
+    foreach (var prp in propsNonEnumerated) {
       // ECHONET Liteプロパティ(1B)
       Write(buffer, prp.EPC);
       // EDTのバイト数(1B)

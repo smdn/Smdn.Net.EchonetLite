@@ -15,20 +15,20 @@ public class Format1MessageTests {
   public void Ctor_NotForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyRequest>())
     );
   }
 
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGetResponse)]
   [TestCase(ESV.SetGetServiceNotAvailable)]
-  public void Ctor_ForWriteOrReadService_OPCSetOPCGetCanNotBeNull(ESV esv)
+  public void Ctor_ForWriteOrReadService_BothPropsForSetAndPropsForGetCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: null!, opcGetList: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: null!, propertiesForGet: Array.Empty<PropertyRequest>())
     );
     Assert.Throws<ArgumentNullException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: null!)
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyRequest>(), propertiesForGet: null!)
     );
   }
 
@@ -40,7 +40,7 @@ public class Format1MessageTests {
   public void Ctor_ForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyRequest>(), propertiesForGet: Array.Empty<PropertyRequest>())
     );
   }
 
@@ -49,10 +49,10 @@ public class Format1MessageTests {
   [TestCase(ESV.Inf)]
   [TestCase(ESV.SetIServiceNotAvailable)]
   [TestCase(ESV.GetServiceNotAvailable)]
-  public void Ctor_NotForWriteOrReadService_OPCanNotBeNull(ESV esv)
+  public void Ctor_NotForWriteOrReadService_PropsCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, opcList: null!)
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, properties: null!)
     );
   }
 
@@ -75,8 +75,8 @@ public class Format1MessageTests {
   public void GetOPCList(ESV esv, bool expectedAsWriteOrReadService)
   {
     var message = expectedAsWriteOrReadService
-      ? new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
-      : new Format1Message(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
+      ? new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyRequest>(), propertiesForGet: Array.Empty<PropertyRequest>())
+      : new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyRequest>());
 
     if (expectedAsWriteOrReadService) {
       Assert.That(message.GetOPCList, Throws.InvalidOperationException);
@@ -107,16 +107,16 @@ public class Format1MessageTests {
   public void GetOPCSetGetList(ESV esv, bool expectedAsWriteOrReadService)
   {
     var message = expectedAsWriteOrReadService
-      ? new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
-      : new Format1Message(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
+      ? new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyRequest>(), propertiesForGet: Array.Empty<PropertyRequest>())
+      : new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyRequest>());
 
     if (expectedAsWriteOrReadService) {
       Assert.That(message.GetOPCSetGetList, Throws.Nothing);
 
-      var (opcSetList, opcGetList) = message.GetOPCSetGetList();
+      var (propertiesForSet, propertiesForGet) = message.GetOPCSetGetList();
 
-      Assert.That(opcSetList, Is.Not.Null);
-      Assert.That(opcGetList, Is.Not.Null);
+      Assert.That(propertiesForSet, Is.Not.Null);
+      Assert.That(propertiesForGet, Is.Not.Null);
     }
     else {
       Assert.That(message.GetOPCSetGetList, Throws.InvalidOperationException);
