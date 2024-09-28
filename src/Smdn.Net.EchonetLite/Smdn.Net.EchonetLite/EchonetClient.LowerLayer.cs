@@ -6,14 +6,12 @@
 using System;
 using System.Buffers;
 using System.Net;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
 using Smdn.Net.EchonetLite.Protocol;
-using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite;
 
@@ -96,7 +94,7 @@ partial class EchonetClient
         logger?.LogDebug(
           "Format 1 message (From: {Address}, Message: {Message})",
           value.Address,
-          JsonSerializer.Serialize(format1Message, JsonSerializerSourceGenerationContext.Default.Format1Message)
+          format1Message
         );
 
         Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
@@ -193,7 +191,7 @@ partial class EchonetClient
           logger.LogDebug(
             "Format 1 message (To: {Address}, Message: {Message})",
             address,
-            JsonSerializer.Serialize(format1Message, JsonSerializerSourceGenerationContext.Default.Format1Message)
+            format1Message
           );
         }
         else {
