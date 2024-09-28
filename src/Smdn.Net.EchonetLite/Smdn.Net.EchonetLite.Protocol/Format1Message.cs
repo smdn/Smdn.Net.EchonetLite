@@ -125,12 +125,12 @@ public readonly struct Format1Message {
   /// </summary>
   /// <exception cref="InvalidOperationException">
   /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかです。
-  /// 代わりに<see cref="GetOPCSetGetList"/>を呼び出してください。
+  /// 代わりに<see cref="GetPropertiesForSetAndGet"/>を呼び出してください。
   /// </exception>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２ 電文構成
   /// </seealso>
-  public IReadOnlyCollection<PropertyRequest> GetOPCList()
+  public IReadOnlyCollection<PropertyRequest> GetProperties()
   {
     if (IsWriteOrReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
@@ -148,16 +148,16 @@ public readonly struct Format1Message {
   /// </summary>
   /// <exception cref="InvalidOperationException">
   /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれでもありません。
-  /// 代わりに<see cref="GetOPCList"/>を呼び出してください。
+  /// 代わりに<see cref="GetProperties"/>を呼び出してください。
   /// </exception>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２ 電文構成
   /// </seealso>
   public (
-    IReadOnlyCollection<PropertyRequest> OPCSetList,
-    IReadOnlyCollection<PropertyRequest> OPCGetList
+    IReadOnlyCollection<PropertyRequest> PropertiesForSet,
+    IReadOnlyCollection<PropertyRequest> PropertiesForGet
   )
-  GetOPCSetGetList()
+  GetPropertiesForSetAndGet()
   {
     if (!IsWriteOrReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");

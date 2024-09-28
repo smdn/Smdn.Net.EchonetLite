@@ -266,7 +266,7 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.SetIServiceNotAvailable)
           return;
 
-        var props = value.Message.GetOPCList();
+        var props = value.Message.GetProperties();
 
         foreach (var prop in props) {
           // 一部成功した書き込みを反映
@@ -382,7 +382,7 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.SetCServiceNotAvailable && value.Message.ESV != ESV.SetResponse)
           return;
 
-        var props = value.Message.GetOPCList();
+        var props = value.Message.GetProperties();
 
         foreach (var prop in props) {
           // 成功した書き込みを反映
@@ -490,7 +490,7 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.GetResponse && value.Message.ESV != ESV.GetServiceNotAvailable)
           return;
 
-        var props = value.Message.GetOPCList();
+        var props = value.Message.GetProperties();
 
         foreach (var prop in props) {
           // 成功した読み込みを反映
@@ -603,7 +603,7 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.SetGetResponse && value.Message.ESV != ESV.SetGetServiceNotAvailable)
           return;
 
-        var (propsForSet, propsForGet) = value.Message.GetOPCSetGetList();
+        var (propsForSet, propsForGet) = value.Message.GetPropertiesForSetAndGet();
 
         foreach (var prop in propsForSet) {
           // 成功した書き込みを反映
@@ -822,7 +822,7 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.InfCResponse)
           return;
 
-        responseTCS.SetResult(value.Message.GetOPCList());
+        responseTCS.SetResult(value.Message.GetProperties());
       }
       finally {
         Format1MessageReceived -= HandleINFCRes;
@@ -1180,7 +1180,7 @@ partial class EchonetClient
     }
 
     var hasError = false;
-    var requestProps = message.GetOPCList();
+    var requestProps = message.GetProperties();
     var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
 
     foreach (var prop in requestProps) {
@@ -1251,7 +1251,7 @@ partial class EchonetClient
   )
   {
     var hasError = false;
-    var requestProps = message.GetOPCList();
+    var requestProps = message.GetProperties();
     var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
 
     if (destObject is null) {
@@ -1342,7 +1342,7 @@ partial class EchonetClient
   )
   {
     var hasError = false;
-    var requestProps = message.GetOPCList();
+    var requestProps = message.GetProperties();
     var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
 
     if (destObject is null) {
@@ -1436,7 +1436,7 @@ partial class EchonetClient
   )
   {
     var hasError = false;
-    var (requestPropsForSet, requestPropsForGet) = message.GetOPCSetGetList();
+    var (requestPropsForSet, requestPropsForGet) = message.GetPropertiesForSetAndGet();
     var responsePropsForSet = new List<PropertyRequest>(capacity: requestPropsForSet.Count);
     var responsePropsForGet = new List<PropertyRequest>(capacity: requestPropsForGet.Count);
 
@@ -1557,7 +1557,7 @@ partial class EchonetClient
 #pragma warning restore IDE0060
   {
     var hasError = false;
-    var requestProps = message.GetOPCList();
+    var requestProps = message.GetProperties();
     var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
 
     if (sourceObject is null) {
@@ -1631,7 +1631,7 @@ partial class EchonetClient
   )
   {
     var hasError = false;
-    var requestProps = message.GetOPCList();
+    var requestProps = message.GetProperties();
     var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
 
     if (destObject is null) {

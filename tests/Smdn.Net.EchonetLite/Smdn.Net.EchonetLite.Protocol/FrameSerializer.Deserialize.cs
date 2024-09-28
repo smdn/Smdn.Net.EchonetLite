@@ -245,9 +245,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
+    Assert.That(edata.GetProperties, Throws.InvalidOperationException);
 
-    var (propsForSet, propsForGet) = edata.GetOPCSetGetList();
+    var (propsForSet, propsForGet) = edata.GetPropertiesForSetAndGet();
 
     Assert.That(propsForSet, Is.Not.Null, nameof(propsForSet));
     Assert.That(propsForSet.Count, Is.EqualTo(2), "Properties for set");
@@ -295,9 +295,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.GetOPCSetGetList, Throws.InvalidOperationException);
+    Assert.That(edata.GetPropertiesForSetAndGet, Throws.InvalidOperationException);
 
-    var props = edata.GetOPCList();
+    var props = edata.GetProperties();
 
     Assert.That(props, Is.Not.Null, nameof(props));
     Assert.That(props.Count, Is.EqualTo(2), "Properties");
@@ -329,9 +329,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
+    Assert.That(edata.GetProperties, Throws.InvalidOperationException);
 
-    var (propsForSet, propsForGet) = edata.GetOPCSetGetList();
+    var (propsForSet, propsForGet) = edata.GetPropertiesForSetAndGet();
 
     Assert.That(propsForSet, Is.Not.Null, nameof(propsForSet));
     Assert.That(propsForSet, Is.Empty, nameof(propsForSet));
@@ -360,9 +360,9 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
+    Assert.That(edata.GetProperties, Throws.InvalidOperationException);
 
-    var (propsForSet, propsForGet) = edata.GetOPCSetGetList();
+    var (propsForSet, propsForGet) = edata.GetPropertiesForSetAndGet();
 
     Assert.That(propsForSet, Is.Not.Null, nameof(propsForSet));
     Assert.That(propsForSet.Count, Is.EqualTo(1), "Properties for set");
