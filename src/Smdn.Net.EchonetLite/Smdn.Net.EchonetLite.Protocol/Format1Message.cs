@@ -51,13 +51,13 @@ public readonly struct Format1Message {
   /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Set操作に対応する処理対象プロパティのコレクション。
   /// そうでない場合は、<see cref="ESV"/>で指定されるサービスにおいて処理対象となるプロパティのコレクション。
   /// </summary>
-  private readonly IReadOnlyCollection<PropertyRequest> propsForSetOrGet;
+  private readonly IReadOnlyCollection<PropertyValue> propsForSetOrGet;
 
   /// <summary>
   /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Get操作に対応する処理対象プロパティのコレクション。
   /// そうでない場合は、<see langword="null"/>。
   /// </summary>
-  private readonly IReadOnlyCollection<PropertyRequest>? propsForGet;
+  private readonly IReadOnlyCollection<PropertyValue>? propsForGet;
 
   [JsonIgnore]
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
@@ -74,13 +74,13 @@ public readonly struct Format1Message {
   /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
   /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
   /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-  /// <param name="properties"><paramref name="esv"/>で指定されるサービスにおいて処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
+  /// <param name="properties"><paramref name="esv"/>で指定されるサービスにおいて処理対象となるプロパティ(<see cref="PropertyValue"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyValue}"/>を指定します。</param>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかです。
   /// この場合、Set操作とGet操作のそれぞれに対応する処理対象プロパティのコレクションを指定する必要があります。
   /// </exception>
   /// <exception cref="ArgumentNullException"><paramref name="properties"/>が<see langword="null"/>です。</exception>
-  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> properties)
+  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyValue> properties)
   {
     if (FrameSerializer.IsESVWriteOrReadService(esv))
       throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
@@ -100,14 +100,14 @@ public readonly struct Format1Message {
   /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
   /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
   /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-  /// <param name="propertiesForSet"><paramref name="esv"/>で指定されるサービスのSet操作において処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
-  /// <param name="propertiesForGet"><paramref name="esv"/>で指定されるサービスのGet操作において処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
+  /// <param name="propertiesForSet"><paramref name="esv"/>で指定されるサービスのSet操作において処理対象となるプロパティ(<see cref="PropertyValue"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyValue}"/>を指定します。</param>
+  /// <param name="propertiesForGet"><paramref name="esv"/>で指定されるサービスのGet操作において処理対象となるプロパティ(<see cref="PropertyValue"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyValue}"/>を指定します。</param>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかではありません。
   /// この場合、Set操作またはGet操作のどちらかに対応する処理対象プロパティのコレクションのみを指定する必要があります。
   /// </exception>
   /// <exception cref="ArgumentNullException"><paramref name="propertiesForSet"/>もしくは<paramref name="propertiesForGet"/>が<see langword="null"/>です。</exception>
-  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> propertiesForSet, IReadOnlyCollection<PropertyRequest> propertiesForGet)
+  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyValue> propertiesForSet, IReadOnlyCollection<PropertyValue> propertiesForGet)
   {
     if (!FrameSerializer.IsESVWriteOrReadService(esv))
       throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
@@ -130,7 +130,7 @@ public readonly struct Format1Message {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２ 電文構成
   /// </seealso>
-  public IReadOnlyCollection<PropertyRequest> GetProperties()
+  public IReadOnlyCollection<PropertyValue> GetProperties()
   {
     if (IsWriteOrReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
@@ -154,8 +154,8 @@ public readonly struct Format1Message {
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２ 電文構成
   /// </seealso>
   public (
-    IReadOnlyCollection<PropertyRequest> PropertiesForSet,
-    IReadOnlyCollection<PropertyRequest> PropertiesForGet
+    IReadOnlyCollection<PropertyValue> PropertiesForSet,
+    IReadOnlyCollection<PropertyValue> PropertiesForGet
   )
   GetPropertiesForSetAndGet()
   {

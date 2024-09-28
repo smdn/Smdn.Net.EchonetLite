@@ -31,7 +31,7 @@ partial class FrameSerializerTests {
         sourceObject: default,
         destinationObject: default,
         esv: default,
-        properties: Array.Empty<PropertyRequest>()
+        properties: Array.Empty<PropertyValue>()
       ),
       message: "buffer null"
     );
@@ -48,7 +48,7 @@ partial class FrameSerializerTests {
         destinationObject: default,
         esv: ESV.SetGet,
         propertiesForSet: null!,
-        propertiesForGet: Array.Empty<PropertyRequest>()
+        propertiesForGet: Array.Empty<PropertyValue>()
       ),
       message: "propertiesForSet null"
     );
@@ -83,7 +83,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: default,
-      properties: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyValue>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -127,7 +127,7 @@ partial class FrameSerializerTests {
       sourceObject: seoj,
       destinationObject: default,
       esv: default,
-      properties: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyValue>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -156,7 +156,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: deoj,
       esv: default,
-      properties: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyValue>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -209,7 +209,7 @@ partial class FrameSerializerTests {
         sourceObject: default,
         destinationObject: default,
         esv: esv,
-        properties: Array.Empty<PropertyRequest>()
+        properties: Array.Empty<PropertyValue>()
       );
     }
 
@@ -237,7 +237,7 @@ partial class FrameSerializerTests {
   public void SerializeEchonetLiteFrameFormat1_OPC_ForSingleProperty(ESV esv)
   {
     var edt = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-    var props = new List<PropertyRequest>() {
+    var props = new List<PropertyValue>() {
       new(
         epc: 0xFF,
         edt: edt
@@ -272,7 +272,7 @@ partial class FrameSerializerTests {
   {
     var prop0edt = new byte[] { 0x10, 0x11 };
     var prop1edt = new byte[] { 0x20, 0x21, 0x22 };
-    var props = new List<PropertyRequest>() {
+    var props = new List<PropertyValue>() {
       new(
         epc: 0x10,
         edt: prop0edt
@@ -315,14 +315,14 @@ partial class FrameSerializerTests {
   public void SerializeEchonetLiteFrameFormat1_OPCGet_OPCSet_ForSingleProperty(ESV esv)
   {
     var edtSet = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-    var propsSet = new List<PropertyRequest>() {
+    var propsSet = new List<PropertyValue>() {
       new(
         epc: 0xFE,
         edt: edtSet
       ),
     };
     var edtGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
-    var propsGet = new List<PropertyRequest>() {
+    var propsGet = new List<PropertyValue>() {
       new(
         epc: 0xFF,
         edt: edtGet
@@ -364,7 +364,7 @@ partial class FrameSerializerTests {
   {
     var edtSet0 = new byte[] { 0x11, 0x12 };
     var edtSet1 = new byte[] { 0x21, 0x22, 0x23 };
-    var propsSet = new List<PropertyRequest>() {
+    var propsSet = new List<PropertyValue>() {
       new(
         epc: 0x10,
         edt: edtSet0
@@ -375,7 +375,7 @@ partial class FrameSerializerTests {
       ),
     };
     var edtGet = new byte[] { 0x31, 0x32, 0x33, 0x34 };
-    var propsGet = new List<PropertyRequest>() {
+    var propsGet = new List<PropertyValue>() {
       new(
         epc: 0x30,
         edt: edtGet
@@ -419,7 +419,7 @@ partial class FrameSerializerTests {
   public void SerializeEchonetLiteFrameFormat1_OPCGet_ForMultipleProperty(ESV esv)
   {
     var edtSet = new byte[] { 0x11, 0x12 };
-    var propsSet = new List<PropertyRequest>() {
+    var propsSet = new List<PropertyValue>() {
       new(
         epc: 0x10,
         edt: edtSet
@@ -427,7 +427,7 @@ partial class FrameSerializerTests {
     };
     var edtGet0 = new byte[] { 0x21, 0x22, 0x23 };
     var edtGet1 = new byte[] { 0x31, 0x32, 0x33, 0x34 };
-    var propsGet = new List<PropertyRequest>() {
+    var propsGet = new List<PropertyValue>() {
       new(
         epc: 0x20,
         edt: edtGet0
@@ -486,8 +486,8 @@ partial class FrameSerializerTests {
   private static void SerializeEchonetLiteFrameFormat1_OPCSet_ForNoProperty(ESV esv)
   {
     var edtGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
-    var propsSet = new List<PropertyRequest>(); // empty props
-    var propsGet = new List<PropertyRequest>() {
+    var propsSet = new List<PropertyValue>(); // empty props
+    var propsGet = new List<PropertyValue>() {
       new(
         epc: 0xFF,
         edt: edtGet
@@ -536,13 +536,13 @@ partial class FrameSerializerTests {
   private static void SerializeEchonetLiteFrameFormat1_OPCGet_ForNoProperty(ESV esv)
   {
     var edtSet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
-    var propsSet = new List<PropertyRequest>() {
+    var propsSet = new List<PropertyValue>() {
       new(
         epc: 0xFF,
         edt: edtSet
       ),
     };
-    var propsGet = new List<PropertyRequest>(); // empty props
+    var propsGet = new List<PropertyValue>(); // empty props
 
     var buffer = new ArrayBufferWriter<byte>(initialCapacity: 0x100);
 

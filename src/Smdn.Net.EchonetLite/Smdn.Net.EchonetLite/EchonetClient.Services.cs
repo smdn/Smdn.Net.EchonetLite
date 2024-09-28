@@ -41,10 +41,10 @@ partial class EchonetClient
     return new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
   }
 
-  private static PropertyRequest ConvertToPropertyRequest(EchonetProperty p)
+  private static PropertyValue ConvertToPropertyValue(EchonetProperty p)
     => new(epc: p.Spec.Code, edt: p.ValueMemory);
 
-  private static PropertyRequest ConvertToPropertyRequestExceptValueData(EchonetProperty p)
+  private static PropertyValue ConvertToPropertyValueExceptValueData(EchonetProperty p)
     => new(epc: p.Spec.Code);
 
   private class PropertyCapability {
@@ -221,7 +221,7 @@ partial class EchonetClient
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="Task{T}"/>。
-  /// 書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
+  /// 書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="sourceObject"/>が<see langword="null"/>です。
@@ -234,7 +234,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
-  public async Task<IReadOnlyCollection<PropertyRequest>> PerformPropertyValueWriteRequestAsync(
+  public async Task<IReadOnlyCollection<PropertyValue>> PerformPropertyValueWriteRequestAsync(
     EchonetObject sourceObject,
     EchonetNode? destinationNode,
     EchonetObject destinationObject,
@@ -249,7 +249,7 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
-    var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
+    var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyValue>>();
 
     void HandleSetISNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -297,7 +297,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetI,
-        properties: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyValue)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -333,7 +333,7 @@ partial class EchonetClient
   /// <returns>
   /// 非同期の操作を表す<see cref="Task{T}"/>。
   /// 成功応答(Set_Res <c>0x71</c>)の場合は<see langword="true"/>、不可応答(SetC_SNA <c>0x51</c>)その他の場合は<see langword="false"/>を返します。
-  /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
+  /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="sourceObject"/>が<see langword="null"/>です。
@@ -348,7 +348,7 @@ partial class EchonetClient
   /// </seealso>
   public async Task<(
     bool Result,
-    IReadOnlyCollection<PropertyRequest> Properties
+    IReadOnlyCollection<PropertyValue> Properties
   )>
   PerformPropertyValueWriteRequestResponseRequiredAsync(
     EchonetObject sourceObject,
@@ -365,7 +365,7 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
-    var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
+    var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyValue>)>();
 
     void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -413,7 +413,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetC,
-        properties: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyValue)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -441,7 +441,7 @@ partial class EchonetClient
   /// <returns>
   /// 非同期の操作を表す<see cref="Task{T}"/>。
   /// 成功応答(Get_Res <c>0x72</c>)の場合は<see langword="true"/>、不可応答(Get_SNA <c>0x52</c>)その他の場合は<see langword="false"/>を返します。
-  /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
+  /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="sourceObject"/>が<see langword="null"/>です。
@@ -456,7 +456,7 @@ partial class EchonetClient
   /// </seealso>
   public async Task<(
     bool Result,
-    IReadOnlyCollection<PropertyRequest> Properties
+    IReadOnlyCollection<PropertyValue> Properties
   )>
   PerformPropertyValueReadRequestAsync(
     EchonetObject sourceObject,
@@ -473,7 +473,7 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
-    var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>)>();
+    var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyValue>)>();
 
     void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -520,7 +520,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.Get,
-        properties: properties.Select(ConvertToPropertyRequestExceptValueData)
+        properties: properties.Select(ConvertToPropertyValueExceptValueData)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -549,7 +549,7 @@ partial class EchonetClient
   /// <returns>
   /// 非同期の操作を表す<see cref="Task{T}"/>。
   /// 成功応答(SetGet_Res <c>0x7E</c>)の場合は<see langword="true"/>、不可応答(SetGet_SNA <c>0x5E</c>)その他の場合は<see langword="false"/>を返します。
-  /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
+  /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="sourceObject"/>が<see langword="null"/>です。
@@ -565,8 +565,8 @@ partial class EchonetClient
   /// </seealso>
   public async Task<(
     bool Result,
-    IReadOnlyCollection<PropertyRequest> PropertiesSet,
-    IReadOnlyCollection<PropertyRequest> PropertiesGet
+    IReadOnlyCollection<PropertyValue> PropertiesSet,
+    IReadOnlyCollection<PropertyValue> PropertiesGet
   )>
   PerformPropertyValueWriteReadRequestAsync(
     EchonetObject sourceObject,
@@ -586,7 +586,7 @@ partial class EchonetClient
     if (propertiesGet is null)
       throw new ArgumentNullException(nameof(propertiesGet));
 
-    var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyRequest>, IReadOnlyCollection<PropertyRequest>)>();
+    var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyValue>, IReadOnlyCollection<PropertyValue>)>();
 
     void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -644,8 +644,8 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetGet,
-        propertiesForSet: propertiesSet.Select(ConvertToPropertyRequest),
-        propertiesForGet: propertiesGet.Select(ConvertToPropertyRequestExceptValueData)
+        propertiesForSet: propertiesSet.Select(ConvertToPropertyValue),
+        propertiesForGet: propertiesGet.Select(ConvertToPropertyValueExceptValueData)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -707,7 +707,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.InfRequest,
-        properties: properties.Select(ConvertToPropertyRequestExceptValueData)
+        properties: properties.Select(ConvertToPropertyValueExceptValueData)
       ),
       cancellationToken
     );
@@ -758,7 +758,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.Inf,
-        properties: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyValue)
       ),
       cancellationToken
     );
@@ -774,7 +774,7 @@ partial class EchonetClient
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="Task{T}"/>。
-  /// 通知に成功したプロパティを<see cref="IReadOnlyCollection{PropertyRequest}"/>で返します。
+  /// 通知に成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="sourceObject"/>が<see langword="null"/>です。
@@ -788,7 +788,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
   /// </seealso>
-  public async Task<IReadOnlyCollection<PropertyRequest>> PerformPropertyValueNotificationResponseRequiredAsync(
+  public async Task<IReadOnlyCollection<PropertyValue>> PerformPropertyValueNotificationResponseRequiredAsync(
     EchonetObject sourceObject,
     EchonetNode destinationNode,
     EchonetObject destinationObject,
@@ -805,7 +805,7 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
-    var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyRequest>>();
+    var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyValue>>();
 
     void HandleINFCRes(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -839,7 +839,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.InfC,
-        properties: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyValue)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -917,7 +917,7 @@ partial class EchonetClient
     using var ctsTimeout = CreateTimeoutCancellationTokenSource(20_000);
 
     bool result;
-    IReadOnlyCollection<PropertyRequest> props;
+    IReadOnlyCollection<PropertyValue> props;
 
     try {
       (result, props) = await PerformPropertyValueReadRequestAsync(
@@ -1181,7 +1181,7 @@ partial class EchonetClient
 
     var hasError = false;
     var requestProps = message.GetProperties();
-    var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
+    var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
 
     foreach (var prop in requestProps) {
       var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
@@ -1252,7 +1252,7 @@ partial class EchonetClient
   {
     var hasError = false;
     var requestProps = message.GetProperties();
-    var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
+    var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
 
     if (destObject is null) {
       // DEOJがない場合、全処理対象プロパティをそのまま返す
@@ -1343,7 +1343,7 @@ partial class EchonetClient
   {
     var hasError = false;
     var requestProps = message.GetProperties();
-    var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
+    var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
 
     if (destObject is null) {
       // DEOJがない場合、全処理対象プロパティをそのまま返す
@@ -1437,8 +1437,8 @@ partial class EchonetClient
   {
     var hasError = false;
     var (requestPropsForSet, requestPropsForGet) = message.GetPropertiesForSetAndGet();
-    var responsePropsForSet = new List<PropertyRequest>(capacity: requestPropsForSet.Count);
-    var responsePropsForGet = new List<PropertyRequest>(capacity: requestPropsForGet.Count);
+    var responsePropsForSet = new List<PropertyValue>(capacity: requestPropsForSet.Count);
+    var responsePropsForGet = new List<PropertyValue>(capacity: requestPropsForGet.Count);
 
     if (destObject is null) {
       // DEOJがない場合、全処理対象プロパティをそのまま返す
@@ -1632,7 +1632,7 @@ partial class EchonetClient
   {
     var hasError = false;
     var requestProps = message.GetProperties();
-    var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
+    var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
 
     if (destObject is null) {
       // 指定された DEOJ が存在しない場合には電文を廃棄する。

@@ -19,14 +19,14 @@ partial class FrameSerializer {
   /// <param name="sourceObject">送信元のECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="destinationObject">相手先のECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="esv">ECHONET Lite サービスを表す<see cref="ESV"/>。</param>
-  /// <param name="properties">処理対象プロパティを表す<see cref="PropertyRequest"/>のコレクション。</param>
+  /// <param name="properties">処理対象プロパティを表す<see cref="PropertyValue"/>のコレクション。</param>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="buffer"/>が<see langword="null"/>です。
   /// または、<paramref name="properties"/>が<see langword="null"/>です。
   /// </exception>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかです。
-  /// Set操作とGet操作に対応するプロパティを指定するために、代わりに<see cref="SerializeEchonetLiteFrameFormat1(IBufferWriter{byte}, int, EOJ, EOJ, ESV, IEnumerable{PropertyRequest}, IEnumerable{PropertyRequest})"/>を呼び出してください。
+  /// Set操作とGet操作に対応するプロパティを指定するために、代わりに<see cref="SerializeEchonetLiteFrameFormat1(IBufferWriter{byte}, int, EOJ, EOJ, ESV, IEnumerable{PropertyValue}, IEnumerable{PropertyValue})"/>を呼び出してください。
   /// </exception>
   /// <exception cref="InvalidOperationException">
   /// <paramref name="esv"/>で指定されるECHONET Lite サービスサービスでは、<paramref name="properties"/>で指定されるプロパティの数を0にすることはできません。
@@ -37,7 +37,7 @@ partial class FrameSerializer {
     EOJ sourceObject,
     EOJ destinationObject,
     ESV esv,
-    IEnumerable<PropertyRequest> properties
+    IEnumerable<PropertyValue> properties
   )
   {
     if (IsESVWriteOrReadService(esv))
@@ -64,7 +64,7 @@ partial class FrameSerializer {
   /// </exception>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれでもありません。
-  /// 代わりに<see cref="SerializeEchonetLiteFrameFormat1(IBufferWriter{byte}, int, EOJ, EOJ, ESV, IEnumerable{PropertyRequest})"/>を呼び出してください。
+  /// 代わりに<see cref="SerializeEchonetLiteFrameFormat1(IBufferWriter{byte}, int, EOJ, EOJ, ESV, IEnumerable{PropertyValue})"/>を呼び出してください。
   /// </exception>
   /// <exception cref="InvalidOperationException">
   /// <paramref name="esv"/>で指定されるECHONET Lite サービスサービスでは、<paramref name="propertiesForSet"/>または<paramref name="propertiesForGet"/>で指定されるプロパティの数を0にすることはできません。
@@ -75,8 +75,8 @@ partial class FrameSerializer {
     EOJ sourceObject,
     EOJ destinationObject,
     ESV esv,
-    IEnumerable<PropertyRequest> propertiesForSet,
-    IEnumerable<PropertyRequest> propertiesForGet
+    IEnumerable<PropertyValue> propertiesForSet,
+    IEnumerable<PropertyValue> propertiesForGet
   )
   {
     if (!IsESVWriteOrReadService(esv))
@@ -99,8 +99,8 @@ partial class FrameSerializer {
     EOJ sourceObject,
     EOJ destinationObject,
     ESV esv,
-    IEnumerable<PropertyRequest> propsForSetOrGet,
-    IEnumerable<PropertyRequest>? propsForGet = null
+    IEnumerable<PropertyValue> propsForSetOrGet,
+    IEnumerable<PropertyValue>? propsForGet = null
   )
   {
     WriteEchonetLiteEHDAndTID(buffer, EHD1.EchonetLite, EHD2.Format1, tid);
@@ -189,11 +189,11 @@ partial class FrameSerializer {
 
   private static bool TryWriteEDataType1ProcessingTargetProperties(
     IBufferWriter<byte> buffer,
-    IEnumerable<PropertyRequest> props,
+    IEnumerable<PropertyValue> props,
     bool failIfEmpty
   )
   {
-    IEnumerable<PropertyRequest> propsNonEnumerated;
+    IEnumerable<PropertyValue> propsNonEnumerated;
 
 #if SYSTEM_LINQ_ENUMERABLE_TRYGETNONENUMERATEDCOUNT
     if (props.TryGetNonEnumeratedCount(out var countOfProps)) {

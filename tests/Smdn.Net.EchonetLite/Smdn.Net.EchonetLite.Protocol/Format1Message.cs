@@ -15,7 +15,7 @@ public class Format1MessageTests {
   public void Ctor_NotForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyValue>())
     );
   }
 
@@ -25,10 +25,10 @@ public class Format1MessageTests {
   public void Ctor_ForWriteOrReadService_BothPropsForSetAndPropsForGetCanNotBeNull(ESV esv)
   {
     Assert.Throws<ArgumentNullException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: null!, propertiesForGet: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: null!, propertiesForGet: Array.Empty<PropertyValue>())
     );
     Assert.Throws<ArgumentNullException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyRequest>(), propertiesForGet: null!)
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyValue>(), propertiesForGet: null!)
     );
   }
 
@@ -40,7 +40,7 @@ public class Format1MessageTests {
   public void Ctor_ForWriteOrReadService_ESVMismatch(ESV esv)
   {
     Assert.Throws<ArgumentException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyRequest>(), propertiesForGet: Array.Empty<PropertyRequest>())
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyValue>(), propertiesForGet: Array.Empty<PropertyValue>())
     );
   }
 
@@ -75,8 +75,8 @@ public class Format1MessageTests {
   public void GetProperties(ESV esv, bool expectedAsWriteOrReadService)
   {
     var message = expectedAsWriteOrReadService
-      ? new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyRequest>(), propertiesForGet: Array.Empty<PropertyRequest>())
-      : new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyRequest>());
+      ? new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyValue>(), propertiesForGet: Array.Empty<PropertyValue>())
+      : new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyValue>());
 
     if (expectedAsWriteOrReadService) {
       Assert.That(message.GetProperties, Throws.InvalidOperationException);
@@ -107,8 +107,8 @@ public class Format1MessageTests {
   public void GetPropertiesForSetAndGet(ESV esv, bool expectedAsWriteOrReadService)
   {
     var message = expectedAsWriteOrReadService
-      ? new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyRequest>(), propertiesForGet: Array.Empty<PropertyRequest>())
-      : new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyRequest>());
+      ? new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyValue>(), propertiesForGet: Array.Empty<PropertyValue>())
+      : new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyValue>());
 
     if (expectedAsWriteOrReadService) {
       Assert.That(message.GetPropertiesForSetAndGet, Throws.Nothing);
@@ -130,7 +130,7 @@ public class Format1MessageTests {
   [TestCase((ESV)0xFF, "\"ESV\":\"FF\"")]
   public void Serialize_ClassGroupCode(ESV esv, string expectedJsonFragment)
   {
-    var message = new Format1Message(default, default, esv, Array.Empty<PropertyRequest>());
+    var message = new Format1Message(default, default, esv, Array.Empty<PropertyValue>());
 
     Assert.That(JsonSerializer.Serialize(message), Does.Contain(expectedJsonFragment));
   }

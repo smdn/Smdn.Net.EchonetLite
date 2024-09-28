@@ -124,7 +124,7 @@ partial class FrameSerializer {
 
   private static bool TryParseProcessingTargetProperties(
     ReadOnlySpan<byte> bytes,
-    [NotNullWhen(true)] out IReadOnlyCollection<PropertyRequest>? processingTargetProperties,
+    [NotNullWhen(true)] out IReadOnlyCollection<PropertyValue>? processingTargetProperties,
     out int bytesRead
   )
   {
@@ -142,7 +142,7 @@ partial class FrameSerializer {
     // OPCSet 処理プロパティ数(1B)
     // OPCGet 処理プロパティ数(1B)
     var opc = bytes[0];
-    var props = new List<PropertyRequest>(capacity: opc);
+    var props = new List<PropertyValue>(capacity: opc);
 
     bytes = bytes.Slice(1);
 

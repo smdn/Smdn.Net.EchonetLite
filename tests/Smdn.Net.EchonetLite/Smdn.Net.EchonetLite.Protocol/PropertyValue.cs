@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.Protocol;
 
 [TestFixture]
-public class PropertyRequestTests {
+public class PropertyValueTests {
   [TestCase(0x00, "\"EPC\":\"00\"")]
   [TestCase(0x01, "\"EPC\":\"01\"")]
   [TestCase(0x0F, "\"EPC\":\"0F\"")]
@@ -15,7 +15,7 @@ public class PropertyRequestTests {
   [TestCase(0xFF, "\"EPC\":\"FF\"")]
   public void Serialize_EPC(byte epc, string expectedJsonFragment)
   {
-    var pr = new PropertyRequest(epc);
+    var pr = new PropertyValue(epc);
 
     Assert.That(JsonSerializer.Serialize(pr), Does.Contain(expectedJsonFragment));
   }
@@ -27,7 +27,7 @@ public class PropertyRequestTests {
   [TestCase(0xFF, "\"PDC\":\"FF\"")]
   public void Serialize_PDC(byte pdc, string expectedJsonFragment)
   {
-    var pr = new PropertyRequest(epc: 0x00, edt: new byte[pdc]);
+    var pr = new PropertyValue(epc: 0x00, edt: new byte[pdc]);
 
     Assert.That(JsonSerializer.Serialize(pr), Does.Contain(expectedJsonFragment));
   }
@@ -53,7 +53,7 @@ public class PropertyRequestTests {
   [TestCaseSource(nameof(YieldTestCases_Serialize_EDT))]
   public void Serialize_EDT(byte[] edt, string expectedJsonFragment)
   {
-    var pr = new PropertyRequest(epc: 0x00, edt: edt);
+    var pr = new PropertyValue(epc: 0x00, edt: edt);
 
     Assert.That(JsonSerializer.Serialize(pr), Does.Contain(expectedJsonFragment));
   }
