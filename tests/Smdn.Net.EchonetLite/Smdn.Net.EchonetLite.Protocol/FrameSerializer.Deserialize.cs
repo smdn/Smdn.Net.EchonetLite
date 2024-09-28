@@ -245,33 +245,35 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
+    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
 
-    Assert.That(edata.OPCSetList, Is.Not.Null, nameof(edata.OPCSetList));
-    Assert.That(edata.OPCSetList!.Count, Is.EqualTo(2), "OPCSet");
+    var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
 
-    var opcSetList = edata.OPCSetList.ToArray();
+    Assert.That(opcSetList, Is.Not.Null, nameof(opcSetList));
+    Assert.That(opcSetList.Count, Is.EqualTo(2), "OPCSet");
 
-    Assert.That(opcSetList[0].EPC, Is.EqualTo(0x10), "OPCSet #1 EPC");
-    Assert.That(opcSetList[0].PDC, Is.EqualTo(1), "OPCSet #1 PDC");
-    Assert.That(opcSetList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPCSet #1 EDT");
+    var opcSetArray = opcSetList.ToArray();
 
-    Assert.That(opcSetList[1].EPC, Is.EqualTo(0x20), "OPCSet #2 EPC");
-    Assert.That(opcSetList[1].PDC, Is.EqualTo(2), "OPCSet #2 PDC");
-    Assert.That(opcSetList[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPCSet #2 EDT");
+    Assert.That(opcSetArray[0].EPC, Is.EqualTo(0x10), "OPCSet #1 EPC");
+    Assert.That(opcSetArray[0].PDC, Is.EqualTo(1), "OPCSet #1 PDC");
+    Assert.That(opcSetArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPCSet #1 EDT");
 
-    Assert.That(edata.OPCGetList, Is.Not.Null, nameof(edata.OPCGetList));
-    Assert.That(edata.OPCGetList!.Count, Is.EqualTo(2), "OPCGet");
+    Assert.That(opcSetArray[1].EPC, Is.EqualTo(0x20), "OPCSet #2 EPC");
+    Assert.That(opcSetArray[1].PDC, Is.EqualTo(2), "OPCSet #2 PDC");
+    Assert.That(opcSetArray[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPCSet #2 EDT");
 
-    var opcGetList = edata.OPCGetList.ToArray();
+    Assert.That(opcGetList, Is.Not.Null, nameof(opcSetList));
+    Assert.That(opcSetList.Count, Is.EqualTo(2), "OPCGet");
 
-    Assert.That(opcGetList[0].EPC, Is.EqualTo(0x30), "OPCGet #1 EPC");
-    Assert.That(opcGetList[0].PDC, Is.EqualTo(3), "OPCGet #1 PDC");
-    Assert.That(opcGetList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "OPCGet #1 EDT");
+    var opcGetArray = opcGetList.ToArray();
 
-    Assert.That(opcGetList[1].EPC, Is.EqualTo(0x40), "OPCGet #2 EPC");
-    Assert.That(opcGetList[1].PDC, Is.EqualTo(4), "OPCGet #2 PDC");
-    Assert.That(opcGetList[1].EDT, SequenceIs.EqualTo(new byte[] { 0x41, 0x42, 0x43, 0x44 }), "OPCGet #2 EDT");
+    Assert.That(opcGetArray[0].EPC, Is.EqualTo(0x30), "OPCGet #1 EPC");
+    Assert.That(opcGetArray[0].PDC, Is.EqualTo(3), "OPCGet #1 PDC");
+    Assert.That(opcGetArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "OPCGet #1 EDT");
+
+    Assert.That(opcGetArray[1].EPC, Is.EqualTo(0x40), "OPCGet #2 EPC");
+    Assert.That(opcGetArray[1].PDC, Is.EqualTo(4), "OPCGet #2 PDC");
+    Assert.That(opcGetArray[1].EDT, SequenceIs.EqualTo(new byte[] { 0x41, 0x42, 0x43, 0x44 }), "OPCGet #2 EDT");
   }
 
   [TestCase(ESV.Get)]
@@ -293,21 +295,22 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.OPCGetList, Is.Null, nameof(edata.OPCGetList));
-    Assert.That(edata.OPCSetList, Is.Null, nameof(edata.OPCSetList));
+    Assert.That(edata.GetOPCSetGetList, Throws.InvalidOperationException);
 
-    Assert.That(edata.OPCList, Is.Not.Null, nameof(edata.OPCList));
-    Assert.That(edata.OPCList!.Count, Is.EqualTo(2), "OPC");
+    var opcList = edata.GetOPCList();
 
-    var opcList = edata.OPCList.ToArray();
+    Assert.That(opcList, Is.Not.Null, nameof(opcList));
+    Assert.That(opcList.Count, Is.EqualTo(2), "OPC");
 
-    Assert.That(opcList[0].EPC, Is.EqualTo(0x10), "OPC #1 EPC");
-    Assert.That(opcList[0].PDC, Is.EqualTo(1), "OPC #1 PDC");
-    Assert.That(opcList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPC #1 EDT");
+    var opcArray = opcList.ToArray();
 
-    Assert.That(opcList[1].EPC, Is.EqualTo(0x20), "OPC #2 EPC");
-    Assert.That(opcList[1].PDC, Is.EqualTo(2), "OPC #2 PDC");
-    Assert.That(opcList[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPC #2 EDT");
+    Assert.That(opcArray[0].EPC, Is.EqualTo(0x10), "OPC #1 EPC");
+    Assert.That(opcArray[0].PDC, Is.EqualTo(1), "OPC #1 PDC");
+    Assert.That(opcArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPC #1 EDT");
+
+    Assert.That(opcArray[1].EPC, Is.EqualTo(0x20), "OPC #2 EPC");
+    Assert.That(opcArray[1].PDC, Is.EqualTo(2), "OPC #2 PDC");
+    Assert.That(opcArray[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPC #2 EDT");
   }
 
   [Test]
@@ -326,19 +329,21 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
+    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
 
-    Assert.That(edata.OPCSetList, Is.Not.Null, nameof(edata.OPCSetList));
-    Assert.That(edata.OPCSetList!, Is.Empty, nameof(edata.OPCSetList));
+    var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
 
-    Assert.That(edata.OPCGetList, Is.Not.Null, nameof(edata.OPCGetList));
-    Assert.That(edata.OPCGetList!.Count, Is.EqualTo(1), "OPCGet");
+    Assert.That(opcSetList, Is.Not.Null, nameof(opcSetList));
+    Assert.That(opcSetList, Is.Empty, nameof(opcSetList));
 
-    var opcGetList = edata.OPCGetList.ToArray();
+    Assert.That(opcGetList, Is.Not.Null, nameof(opcGetList));
+    Assert.That(opcGetList.Count, Is.EqualTo(1), "OPCGet");
 
-    Assert.That(opcGetList[0].EPC, Is.EqualTo(0x30), "OPCGet #1 EPC");
-    Assert.That(opcGetList[0].PDC, Is.EqualTo(3), "OPCGet #1 PDC");
-    Assert.That(opcGetList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "OPCGet #1 EDT");
+    var opcGetArray = opcGetList.ToArray();
+
+    Assert.That(opcGetArray[0].EPC, Is.EqualTo(0x30), "OPCGet #1 EPC");
+    Assert.That(opcGetArray[0].PDC, Is.EqualTo(3), "OPCGet #1 PDC");
+    Assert.That(opcGetArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "OPCGet #1 EDT");
   }
 
   [Test]
@@ -355,18 +360,20 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.OPCList, Is.Null, nameof(edata.OPCList));
+    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
 
-    Assert.That(edata.OPCSetList, Is.Not.Null, nameof(edata.OPCSetList));
-    Assert.That(edata.OPCSetList!.Count, Is.EqualTo(1), "OPCSet");
+    var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
 
-    var opcSetList = edata.OPCSetList.ToArray();
+    Assert.That(opcSetList, Is.Not.Null, nameof(opcSetList));
+    Assert.That(opcSetList.Count, Is.EqualTo(1), "OPCSet");
 
-    Assert.That(opcSetList[0].EPC, Is.EqualTo(0x10), "OPCSet #1 EPC");
-    Assert.That(opcSetList[0].PDC, Is.EqualTo(1), "OPCSet #1 PDC");
-    Assert.That(opcSetList[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPCSet #1 EDT");
+    var opcSetArray = opcSetList.ToArray();
 
-    Assert.That(edata.OPCGetList, Is.Not.Null, nameof(edata.OPCGetList));
-    Assert.That(edata.OPCGetList, Is.Empty, nameof(edata.OPCGetList));
+    Assert.That(opcSetArray[0].EPC, Is.EqualTo(0x10), "OPCSet #1 EPC");
+    Assert.That(opcSetArray[0].PDC, Is.EqualTo(1), "OPCSet #1 PDC");
+    Assert.That(opcSetArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPCSet #1 EDT");
+
+    Assert.That(opcGetList, Is.Not.Null, nameof(opcGetList));
+    Assert.That(opcGetList, Is.Empty, nameof(opcGetList));
   }
 }

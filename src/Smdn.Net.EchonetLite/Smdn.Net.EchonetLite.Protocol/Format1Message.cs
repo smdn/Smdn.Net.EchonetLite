@@ -39,41 +39,37 @@ public readonly struct Format1Message {
   [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public ESV ESV { get; }
 
-  public IReadOnlyCollection<PropertyRequest>? OPCList { get; }
+  /// <summary>
+  /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Set操作に対応する処理対象プロパティのコレクション。
+  /// そうでない場合は、<see cref="ESV"/>で指定されるサービスにおいて処理対象となるプロパティのコレクション。
+  /// </summary>
+  private readonly IReadOnlyCollection<PropertyRequest> opcListOrOpcSetList;
 
   /// <summary>
-  /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
-  /// のみ使用
+  /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Get操作に対応する処理対象プロパティのコレクション。
+  /// そうでない場合は、<see langword="null"/>。
   /// </summary>
-  public IReadOnlyCollection<PropertyRequest>? OPCGetList { get; }
-
-  /// <summary>
-  /// ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
-  /// のみ使用
-  /// </summary>
-  public IReadOnlyCollection<PropertyRequest>? OPCSetList { get; }
+  private readonly IReadOnlyCollection<PropertyRequest>? opcGetList;
 
   [JsonIgnore]
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-  [MemberNotNullWhen(false, nameof(OPCList))]
-  [MemberNotNullWhen(true, nameof(OPCGetList))]
-  [MemberNotNullWhen(true, nameof(OPCSetList))]
+  [MemberNotNullWhen(true, nameof(opcGetList))]
 #endif
-  public bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
+  private bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
 
   /// <summary>
   /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="Format1Message"/>を作成します。
   /// </summary>
   /// <remarks>
-  /// このオーバーロードでは、<see cref="OPCGetList"/>および<see cref="OPCSetList"/>に<see langword="null"/>を設定します。
+  /// このオーバーロードでは、<paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合に例外をスローします。
   /// </remarks>
   /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
   /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
   /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-  /// <param name="opcList"><see cref="OPCList"/>に指定する値。</param>
+  /// <param name="opcList"><paramref name="esv"/>で指定されるサービスにおいて処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかです。
-  /// この場合、<see cref="OPCSetList"/>および<see cref="OPCGetList"/>を指定する必要があります。
+  /// この場合、Set操作とGet操作のそれぞれに対応する処理対象プロパティのコレクションを指定する必要があります。
   /// </exception>
   /// <exception cref="ArgumentNullException"><paramref name="opcList"/>が<see langword="null"/>です。</exception>
   public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcList)
@@ -84,23 +80,23 @@ public readonly struct Format1Message {
     SEOJ = seoj;
     DEOJ = deoj;
     ESV = esv;
-    OPCList = opcList ?? throw new ArgumentNullException(nameof(opcList));
+    opcListOrOpcSetList = opcList ?? throw new ArgumentNullException(nameof(opcList));
   }
 
   /// <summary>
   /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="Format1Message"/>を作成します。
   /// </summary>
   /// <remarks>
-  /// このオーバーロードでは、<see cref="OPCList"/>に<see langword="null"/>を設定します。
+  /// このオーバーロードでは、<paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかではない場合に例外をスローします。
   /// </remarks>
   /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
   /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
   /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-  /// <param name="opcSetList"><see cref="OPCSetList"/>に指定する値。</param>
-  /// <param name="opcGetList"><see cref="OPCGetList"/>に指定する値。</param>
+  /// <param name="opcSetList"><paramref name="esv"/>で指定されるサービスのSet操作において処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
+  /// <param name="opcGetList"><paramref name="esv"/>で指定されるサービスのGet操作において処理対象となるプロパティ(<see cref="PropertyRequest"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyRequest}"/>を指定します。</param>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかではありません。
-  /// この場合、<see cref="OPCList"/>のみを指定する必要があります。
+  /// この場合、Set操作またはGet操作のどちらかに対応する処理対象プロパティのコレクションのみを指定する必要があります。
   /// </exception>
   /// <exception cref="ArgumentNullException"><paramref name="opcSetList"/>もしくは<paramref name="opcGetList"/>が<see langword="null"/>です。</exception>
   public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyRequest> opcSetList, IReadOnlyCollection<PropertyRequest> opcGetList)
@@ -111,19 +107,19 @@ public readonly struct Format1Message {
     SEOJ = seoj;
     DEOJ = deoj;
     ESV = esv;
-    OPCSetList = opcSetList ?? throw new ArgumentNullException(nameof(opcSetList));
-    OPCGetList = opcGetList ?? throw new ArgumentNullException(nameof(opcGetList));
+    opcListOrOpcSetList = opcSetList ?? throw new ArgumentNullException(nameof(opcSetList));
+    this.opcGetList = opcGetList ?? throw new ArgumentNullException(nameof(opcGetList));
   }
 
-  internal IReadOnlyCollection<PropertyRequest> GetOPCList()
+  public IReadOnlyCollection<PropertyRequest> GetOPCList()
   {
     if (IsWriteOrReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-    return OPCList;
+    return opcListOrOpcSetList;
 #else
-    return OPCList!;
+    return opcListOrOpcSetList!;
 #endif
   }
 
@@ -137,9 +133,9 @@ public readonly struct Format1Message {
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-    return (OPCSetList, OPCGetList);
+    return (opcListOrOpcSetList, opcGetList);
 #else
-    return (OPCSetList!, OPCGetList!);
+    return (opcListOrOpcSetList!, opcGetList!);
 #endif
   }
 }

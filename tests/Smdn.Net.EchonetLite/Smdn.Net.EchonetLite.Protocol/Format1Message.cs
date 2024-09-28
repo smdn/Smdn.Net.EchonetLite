@@ -72,21 +72,55 @@ public class Format1MessageTests {
   [TestCase(ESV.GetServiceNotAvailable, false)]
   [TestCase(ESV.InfServiceNotAvailable, false)]
   [TestCase(ESV.SetGetServiceNotAvailable, true)]
-  public void IsWriteOrReadService(ESV esv, bool expectedAsWriteOrReadService)
+  public void GetOPCList(ESV esv, bool expectedAsWriteOrReadService)
   {
     var message = expectedAsWriteOrReadService
       ? new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
       : new Format1Message(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
 
-    Assert.That(message.IsWriteOrReadService, Is.EqualTo(expectedAsWriteOrReadService), nameof(message.IsWriteOrReadService));
+    if (expectedAsWriteOrReadService) {
+      Assert.That(message.GetOPCList, Throws.InvalidOperationException);
+    }
+    else {
+      Assert.That(message.GetOPCList, Throws.Nothing);
+
+      Assert.That(message.GetOPCList(), Is.Not.Null);
+    }
   }
 
-  [Test]
-  public void Serialize_IsWriteOrReadService_MustNotBeSerialized()
+  [TestCase(ESV.SetI, false)]
+  [TestCase(ESV.SetC, false)]
+  [TestCase(ESV.Get, false)]
+  [TestCase(ESV.InfRequest, false)]
+  [TestCase(ESV.SetGet, true)]
+  [TestCase(ESV.SetResponse, false)]
+  [TestCase(ESV.GetResponse, false)]
+  [TestCase(ESV.Inf, false)]
+  [TestCase(ESV.InfC, false)]
+  [TestCase(ESV.InfCResponse, false)]
+  [TestCase(ESV.SetGetResponse, true)]
+  [TestCase(ESV.SetIServiceNotAvailable, false)]
+  [TestCase(ESV.SetCServiceNotAvailable, false)]
+  [TestCase(ESV.GetServiceNotAvailable, false)]
+  [TestCase(ESV.InfServiceNotAvailable, false)]
+  [TestCase(ESV.SetGetServiceNotAvailable, true)]
+  public void GetOPCSetGetList(ESV esv, bool expectedAsWriteOrReadService)
   {
-    var message = new Format1Message(default, default, ESV.Inf, Array.Empty<PropertyRequest>());
+    var message = expectedAsWriteOrReadService
+      ? new Format1Message(seoj: default, deoj: default, esv: esv, opcSetList: Array.Empty<PropertyRequest>(), opcGetList: Array.Empty<PropertyRequest>())
+      : new Format1Message(seoj: default, deoj: default, esv: esv, opcList: Array.Empty<PropertyRequest>());
 
-    Assert.That(JsonSerializer.Serialize(message), Does.Not.Contain($"\"\"{nameof(message.IsWriteOrReadService)}\"\""));
+    if (expectedAsWriteOrReadService) {
+      Assert.That(message.GetOPCSetGetList, Throws.Nothing);
+
+      var (opcSetList, opcGetList) = message.GetOPCSetGetList();
+
+      Assert.That(opcSetList, Is.Not.Null);
+      Assert.That(opcGetList, Is.Not.Null);
+    }
+    else {
+      Assert.That(message.GetOPCSetGetList, Throws.InvalidOperationException);
+    }
   }
 
   [TestCase(ESV.SetI, "\"ESV\":\"60\"")]
