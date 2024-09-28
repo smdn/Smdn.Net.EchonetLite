@@ -266,9 +266,9 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.SetIServiceNotAvailable)
           return;
 
-        var opcList = value.Message.GetOPCList();
+        var props = value.Message.GetProperties();
 
-        foreach (var prop in opcList) {
+        foreach (var prop in props) {
           // 一部成功した書き込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
 
@@ -278,7 +278,7 @@ partial class EchonetClient
           }
         }
 
-        responseTCS.SetResult(opcList);
+        responseTCS.SetResult(props);
 
         // TODO 一斉通知の不可応答の扱いが…
       }
@@ -297,7 +297,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetI,
-        opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyRequest)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -382,9 +382,9 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.SetCServiceNotAvailable && value.Message.ESV != ESV.SetResponse)
           return;
 
-        var opcList = value.Message.GetOPCList();
+        var props = value.Message.GetProperties();
 
-        foreach (var prop in opcList) {
+        foreach (var prop in props) {
           // 成功した書き込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
 
@@ -394,7 +394,7 @@ partial class EchonetClient
           }
         }
 
-        responseTCS.SetResult((value.Message.ESV == ESV.SetResponse, opcList));
+        responseTCS.SetResult((value.Message.ESV == ESV.SetResponse, props));
 
         // TODO 一斉通知の応答の扱いが…
       }
@@ -413,7 +413,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetC,
-        opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyRequest)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -490,9 +490,9 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.GetResponse && value.Message.ESV != ESV.GetServiceNotAvailable)
           return;
 
-        var opcList = value.Message.GetOPCList();
+        var props = value.Message.GetProperties();
 
-        foreach (var prop in opcList) {
+        foreach (var prop in props) {
           // 成功した読み込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
           if (prop.PDC != 0x00) {
@@ -501,7 +501,7 @@ partial class EchonetClient
           }
         }
 
-        responseTCS.SetResult((value.Message.ESV == ESV.GetResponse, opcList));
+        responseTCS.SetResult((value.Message.ESV == ESV.GetResponse, props));
 
         // TODO 一斉通知の応答の扱いが…
       }
@@ -520,7 +520,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.Get,
-        opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
+        properties: properties.Select(ConvertToPropertyRequestExceptValueData)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -603,9 +603,9 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.SetGetResponse && value.Message.ESV != ESV.SetGetServiceNotAvailable)
           return;
 
-        var (opcSetList, opcGetList) = value.Message.GetOPCSetGetList();
+        var (propsForSet, propsForGet) = value.Message.GetPropertiesForSetAndGet();
 
-        foreach (var prop in opcSetList) {
+        foreach (var prop in propsForSet) {
           // 成功した書き込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
 
@@ -615,7 +615,7 @@ partial class EchonetClient
           }
         }
 
-        foreach (var prop in opcGetList) {
+        foreach (var prop in propsForGet) {
           // 成功した読み込みを反映
           var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
 
@@ -625,7 +625,7 @@ partial class EchonetClient
           }
         }
 
-        responseTCS.SetResult((value.Message.ESV == ESV.SetGetResponse, opcSetList, opcGetList));
+        responseTCS.SetResult((value.Message.ESV == ESV.SetGetResponse, propsForSet, propsForGet));
 
         // TODO 一斉通知の応答の扱いが…
       }
@@ -644,8 +644,8 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetGet,
-        opcListOrOpcSetList: propertiesSet.Select(ConvertToPropertyRequest),
-        opcGetList: propertiesGet.Select(ConvertToPropertyRequestExceptValueData)
+        propertiesForSet: propertiesSet.Select(ConvertToPropertyRequest),
+        propertiesForGet: propertiesGet.Select(ConvertToPropertyRequestExceptValueData)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -707,7 +707,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.InfRequest,
-        opcListOrOpcSetList: properties.Select(ConvertToPropertyRequestExceptValueData)
+        properties: properties.Select(ConvertToPropertyRequestExceptValueData)
       ),
       cancellationToken
     );
@@ -758,7 +758,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.Inf,
-        opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyRequest)
       ),
       cancellationToken
     );
@@ -822,7 +822,7 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.InfCResponse)
           return;
 
-        responseTCS.SetResult(value.Message.GetOPCList());
+        responseTCS.SetResult(value.Message.GetProperties());
       }
       finally {
         Format1MessageReceived -= HandleINFCRes;
@@ -839,7 +839,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.InfC,
-        opcListOrOpcSetList: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyRequest)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -1180,27 +1180,27 @@ partial class EchonetClient
     }
 
     var hasError = false;
-    var requestOPCList = message.GetOPCList();
-    var responseOPCList = new List<PropertyRequest>(capacity: requestOPCList.Count);
+    var requestProps = message.GetProperties();
+    var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
 
-    foreach (var opc in requestOPCList) {
-      var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+    foreach (var prop in requestProps) {
+      var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
 
       if (
         property is null ||
-        opc.EDT.Length > property.Spec.MaxSize ||
-        opc.EDT.Length < property.Spec.MinSize
+        prop.EDT.Length > property.Spec.MaxSize ||
+        prop.EDT.Length < property.Spec.MinSize
       ) {
         hasError = true;
         // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
         // 要求された EDT を付け、要求を受理できなかったことを示す。
-        responseOPCList.Add(opc);
+        responseProps.Add(prop);
       }
       else {
         // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-        property.SetValue(opc.EDT);
+        property.SetValue(prop.EDT);
 
-        responseOPCList.Add(new(opc.EPC));
+        responseProps.Add(new(prop.EPC));
       }
     }
 
@@ -1213,7 +1213,7 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetIServiceNotAvailable, // SetI_SNA(0x50)
-          opcListOrOpcSetList: responseOPCList
+          properties: responseProps
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1251,33 +1251,33 @@ partial class EchonetClient
   )
   {
     var hasError = false;
-    var requestOPCList = message.GetOPCList();
-    var responseOPCList = new List<PropertyRequest>(capacity: requestOPCList.Count);
+    var requestProps = message.GetProperties();
+    var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
 
     if (destObject is null) {
-      // DEOJがない場合、全OPCをそのまま返す
+      // DEOJがない場合、全処理対象プロパティをそのまま返す
       hasError = true;
-      responseOPCList.AddRange(requestOPCList);
+      responseProps.AddRange(requestProps);
     }
     else {
-      foreach (var opc in requestOPCList) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+      foreach (var prop in requestProps) {
+        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
 
         if (
           property is null ||
-          opc.EDT.Length > property.Spec.MaxSize ||
-          opc.EDT.Length < property.Spec.MinSize
+          prop.EDT.Length > property.Spec.MaxSize ||
+          prop.EDT.Length < property.Spec.MinSize
         ) {
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
-          responseOPCList.Add(opc);
+          responseProps.Add(prop);
         }
         else {
           // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-          property.SetValue(opc.EDT);
+          property.SetValue(prop.EDT);
 
-          responseOPCList.Add(new(opc.EPC));
+          responseProps.Add(new(prop.EPC));
         }
       }
     }
@@ -1291,7 +1291,7 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetCServiceNotAvailable, // SetC_SNA(0x51)
-          opcListOrOpcSetList: responseOPCList
+          properties: responseProps
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1307,7 +1307,7 @@ partial class EchonetClient
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.SetResponse, // Set_Res(0x71)
-        opcListOrOpcSetList: responseOPCList
+        properties: responseProps
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1342,33 +1342,33 @@ partial class EchonetClient
   )
   {
     var hasError = false;
-    var requestOPCList = message.GetOPCList();
-    var responseOPCList = new List<PropertyRequest>(capacity: requestOPCList.Count);
+    var requestProps = message.GetProperties();
+    var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
 
     if (destObject is null) {
-      // DEOJがない場合、全OPCをそのまま返す
+      // DEOJがない場合、全処理対象プロパティをそのまま返す
       hasError = true;
-      responseOPCList.AddRange(requestOPCList);
+      responseProps.AddRange(requestProps);
     }
     else {
-      foreach (var opc in requestOPCList) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+      foreach (var prop in requestProps) {
+        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
 
         if (
           property is null ||
-          opc.EDT.Length > property.Spec.MaxSize ||
-          opc.EDT.Length < property.Spec.MinSize
+          prop.EDT.Length > property.Spec.MaxSize ||
+          prop.EDT.Length < property.Spec.MinSize
         ) {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
-          responseOPCList.Add(opc);
+          responseProps.Add(prop);
         }
         else {
           // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
           // EDT には読み出したプロパティ値を設定する
-          responseOPCList.Add(new(opc.EPC, property.ValueMemory));
+          responseProps.Add(new(prop.EPC, property.ValueMemory));
         }
       }
     }
@@ -1382,7 +1382,7 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.GetServiceNotAvailable, // Get_SNA(0x52)
-          opcListOrOpcSetList: responseOPCList
+          properties: responseProps
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1398,7 +1398,7 @@ partial class EchonetClient
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.GetResponse, // Get_Res(0x72)
-        opcListOrOpcSetList: responseOPCList
+        properties: responseProps
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1436,56 +1436,56 @@ partial class EchonetClient
   )
   {
     var hasError = false;
-    var (requestOPCSetList, requestOPCGetList) = message.GetOPCSetGetList();
-    var responseOPCSetList = new List<PropertyRequest>(capacity: requestOPCSetList.Count);
-    var responseOPCGetList = new List<PropertyRequest>(capacity: requestOPCGetList.Count);
+    var (requestPropsForSet, requestPropsForGet) = message.GetPropertiesForSetAndGet();
+    var responsePropsForSet = new List<PropertyRequest>(capacity: requestPropsForSet.Count);
+    var responsePropsForGet = new List<PropertyRequest>(capacity: requestPropsForGet.Count);
 
     if (destObject is null) {
-      // DEOJがない場合、全OPCをそのまま返す
+      // DEOJがない場合、全処理対象プロパティをそのまま返す
       hasError = true;
-      responseOPCSetList.AddRange(requestOPCSetList);
-      responseOPCGetList.AddRange(requestOPCGetList);
+      responsePropsForSet.AddRange(requestPropsForSet);
+      responsePropsForGet.AddRange(requestPropsForGet);
     }
     else {
-      foreach (var opc in requestOPCSetList) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+      foreach (var prop in requestPropsForSet) {
+        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
 
         if (
           property is null ||
-          opc.EDT.Length > property.Spec.MaxSize ||
-          opc.EDT.Length < property.Spec.MinSize
+          prop.EDT.Length > property.Spec.MaxSize ||
+          prop.EDT.Length < property.Spec.MinSize
         ) {
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
-          responseOPCSetList.Add(opc);
+          responsePropsForSet.Add(prop);
         }
         else {
           // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-          property.SetValue(opc.EDT);
+          property.SetValue(prop.EDT);
 
-          responseOPCSetList.Add(new(opc.EPC));
+          responsePropsForSet.Add(new(prop.EPC));
         }
       }
 
-      foreach (var opc in requestOPCGetList) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+      foreach (var prop in requestPropsForGet) {
+        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
 
         if (
           property is null ||
-          opc.EDT.Length > property.Spec.MaxSize ||
-          opc.EDT.Length < property.Spec.MinSize
+          prop.EDT.Length > property.Spec.MaxSize ||
+          prop.EDT.Length < property.Spec.MinSize
         ) {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
-          responseOPCGetList.Add(opc);
+          responsePropsForGet.Add(prop);
         }
         else {
           // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
           // EDT には読み出したプロパティ値を設定する
-          responseOPCGetList.Add(new(opc.EPC, property.ValueMemory));
+          responsePropsForGet.Add(new(prop.EPC, property.ValueMemory));
         }
       }
     }
@@ -1499,8 +1499,8 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetGetServiceNotAvailable, // SetGet_SNA(0x5E)
-          opcListOrOpcSetList: responseOPCSetList,
-          opcGetList: responseOPCGetList
+          propertiesForSet: responsePropsForSet,
+          propertiesForGet: responsePropsForGet
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1516,8 +1516,8 @@ partial class EchonetClient
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.SetGetResponse, // SetGet_Res(0x7E)
-        opcListOrOpcSetList: responseOPCSetList,
-        opcGetList: responseOPCGetList
+        propertiesForSet: responsePropsForSet,
+        propertiesForGet: responsePropsForGet
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1557,7 +1557,7 @@ partial class EchonetClient
 #pragma warning restore IDE0060
   {
     var hasError = false;
-    var requestOPCList = message.GetOPCList();
+    var requestProps = message.GetProperties();
     var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
 
     if (sourceObject is null) {
@@ -1573,29 +1573,29 @@ partial class EchonetClient
       }
     }
 
-    foreach (var opc in requestOPCList) {
-      var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+    foreach (var prop in requestProps) {
+      var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
 
       if (property is null) {
         // 未知のプロパティ
         // 新規作成
-        property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, opc.EPC);
+        property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, prop.EPC);
         sourceObject.AddProperty(property);
       }
 
       if (
-        opc.EDT.Length > property.Spec.MaxSize ||
-        opc.EDT.Length < property.Spec.MinSize
+        prop.EDT.Length > property.Spec.MaxSize ||
+        prop.EDT.Length < property.Spec.MinSize
       ) {
         // スペック外なので、格納しない
         hasError = true;
       }
       else {
-        property.SetValue(opc.EDT);
+        property.SetValue(prop.EDT);
 
         // ノードプロファイルのインスタンスリスト通知の場合
-        if (sourceNode.NodeProfile == sourceObject && opc.EPC == 0xD5)
-          await HandleInstanceListNotificationReceivedAsync(sourceNode, opc.EDT).ConfigureAwait(false);
+        if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
+          await HandleInstanceListNotificationReceivedAsync(sourceNode, prop.EDT).ConfigureAwait(false);
       }
     }
 
@@ -1631,8 +1631,8 @@ partial class EchonetClient
   )
   {
     var hasError = false;
-    var requestOPCList = message.GetOPCList();
-    var responseOPCList = new List<PropertyRequest>(capacity: requestOPCList.Count);
+    var requestProps = message.GetProperties();
+    var responseProps = new List<PropertyRequest>(capacity: requestProps.Count);
 
     if (destObject is null) {
       // 指定された DEOJ が存在しない場合には電文を廃棄する。
@@ -1655,34 +1655,34 @@ partial class EchonetClient
       }
     }
 
-    foreach (var opc in requestOPCList) {
-      var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == opc.EPC);
+    foreach (var prop in requestProps) {
+      var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
 
       if (property is null) {
         // 未知のプロパティ
         // 新規作成
-        property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, opc.EPC);
+        property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, prop.EPC);
         sourceObject.AddProperty(property);
       }
 
       if (
-        (property.Spec.MaxSize != null && opc.EDT.Length > property.Spec.MaxSize) ||
-        (property.Spec.MinSize != null && opc.EDT.Length < property.Spec.MinSize)
+        (property.Spec.MaxSize != null && prop.EDT.Length > property.Spec.MaxSize) ||
+        (property.Spec.MinSize != null && prop.EDT.Length < property.Spec.MinSize)
       ) {
         // スペック外なので、格納しない
         hasError = true;
       }
       else {
-        property.SetValue(opc.EDT);
+        property.SetValue(prop.EDT);
 
         // ノードプロファイルのインスタンスリスト通知の場合
-        if (sourceNode.NodeProfile == sourceObject && opc.EPC == 0xD5)
-          await HandleInstanceListNotificationReceivedAsync(sourceNode, opc.EDT).ConfigureAwait(false);
+        if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
+          await HandleInstanceListNotificationReceivedAsync(sourceNode, prop.EDT).ConfigureAwait(false);
       }
 
       // EPC には通知時と同じプロパティコードを設定するが、
       // 通知を受信したことを示すため、PDCには 0 を設定し、EDT は付けない。
-      responseOPCList.Add(new(opc.EPC));
+      responseProps.Add(new(prop.EPC));
     }
 
     if (destObject is not null) {
@@ -1694,7 +1694,7 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.InfCResponse, // INFC_Res(0x74)
-          opcListOrOpcSetList: responseOPCList
+          properties: responseProps
         ),
         cancellationToken: default
       ).ConfigureAwait(false);

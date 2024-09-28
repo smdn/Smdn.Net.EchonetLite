@@ -217,7 +217,7 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGetResponse)]
   [TestCase(ESV.SetGetServiceNotAvailable)]
-  public void TryParseEDataAsFormat1Message_OPC_OfESVSetGet(ESV esv)
+  public void TryParseEDataAsFormat1Message_Properties_OfESVSetGet(ESV esv)
   {
     var input = CreateEDATAFormat1(
       (byte)esv,
@@ -245,41 +245,41 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
+    Assert.That(edata.GetProperties, Throws.InvalidOperationException);
 
-    var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
+    var (propsForSet, propsForGet) = edata.GetPropertiesForSetAndGet();
 
-    Assert.That(opcSetList, Is.Not.Null, nameof(opcSetList));
-    Assert.That(opcSetList.Count, Is.EqualTo(2), "OPCSet");
+    Assert.That(propsForSet, Is.Not.Null, nameof(propsForSet));
+    Assert.That(propsForSet.Count, Is.EqualTo(2), "Properties for set");
 
-    var opcSetArray = opcSetList.ToArray();
+    var propsArrayForSet = propsForSet.ToArray();
 
-    Assert.That(opcSetArray[0].EPC, Is.EqualTo(0x10), "OPCSet #1 EPC");
-    Assert.That(opcSetArray[0].PDC, Is.EqualTo(1), "OPCSet #1 PDC");
-    Assert.That(opcSetArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPCSet #1 EDT");
+    Assert.That(propsArrayForSet[0].EPC, Is.EqualTo(0x10), "Properties for set #1 EPC");
+    Assert.That(propsArrayForSet[0].PDC, Is.EqualTo(1), "Properties for set #1 PDC");
+    Assert.That(propsArrayForSet[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "Properties for set #1 EDT");
 
-    Assert.That(opcSetArray[1].EPC, Is.EqualTo(0x20), "OPCSet #2 EPC");
-    Assert.That(opcSetArray[1].PDC, Is.EqualTo(2), "OPCSet #2 PDC");
-    Assert.That(opcSetArray[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPCSet #2 EDT");
+    Assert.That(propsArrayForSet[1].EPC, Is.EqualTo(0x20), "Properties for set #2 EPC");
+    Assert.That(propsArrayForSet[1].PDC, Is.EqualTo(2), "Properties for set #2 PDC");
+    Assert.That(propsArrayForSet[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "Properties for set #2 EDT");
 
-    Assert.That(opcGetList, Is.Not.Null, nameof(opcSetList));
-    Assert.That(opcSetList.Count, Is.EqualTo(2), "OPCGet");
+    Assert.That(propsForGet, Is.Not.Null, nameof(propsForSet));
+    Assert.That(propsForSet.Count, Is.EqualTo(2), "Properties for get");
 
-    var opcGetArray = opcGetList.ToArray();
+    var propsArrayForGet = propsForGet.ToArray();
 
-    Assert.That(opcGetArray[0].EPC, Is.EqualTo(0x30), "OPCGet #1 EPC");
-    Assert.That(opcGetArray[0].PDC, Is.EqualTo(3), "OPCGet #1 PDC");
-    Assert.That(opcGetArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "OPCGet #1 EDT");
+    Assert.That(propsArrayForGet[0].EPC, Is.EqualTo(0x30), "Properties for get #1 EPC");
+    Assert.That(propsArrayForGet[0].PDC, Is.EqualTo(3), "Properties for get #1 PDC");
+    Assert.That(propsArrayForGet[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "Properties for get #1 EDT");
 
-    Assert.That(opcGetArray[1].EPC, Is.EqualTo(0x40), "OPCGet #2 EPC");
-    Assert.That(opcGetArray[1].PDC, Is.EqualTo(4), "OPCGet #2 PDC");
-    Assert.That(opcGetArray[1].EDT, SequenceIs.EqualTo(new byte[] { 0x41, 0x42, 0x43, 0x44 }), "OPCGet #2 EDT");
+    Assert.That(propsArrayForGet[1].EPC, Is.EqualTo(0x40), "Properties for get #2 EPC");
+    Assert.That(propsArrayForGet[1].PDC, Is.EqualTo(4), "Properties for get #2 PDC");
+    Assert.That(propsArrayForGet[1].EDT, SequenceIs.EqualTo(new byte[] { 0x41, 0x42, 0x43, 0x44 }), "Properties for get #2 EDT");
   }
 
   [TestCase(ESV.Get)]
   [TestCase(ESV.SetI)]
   [TestCase(ESV.Inf)]
-  public void TryParseEDataAsFormat1Message_OPC_OfESVOtherThanSetGet(ESV esv)
+  public void TryParseEDataAsFormat1Message_Properties_OfESVOtherThanSetGet(ESV esv)
   {
     var input = CreateEDATAFormat1(
       (byte)esv,
@@ -295,22 +295,22 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.GetOPCSetGetList, Throws.InvalidOperationException);
+    Assert.That(edata.GetPropertiesForSetAndGet, Throws.InvalidOperationException);
 
-    var opcList = edata.GetOPCList();
+    var props = edata.GetProperties();
 
-    Assert.That(opcList, Is.Not.Null, nameof(opcList));
-    Assert.That(opcList.Count, Is.EqualTo(2), "OPC");
+    Assert.That(props, Is.Not.Null, nameof(props));
+    Assert.That(props.Count, Is.EqualTo(2), "Properties");
 
-    var opcArray = opcList.ToArray();
+    var propsArray = props.ToArray();
 
-    Assert.That(opcArray[0].EPC, Is.EqualTo(0x10), "OPC #1 EPC");
-    Assert.That(opcArray[0].PDC, Is.EqualTo(1), "OPC #1 PDC");
-    Assert.That(opcArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPC #1 EDT");
+    Assert.That(propsArray[0].EPC, Is.EqualTo(0x10), "Properties #1 EPC");
+    Assert.That(propsArray[0].PDC, Is.EqualTo(1), "Properties #1 PDC");
+    Assert.That(propsArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "Properties #1 EDT");
 
-    Assert.That(opcArray[1].EPC, Is.EqualTo(0x20), "OPC #2 EPC");
-    Assert.That(opcArray[1].PDC, Is.EqualTo(2), "OPC #2 PDC");
-    Assert.That(opcArray[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "OPC #2 EDT");
+    Assert.That(propsArray[1].EPC, Is.EqualTo(0x20), "Properties #2 EPC");
+    Assert.That(propsArray[1].PDC, Is.EqualTo(2), "Properties #2 PDC");
+    Assert.That(propsArray[1].EDT, SequenceIs.EqualTo(new byte[] { 0x21, 0x22 }), "Properties #2 EDT");
   }
 
   [Test]
@@ -329,21 +329,21 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
+    Assert.That(edata.GetProperties, Throws.InvalidOperationException);
 
-    var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
+    var (propsForSet, propsForGet) = edata.GetPropertiesForSetAndGet();
 
-    Assert.That(opcSetList, Is.Not.Null, nameof(opcSetList));
-    Assert.That(opcSetList, Is.Empty, nameof(opcSetList));
+    Assert.That(propsForSet, Is.Not.Null, nameof(propsForSet));
+    Assert.That(propsForSet, Is.Empty, nameof(propsForSet));
 
-    Assert.That(opcGetList, Is.Not.Null, nameof(opcGetList));
-    Assert.That(opcGetList.Count, Is.EqualTo(1), "OPCGet");
+    Assert.That(propsForGet, Is.Not.Null, nameof(propsForGet));
+    Assert.That(propsForGet.Count, Is.EqualTo(1), "Properties for get");
 
-    var opcGetArray = opcGetList.ToArray();
+    var propsArrayForGet = propsForGet.ToArray();
 
-    Assert.That(opcGetArray[0].EPC, Is.EqualTo(0x30), "OPCGet #1 EPC");
-    Assert.That(opcGetArray[0].PDC, Is.EqualTo(3), "OPCGet #1 PDC");
-    Assert.That(opcGetArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "OPCGet #1 EDT");
+    Assert.That(propsArrayForGet[0].EPC, Is.EqualTo(0x30), "Properties for get #1 EPC");
+    Assert.That(propsArrayForGet[0].PDC, Is.EqualTo(3), "Properties for get #1 PDC");
+    Assert.That(propsArrayForGet[0].EDT, SequenceIs.EqualTo(new byte[] { 0x31, 0x32, 0x33 }), "Properties for get #1 EDT");
   }
 
   [Test]
@@ -360,20 +360,20 @@ partial class FrameSerializerTests {
 
     Assert.That(FrameSerializer.TryParseEDataAsFormat1Message(input, out var edata), Is.True);
 
-    Assert.That(edata.GetOPCList, Throws.InvalidOperationException);
+    Assert.That(edata.GetProperties, Throws.InvalidOperationException);
 
-    var (opcSetList, opcGetList) = edata.GetOPCSetGetList();
+    var (propsForSet, propsForGet) = edata.GetPropertiesForSetAndGet();
 
-    Assert.That(opcSetList, Is.Not.Null, nameof(opcSetList));
-    Assert.That(opcSetList.Count, Is.EqualTo(1), "OPCSet");
+    Assert.That(propsForSet, Is.Not.Null, nameof(propsForSet));
+    Assert.That(propsForSet.Count, Is.EqualTo(1), "Properties for set");
 
-    var opcSetArray = opcSetList.ToArray();
+    var propsArrayForSet = propsForSet.ToArray();
 
-    Assert.That(opcSetArray[0].EPC, Is.EqualTo(0x10), "OPCSet #1 EPC");
-    Assert.That(opcSetArray[0].PDC, Is.EqualTo(1), "OPCSet #1 PDC");
-    Assert.That(opcSetArray[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "OPCSet #1 EDT");
+    Assert.That(propsArrayForSet[0].EPC, Is.EqualTo(0x10), "Properties for set #1 EPC");
+    Assert.That(propsArrayForSet[0].PDC, Is.EqualTo(1), "Properties for set #1 PDC");
+    Assert.That(propsArrayForSet[0].EDT, SequenceIs.EqualTo(new byte[] { 0x11 }), "Properties for set #1 EDT");
 
-    Assert.That(opcGetList, Is.Not.Null, nameof(opcGetList));
-    Assert.That(opcGetList, Is.Empty, nameof(opcGetList));
+    Assert.That(propsForGet, Is.Not.Null, nameof(propsForGet));
+    Assert.That(propsForGet, Is.Empty, nameof(propsForGet));
   }
 }

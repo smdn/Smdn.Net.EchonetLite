@@ -31,15 +31,14 @@ partial class FrameSerializerTests {
         sourceObject: default,
         destinationObject: default,
         esv: default,
-        opcListOrOpcSetList: Array.Empty<PropertyRequest>(),
-        opcGetList: Array.Empty<PropertyRequest>()
+        properties: Array.Empty<PropertyRequest>()
       ),
       message: "buffer null"
     );
   }
 
   [Test]
-  public void SerializeEchonetLiteFrameFormat1_ArgumentNull_OPCList()
+  public void SerializeEchonetLiteFrameFormat1_ArgumentNull_Properties()
   {
     Assert.Throws<ArgumentNullException>(
       () => FrameSerializer.SerializeEchonetLiteFrameFormat1(
@@ -47,11 +46,24 @@ partial class FrameSerializerTests {
         tid: ZeroTID,
         sourceObject: default,
         destinationObject: default,
-        esv: default,
-        opcListOrOpcSetList: null!,
-        opcGetList: null
+        esv: ESV.SetGet,
+        propertiesForSet: null!,
+        propertiesForGet: Array.Empty<PropertyRequest>()
       ),
-      message: "opcListOrOpcSetList null"
+      message: "propertiesForSet null"
+    );
+
+    Assert.Throws<ArgumentNullException>(
+      () => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+        buffer: new ArrayBufferWriter<byte>(),
+        tid: ZeroTID,
+        sourceObject: default,
+        destinationObject: default,
+        esv: ESV.SetGet,
+        propertiesForSet: [ new() ],
+        propertiesForGet: null!
+      ),
+      message: "propertiesForGet null"
     );
   }
 
@@ -71,8 +83,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: default,
-      opcListOrOpcSetList: Array.Empty<PropertyRequest>(),
-      opcGetList: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyRequest>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -116,8 +127,7 @@ partial class FrameSerializerTests {
       sourceObject: seoj,
       destinationObject: default,
       esv: default,
-      opcListOrOpcSetList: Array.Empty<PropertyRequest>(),
-      opcGetList: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyRequest>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -146,8 +156,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: deoj,
       esv: default,
-      opcListOrOpcSetList: Array.Empty<PropertyRequest>(),
-      opcGetList: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyRequest>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -182,21 +191,27 @@ partial class FrameSerializerTests {
   {
     var buffer = new ArrayBufferWriter<byte>(initialCapacity: 0x100);
 
-    FrameSerializer.SerializeEchonetLiteFrameFormat1(
-      buffer: buffer,
-      tid: ZeroTID,
-      sourceObject: default,
-      destinationObject: default,
-      esv: esv,
-      opcListOrOpcSetList: esv switch {
-        ESV.SetGet or ESV.SetGetResponse or ESV.SetGetServiceNotAvailable => [ new() ],
-        _ => Array.Empty<PropertyRequest>(),
-      },
-      opcGetList: esv switch {
-        ESV.SetGet or ESV.SetGetResponse or ESV.SetGetServiceNotAvailable => [ new() ],
-        _ => Array.Empty<PropertyRequest>(),
-      }
-    );
+    if (esv is ESV.SetGet or ESV.SetGetResponse or ESV.SetGetServiceNotAvailable) {
+      FrameSerializer.SerializeEchonetLiteFrameFormat1(
+        buffer: buffer,
+        tid: ZeroTID,
+        sourceObject: default,
+        destinationObject: default,
+        esv: esv,
+        propertiesForSet: [ new() ],
+        propertiesForGet: [ new() ]
+      );
+    }
+    else {
+      FrameSerializer.SerializeEchonetLiteFrameFormat1(
+        buffer: buffer,
+        tid: ZeroTID,
+        sourceObject: default,
+        destinationObject: default,
+        esv: esv,
+        properties: Array.Empty<PropertyRequest>()
+      );
+    }
 
     var frameBytes = buffer.WrittenMemory.ToArray();
 
@@ -222,7 +237,7 @@ partial class FrameSerializerTests {
   public void SerializeEchonetLiteFrameFormat1_OPC_ForSingleProperty(ESV esv)
   {
     var edt = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-    var opc = new List<PropertyRequest>() {
+    var props = new List<PropertyRequest>() {
       new(
         epc: 0xFF,
         edt: edt
@@ -237,8 +252,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      opcListOrOpcSetList: opc,
-      opcGetList: Array.Empty<PropertyRequest>()
+      properties: props
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -246,26 +260,26 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[0], Is.EqualTo(0x10), "Frame[0] EHD1");
     Assert.That(frameBytes[1], Is.EqualTo(0x81), "Frame[1] EHD2");
 
-    Assert.That(frameBytes[11], Is.EqualTo(opc.Count), "Frame[11] OPC");
-    Assert.That(frameBytes[12], Is.EqualTo(opc[0].EPC), "Frame[12] OPC#0 EPC");
-    Assert.That(frameBytes[13], Is.EqualTo(opc[0].PDC), "Frame[13] OPC#0 PDC");
-    Assert.That(frameBytes[14..], SequenceIs.EqualTo(opc[0].EDT), "Frame[14..] OPC#0 EDT");
+    Assert.That(frameBytes[11], Is.EqualTo(props.Count), "Frame[11] OPC");
+    Assert.That(frameBytes[12], Is.EqualTo(props[0].EPC), "Frame[12] OPC#0 EPC");
+    Assert.That(frameBytes[13], Is.EqualTo(props[0].PDC), "Frame[13] OPC#0 PDC");
+    Assert.That(frameBytes[14..], SequenceIs.EqualTo(props[0].EDT), "Frame[14..] OPC#0 EDT");
   }
 
   [TestCase(ESV.SetI)]
   [TestCase(ESV.Get)]
   public void SerializeEchonetLiteFrameFormat1_ForMultipleProperty(ESV esv)
   {
-    var opc0edt = new byte[] { 0x10, 0x11 };
-    var opc1edt = new byte[] { 0x20, 0x21, 0x22 };
-    var opc = new List<PropertyRequest>() {
+    var prop0edt = new byte[] { 0x10, 0x11 };
+    var prop1edt = new byte[] { 0x20, 0x21, 0x22 };
+    var props = new List<PropertyRequest>() {
       new(
         epc: 0x10,
-        edt: opc0edt
+        edt: prop0edt
       ),
       new(
         epc: 0x20,
-        edt: opc1edt
+        edt: prop1edt
       ),
     };
 
@@ -277,8 +291,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      opcListOrOpcSetList: opc,
-      opcGetList: Array.Empty<PropertyRequest>()
+      properties: props
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -286,14 +299,14 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[0], Is.EqualTo(0x10), "Frame[0] EHD1");
     Assert.That(frameBytes[1], Is.EqualTo(0x81), "Frame[1] EHD2");
 
-    Assert.That(frameBytes[11], Is.EqualTo(opc.Count), "Frame[11] OPC");
-    Assert.That(frameBytes[12], Is.EqualTo(opc[0].EPC), "Frame[12] OPC#0 EPC");
-    Assert.That(frameBytes[13], Is.EqualTo(opc[0].PDC), "Frame[13] OPC#0 PDC");
-    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(opc[0].EDT), "Frame[14..16] OPC#0 EDT");
+    Assert.That(frameBytes[11], Is.EqualTo(props.Count), "Frame[11] OPC");
+    Assert.That(frameBytes[12], Is.EqualTo(props[0].EPC), "Frame[12] OPC#0 EPC");
+    Assert.That(frameBytes[13], Is.EqualTo(props[0].PDC), "Frame[13] OPC#0 PDC");
+    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(props[0].EDT), "Frame[14..16] OPC#0 EDT");
 
-    Assert.That(frameBytes[16], Is.EqualTo(opc[1].EPC), "Frame[16] OPC#1 EPC");
-    Assert.That(frameBytes[17], Is.EqualTo(opc[1].PDC), "Frame[17] OPC#1 PDC");
-    Assert.That(frameBytes[18..21], SequenceIs.EqualTo(opc[1].EDT), "Frame[18..21] OPC#1 EDT");
+    Assert.That(frameBytes[16], Is.EqualTo(props[1].EPC), "Frame[16] OPC#1 EPC");
+    Assert.That(frameBytes[17], Is.EqualTo(props[1].PDC), "Frame[17] OPC#1 PDC");
+    Assert.That(frameBytes[18..21], SequenceIs.EqualTo(props[1].EDT), "Frame[18..21] OPC#1 EDT");
   }
 
   [TestCase(ESV.SetGet)]
@@ -301,18 +314,18 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetGetServiceNotAvailable)]
   public void SerializeEchonetLiteFrameFormat1_OPCGet_OPCSet_ForSingleProperty(ESV esv)
   {
-    var edtOPCSet = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-    var opcSet = new List<PropertyRequest>() {
+    var edtSet = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+    var propsSet = new List<PropertyRequest>() {
       new(
         epc: 0xFE,
-        edt: edtOPCSet
+        edt: edtSet
       ),
     };
-    var edtOPCGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
-    var opcGet = new List<PropertyRequest>() {
+    var edtGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
+    var propsGet = new List<PropertyRequest>() {
       new(
         epc: 0xFF,
-        edt: edtOPCGet
+        edt: edtGet
       ),
     };
 
@@ -324,8 +337,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      opcListOrOpcSetList: opcSet,
-      opcGetList: opcGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -333,15 +346,15 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[0], Is.EqualTo(0x10), "Frame[0] EHD1");
     Assert.That(frameBytes[1], Is.EqualTo(0x81), "Frame[1] EHD2");
 
-    Assert.That(frameBytes[11], Is.EqualTo(opcSet.Count), "Frame[11] OPCSet");
-    Assert.That(frameBytes[12], Is.EqualTo(opcSet[0].EPC), "Frame[12] OPCSet#0 EPC");
-    Assert.That(frameBytes[13], Is.EqualTo(opcSet[0].PDC), "Frame[13] OPCSet#0 PDC");
-    Assert.That(frameBytes[14..18], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..18] OPCSet#0 EDT");
+    Assert.That(frameBytes[11], Is.EqualTo(propsSet.Count), "Frame[11] OPCSet");
+    Assert.That(frameBytes[12], Is.EqualTo(propsSet[0].EPC), "Frame[12] OPCSet#0 EPC");
+    Assert.That(frameBytes[13], Is.EqualTo(propsSet[0].PDC), "Frame[13] OPCSet#0 PDC");
+    Assert.That(frameBytes[14..18], SequenceIs.EqualTo(propsSet[0].EDT), "Frame[14..18] OPCSet#0 EDT");
 
-    Assert.That(frameBytes[18], Is.EqualTo(opcGet.Count), "Frame[18] OPCGet");
-    Assert.That(frameBytes[19], Is.EqualTo(opcGet[0].EPC), "Frame[19] OPCGet#0 EPC");
-    Assert.That(frameBytes[20], Is.EqualTo(opcGet[0].PDC), "Frame[20] OPCGet#0 PDC");
-    Assert.That(frameBytes[21..26], SequenceIs.EqualTo(opcGet[0].EDT), "Frame[21..26] OPCGet#0 EDT");
+    Assert.That(frameBytes[18], Is.EqualTo(propsGet.Count), "Frame[18] OPCGet");
+    Assert.That(frameBytes[19], Is.EqualTo(propsGet[0].EPC), "Frame[19] OPCGet#0 EPC");
+    Assert.That(frameBytes[20], Is.EqualTo(propsGet[0].PDC), "Frame[20] OPCGet#0 PDC");
+    Assert.That(frameBytes[21..26], SequenceIs.EqualTo(propsGet[0].EDT), "Frame[21..26] OPCGet#0 EDT");
   }
 
   [TestCase(ESV.SetGet)]
@@ -349,23 +362,23 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetGetServiceNotAvailable)]
   public void SerializeEchonetLiteFrameFormat1_OPCSet_ForMultipleProperty(ESV esv)
   {
-    var edtOPCSet0 = new byte[] { 0x11, 0x12 };
-    var edtOPCSet1 = new byte[] { 0x21, 0x22, 0x23 };
-    var opcSet = new List<PropertyRequest>() {
+    var edtSet0 = new byte[] { 0x11, 0x12 };
+    var edtSet1 = new byte[] { 0x21, 0x22, 0x23 };
+    var propsSet = new List<PropertyRequest>() {
       new(
         epc: 0x10,
-        edt: edtOPCSet0
+        edt: edtSet0
       ),
       new(
         epc: 0x20,
-        edt: edtOPCSet1
+        edt: edtSet1
       ),
     };
-    var edtOPCGet = new byte[] { 0x31, 0x32, 0x33, 0x34 };
-    var opcGet = new List<PropertyRequest>() {
+    var edtGet = new byte[] { 0x31, 0x32, 0x33, 0x34 };
+    var propsGet = new List<PropertyRequest>() {
       new(
         epc: 0x30,
-        edt: edtOPCGet
+        edt: edtGet
       ),
     };
 
@@ -377,8 +390,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      opcListOrOpcSetList: opcSet,
-      opcGetList: opcGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -386,18 +399,18 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[0], Is.EqualTo(0x10), "Frame[0] EHD1");
     Assert.That(frameBytes[1], Is.EqualTo(0x81), "Frame[1] EHD2");
 
-    Assert.That(frameBytes[11], Is.EqualTo(opcSet.Count), "Frame[11] OPCSet");
-    Assert.That(frameBytes[12], Is.EqualTo(opcSet[0].EPC), "Frame[12] OPCSet#0 EPC");
-    Assert.That(frameBytes[13], Is.EqualTo(opcSet[0].PDC), "Frame[13] OPCSet#0 PDC");
-    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..16] OPCSet#0 EDT");
-    Assert.That(frameBytes[16], Is.EqualTo(opcSet[1].EPC), "Frame[16] OPCSet#1 EPC");
-    Assert.That(frameBytes[17], Is.EqualTo(opcSet[1].PDC), "Frame[17] OPCSet#1 PDC");
-    Assert.That(frameBytes[18..21], SequenceIs.EqualTo(opcSet[1].EDT), "Frame[18..21] OPCSet#1 EDT");
+    Assert.That(frameBytes[11], Is.EqualTo(propsSet.Count), "Frame[11] OPCSet");
+    Assert.That(frameBytes[12], Is.EqualTo(propsSet[0].EPC), "Frame[12] OPCSet#0 EPC");
+    Assert.That(frameBytes[13], Is.EqualTo(propsSet[0].PDC), "Frame[13] OPCSet#0 PDC");
+    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(propsSet[0].EDT), "Frame[14..16] OPCSet#0 EDT");
+    Assert.That(frameBytes[16], Is.EqualTo(propsSet[1].EPC), "Frame[16] OPCSet#1 EPC");
+    Assert.That(frameBytes[17], Is.EqualTo(propsSet[1].PDC), "Frame[17] OPCSet#1 PDC");
+    Assert.That(frameBytes[18..21], SequenceIs.EqualTo(propsSet[1].EDT), "Frame[18..21] OPCSet#1 EDT");
 
-    Assert.That(frameBytes[21], Is.EqualTo(opcGet.Count), "Frame[21] OPCGet");
-    Assert.That(frameBytes[22], Is.EqualTo(opcGet[0].EPC), "Frame[22] OPCGet#0 EPC");
-    Assert.That(frameBytes[23], Is.EqualTo(opcGet[0].PDC), "Frame[23] OPCGet#0 PDC");
-    Assert.That(frameBytes[24..28], SequenceIs.EqualTo(opcGet[0].EDT), "Frame[24..28] OPCGet#0 EDT");
+    Assert.That(frameBytes[21], Is.EqualTo(propsGet.Count), "Frame[21] OPCGet");
+    Assert.That(frameBytes[22], Is.EqualTo(propsGet[0].EPC), "Frame[22] OPCGet#0 EPC");
+    Assert.That(frameBytes[23], Is.EqualTo(propsGet[0].PDC), "Frame[23] OPCGet#0 PDC");
+    Assert.That(frameBytes[24..28], SequenceIs.EqualTo(propsGet[0].EDT), "Frame[24..28] OPCGet#0 EDT");
   }
 
   [TestCase(ESV.SetGet)]
@@ -405,23 +418,23 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetGetServiceNotAvailable)]
   public void SerializeEchonetLiteFrameFormat1_OPCGet_ForMultipleProperty(ESV esv)
   {
-    var edtOPCSet = new byte[] { 0x11, 0x12 };
-    var opcSet = new List<PropertyRequest>() {
+    var edtSet = new byte[] { 0x11, 0x12 };
+    var propsSet = new List<PropertyRequest>() {
       new(
         epc: 0x10,
-        edt: edtOPCSet
+        edt: edtSet
       ),
     };
-    var edtOPCGet0 = new byte[] { 0x21, 0x22, 0x23 };
-    var edtOPCGet1 = new byte[] { 0x31, 0x32, 0x33, 0x34 };
-    var opcGet = new List<PropertyRequest>() {
+    var edtGet0 = new byte[] { 0x21, 0x22, 0x23 };
+    var edtGet1 = new byte[] { 0x31, 0x32, 0x33, 0x34 };
+    var propsGet = new List<PropertyRequest>() {
       new(
         epc: 0x20,
-        edt: edtOPCGet0
+        edt: edtGet0
       ),
       new(
         epc: 0x30,
-        edt: edtOPCGet1
+        edt: edtGet1
       ),
     };
 
@@ -433,8 +446,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      opcListOrOpcSetList: opcSet,
-      opcGetList: opcGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -442,18 +455,18 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[0], Is.EqualTo(0x10), "Frame[0] EHD1");
     Assert.That(frameBytes[1], Is.EqualTo(0x81), "Frame[1] EHD2");
 
-    Assert.That(frameBytes[11], Is.EqualTo(opcSet.Count), "Frame[11] OPCSet");
-    Assert.That(frameBytes[12], Is.EqualTo(opcSet[0].EPC), "Frame[12] OPCSet#0 EPC");
-    Assert.That(frameBytes[13], Is.EqualTo(opcSet[0].PDC), "Frame[13] OPCSet#0 PDC");
-    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..16] OPCSet#0 EDT");
+    Assert.That(frameBytes[11], Is.EqualTo(propsSet.Count), "Frame[11] OPCSet");
+    Assert.That(frameBytes[12], Is.EqualTo(propsSet[0].EPC), "Frame[12] OPCSet#0 EPC");
+    Assert.That(frameBytes[13], Is.EqualTo(propsSet[0].PDC), "Frame[13] OPCSet#0 PDC");
+    Assert.That(frameBytes[14..16], SequenceIs.EqualTo(propsSet[0].EDT), "Frame[14..16] OPCSet#0 EDT");
 
-    Assert.That(frameBytes[16], Is.EqualTo(opcGet.Count), "Frame[16] OPCGet");
-    Assert.That(frameBytes[17], Is.EqualTo(opcGet[0].EPC), "Frame[17] OPCGet#0 EPC");
-    Assert.That(frameBytes[18], Is.EqualTo(opcGet[0].PDC), "Frame[18] OPCGet#0 PDC");
-    Assert.That(frameBytes[19..22], SequenceIs.EqualTo(opcGet[0].EDT), "Frame[18..22] OPCGet#0 EDT");
-    Assert.That(frameBytes[22], Is.EqualTo(opcGet[1].EPC), "Frame[22] OPCGet#1 EPC");
-    Assert.That(frameBytes[23], Is.EqualTo(opcGet[1].PDC), "Frame[23] OPCGet#1 PDC");
-    Assert.That(frameBytes[24..28], SequenceIs.EqualTo(opcGet[1].EDT), "Frame[24..28] OPCGet#1 EDT");
+    Assert.That(frameBytes[16], Is.EqualTo(propsGet.Count), "Frame[16] OPCGet");
+    Assert.That(frameBytes[17], Is.EqualTo(propsGet[0].EPC), "Frame[17] OPCGet#0 EPC");
+    Assert.That(frameBytes[18], Is.EqualTo(propsGet[0].PDC), "Frame[18] OPCGet#0 PDC");
+    Assert.That(frameBytes[19..22], SequenceIs.EqualTo(propsGet[0].EDT), "Frame[18..22] OPCGet#0 EDT");
+    Assert.That(frameBytes[22], Is.EqualTo(propsGet[1].EPC), "Frame[22] OPCGet#1 EPC");
+    Assert.That(frameBytes[23], Is.EqualTo(propsGet[1].PDC), "Frame[23] OPCGet#1 PDC");
+    Assert.That(frameBytes[24..28], SequenceIs.EqualTo(propsGet[1].EDT), "Frame[24..28] OPCGet#1 EDT");
   }
 
   [Test]
@@ -472,12 +485,12 @@ partial class FrameSerializerTests {
 
   private static void SerializeEchonetLiteFrameFormat1_OPCSet_ForNoProperty(ESV esv)
   {
-    var edtOPCGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
-    var opcSet = new List<PropertyRequest>(); // empty OPCSet
-    var opcGet = new List<PropertyRequest>() {
+    var edtGet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
+    var propsSet = new List<PropertyRequest>(); // empty props
+    var propsGet = new List<PropertyRequest>() {
       new(
         epc: 0xFF,
-        edt: edtOPCGet
+        edt: edtGet
       ),
     };
 
@@ -489,8 +502,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      opcListOrOpcSetList: opcSet,
-      opcGetList: opcGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -500,10 +513,10 @@ partial class FrameSerializerTests {
 
     Assert.That(frameBytes[11], Is.EqualTo(0), "Frame[11] OPCSet");
 
-    Assert.That(frameBytes[12], Is.EqualTo(opcGet.Count), "Frame[12] OPCGet");
-    Assert.That(frameBytes[13], Is.EqualTo(opcGet[0].EPC), "Frame[13] OPCGet#0 EPC");
-    Assert.That(frameBytes[14], Is.EqualTo(opcGet[0].PDC), "Frame[14] OPCGet#0 PDC");
-    Assert.That(frameBytes[15..20], SequenceIs.EqualTo(opcGet[0].EDT), "Frame[15..20] OPCGet#0 EDT");
+    Assert.That(frameBytes[12], Is.EqualTo(propsGet.Count), "Frame[12] OPCGet");
+    Assert.That(frameBytes[13], Is.EqualTo(propsGet[0].EPC), "Frame[13] OPCGet#0 EPC");
+    Assert.That(frameBytes[14], Is.EqualTo(propsGet[0].PDC), "Frame[14] OPCGet#0 PDC");
+    Assert.That(frameBytes[15..20], SequenceIs.EqualTo(propsGet[0].EDT), "Frame[15..20] OPCGet#0 EDT");
   }
 
   [Test]
@@ -522,14 +535,14 @@ partial class FrameSerializerTests {
 
   private static void SerializeEchonetLiteFrameFormat1_OPCGet_ForNoProperty(ESV esv)
   {
-    var edtOPCSet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
-    var opcSet = new List<PropertyRequest>() {
+    var edtSet = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14 };
+    var propsSet = new List<PropertyRequest>() {
       new(
         epc: 0xFF,
-        edt: edtOPCSet
+        edt: edtSet
       ),
     };
-    var opcGet = new List<PropertyRequest>(); // empty OPCGet
+    var propsGet = new List<PropertyRequest>(); // empty props
 
     var buffer = new ArrayBufferWriter<byte>(initialCapacity: 0x100);
 
@@ -539,8 +552,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      opcListOrOpcSetList: opcSet,
-      opcGetList: opcGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -548,10 +561,10 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[0], Is.EqualTo(0x10), "Frame[0] EHD1");
     Assert.That(frameBytes[1], Is.EqualTo(0x81), "Frame[1] EHD2");
 
-    Assert.That(frameBytes[11], Is.EqualTo(opcSet.Count), "Frame[11] OPCSet");
-    Assert.That(frameBytes[12], Is.EqualTo(opcSet[0].EPC), "Frame[12] OPCSet#0 EPC");
-    Assert.That(frameBytes[13], Is.EqualTo(opcSet[0].PDC), "Frame[13] OPCSet#0 PDC");
-    Assert.That(frameBytes[14..19], SequenceIs.EqualTo(opcSet[0].EDT), "Frame[14..19] OPCSet#0 EDT");
+    Assert.That(frameBytes[11], Is.EqualTo(propsSet.Count), "Frame[11] OPCSet");
+    Assert.That(frameBytes[12], Is.EqualTo(propsSet[0].EPC), "Frame[12] OPCSet#0 EPC");
+    Assert.That(frameBytes[13], Is.EqualTo(propsSet[0].PDC), "Frame[13] OPCSet#0 PDC");
+    Assert.That(frameBytes[14..19], SequenceIs.EqualTo(propsSet[0].EDT), "Frame[14..19] OPCSet#0 EDT");
 
     Assert.That(frameBytes[19], Is.EqualTo(0), "Frame[19] OPCGet");
   }

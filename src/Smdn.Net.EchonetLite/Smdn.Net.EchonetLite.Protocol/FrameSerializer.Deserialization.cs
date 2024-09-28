@@ -65,34 +65,34 @@ partial class FrameSerializer {
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)
       // プロパティ値データ(PDCで指定)
-      if (!TryParseProcessingTargetProperties(bytes, out var opcSetList, out var bytesReadForOPCSetList))
+      if (!TryParseProcessingTargetProperties(bytes, out var propsForSet, out var bytesReadForSetProps))
         return false;
 
-      bytes = bytes.Slice(bytesReadForOPCSetList);
+      bytes = bytes.Slice(bytesReadForSetProps);
 
       // OPCGet 処理プロパティ数(1B)
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)
       // プロパティ値データ(PDCで指定)
-      if (!TryParseProcessingTargetProperties(bytes, out var opcGetList, out _ /* var bytesReadForOPCGetList */))
+      if (!TryParseProcessingTargetProperties(bytes, out var propsForGet, out _ /* var bytesReadForGetProps */))
         return false;
 
       message = new(
         seoj,
         deoj,
         esv,
-        opcSetList,
-        opcGetList
+        propsForSet,
+        propsForGet
       );
 
-      // bytes = bytes.Slice(bytesReadForOPCGetList);
+      // bytes = bytes.Slice(bytesReadForGetProps);
     }
     else {
       // OPC 処理プロパティ数(1B)
       // ECHONET Liteプロパティ(1B)
       // EDTのバイト数(1B)
       // プロパティ値データ(PDCで指定)
-      if (!TryParseProcessingTargetProperties(bytes, out var opcList, out _ /* var bytesRead */))
+      if (!TryParseProcessingTargetProperties(bytes, out var props, out _ /* var bytesRead */))
         return false;
 
       // bytes = bytes.Slice(bytesRead);
@@ -101,7 +101,7 @@ partial class FrameSerializer {
         seoj,
         deoj,
         esv,
-        opcList
+        props
       );
     }
 
