@@ -1204,24 +1204,24 @@ partial class EchonetClient
       }
     }
 
-    if (hasError) {
-      await SendFrameAsync(
-        address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: tid,
-          sourceObject: message.DEOJ, // 入れ替え
-          destinationObject: message.SEOJ, // 入れ替え
-          esv: ESV.SetIServiceNotAvailable, // SetI_SNA(0x50)
-          properties: responseProps
-        ),
-        cancellationToken: default
-      ).ConfigureAwait(false);
+    if (!hasError)
+      // 応答不要なので、エラーなしの場合はここで処理終了する
+      return true;
 
-      return false;
-    }
+    await SendFrameAsync(
+      address,
+      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+        buffer: buffer,
+        tid: tid,
+        sourceObject: message.DEOJ, // 入れ替え
+        destinationObject: message.SEOJ, // 入れ替え
+        esv: ESV.SetIServiceNotAvailable, // SetI_SNA(0x50)
+        properties: responseProps
+      ),
+      cancellationToken: default
+    ).ConfigureAwait(false);
 
-    return true;
+    return false;
   }
 
   /// <summary>
@@ -1282,23 +1282,6 @@ partial class EchonetClient
       }
     }
 
-    if (hasError) {
-      await SendFrameAsync(
-        address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: tid,
-          sourceObject: message.DEOJ, // 入れ替え
-          destinationObject: message.SEOJ, // 入れ替え
-          esv: ESV.SetCServiceNotAvailable, // SetC_SNA(0x51)
-          properties: responseProps
-        ),
-        cancellationToken: default
-      ).ConfigureAwait(false);
-
-      return false;
-    }
-
     await SendFrameAsync(
       address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
@@ -1306,13 +1289,15 @@ partial class EchonetClient
         tid: tid,
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
-        esv: ESV.SetResponse, // Set_Res(0x71)
+        esv: hasError
+          ? ESV.SetCServiceNotAvailable // SetC_SNA(0x51)
+          : ESV.SetResponse, // Set_Res(0x71)
         properties: responseProps
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
 
-    return true;
+    return !hasError;
   }
 
   /// <summary>
@@ -1373,23 +1358,6 @@ partial class EchonetClient
       }
     }
 
-    if (hasError) {
-      await SendFrameAsync(
-        address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: tid,
-          sourceObject: message.DEOJ, // 入れ替え
-          destinationObject: message.SEOJ, // 入れ替え
-          esv: ESV.GetServiceNotAvailable, // Get_SNA(0x52)
-          properties: responseProps
-        ),
-        cancellationToken: default
-      ).ConfigureAwait(false);
-
-      return false;
-    }
-
     await SendFrameAsync(
       address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
@@ -1397,13 +1365,15 @@ partial class EchonetClient
         tid: tid,
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
-        esv: ESV.GetResponse, // Get_Res(0x72)
+        esv: hasError
+          ? ESV.GetServiceNotAvailable // Get_SNA(0x52)
+          : ESV.GetResponse, // Get_Res(0x72)
         properties: responseProps
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
 
-    return true;
+    return !hasError;
   }
 
   /// <summary>
@@ -1490,24 +1460,6 @@ partial class EchonetClient
       }
     }
 
-    if (hasError) {
-      await SendFrameAsync(
-        address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: tid,
-          sourceObject: message.DEOJ, // 入れ替え
-          destinationObject: message.SEOJ, // 入れ替え
-          esv: ESV.SetGetServiceNotAvailable, // SetGet_SNA(0x5E)
-          propertiesForSet: responsePropsForSet,
-          propertiesForGet: responsePropsForGet
-        ),
-        cancellationToken: default
-      ).ConfigureAwait(false);
-
-      return false;
-    }
-
     await SendFrameAsync(
       address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
@@ -1515,14 +1467,16 @@ partial class EchonetClient
         tid: tid,
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
-        esv: ESV.SetGetResponse, // SetGet_Res(0x7E)
+        esv: hasError
+          ? ESV.SetGetServiceNotAvailable // SetGet_SNA(0x5E)
+          : ESV.SetGetResponse, // SetGet_Res(0x7E)
         propertiesForSet: responsePropsForSet,
         propertiesForGet: responsePropsForGet
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
 
-    return true;
+    return !hasError;
   }
 
   /// <summary>
