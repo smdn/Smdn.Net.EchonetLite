@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Text.Json;
 
 using NUnit.Framework;
 
@@ -121,18 +120,6 @@ public class Format1MessageTests {
     else {
       Assert.That(message.GetPropertiesForSetAndGet, Throws.InvalidOperationException);
     }
-  }
-
-  [TestCase(ESV.SetI, "\"ESV\":\"60\"")]
-  [TestCase(ESV.SetC, "\"ESV\":\"61\"")]
-  [TestCase((ESV)0x00, "\"ESV\":\"00\"")]
-  [TestCase((ESV)0x01, "\"ESV\":\"01\"")]
-  [TestCase((ESV)0xFF, "\"ESV\":\"FF\"")]
-  public void Serialize_ClassGroupCode(ESV esv, string expectedJsonFragment)
-  {
-    var message = new Format1Message(default, default, esv, Array.Empty<PropertyValue>());
-
-    Assert.That(JsonSerializer.Serialize(message), Does.Contain(expectedJsonFragment));
   }
 
   [Test]

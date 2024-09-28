@@ -7,9 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Linq;
-using System.Text.Json.Serialization;
-
-using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
@@ -45,7 +42,6 @@ public readonly struct Format1Message {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２ 電文構成
   /// </seealso>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public ESV ESV { get; }
 
   /// <summary>
@@ -60,7 +56,6 @@ public readonly struct Format1Message {
   /// </summary>
   private readonly IReadOnlyCollection<PropertyValue>? propsForGet;
 
-  [JsonIgnore]
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(true, nameof(propsForGet))]
 #endif

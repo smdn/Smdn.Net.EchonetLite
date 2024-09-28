@@ -2,9 +2,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Text.Json.Serialization;
-
-using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
@@ -15,19 +12,16 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// <summary>
   /// クラスグループコード
   /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte ClassGroupCode { get; }
 
   /// <summary>
   /// クラスクラスコード
   /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte ClassCode { get; }
 
   /// <summary>
   /// インスタンスコード
   /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte InstanceCode { get; }
 
   /// <summary>
