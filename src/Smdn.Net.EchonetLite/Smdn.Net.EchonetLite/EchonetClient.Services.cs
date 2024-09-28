@@ -297,7 +297,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetI,
-        propsForSetOrGet: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyRequest)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -413,7 +413,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetC,
-        propsForSetOrGet: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyRequest)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -520,7 +520,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.Get,
-        propsForSetOrGet: properties.Select(ConvertToPropertyRequestExceptValueData)
+        properties: properties.Select(ConvertToPropertyRequestExceptValueData)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -644,8 +644,8 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetGet,
-        propsForSetOrGet: propertiesSet.Select(ConvertToPropertyRequest),
-        propsForGet: propertiesGet.Select(ConvertToPropertyRequestExceptValueData)
+        propertiesForSet: propertiesSet.Select(ConvertToPropertyRequest),
+        propertiesForGet: propertiesGet.Select(ConvertToPropertyRequestExceptValueData)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -707,7 +707,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.InfRequest,
-        propsForSetOrGet: properties.Select(ConvertToPropertyRequestExceptValueData)
+        properties: properties.Select(ConvertToPropertyRequestExceptValueData)
       ),
       cancellationToken
     );
@@ -758,7 +758,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.Inf,
-        propsForSetOrGet: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyRequest)
       ),
       cancellationToken
     );
@@ -839,7 +839,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.InfC,
-        propsForSetOrGet: properties.Select(ConvertToPropertyRequest)
+        properties: properties.Select(ConvertToPropertyRequest)
       ),
       cancellationToken
     ).ConfigureAwait(false);
@@ -1213,7 +1213,7 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetIServiceNotAvailable, // SetI_SNA(0x50)
-          propsForSetOrGet: responseProps
+          properties: responseProps
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1291,7 +1291,7 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetCServiceNotAvailable, // SetC_SNA(0x51)
-          propsForSetOrGet: responseProps
+          properties: responseProps
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1307,7 +1307,7 @@ partial class EchonetClient
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.SetResponse, // Set_Res(0x71)
-        propsForSetOrGet: responseProps
+        properties: responseProps
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1382,7 +1382,7 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.GetServiceNotAvailable, // Get_SNA(0x52)
-          propsForSetOrGet: responseProps
+          properties: responseProps
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1398,7 +1398,7 @@ partial class EchonetClient
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.GetResponse, // Get_Res(0x72)
-        propsForSetOrGet: responseProps
+        properties: responseProps
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1499,8 +1499,8 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.SetGetServiceNotAvailable, // SetGet_SNA(0x5E)
-          propsForSetOrGet: responsePropsForSet,
-          propsForGet: responsePropsForGet
+          propertiesForSet: responsePropsForSet,
+          propertiesForGet: responsePropsForGet
         ),
         cancellationToken: default
       ).ConfigureAwait(false);
@@ -1516,8 +1516,8 @@ partial class EchonetClient
         sourceObject: message.DEOJ, // 入れ替え
         destinationObject: message.SEOJ, // 入れ替え
         esv: ESV.SetGetResponse, // SetGet_Res(0x7E)
-        propsForSetOrGet: responsePropsForSet,
-        propsForGet: responsePropsForGet
+        propertiesForSet: responsePropsForSet,
+        propertiesForGet: responsePropsForGet
       ),
       cancellationToken: default
     ).ConfigureAwait(false);
@@ -1694,7 +1694,7 @@ partial class EchonetClient
           sourceObject: message.DEOJ, // 入れ替え
           destinationObject: message.SEOJ, // 入れ替え
           esv: ESV.InfCResponse, // INFC_Res(0x74)
-          propsForSetOrGet: responseProps
+          properties: responseProps
         ),
         cancellationToken: default
       ).ConfigureAwait(false);

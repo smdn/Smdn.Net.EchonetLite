@@ -31,8 +31,7 @@ partial class FrameSerializerTests {
         sourceObject: default,
         destinationObject: default,
         esv: default,
-        propsForSetOrGet: Array.Empty<PropertyRequest>(),
-        propsForGet: Array.Empty<PropertyRequest>()
+        properties: Array.Empty<PropertyRequest>()
       ),
       message: "buffer null"
     );
@@ -47,11 +46,24 @@ partial class FrameSerializerTests {
         tid: ZeroTID,
         sourceObject: default,
         destinationObject: default,
-        esv: default,
-        propsForSetOrGet: null!,
-        propsForGet: null
+        esv: ESV.SetGet,
+        propertiesForSet: null!,
+        propertiesForGet: Array.Empty<PropertyRequest>()
       ),
-      message: "propsForSetOrGet null"
+      message: "propertiesForSet null"
+    );
+
+    Assert.Throws<ArgumentNullException>(
+      () => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+        buffer: new ArrayBufferWriter<byte>(),
+        tid: ZeroTID,
+        sourceObject: default,
+        destinationObject: default,
+        esv: ESV.SetGet,
+        propertiesForSet: [ new() ],
+        propertiesForGet: null!
+      ),
+      message: "propertiesForGet null"
     );
   }
 
@@ -71,8 +83,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: default,
-      propsForSetOrGet: Array.Empty<PropertyRequest>(),
-      propsForGet: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyRequest>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -116,8 +127,7 @@ partial class FrameSerializerTests {
       sourceObject: seoj,
       destinationObject: default,
       esv: default,
-      propsForSetOrGet: Array.Empty<PropertyRequest>(),
-      propsForGet: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyRequest>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -146,8 +156,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: deoj,
       esv: default,
-      propsForSetOrGet: Array.Empty<PropertyRequest>(),
-      propsForGet: Array.Empty<PropertyRequest>()
+      properties: Array.Empty<PropertyRequest>()
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -182,21 +191,27 @@ partial class FrameSerializerTests {
   {
     var buffer = new ArrayBufferWriter<byte>(initialCapacity: 0x100);
 
-    FrameSerializer.SerializeEchonetLiteFrameFormat1(
-      buffer: buffer,
-      tid: ZeroTID,
-      sourceObject: default,
-      destinationObject: default,
-      esv: esv,
-      propsForSetOrGet: esv switch {
-        ESV.SetGet or ESV.SetGetResponse or ESV.SetGetServiceNotAvailable => [ new() ],
-        _ => Array.Empty<PropertyRequest>(),
-      },
-      propsForGet: esv switch {
-        ESV.SetGet or ESV.SetGetResponse or ESV.SetGetServiceNotAvailable => [ new() ],
-        _ => Array.Empty<PropertyRequest>(),
-      }
-    );
+    if (esv is ESV.SetGet or ESV.SetGetResponse or ESV.SetGetServiceNotAvailable) {
+      FrameSerializer.SerializeEchonetLiteFrameFormat1(
+        buffer: buffer,
+        tid: ZeroTID,
+        sourceObject: default,
+        destinationObject: default,
+        esv: esv,
+        propertiesForSet: [ new() ],
+        propertiesForGet: [ new() ]
+      );
+    }
+    else {
+      FrameSerializer.SerializeEchonetLiteFrameFormat1(
+        buffer: buffer,
+        tid: ZeroTID,
+        sourceObject: default,
+        destinationObject: default,
+        esv: esv,
+        properties: Array.Empty<PropertyRequest>()
+      );
+    }
 
     var frameBytes = buffer.WrittenMemory.ToArray();
 
@@ -237,8 +252,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      propsForSetOrGet: props,
-      propsForGet: Array.Empty<PropertyRequest>()
+      properties: props
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -277,8 +291,7 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      propsForSetOrGet: props,
-      propsForGet: Array.Empty<PropertyRequest>()
+      properties: props
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -324,8 +337,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      propsForSetOrGet: propsSet,
-      propsForGet: propsGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -377,8 +390,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      propsForSetOrGet: propsSet,
-      propsForGet: propsGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -433,8 +446,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      propsForSetOrGet: propsSet,
-      propsForGet: propsGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -489,8 +502,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      propsForSetOrGet: propsSet,
-      propsForGet: propsGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
@@ -539,8 +552,8 @@ partial class FrameSerializerTests {
       sourceObject: default,
       destinationObject: default,
       esv: esv,
-      propsForSetOrGet: propsSet,
-      propsForGet: propsGet
+      propertiesForSet: propsSet,
+      propertiesForGet: propsGet
     );
 
     var frameBytes = buffer.WrittenMemory.ToArray();
