@@ -2,10 +2,13 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Net;
+
+using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
 
@@ -26,7 +29,10 @@ public sealed class EchonetNode {
   /// <summary>
   /// 機器オブジェクトのリスト
   /// </summary>
-  public ICollection<EchonetObject> Devices { get; }
+  public IReadOnlyCollection<EchonetObject> Devices => readOnlyDevices.Values;
+
+  private readonly ConcurrentDictionary<EOJ, EchonetObject> devices;
+  private readonly ReadOnlyDictionary<EOJ, EchonetObject> readOnlyDevices;
 
   /// <summary>
   /// 機器オブジェクトのリスト<see cref="Devices"/>に変更があったときに発生するイベント。
@@ -42,11 +48,39 @@ public sealed class EchonetNode {
     Address = address ?? throw new ArgumentNullException(nameof(address));
     NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
 
-    var devices = new ObservableCollection<EchonetObject>();
+    devices = new();
+    readOnlyDevices = new(devices);
+  }
 
-    devices.CollectionChanged += (_, e) => OnDevicesChanged(e);
+  public void AddDevice(EchonetObject device)
+  {
+    if (device is null)
+      throw new ArgumentNullException(nameof(device));
 
-    Devices = devices;
+    if (!devices.TryAdd(device.EOJ, device))
+      throw new InvalidOperationException($"The object with the specified EOJ has already been added. (EOJ={device.EOJ})");
+  }
+
+  internal EchonetObject? FindDevice(EOJ eoj)
+    => devices.TryGetValue(eoj, out var device) ? device : null;
+
+  internal EchonetObject GetOrAddDevice(EOJ eoj, out bool added)
+  {
+    added = false;
+
+    if (devices.TryGetValue(eoj, out var device))
+      return device;
+
+    var newDevice = new EchonetObject(eoj);
+
+    device = devices.GetOrAdd(eoj, newDevice);
+
+    added = ReferenceEquals(device, newDevice);
+
+    if (added)
+      OnDevicesChanged(new(NotifyCollectionChangedAction.Add, newDevice));
+
+    return device;
   }
 
   private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)

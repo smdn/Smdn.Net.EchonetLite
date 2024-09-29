@@ -79,10 +79,7 @@ public readonly struct EOJ : IEquatable<EOJ> {
     };
 
   public override int GetHashCode()
-    =>
-      ClassGroupCode.GetHashCode() ^
-      ClassCode.GetHashCode() ^
-      InstanceCode.GetHashCode();
+    => (ClassGroupCode << 16) | (ClassCode << 8) | InstanceCode;
 
   /// <summary>
   /// 指定された2つのECHONET オブジェクトが同じ値を持つかどうかを判断します。

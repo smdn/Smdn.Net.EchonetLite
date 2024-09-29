@@ -875,14 +875,7 @@ partial class EchonetClient
     var instances = new List<EchonetObject>(capacity: instanceList.Count);
 
     foreach (var eoj in instanceList) {
-      var device = sourceNode.Devices.FirstOrDefault(d => d.EOJ == eoj);
-
-      if (device is null) {
-        device = new(eoj);
-        sourceNode.Devices.Add(device);
-      }
-
-      instances.Add(device);
+      instances.Add(sourceNode.GetOrAddDevice(eoj, out _));
     }
 
     OnInstanceListPropertyMapAcquiring(sourceNode, instances);
@@ -1062,7 +1055,7 @@ partial class EchonetClient
 
     var destObject = message.DEOJ.IsNodeProfile
       ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
-      : SelfNode.Devices.FirstOrDefault(d => d.EOJ == message.DEOJ);
+      : SelfNode.FindDevice(message.DEOJ);
 
     Task? task = null;
 
@@ -1513,14 +1506,7 @@ partial class EchonetClient
     var requestProps = message.GetProperties();
     var sourceObject = message.SEOJ.IsNodeProfile
       ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
-      : sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
-
-    if (sourceObject is null) {
-      // 未知のオブジェクト
-      // 新規作成(プロパティはない状態)
-      sourceObject = new(message.SEOJ);
-      sourceNode.Devices.Add(sourceObject);
-    }
+      : sourceNode.GetOrAddDevice(message.SEOJ, out _); // 未知のオブジェクト(プロパティはない状態で新規作成)
 
     foreach (var prop in requestProps) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
@@ -1591,14 +1577,7 @@ partial class EchonetClient
 
     var sourceObject = message.SEOJ.IsNodeProfile
       ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
-      : sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
-
-    if (sourceObject is null) {
-      // 未知のオブジェクト
-      // 新規作成(プロパティはない状態)
-      sourceObject = new(message.SEOJ);
-      sourceNode.Devices.Add(sourceObject);
-    }
+      : sourceNode.GetOrAddDevice(message.SEOJ, out _); // 未知のオブジェクト(プロパティはない状態で新規作成)
 
     foreach (var prop in requestProps) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
