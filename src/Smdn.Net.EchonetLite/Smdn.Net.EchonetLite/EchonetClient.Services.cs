@@ -1045,20 +1045,19 @@ partial class EchonetClient
   private void HandleFormat1Message(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
   {
     var (address, tid, message) = value;
-    var sourceNode = Nodes.SingleOrDefault(n => address is not null && address.Equals(n.Address));
 
-    // 未知のノードの場合
-    if (sourceNode is null) {
-      // ノードを生成
+    if (!nodes.TryGetValue(address, out var sourceNode)) {
+      // 未知のノードの場合、ノードを生成
       // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
-      sourceNode = new(
+      var newNode = new EchonetNode(
         address: address,
         nodeProfile: EchonetObject.CreateNodeProfile(instanceCode: 0x00)
       );
 
-      Nodes.Add(sourceNode);
+      sourceNode = nodes.GetOrAdd(address, newNode);
 
-      OnNodeJoined(sourceNode);
+      if (ReferenceEquals(sourceNode, newNode))
+        OnNodeJoined(sourceNode);
     }
 
     var destObject = message.DEOJ.IsNodeProfile

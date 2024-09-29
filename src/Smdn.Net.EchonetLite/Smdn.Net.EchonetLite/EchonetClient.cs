@@ -2,7 +2,9 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -21,9 +23,12 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   public EchonetNode SelfNode { get; }
 
   /// <summary>
-  /// 既知のECHONET Lite ノードのコレクションを表す<see cref="ICollection{EchonetNode}"/>。
+  /// 既知のECHONET Lite ノードのコレクションを表す<see cref="IReadOnlyCollection{EchonetNode}"/>。
   /// </summary>
-  public ICollection<EchonetNode> Nodes { get; }
+  public IReadOnlyCollection<EchonetNode> Nodes => readOnlyNodes.Values;
+
+  private readonly ConcurrentDictionary<IPAddress, EchonetNode> nodes;
+  private readonly ReadOnlyDictionary<IPAddress, EchonetNode> readOnlyNodes;
 
   /// <inheritdoc cref="EchonetClient(IPAddress, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
   public EchonetClient(
@@ -62,11 +67,15 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
     this.echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
     this.echonetLiteHandler.Received += EchonetDataReceived;
+
     SelfNode = new(
       address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
       nodeProfile: EchonetObject.CreateGeneralNodeProfile()
     );
-    Nodes = new List<EchonetNode>();
+
+    nodes = new();
+    readOnlyNodes = new(nodes);
+
     // 自己消費用
     Format1MessageReceived += HandleFormat1Message;
   }
