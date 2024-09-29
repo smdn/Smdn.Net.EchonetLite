@@ -9,6 +9,9 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// ECHONET オブジェクト（EOJ）
 /// </summary>
 public readonly struct EOJ : IEquatable<EOJ> {
+  private const byte ClassGroupCodeForProfileClassGroup = 0x0E;
+  private const byte ClassCodeForNodeProfile = 0xF0;
+
   /// <summary>
   /// クラスグループコード
   /// </summary>
@@ -24,7 +27,7 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// </summary>
   public byte InstanceCode { get; }
 
-  internal bool IsNodeProfile => ClassGroupCode == 0x0E && ClassCode == 0xF0;
+  internal bool IsNodeProfile => ClassGroupCode == ClassGroupCodeForProfileClassGroup && ClassCode == ClassCodeForNodeProfile;
 
   /// <summary>
   /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
@@ -39,6 +42,29 @@ public readonly struct EOJ : IEquatable<EOJ> {
     InstanceCode = instanceCode;
   }
 
+  /// <summary>
+  /// 指定した2つのECHONET オブジェクトが同一であるかどうかを判断します。
+  /// </summary>
+  /// <remarks>
+  /// このメソッドでは、<see cref="ClassGroupCode"/>, <see cref="ClassCode"/>, <see cref="InstanceCode"/>の3つの値がすべて同一の場合に、2つのインスタンスは同一であると判断します。
+  /// ただし、プロファイルクラスグループのオブジェクト(<see cref="ClassGroupCode"/>の値が<c>0x0E</c>)の場合は、<see cref="ClassGroupCode"/>と<see cref="ClassCode"/>の2つの値がすべて同一の場合に、2つのインスタンスは同一であると判断し、<see cref="InstanceCode"/>の値は考慮されません。
+  /// </remarks>
+  /// <param name="x">比較する1つめのECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="y">比較する2つめのECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <returns>2つのECHONET オブジェクトが同じである場合、もしくはどちらも同じプロファイルクラスグループのオブジェクトである場合は<see langword="true"/>、そうでない場合は<see langword="false"/>。</returns>
+  public static bool AreSame(EOJ x, EOJ y)
+    => x.ClassGroupCode == ClassGroupCodeForProfileClassGroup && y.ClassGroupCode == ClassGroupCodeForProfileClassGroup
+      ? x.ClassCode == y.ClassCode // 同じプロファイルクラスグループのオブジェクトかどうか比較
+      : x == y; // 同じECHONETオブジェクトかどうか比較
+
+  /// <summary>
+  /// このECHONET オブジェクトと指定した<see cref="EOJ"/>が同一であるかどうかを判断します。
+  /// </summary>
+  /// <remarks>
+  /// このメソッドでは、<see cref="ClassGroupCode"/>, <see cref="ClassCode"/>, <see cref="InstanceCode"/>の3つの値がすべて同一の場合に、2つのインスタンスは同一であると判断します。
+  /// </remarks>
+  /// <param name="other">このインスタンスと比較するECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <returns>同一である場合は<see langword="true"/>、そうでない場合は<see langword="false"/>。</returns>
   public bool Equals(EOJ other)
     =>
       ClassGroupCode == other.ClassGroupCode &&
@@ -58,12 +84,30 @@ public readonly struct EOJ : IEquatable<EOJ> {
       ClassCode.GetHashCode() ^
       InstanceCode.GetHashCode();
 
+  /// <summary>
+  /// 指定された2つのECHONET オブジェクトが同じ値を持つかどうかを判断します。
+  /// </summary>
+  /// <remarks>
+  /// この演算子では、<see cref="ClassGroupCode"/>, <see cref="ClassCode"/>, <see cref="InstanceCode"/>の3つの値がすべて同一の場合に、2つのインスタンスは同じ値であると判断します。
+  /// </remarks>
+  /// <param name="c1">比較する1つめのECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="c2">比較する2つめのECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <returns>2つのインスタンスが同じ値である場合は<see langword="true"/>、そうでない場合は<see langword="false"/>。</returns>
   public static bool operator ==(EOJ c1, EOJ c2)
     =>
       c1.ClassGroupCode == c2.ClassGroupCode &&
       c1.ClassCode == c2.ClassCode &&
       c1.InstanceCode == c2.InstanceCode;
 
+  /// <summary>
+  /// 指定された2つのECHONET オブジェクトが異なる値を持つかどうかを判断します。
+  /// </summary>
+  /// <remarks>
+  /// この演算子では、<see cref="ClassGroupCode"/>, <see cref="ClassCode"/>, <see cref="InstanceCode"/>のいずれか1つの値でも異なる場合に、2つのインスタンスは異なる値であると判断します。
+  /// </remarks>
+  /// <param name="c1">比較する1つめのECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="c2">比較する2つめのECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <returns>2つのインスタンスが異なる値である場合は<see langword="true"/>、そうでない場合は<see langword="false"/>。</returns>
   public static bool operator !=(EOJ c1, EOJ c2)
     => !(c1 == c2);
 

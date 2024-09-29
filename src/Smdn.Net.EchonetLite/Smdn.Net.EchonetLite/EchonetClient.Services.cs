@@ -261,7 +261,7 @@ partial class EchonetClient
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Message.SEOJ != destinationObject.EOJ)
+        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
         if (value.Message.ESV != ESV.SetIServiceNotAvailable)
           return;
@@ -377,7 +377,7 @@ partial class EchonetClient
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Message.SEOJ != destinationObject.EOJ)
+        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
         if (value.Message.ESV != ESV.SetCServiceNotAvailable && value.Message.ESV != ESV.SetResponse)
           return;
@@ -485,7 +485,7 @@ partial class EchonetClient
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Message.SEOJ != destinationObject.EOJ)
+        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
         if (value.Message.ESV != ESV.GetResponse && value.Message.ESV != ESV.GetServiceNotAvailable)
           return;
@@ -598,7 +598,7 @@ partial class EchonetClient
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Message.SEOJ != destinationObject.EOJ)
+        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
         if (value.Message.ESV != ESV.SetGetResponse && value.Message.ESV != ESV.SetGetServiceNotAvailable)
           return;
@@ -817,7 +817,7 @@ partial class EchonetClient
 
         if (!destinationNode.Address.Equals(value.Address))
           return;
-        if (value.Message.SEOJ != destinationObject.EOJ)
+        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
         if (value.Message.ESV != ESV.InfCResponse)
           return;
