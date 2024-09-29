@@ -2,9 +2,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Text.Json.Serialization;
-
-using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
@@ -15,19 +12,16 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// <summary>
   /// クラスグループコード
   /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte ClassGroupCode { get; }
 
   /// <summary>
   /// クラスクラスコード
   /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte ClassCode { get; }
 
   /// <summary>
   /// インスタンスコード
   /// </summary>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte InstanceCode { get; }
 
   /// <summary>
@@ -70,4 +64,10 @@ public readonly struct EOJ : IEquatable<EOJ> {
 
   public static bool operator !=(EOJ c1, EOJ c2)
     => !(c1 == c2);
+
+  public override string ToString()
+    // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．４ ECHONET オブジェクト（EOJ）
+    // > ECHONET オブジェクトは、［X1．X2］［X3］の形式で表現することとし、それぞれ以下のように規定する。
+    // > （但し、“．”は、単なる記述上の標記であり、具体的なコードを割り当てるものではない。）
+    => $"{ClassGroupCode:X2}.{ClassCode:X2} {InstanceCode:X2}";
 }

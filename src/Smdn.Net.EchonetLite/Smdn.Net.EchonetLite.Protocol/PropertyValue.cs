@@ -2,9 +2,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Text.Json.Serialization;
-
-using Smdn.Net.EchonetLite.Serialization.Json;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
@@ -28,7 +25,6 @@ public readonly struct PropertyValue {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．７ ECHONET プロパティ（EPC）
   /// </seealso>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte EPC { get; }
 
   /// <summary>
@@ -37,7 +33,6 @@ public readonly struct PropertyValue {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．８ プロパティデータカウンタ（PDC）
   /// </seealso>
-  [JsonConverter(typeof(SingleByteJsonConverterFactory))]
   public byte PDC => (byte)EDT.Length;
 
   /// <summary>
@@ -46,7 +41,6 @@ public readonly struct PropertyValue {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．９ ECHONET プロパティ値データ（EDT）
   /// </seealso>
-  [JsonConverter(typeof(ByteSequenceJsonConverter))]
   public ReadOnlyMemory<byte> EDT { get; }
 
   /// <summary>
