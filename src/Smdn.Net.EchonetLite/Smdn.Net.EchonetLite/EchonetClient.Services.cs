@@ -2,13 +2,11 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-#pragma warning disable CA2254 // CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -131,6 +129,8 @@ partial class EchonetClient
     // インスタンスリスト受信後・プロパティマップの取得前に発生するイベントをハンドリングする
     void HandleInstanceListPropertyMapAcquiring(object? sender, (EchonetNode Node, IReadOnlyList<EchonetObject> Instances) e)
     {
+      logger?.LogDebug("HandleInstanceListPropertyMapAcquiring");
+
       // この時点で条件がtrueとなったら、結果を確定する
       if (onInstanceListPropertyMapAcquiring(this, e.Node, state))
         _ = tcs.TrySetResult(RetVoid);
@@ -139,6 +139,8 @@ partial class EchonetClient
     // インスタンスリスト受信後・プロパティマップの取得完了後に発生するイベントをハンドリングする
     void HandleInstanceListUpdated(object? sender, (EchonetNode Node, IReadOnlyList<EchonetObject> Instances) e)
     {
+      logger?.LogDebug("HandleInstanceListUpdated");
+
       // この時点で条件がtrueとなったら、結果を確定する
       if (onInstanceListUpdated(this, e.Node, state))
         _ = tcs.TrySetResult(RetVoid);
@@ -147,6 +149,8 @@ partial class EchonetClient
     // ノードの各インスタンスに対するプロパティマップの取得完了後に発生するイベントをハンドリングする
     void HandlePropertyMapAcquired(object? sender, (EchonetNode Node, EchonetObject Device) e)
     {
+      logger?.LogDebug("HandlePropertyMapAcquired");
+
       // この時点で条件がtrueとなったら、結果を確定する
       if (onPropertyMapAcquired(this, e.Node, e.Device, state))
         _ = tcs.TrySetResult(RetVoid);
@@ -266,6 +270,8 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.SetIServiceNotAvailable)
           return;
 
+        logger?.LogDebug("Handling SetI_SNA (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+
         var props = value.Message.GetProperties();
 
         foreach (var prop in props) {
@@ -379,7 +385,12 @@ partial class EchonetClient
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
-        if (value.Message.ESV != ESV.SetCServiceNotAvailable && value.Message.ESV != ESV.SetResponse)
+
+        if (value.Message.ESV == ESV.SetResponse)
+          logger?.LogDebug("Handling Set_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+        else if (value.Message.ESV == ESV.SetCServiceNotAvailable)
+          logger?.LogDebug("Handling SetC_SNA (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+        else
           return;
 
         var props = value.Message.GetProperties();
@@ -487,7 +498,12 @@ partial class EchonetClient
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
-        if (value.Message.ESV != ESV.GetResponse && value.Message.ESV != ESV.GetServiceNotAvailable)
+
+        if (value.Message.ESV == ESV.GetResponse)
+          logger?.LogDebug("Handling Get_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+        else if (value.Message.ESV == ESV.GetServiceNotAvailable)
+          logger?.LogDebug("Handling Get_SNA (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+        else
           return;
 
         var props = value.Message.GetProperties();
@@ -600,7 +616,12 @@ partial class EchonetClient
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
-        if (value.Message.ESV != ESV.SetGetResponse && value.Message.ESV != ESV.SetGetServiceNotAvailable)
+
+        if (value.Message.ESV == ESV.SetGetResponse)
+          logger?.LogDebug("Handling SetGet_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+        else if (value.Message.ESV == ESV.SetGetServiceNotAvailable)
+          logger?.LogDebug("Handling SetGet_SNA (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+        else
           return;
 
         var (propsForSet, propsForGet) = value.Message.GetPropertiesForSetAndGet();
@@ -822,6 +843,8 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.InfCResponse)
           return;
 
+        logger?.LogDebug("Handling INFC_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+
         responseTCS.SetResult(value.Message.GetProperties());
       }
       finally {
@@ -863,36 +886,66 @@ partial class EchonetClient
   /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
   /// <seealso cref="PerformInstanceListNotificationAsync"/>
   /// <seealso cref="AcquirePropertyMapsAsync"/>
-  private async ValueTask HandleInstanceListNotificationReceivedAsync(EchonetNode sourceNode, ReadOnlyMemory<byte> edt)
+  private async ValueTask<bool> HandleInstanceListNotificationReceivedAsync(EchonetNode sourceNode, ReadOnlyMemory<byte> edt)
   {
-    logger?.LogTrace("インスタンスリスト通知を受信しました");
+    using var scope = logger?.BeginScope("Instance list notification");
 
-    if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt.Span, out var instanceList))
-      return; // XXX
+    if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt.Span, out var instanceList)) {
+      logger?.LogWarning(
+        "Invalid instance list received (EDT: {EDT})",
+#if SYSTEM_CONVERT_TOHEXSTRING
+        Convert.ToHexString(edt.Span)
+#else
+        BitConverter.ToString(edt.ToArray())
+#endif
+      );
+
+      return false;
+    }
+
+    logger?.LogDebug("Updating (Node: {NodeAddress})", sourceNode.Address);
 
     OnInstanceListUpdating(sourceNode);
 
     var instances = new List<EchonetObject>(capacity: instanceList.Count);
 
     foreach (var eoj in instanceList) {
-      instances.Add(sourceNode.GetOrAddDevice(eoj, out _));
+      var instance = sourceNode.GetOrAddDevice(eoj, out var added);
+
+      instances.Add(instance);
+
+      if (added) {
+        logger?.LogInformation(
+          "New object added (Node: {NodeAddress}, EOJ: {EOJ})",
+          sourceNode.Address,
+          instance.EOJ
+        );
+      }
     }
 
     OnInstanceListPropertyMapAcquiring(sourceNode, instances);
 
     foreach (var device in instances) {
       if (!device.HasPropertyMapAcquired) {
-        logger?.LogTrace($"{device.GetDebugString()} プロパティマップを読み取ります");
-        await AcquirePropertyMapsAsync(sourceNode, device).ConfigureAwait(false);
+        logger?.LogInformation("Acquiring property maps (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
+
+        if (await AcquirePropertyMapsAsync(sourceNode, device).ConfigureAwait(false))
+          logger?.LogInformation("Updated property maps (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
       }
     }
 
     if (!sourceNode.NodeProfile.HasPropertyMapAcquired) {
-      logger?.LogTrace($"{sourceNode.NodeProfile.GetDebugString()} プロパティマップを読み取ります");
-      await AcquirePropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false);
+      logger?.LogInformation("Acquiring property maps for node profile (Node: {NodeAddress})", sourceNode.Address);
+
+      if (await AcquirePropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false))
+        logger?.LogInformation("Updated property maps for node profile (Node: {NodeAddress})", sourceNode.Address);
     }
 
     OnInstanceListUpdated(sourceNode, instances);
+
+    logger?.LogDebug("Updated (Node: {NodeAddress})", sourceNode.Address);
+
+    return true;
   }
 
   /// <summary>
@@ -903,17 +956,18 @@ partial class EchonetClient
   /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
   /// <exception cref="InvalidOperationException">受信したEDTは無効なプロパティマップです。</exception>
   /// <seealso cref="HandleInstanceListNotificationReceivedAsync"/>
-  private async ValueTask AcquirePropertyMapsAsync(EchonetNode sourceNode, EchonetObject device)
+  private async ValueTask<bool> AcquirePropertyMapsAsync(EchonetNode sourceNode, EchonetObject device)
   {
+    using var scope = logger?.BeginScope("Acquiring property maps");
+
     OnPropertyMapAcquiring(sourceNode, device); // TODO: support setting cancel and timeout
 
     using var ctsTimeout = CreateTimeoutCancellationTokenSource(20_000);
 
-    bool result;
     IReadOnlyCollection<PropertyValue> props;
 
     try {
-      (result, props) = await PerformPropertyValueReadRequestAsync(
+      (var result, props) = await PerformPropertyValueReadRequestAsync(
         sourceObject: SelfNode.NodeProfile,
         destinationNode: sourceNode,
         destinationObject: device,
@@ -924,19 +978,17 @@ partial class EchonetClient
         ),
         cancellationToken: ctsTimeout.Token
       ).ConfigureAwait(false);
+
+      // 不可応答は無視
+      if (!result) {
+        logger?.LogWarning("Service not available (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
+        return false;
+      }
     }
     catch (OperationCanceledException ex) when (ctsTimeout.Token.Equals(ex.CancellationToken)) {
-      logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りがタイムアウトしました");
-      return;
+      logger?.LogWarning("Operation timed out (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
+      return false;
     }
-
-    // 不可応答は無視
-    if (!result) {
-      logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りで不可応答が返答されました");
-      return;
-    }
-
-    logger?.LogTrace($"{device.GetDebugString()} プロパティマップの読み取りが成功しました");
 
     var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
 
@@ -1006,23 +1058,25 @@ partial class EchonetClient
       )
     );
 
-    if (logger is not null) {
-      var sb = new StringBuilder();
+    logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
 
-      sb.AppendLine("------");
-
-      foreach (var temp in device.Properties) {
-        sb.Append('\t').Append(temp.GetDebugString()).AppendLine();
-      }
-
-      sb.AppendLine("------");
-
-      logger.LogTrace(sb.ToString());
+    foreach (var p in device.Properties.OrderBy(static p => p.Spec.Code)) {
+      logger?.LogDebug(
+        "Node: {NodeAddress} EOJ: {EOJ}, EPC: {EPC:X2}, Access Rule: {CanSet}/{CanGet}/{CanAnnounceStatusChange}",
+        sourceNode.Address,
+        device.EOJ,
+        p.Spec.Code,
+        p.CanSet ? "SET" : "---",
+        p.CanGet ? "GET" : "---",
+        p.CanAnnounceStatusChange ? "ANNO" : "----"
+      );
     }
 
     device.HasPropertyMapAcquired = true;
 
     OnPropertyMapAcquired(sourceNode, device);
+
+    return true;
   }
 
   /// <summary>
@@ -1049,8 +1103,15 @@ partial class EchonetClient
 
       sourceNode = nodes.GetOrAdd(address, newNode);
 
-      if (ReferenceEquals(sourceNode, newNode))
+      if (ReferenceEquals(sourceNode, newNode)) {
+        logger?.LogInformation(
+          "New node added (Address: {Address}, ESV: {ESV})",
+          sourceNode.Address,
+          message.ESV
+        );
+
         OnNodeJoined(sourceNode);
+      }
     }
 
     var destObject = message.DEOJ.IsNodeProfile
@@ -1134,7 +1195,15 @@ partial class EchonetClient
 
     task?.ContinueWith((t) => {
       if (t.Exception is not null) {
-        logger?.LogTrace(t.Exception, "Exception");
+        logger?.LogError(
+          t.Exception,
+          "An error occured while handling received message (Address: {Address}, TID: {TID:X4}, ESV: {ESV}, SEOJ: {SEOJ}, DEOJ: {DEOJ})",
+          address,
+          tid,
+          message.ESV,
+          message.SEOJ,
+          message.DEOJ
+        );
       }
     });
   }
@@ -1170,6 +1239,8 @@ partial class EchonetClient
       // 対象となるオブジェクト自体が存在しない場合には、「不可応答」も返さないものとする。
       return false;
     }
+
+    logger?.LogDebug("Handling SetI (From: {Address}, TID: {TID:X4})", address, tid);
 
     var hasError = false;
     var requestProps = message.GetProperties();
@@ -1242,6 +1313,8 @@ partial class EchonetClient
     EchonetObject? destObject
   )
   {
+    logger?.LogDebug("Handling SetC (From: {Address}, TID: {TID:X4})", address, tid);
+
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -1318,6 +1391,8 @@ partial class EchonetClient
     EchonetObject? destObject
   )
   {
+    logger?.LogDebug("Handling Get (From: {Address}, TID: {TID:X4})", address, tid);
+
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -1397,6 +1472,8 @@ partial class EchonetClient
     EchonetObject? destObject
   )
   {
+    logger?.LogDebug("Handling SetGet (From: {Address}, TID: {TID:X4})", address, tid);
+
     var hasError = false;
     var (requestPropsForSet, requestPropsForGet) = message.GetPropertiesForSetAndGet();
     var responsePropsForSet = new List<PropertyValue>(capacity: requestPropsForSet.Count);
@@ -1502,11 +1579,22 @@ partial class EchonetClient
   )
 #pragma warning restore IDE0060
   {
+    logger?.LogDebug("Handling INF_REQ (From: {Address}, TID: {TID:X4})", address, tid);
+
     var hasError = false;
+    var objectAdded = false;
     var requestProps = message.GetProperties();
     var sourceObject = message.SEOJ.IsNodeProfile
       ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
-      : sourceNode.GetOrAddDevice(message.SEOJ, out _); // 未知のオブジェクト(プロパティはない状態で新規作成)
+      : sourceNode.GetOrAddDevice(message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
+
+    if (objectAdded) {
+      logger?.LogInformation(
+        "New object added (Node: {NodeAddress}, EOJ: {EOJ})",
+        sourceNode.Address,
+        sourceObject.EOJ
+      );
+    }
 
     foreach (var prop in requestProps) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
@@ -1516,6 +1604,13 @@ partial class EchonetClient
         // 新規作成
         property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, prop.EPC);
         sourceObject.AddProperty(property);
+
+        logger?.LogInformation(
+          "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
+          sourceNode.Address,
+          sourceObject.EOJ,
+          property.Spec.Code
+        );
       }
 
       if (
@@ -1530,7 +1625,7 @@ partial class EchonetClient
 
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
-          await HandleInstanceListNotificationReceivedAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+          _ = await HandleInstanceListNotificationReceivedAsync(sourceNode, prop.EDT).ConfigureAwait(false);
       }
     }
 
@@ -1565,6 +1660,8 @@ partial class EchonetClient
     EchonetObject? destObject
   )
   {
+    logger?.LogDebug("Handling INFC (From: {Address}, TID: {TID:X4})", address, tid);
+
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -1575,9 +1672,18 @@ partial class EchonetClient
       hasError = true;
     }
 
+    var objectAdded = false;
     var sourceObject = message.SEOJ.IsNodeProfile
       ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
-      : sourceNode.GetOrAddDevice(message.SEOJ, out _); // 未知のオブジェクト(プロパティはない状態で新規作成)
+      : sourceNode.GetOrAddDevice(message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
+
+    if (objectAdded) {
+      logger?.LogInformation(
+        "New object added (Node: {NodeAddress}, EOJ: {EOJ})",
+        sourceNode.Address,
+        sourceObject.EOJ
+      );
+    }
 
     foreach (var prop in requestProps) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
@@ -1587,6 +1693,13 @@ partial class EchonetClient
         // 新規作成
         property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, prop.EPC);
         sourceObject.AddProperty(property);
+
+        logger?.LogInformation(
+          "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
+          sourceNode.Address,
+          sourceObject.EOJ,
+          property.Spec.Code
+        );
       }
 
       if (
@@ -1601,7 +1714,7 @@ partial class EchonetClient
 
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
-          await HandleInstanceListNotificationReceivedAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+          _ = await HandleInstanceListNotificationReceivedAsync(sourceNode, prop.EDT).ConfigureAwait(false);
       }
 
       // EPC には通知時と同じプロパティコードを設定するが、

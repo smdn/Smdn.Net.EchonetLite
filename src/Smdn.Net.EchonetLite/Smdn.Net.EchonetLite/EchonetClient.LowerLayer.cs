@@ -66,7 +66,7 @@ partial class EchonetClient
       // ECHONETLiteフレームではないため無視
       return;
 
-    using var scope = logger?.BeginScope("Receive");
+    using var scope = logger?.BeginScope($"Receive ({value.Address}, TID={tid:X4})");
 
     logger?.LogTrace(
       "ECHONET Lite frame (From: {Address}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
@@ -85,15 +85,17 @@ partial class EchonetClient
       case EHD2.Format1:
         if (!FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
           logger?.LogWarning(
-            "Invalid Format 1 message (From: {Address})",
-            value.Address
+            "Invalid Format 1 message (From: {Address}, TID: {TID:X4})",
+            value.Address,
+            tid
           );
           return;
         }
 
         logger?.LogDebug(
-          "Format 1 message (From: {Address}, Message: {Message})",
+          "Format 1 message (From: {Address}, TID: {TID:X4}, Message: {Message})",
           value.Address,
+          tid,
           format1Message
         );
 
@@ -104,8 +106,9 @@ partial class EchonetClient
       case EHD2.Format2:
         // TODO: process format 2 messages
         logger?.LogDebug(
-          "Format 2 message (From: {Address}, Message: {Message})",
+          "Format 2 message (From: {Address}, TID: {TID:X4}, Message: {Message})",
           value.Address,
+          tid,
 #if SYSTEM_CONVERT_TOHEXSTRING
           Convert.ToHexString(edata)
 #else
@@ -117,8 +120,9 @@ partial class EchonetClient
       default:
         // undefined message format, do nothing
         logger?.LogDebug(
-          "Undefined format message (From: {Address}, Message: {Message})",
+          "Undefined format message (From: {Address}, TID: {TID:X4}, Message: {Message})",
           value.Address,
+          tid,
 #if SYSTEM_CONVERT_TOHEXSTRING
           Convert.ToHexString(edata)
 #else
@@ -147,7 +151,7 @@ partial class EchonetClient
     await requestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
     try {
-      using var scope = logger?.BeginScope("Send");
+      using var scope = logger?.BeginScope($"Send ({address?.ToString() ?? "(multicast)"})");
 
       writeFrame(requestFrameBuffer);
 
@@ -189,14 +193,16 @@ partial class EchonetClient
       if (ehd2 == EHD2.Format1) {
         if (logger.IsEnabled(LogLevel.Debug) && FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
           logger.LogDebug(
-            "Format 1 message (To: {Address}, Message: {Message})",
+            "Format 1 message (To: {Address}, TID: {TID:X4}, Message: {Message})",
             address,
+            tid,
             format1Message
           );
         }
         else {
           logger.LogWarning(
-            "Invalid Format 1 message (To: {Address})",
+            "Invalid Format 1 message (To: {Address}, TID: {TID:X4})",
+            tid,
             address
           );
         }
