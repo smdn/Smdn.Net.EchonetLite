@@ -24,6 +24,8 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// </summary>
   public byte InstanceCode { get; }
 
+  internal bool IsNodeProfile => ClassGroupCode == 0x0E && ClassCode == 0xF0;
+
   /// <summary>
   /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
   /// </summary>

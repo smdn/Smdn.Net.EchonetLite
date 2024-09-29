@@ -1061,7 +1061,7 @@ partial class EchonetClient
       OnNodeJoined(sourceNode);
     }
 
-    var destObject = SelfNode.NodeProfile.EOJ == message.DEOJ
+    var destObject = message.DEOJ.IsNodeProfile
       ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
       : SelfNode.Devices.FirstOrDefault(d => d.EOJ == message.DEOJ);
 
@@ -1512,19 +1512,15 @@ partial class EchonetClient
   {
     var hasError = false;
     var requestProps = message.GetProperties();
-    var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
+    var sourceObject = message.SEOJ.IsNodeProfile
+      ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
+      : sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
 
     if (sourceObject is null) {
-      // ノードプロファイルからの通知の場合
-      if (sourceNode.NodeProfile.EOJ == message.SEOJ) {
-        sourceObject = sourceNode.NodeProfile;
-      }
-      else {
-        // 未知のオブジェクト
-        // 新規作成(プロパティはない状態)
-        sourceObject = new(message.SEOJ);
-        sourceNode.Devices.Add(sourceObject);
-      }
+      // 未知のオブジェクト
+      // 新規作成(プロパティはない状態)
+      sourceObject = new(message.SEOJ);
+      sourceNode.Devices.Add(sourceObject);
     }
 
     foreach (var prop in requestProps) {
@@ -1594,19 +1590,15 @@ partial class EchonetClient
       hasError = true;
     }
 
-    var sourceObject = sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
+    var sourceObject = message.SEOJ.IsNodeProfile
+      ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
+      : sourceNode.Devices.FirstOrDefault(d => d.EOJ == message.SEOJ);
 
     if (sourceObject is null) {
-      // ノードプロファイルからの通知の場合
-      if (sourceNode.NodeProfile.EOJ == message.SEOJ) {
-        sourceObject = sourceNode.NodeProfile;
-      }
-      else {
-        // 未知のオブジェクト
-        // 新規作成(プロパティはない状態)
-        sourceObject = new(message.SEOJ);
-        sourceNode.Devices.Add(sourceObject);
-      }
+      // 未知のオブジェクト
+      // 新規作成(プロパティはない状態)
+      sourceObject = new(message.SEOJ);
+      sourceNode.Devices.Add(sourceObject);
     }
 
     foreach (var prop in requestProps) {
