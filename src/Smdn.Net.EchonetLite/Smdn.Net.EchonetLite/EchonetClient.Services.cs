@@ -45,12 +45,6 @@ partial class EchonetClient
   private static PropertyValue ConvertToPropertyValueExceptValueData(EchonetProperty p)
     => new(epc: p.Spec.Code);
 
-  private class PropertyCapability {
-    public bool Anno { get; set; }
-    public bool Set { get; set; }
-    public bool Get { get; set; }
-  }
-
   /// <summary>
   /// インスタンスリスト通知を行います。
   /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)を設定し、ECHONET Lite サービス「INF:プロパティ値通知」(ESV <c>0x73</c>)を送信します。
@@ -958,6 +952,10 @@ partial class EchonetClient
   /// <seealso cref="HandleInstanceListNotificationReceivedAsync"/>
   private async ValueTask<bool> AcquirePropertyMapsAsync(EchonetNode sourceNode, EchonetObject device)
   {
+    const byte EPCPropMapAnno = 0x9D; // 状変アナウンスプロパティマップ
+    const byte EPCPropMapSet = 0x9E; // Set プロパティマップ
+    const byte EPCPropMapGet = 0x9F; // Get プロパティマップ
+
     using var scope = logger?.BeginScope("Acquiring property maps");
 
     OnPropertyMapAcquiring(sourceNode, device); // TODO: support setting cancel and timeout
@@ -971,11 +969,7 @@ partial class EchonetClient
         sourceObject: SelfNode.NodeProfile,
         destinationNode: sourceNode,
         destinationObject: device,
-        properties: device.Properties.Where(static p =>
-          p.Spec.Code == 0x9D || // 状変アナウンスプロパティマップ
-          p.Spec.Code == 0x9E || // Set プロパティマップ
-          p.Spec.Code == 0x9F // Get プロパティマップ
-        ),
+        properties: device.Properties.Where(static p => p.Spec.Code is EPCPropMapAnno or EPCPropMapSet or EPCPropMapGet),
         cancellationToken: ctsTimeout.Token
       ).ConfigureAwait(false);
 
@@ -990,71 +984,41 @@ partial class EchonetClient
       return false;
     }
 
-    var propertyCapabilityMap = new Dictionary<byte, PropertyCapability>(capacity: 16);
+    var mapCanAnno = new HashSet<byte>(capacity: 16);
+    var mapCanSet = new HashSet<byte>(capacity: 16);
+    var mapCanGet = new HashSet<byte>(capacity: 16);
+    var codes = new HashSet<byte>(capacity: 16);
 
     foreach (var pr in props) {
+      HashSet<byte> map;
+
       switch (pr.EPC) {
-        // 状変アナウンスプロパティマップ
-        case 0x9D: {
-          if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
-            throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+        case EPCPropMapAnno: map = mapCanAnno; break;
+        case EPCPropMapSet: map = mapCanSet; break;
+        case EPCPropMapGet: map = mapCanGet; break;
+        default: continue;
+      }
 
-          foreach (var propertyCode in propertyMap) {
-            if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
-              cap.Anno = true;
-            else
-              propertyCapabilityMap[propertyCode] = new() { Anno = true };
-          }
+      if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
+        throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
 
-          break;
-        }
+      foreach (var code in propertyMap) {
+        _ = map.Add(code);
 
-        // Set プロパティマップ
-        case 0x9E: {
-          if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
-            throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
-
-          foreach (var propertyCode in propertyMap) {
-            if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
-              cap.Set = true;
-            else
-              propertyCapabilityMap[propertyCode] = new() { Set = true };
-          }
-
-          break;
-        }
-
-        // Get プロパティマップ
-        case 0x9F: {
-          if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
-            throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
-
-          foreach (var propertyCode in propertyMap) {
-            if (propertyCapabilityMap.TryGetValue(propertyCode, out var cap))
-              cap.Get = true;
-            else
-              propertyCapabilityMap[propertyCode] = new() { Get = true };
-          }
-
-          break;
-        }
+        _ = codes.Add(code);
       }
     }
 
     device.ResetProperties(
-      propertyCapabilityMap.Select(
-        map => {
-          var (code, caps) = map;
-
-          return new EchonetProperty(
-            device.Spec.ClassGroup.Code,
-            device.Spec.Class.Code,
-            code,
-            caps.Anno,
-            caps.Set,
-            caps.Get
-          );
-        }
+      codes.Select(
+        code => new EchonetProperty(
+          device.Spec.ClassGroup.Code,
+          device.Spec.Class.Code,
+          code,
+          mapCanAnno.Contains(code),
+          mapCanSet.Contains(code),
+          mapCanGet.Contains(code)
+        )
       )
     );
 
