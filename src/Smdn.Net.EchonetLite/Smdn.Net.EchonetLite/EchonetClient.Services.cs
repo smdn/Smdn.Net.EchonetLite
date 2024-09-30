@@ -703,7 +703,7 @@ partial class EchonetClient
   )
     => PerformPropertyValueNotificationRequestAsync(
       sourceObject: sourceObject ?? throw new ArgumentNullException(nameof(sourceObject)),
-      destinationNode: destinationNode ?? throw new ArgumentNullException(nameof(destinationNode)),
+      destinationNode: destinationNode,
       destinationObject: destinationObject ?? throw new ArgumentNullException(nameof(destinationObject)),
       properties: (properties ?? throw new ArgumentNullException(nameof(properties))).Select(ConvertToPropertyValueExceptValueData),
       cancellationToken: cancellationToken
@@ -740,7 +740,7 @@ partial class EchonetClient
   )
     => PerformPropertyValueNotificationRequestAsync(
       sourceObject: sourceObject ?? throw new ArgumentNullException(nameof(sourceObject)),
-      destinationNode: destinationNode ?? throw new ArgumentNullException(nameof(destinationNode)),
+      destinationNode: destinationNode,
       destinationObject: destinationObject ?? throw new ArgumentNullException(nameof(destinationObject)),
       properties: (propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))).Select(ConvertToPropertyValue),
       cancellationToken: cancellationToken
