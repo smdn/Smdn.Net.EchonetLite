@@ -42,6 +42,9 @@ partial class EchonetClient
   private static PropertyValue ConvertToPropertyValue(EchonetProperty p)
     => new(epc: p.Spec.Code, edt: p.ValueMemory);
 
+  private static PropertyValue ConvertToPropertyValue(byte epc)
+    => new(epc: epc);
+
   private static PropertyValue ConvertToPropertyValueExceptValueData(EchonetProperty p)
     => new(epc: p.Spec.Code);
 
@@ -184,30 +187,22 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
   /// </seealso>
-  public async ValueTask PerformInstanceListNotificationRequestAsync(
+  public ValueTask PerformInstanceListNotificationRequestAsync(
     CancellationToken cancellationToken = default
   )
-  {
-    var propsInstanceListNotification = Enumerable.Repeat(
-      new EchonetProperty(
-        Profiles.NodeProfile.ClassGroup.Code,
-        Profiles.NodeProfile.Class.Code,
-        0xD5 // インスタンスリスト通知
-      ),
-      1
-    );
-
     // インスタンスリスト通知要求
     // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
     // > 自発的「通知」の場合は、DEOJに特に明示的に指定する EOJ がない場合は、ノードプロファイルクラスを格納することとする。
-    await PerformPropertyValueNotificationRequestAsync(
+    => PerformPropertyValueNotificationRequestAsync(
       SelfNode.NodeProfile, // ノードプロファイルから
       null, // 一斉通知
       SelfNode.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
-      propsInstanceListNotification,
+      Enumerable.Repeat<byte>(
+        0xD5, // インスタンスリスト通知
+        1
+      ),
       cancellationToken
-    ).ConfigureAwait(false);
-  }
+    );
 
   /// <summary>
   /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を行います。　このサービスは一斉同報が可能です。
@@ -683,7 +678,7 @@ partial class EchonetClient
   /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
   /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchonetNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
-  /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{EchonetProperty}"/>。</param>
+  /// <param name="properties">処理対象のECHONET Lite プロパティの一覧を表す<see cref="IEnumerable{EchonetProperty}"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="ValueTask"/>。
@@ -706,6 +701,80 @@ partial class EchonetClient
     IEnumerable<EchonetProperty> properties,
     CancellationToken cancellationToken = default
   )
+    => PerformPropertyValueNotificationRequestAsync(
+      sourceObject: sourceObject ?? throw new ArgumentNullException(nameof(sourceObject)),
+      destinationNode: destinationNode ?? throw new ArgumentNullException(nameof(destinationNode)),
+      destinationObject: destinationObject ?? throw new ArgumentNullException(nameof(destinationObject)),
+      properties: (properties ?? throw new ArgumentNullException(nameof(properties))).Select(ConvertToPropertyValueExceptValueData),
+      cancellationToken: cancellationToken
+    );
+
+  /// <summary>
+  /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を行います。　このサービスは一斉同報が可能です。
+  /// </summary>
+  /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchonetNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+  /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="propertyCodes">処理対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>
+  /// 非同期の操作を表す<see cref="ValueTask"/>。
+  /// </returns>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+  /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+  /// または、<paramref name="propertyCodes"/>が<see langword="null"/>です。
+  /// </exception>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
+  /// </seealso>
+  public ValueTask PerformPropertyValueNotificationRequestAsync(
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<byte> propertyCodes,
+    CancellationToken cancellationToken = default
+  )
+    => PerformPropertyValueNotificationRequestAsync(
+      sourceObject: sourceObject ?? throw new ArgumentNullException(nameof(sourceObject)),
+      destinationNode: destinationNode ?? throw new ArgumentNullException(nameof(destinationNode)),
+      destinationObject: destinationObject ?? throw new ArgumentNullException(nameof(destinationObject)),
+      properties: (propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))).Select(ConvertToPropertyValue),
+      cancellationToken: cancellationToken
+    );
+
+  /// <summary>
+  /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を行います。　このサービスは一斉同報が可能です。
+  /// </summary>
+  /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchonetNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+  /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="properties">処理対象のECHONET Lite プロパティの一覧を表す<see cref="IEnumerable{PropertyValue}"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>
+  /// 非同期の操作を表す<see cref="ValueTask"/>。
+  /// </returns>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+  /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+  /// または、<paramref name="properties"/>が<see langword="null"/>です。
+  /// </exception>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
+  /// </seealso>
+  private ValueTask PerformPropertyValueNotificationRequestAsync(
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<PropertyValue> properties,
+    CancellationToken cancellationToken = default
+  )
   {
     if (sourceObject is null)
       throw new ArgumentNullException(nameof(sourceObject));
@@ -722,7 +791,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.InfRequest,
-        properties: properties.Select(ConvertToPropertyValueExceptValueData)
+        properties: properties
       ),
       cancellationToken
     );
@@ -1527,7 +1596,7 @@ partial class EchonetClient
   /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
-  /// <seealso cref="PerformPropertyValueNotificationRequestAsync"/>
+  /// <seealso cref="PerformPropertyValueNotificationRequestAsync(EchonetObject, EchonetNode?, EchonetObject, IEnumerable{EchonetProperty}, CancellationToken)"/>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
