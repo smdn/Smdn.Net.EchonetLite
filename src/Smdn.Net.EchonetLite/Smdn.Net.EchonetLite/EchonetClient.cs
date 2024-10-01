@@ -18,17 +18,21 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   private readonly ILogger? logger;
 
   /// <summary>
-  /// 現在の<see cref="EchonetClient"/>インスタンスが扱う自ノードを表す<see cref="SelfNode"/>。
+  /// 現在の<see cref="EchonetClient"/>インスタンスが扱うECHONET Lite ノード(自ノード)を表す<see cref="SelfNode"/>を取得します。
   /// </summary>
   public EchonetNode SelfNode { get; }
 
   /// <summary>
-  /// 既知のECHONET Lite ノードのコレクションを表す<see cref="IReadOnlyCollection{EchonetNode}"/>。
+  /// 既知のECHONET Lite ノード(他ノード)のコレクションを表す<see cref="IReadOnlyCollection{EchonetNode}"/>を取得します。
   /// </summary>
-  public IReadOnlyCollection<EchonetNode> Nodes => readOnlyNodes.Values;
+  /// <remarks>
+  /// 新しいECHONET Lite ノードが追加された場合は、イベント<see cref="NodeJoined"/>が発生します。
+  /// </remarks>
+  /// <seealso cref="NodeJoined"/>
+  public IReadOnlyCollection<EchonetNode> Nodes => readOnlyOtherNodes.Values;
 
-  private readonly ConcurrentDictionary<IPAddress, EchonetNode> nodes;
-  private readonly ReadOnlyDictionary<IPAddress, EchonetNode> readOnlyNodes;
+  private readonly ConcurrentDictionary<IPAddress, EchonetOtherNode> otherNodes;
+  private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyOtherNodes;
 
   /// <inheritdoc cref="EchonetClient(IPAddress, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
   public EchonetClient(
@@ -68,13 +72,13 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     this.echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
     this.echonetLiteHandler.Received += EchonetDataReceived;
 
-    SelfNode = new(
+    SelfNode = new EchonetSelfNode(
       address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
       nodeProfile: EchonetObject.CreateGeneralNodeProfile()
     );
 
-    nodes = new();
-    readOnlyNodes = new(nodes);
+    otherNodes = new();
+    readOnlyOtherNodes = new(otherNodes);
 
     // 自己消費用
     Format1MessageReceived += HandleFormat1Message;

@@ -945,11 +945,11 @@ partial class EchonetClient
   /// <summary>
   /// インスタンスリスト通知受信時の処理を行います。
   /// </summary>
-  /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchonetNode"/>。</param>
+  /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
   /// <seealso cref="PerformInstanceListNotificationAsync"/>
   /// <seealso cref="AcquirePropertyMapsAsync"/>
-  private async ValueTask<bool> HandleInstanceListNotificationReceivedAsync(EchonetNode sourceNode, ReadOnlyMemory<byte> edt)
+  private async ValueTask<bool> HandleInstanceListNotificationReceivedAsync(EchonetOtherNode sourceNode, ReadOnlyMemory<byte> edt)
   {
     using var scope = logger?.BeginScope("Instance list notification");
 
@@ -1011,11 +1011,11 @@ partial class EchonetClient
   /// 指定されたECHONET Lite オブジェクトに対して、ECHONETプロパティ「状変アナウンスプロパティマップ」(EPC <c>0x9D</c>)・
   /// 「Set プロパティマップ」(EPC <c>0x9E</c>)・「Get プロパティマップ」(EPC <c>0x9F</c>)の読み出しを行います。
   /// </summary>
-  /// <param name="sourceNode">対象のECHONET Lite ノードを表す<see cref="EchonetNode"/>。</param>
+  /// <param name="sourceNode">対象のECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
   /// <exception cref="InvalidOperationException">受信したEDTは無効なプロパティマップです。</exception>
   /// <seealso cref="HandleInstanceListNotificationReceivedAsync"/>
-  private async ValueTask<bool> AcquirePropertyMapsAsync(EchonetNode sourceNode, EchonetObject device)
+  private async ValueTask<bool> AcquirePropertyMapsAsync(EchonetOtherNode sourceNode, EchonetObject device)
   {
     const byte EPCPropMapAnno = 0x9D; // 状変アナウンスプロパティマップ
     const byte EPCPropMapSet = 0x9E; // Set プロパティマップ
@@ -1122,15 +1122,15 @@ partial class EchonetClient
   {
     var (address, tid, message) = value;
 
-    if (!nodes.TryGetValue(address, out var sourceNode)) {
+    if (!otherNodes.TryGetValue(address, out var sourceNode)) {
       // 未知のノードの場合、ノードを生成
       // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
-      var newNode = new EchonetNode(
+      var newNode = new EchonetOtherNode(
         address: address,
         nodeProfile: EchonetObject.CreateNodeProfile(instanceCode: 0x00)
       );
 
-      sourceNode = nodes.GetOrAdd(address, newNode);
+      sourceNode = otherNodes.GetOrAdd(address, newNode);
 
       if (ReferenceEquals(sourceNode, newNode)) {
         logger?.LogInformation(
@@ -1586,7 +1586,7 @@ partial class EchonetClient
   /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
-  /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetNode"/>。</param>
+  /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <returns>
   /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
   /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
@@ -1604,7 +1604,7 @@ partial class EchonetClient
     IPAddress address,
     ushort tid,
     Format1Message message,
-    EchonetNode sourceNode
+    EchonetOtherNode sourceNode
   )
 #pragma warning restore IDE0060
   {
@@ -1667,7 +1667,7 @@ partial class EchonetClient
   /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
-  /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetNode"/>。</param>
+  /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
   /// <returns>
   /// 非同期の読み取り操作を表す<see cref="Task{Boolean}"/>。
@@ -1685,7 +1685,7 @@ partial class EchonetClient
     IPAddress address,
     ushort tid,
     Format1Message message,
-    EchonetNode sourceNode,
+    EchonetOtherNode sourceNode,
     EchonetObject? destObject
   )
   {

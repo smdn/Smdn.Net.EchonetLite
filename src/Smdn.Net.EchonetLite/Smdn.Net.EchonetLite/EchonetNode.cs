@@ -2,9 +2,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Net;
 
@@ -13,77 +11,49 @@ using Smdn.Net.EchonetLite.Protocol;
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
-/// ECHONET Liteノード
+/// ECHONET Liteノードを表す抽象クラス。
 /// </summary>
-public sealed class EchonetNode {
+public abstract class EchonetNode {
+  public static EchonetNode CreateSelfNode(IPAddress address, IEnumerable<EchonetObject> devices)
+    => new EchonetSelfNode(
+      address: address,
+      nodeProfile: EchonetObject.CreateGeneralNodeProfile(),
+      devices: devices
+    );
+
   /// <summary>
-  /// 下位スタックのアドレス
+  /// 下位スタックのアドレスを表す<see cref="IPAddress"/>を取得します。
   /// </summary>
   public IPAddress Address { get; }
 
   /// <summary>
-  /// ノードプロファイルオブジェクト
+  /// ノードプロファイルオブジェクトを表す<see cref="EchonetObject"/>を取得します。
   /// </summary>
   public EchonetObject NodeProfile { get; }
 
   /// <summary>
-  /// 機器オブジェクトのリスト
+  /// このノードに属する既知の機器オブジェクトの読み取り専用コレクションを表す<see cref="IReadOnlyCollection{EchonetObject}"/>を取得します。
   /// </summary>
-  public IReadOnlyCollection<EchonetObject> Devices => readOnlyDevices.Values;
-
-  private readonly ConcurrentDictionary<EOJ, EchonetObject> devices;
-  private readonly ReadOnlyDictionary<EOJ, EchonetObject> readOnlyDevices;
+  public abstract IReadOnlyCollection<EchonetObject> Devices { get; }
 
   /// <summary>
   /// 機器オブジェクトのリスト<see cref="Devices"/>に変更があったときに発生するイベント。
   /// </summary>
   /// <remarks>
-  /// 現在のノードにECHONET Lite オブジェクトが追加・削除された際にイベントが発生します。
+  /// このインスタンスが他のECHONET Liteノード(他ノード)を表す場合、ノードへECHONET Lite オブジェクトが追加された際にイベントが発生します。
   /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
   /// </remarks>
   public event NotifyCollectionChangedEventHandler? DevicesChanged;
 
-  public EchonetNode(IPAddress address, EchonetObject nodeProfile)
+  private protected EchonetNode(IPAddress address, EchonetObject nodeProfile)
   {
     Address = address ?? throw new ArgumentNullException(nameof(address));
     NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
-
-    devices = new();
-    readOnlyDevices = new(devices);
   }
 
-  public void AddDevice(EchonetObject device)
-  {
-    if (device is null)
-      throw new ArgumentNullException(nameof(device));
+  protected internal abstract EchonetObject? FindDevice(EOJ eoj);
 
-    if (!devices.TryAdd(device.EOJ, device))
-      throw new InvalidOperationException($"The object with the specified EOJ has already been added. (EOJ={device.EOJ})");
-  }
-
-  internal EchonetObject? FindDevice(EOJ eoj)
-    => devices.TryGetValue(eoj, out var device) ? device : null;
-
-  internal EchonetObject GetOrAddDevice(EOJ eoj, out bool added)
-  {
-    added = false;
-
-    if (devices.TryGetValue(eoj, out var device))
-      return device;
-
-    var newDevice = new EchonetObject(eoj);
-
-    device = devices.GetOrAdd(eoj, newDevice);
-
-    added = ReferenceEquals(device, newDevice);
-
-    if (added)
-      OnDevicesChanged(new(NotifyCollectionChangedAction.Add, newDevice));
-
-    return device;
-  }
-
-  private void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
+  private protected void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
   {
     DevicesChanged?.Invoke(this, e);
   }
