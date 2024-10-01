@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Linq;
 
 using NUnit.Framework;
-
-using Smdn.Net.EchonetLite.Appendix;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
@@ -14,11 +13,35 @@ namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class EchonetPropertyTests {
+  private class PseudoObjectSpecification : IEchonetObjectSpecification {
+    public byte ClassGroupCode => 0x00;
+    public byte ClassCode => 0x00;
+    public IEnumerable<IEchonetPropertySpecification> Properties { get; } = [
+      new PseudoPropertySpecification(0x00)
+    ];
+  }
+
+  private class PseudoPropertySpecification(byte code) : IEchonetPropertySpecification {
+    public byte Code { get; } = code;
+    public bool CanSet => true;
+    public bool IsSetMandatory => false;
+    public bool CanGet => true;
+    public bool IsGetMandatory => false;
+    public bool CanAnnounceStatusChange => true;
+    public bool IsStatusChangeAnnouncementMandatory => false;
+
+    public bool IsAcceptableValue(ReadOnlySpan<byte> edt) => true;
+  }
+
   private static EchonetProperty CreateProperty()
   {
-    var profile = EchonetObject.Create(Profiles.NodeProfile, 0x00);
+    var deviceDetail = new PseudoObjectSpecification();
+    var device = EchonetObject.Create(
+      objectDetail: deviceDetail,
+      instanceCode: 0x00
+    );
 
-    return EchonetProperty.Create(profile, Profiles.NodeProfile.SetProperties.Values.First());
+    return EchonetProperty.Create(device, deviceDetail.Properties.First());
   }
 
   [Test]

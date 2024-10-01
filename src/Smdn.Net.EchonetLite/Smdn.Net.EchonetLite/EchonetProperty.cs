@@ -4,8 +4,6 @@
 using System;
 using System.Buffers;
 
-using Smdn.Net.EchonetLite.Appendix;
-
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
@@ -29,7 +27,7 @@ public abstract class EchonetProperty {
   /// 詳細仕様を指定して<see cref="EchonetProperty"/>インスタンスを作成します。
   /// </summary>
   /// <param name="device">このプロパティが属するECHONET オブジェクトを表す<see cref="EchonetObject"/>。</param>
-  /// <param name="spec">プロパティの詳細仕様を表す<see cref="EchonetPropertySpecification"/>。</param>
+  /// <param name="spec">プロパティの詳細仕様を表す<see cref="IEchonetPropertySpecification"/>。</param>
   /// <returns>作成された<see cref="EchonetProperty"/>インスタンス。</returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="device"/>が<see langword="null"/>です。
@@ -37,7 +35,7 @@ public abstract class EchonetProperty {
   /// </exception>
   public static EchonetProperty Create(
     EchonetObject device,
-    EchonetPropertySpecification spec
+    IEchonetPropertySpecification spec
   )
     => new DetailedEchonetProperty(
       device: device ?? throw new ArgumentNullException(nameof(device)),

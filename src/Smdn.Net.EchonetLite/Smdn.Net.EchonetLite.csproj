@@ -33,8 +33,11 @@ SPDX-License-Identifier: MIT
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.Appendix\Smdn.Net.EchonetLite.Appendix.csproj'))" />
     <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.Transport\Smdn.Net.EchonetLite.Transport.csproj'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\Common\Shim\System.Runtime.CompilerServices\IsExternalInit.cs"/>
   </ItemGroup>
 
   <Target Name="GenerateReadmeFileContent">

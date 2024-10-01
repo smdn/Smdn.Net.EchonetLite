@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Smdn.Net.EchonetLite.Appendix;
-
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
@@ -17,14 +15,14 @@ internal sealed class DetailedEchonetObject : EchonetObject {
     internal set => throw new InvalidOperationException();
   }
 
-  public override byte ClassGroupCode => Spec.ClassGroup.Code;
-  public override byte ClassCode => Spec.Class.Code;
+  public override byte ClassGroupCode => Spec.ClassGroupCode;
+  public override byte ClassCode => Spec.ClassCode;
   public override byte InstanceCode { get; }
 
   /// <summary>
-  /// このインスタンスが表すECHONET オブジェクトの詳細仕様を表す<see cref="EchonetObjectSpecification"/>。
+  /// このインスタンスが表すECHONET オブジェクトの詳細仕様を表す<see cref="IEchonetObjectSpecification"/>。
   /// </summary>
-  public EchonetObjectSpecification Spec { get; }
+  public IEchonetObjectSpecification Spec { get; }
 
   /// <summary>
   /// プロパティの一覧
@@ -54,13 +52,13 @@ internal sealed class DetailedEchonetObject : EchonetObject {
   /// </summary>
   /// <param name="classObject">オブジェクトクラス</param>
   /// <param name="instanceCode">インスタンスコード</param>
-  public DetailedEchonetObject(EchonetObjectSpecification classObject, byte instanceCode)
+  public DetailedEchonetObject(IEchonetObjectSpecification classObject, byte instanceCode)
   {
     Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
     InstanceCode = instanceCode;
 
     properties = new(
-      classObject.AllProperties.Values.Select(spec => new DetailedEchonetProperty(this, spec))
+      classObject.Properties.Select(spec => new DetailedEchonetProperty(this, spec))
     );
   }
 }

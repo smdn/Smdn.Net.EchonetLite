@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
-using Smdn.Net.EchonetLite.Appendix;
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -15,7 +14,7 @@ namespace Smdn.Net.EchonetLite;
 /// ECHONET Lite オブジェクトインスタンス
 /// </summary>
 public abstract partial class EchonetObject {
-  public static EchonetObject Create(EchonetObjectSpecification objectDetail, byte instanceCode)
+  public static EchonetObject Create(IEchonetObjectSpecification objectDetail, byte instanceCode)
     => new DetailedEchonetObject(
       objectDetail ?? throw new ArgumentNullException(nameof(objectDetail)),
       instanceCode

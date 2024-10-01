@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 using System;
 
-using Smdn.Net.EchonetLite.Appendix;
-
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
@@ -16,13 +14,13 @@ internal sealed class DetailedEchonetProperty : EchonetProperty {
   public override bool CanAnnounceStatusChange => Spec.CanAnnounceStatusChange;
 
   /// <summary>
-  /// このインスタンスが表すECHONET プロパティの詳細仕様を表す<see cref="EchonetPropertySpecification"/>。
+  /// このインスタンスが表すECHONET プロパティの詳細仕様を表す<see cref="IEchonetPropertySpecification"/>。
   /// </summary>
-  public EchonetPropertySpecification Spec { get; }
+  public IEchonetPropertySpecification Spec { get; }
 
   internal DetailedEchonetProperty(
     EchonetObject device,
-    EchonetPropertySpecification spec
+    IEchonetPropertySpecification spec
   )
     : base(device)
   {
@@ -30,13 +28,5 @@ internal sealed class DetailedEchonetProperty : EchonetProperty {
   }
 
   protected internal override bool IsAcceptableValue(ReadOnlySpan<byte> edt)
-  {
-    if (Spec.MaxSize < edt.Length)
-      return false;
-
-    if (Spec.MinSize > edt.Length)
-      return false;
-
-    return true;
-  }
+    => Spec.IsAcceptableValue(edt);
 }
