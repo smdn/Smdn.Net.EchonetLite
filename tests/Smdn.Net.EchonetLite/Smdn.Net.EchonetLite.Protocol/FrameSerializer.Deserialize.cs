@@ -37,7 +37,7 @@ partial class FrameSerializerTests {
   [TestCaseSource(nameof(YieldTestCases_TryDeserialize))]
   public void TryDeserialize(byte[] input, EHD1 expectedEHD1, EHD2 expectedEHD2, ushort expectedTID, byte[] expectedEDATA)
   {
-    Assert.That(FrameSerializer.TryDeserialize(input, out var ehd1, out var ehd2, out var tid, out var edata), Is.True);
+    Assert.That(FrameSerializer.TryDeserialize(input.AsMemory(), out var ehd1, out var ehd2, out var tid, out var edata), Is.True);
     Assert.That(ehd1, Is.EqualTo(expectedEHD1));
     Assert.That(ehd2, Is.EqualTo(expectedEHD2));
     Assert.That(unchecked((ushort)tid), Is.EqualTo(expectedTID));
@@ -57,7 +57,7 @@ partial class FrameSerializerTests {
   public void TryDeserialize_InputTooShort(byte[] input)
   {
     Assert.That(
-      FrameSerializer.TryDeserialize(input, out _, out _, out _, out _),
+      FrameSerializer.TryDeserialize(input.AsMemory(), out _, out _, out _, out _),
       Is.False,
       message: "The length of input must be greater than 4 bytes."
     );
@@ -77,11 +77,11 @@ partial class FrameSerializerTests {
   public void TryDeserialize_EHD1(byte[] input, bool expectAsEchonetLiteFrame)
   {
     if (expectAsEchonetLiteFrame) {
-      Assert.That(FrameSerializer.TryDeserialize(input, out _, out _, out _, out _), Is.True);
+      Assert.That(FrameSerializer.TryDeserialize(input.AsMemory(), out _, out _, out _, out _), Is.True);
     }
     else {
       Assert.That(
-        FrameSerializer.TryDeserialize(input, out _, out _, out _, out _),
+        FrameSerializer.TryDeserialize(input.AsMemory(), out _, out _, out _, out _),
         Is.False,
         message: "The input byte sequence is not an ECHONETLite frame."
       );
@@ -94,7 +94,7 @@ partial class FrameSerializerTests {
   {
     var input = new byte[] { EHD1_ECHONETLite, ehd2, TID_ZERO_0, TID_ZERO_1 };
 
-    Assert.That(FrameSerializer.TryDeserialize(input, out _, out _, out _, out _), Is.True);
+    Assert.That(FrameSerializer.TryDeserialize(input.AsMemory(), out _, out _, out _, out _), Is.True);
   }
 
   [TestCase((byte)0x00, (byte)0x00, (byte)0x00)]
