@@ -86,7 +86,7 @@ public class EchonetClientTests {
   {
     var handler = new ReceiveEDATA2EchonetLiteHandler();
 
-    var client = new EchonetClient(IPAddress.Any, handler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler, logger: null);
+    var client = new EchonetClient(handler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler, logger: null);
 
     Assert.DoesNotThrow(() => client.Dispose(), "Dispose #1");
 
@@ -104,7 +104,7 @@ public class EchonetClientTests {
   {
     var handler = new ReceiveEDATA2EchonetLiteHandler();
 
-    var client = new EchonetClient(IPAddress.Any, handler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler, logger: null);
+    var client = new EchonetClient(handler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler, logger: null);
 
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync #1");
 
@@ -122,7 +122,7 @@ public class EchonetClientTests {
   {
     var disposableHandler = new DisposableEchonetLiteHandler();
 
-    var client = new EchonetClient(IPAddress.Any, disposableHandler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler, logger: null);
+    var client = new EchonetClient(disposableHandler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler, logger: null);
 
     Assert.DoesNotThrow(() => client.Dispose(), nameof(client.Dispose));
 
@@ -135,7 +135,7 @@ public class EchonetClientTests {
   {
     var asyncDisposableHandler = new AsyncDisposableEchonetLiteHandler();
 
-    var client = new EchonetClient(IPAddress.Any, asyncDisposableHandler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler, logger: null);
+    var client = new EchonetClient(asyncDisposableHandler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler, logger: null);
 
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), nameof(client.DisposeAsync));
 

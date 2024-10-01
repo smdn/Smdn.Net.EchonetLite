@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -12,17 +13,21 @@ namespace Smdn.Net.EchonetLite;
 /// 自身のECHONET Liteノード(自ノード)を表すクラス。
 /// </summary>
 internal sealed class EchonetSelfNode : EchonetNode {
+  public override IPAddress Address
+    => Owner?.GetSelfNodeAddress() ??
+      throw new NotSupportedException("Unable to determine address for self node.");
+
   private readonly List<EchonetObject> devices;
 
   public override IReadOnlyCollection<EchonetObject> Devices => devices;
 
-  internal EchonetSelfNode(IPAddress address, EchonetObject nodeProfile)
-    : this(address, nodeProfile, Enumerable.Empty<EchonetObject>())
+  internal EchonetSelfNode(EchonetObject nodeProfile)
+    : this(nodeProfile, Enumerable.Empty<EchonetObject>())
   {
   }
 
-  internal EchonetSelfNode(IPAddress address, EchonetObject nodeProfile, IEnumerable<EchonetObject> devices)
-    : base(address, nodeProfile)
+  internal EchonetSelfNode(EchonetObject nodeProfile, IEnumerable<EchonetObject> devices)
+    : base(nodeProfile)
   {
     this.devices = new(devices);
   }

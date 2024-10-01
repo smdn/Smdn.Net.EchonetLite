@@ -1126,6 +1126,7 @@ partial class EchonetClient
       // 未知のノードの場合、ノードを生成
       // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
       var newNode = new EchonetOtherNode(
+        owner: this,
         address: address,
         nodeProfile: EchonetObject.CreateNodeProfile(instanceCode: 0x00)
       );

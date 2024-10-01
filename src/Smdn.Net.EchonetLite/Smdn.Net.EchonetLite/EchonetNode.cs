@@ -14,17 +14,22 @@ namespace Smdn.Net.EchonetLite;
 /// ECHONET Liteノードを表す抽象クラス。
 /// </summary>
 public abstract class EchonetNode {
-  public static EchonetNode CreateSelfNode(IPAddress address, IEnumerable<EchonetObject> devices)
+  public static EchonetNode CreateSelfNode(IEnumerable<EchonetObject> devices)
     => new EchonetSelfNode(
-      address: address,
       nodeProfile: EchonetObject.CreateGeneralNodeProfile(),
       devices: devices
     );
 
   /// <summary>
+  /// 現在このインスタンスを管理している<see cref="EchonetClient"/>を取得します。
+  /// </summary>
+  internal EchonetClient? Owner { get; set; }
+
+  /// <summary>
   /// 下位スタックのアドレスを表す<see cref="IPAddress"/>を取得します。
   /// </summary>
-  public IPAddress Address { get; }
+  /// <exception cref="NotSupportedException">このインスタンスが自ノードを表す場合、かつ自ノードのアドレスを取得できないにスローします。</exception>
+  public abstract IPAddress Address { get; }
 
   /// <summary>
   /// ノードプロファイルオブジェクトを表す<see cref="EchonetObject"/>を取得します。
@@ -45,9 +50,8 @@ public abstract class EchonetNode {
   /// </remarks>
   public event NotifyCollectionChangedEventHandler? DevicesChanged;
 
-  private protected EchonetNode(IPAddress address, EchonetObject nodeProfile)
+  private protected EchonetNode(EchonetObject nodeProfile)
   {
-    Address = address ?? throw new ArgumentNullException(nameof(address));
     NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
   }
 

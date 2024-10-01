@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,14 +15,19 @@ namespace Smdn.Net.EchonetLite;
 /// 他のECHONET Liteノード(他ノード)を表すクラス。
 /// </summary>
 internal sealed class EchonetOtherNode : EchonetNode {
+  public override IPAddress Address { get; }
+
   public override IReadOnlyCollection<EchonetObject> Devices => readOnlyDevices.Values;
 
   private readonly ConcurrentDictionary<EOJ, EchonetObject> devices;
   private readonly ReadOnlyDictionary<EOJ, EchonetObject> readOnlyDevices;
 
-  internal EchonetOtherNode(IPAddress address, EchonetObject nodeProfile)
-    : base(address, nodeProfile)
+  internal EchonetOtherNode(EchonetClient owner, IPAddress address, EchonetObject nodeProfile)
+    : base(nodeProfile)
   {
+    Owner = owner ?? throw new ArgumentNullException(nameof(owner));
+    Address = address ?? throw new ArgumentNullException(nameof(address));
+
     devices = new();
     readOnlyDevices = new(devices);
   }
