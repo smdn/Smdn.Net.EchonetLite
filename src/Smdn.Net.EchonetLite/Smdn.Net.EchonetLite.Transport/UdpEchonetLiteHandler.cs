@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-#pragma warning disable CA2254 // CA2254: ログ メッセージ テンプレートは、LoggerExtensions.Log****(ILogger, string?, params object?[])' への呼び出しによって異なるべきではありません。 -->
 
 using System;
 using System.Buffers;
@@ -110,7 +109,11 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
         // ブロードキャストを自分で受信した(無視)
         continue;
 
-      logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address} {((ReadOnlyMemory<byte>)receivedResults.Buffer).ToHexString()}");
+      logger.LogTrace(
+        "UDP receive from {Address}: {Buffer}",
+        receivedResults.RemoteEndPoint.Address,
+        ((ReadOnlyMemory<byte>)receivedResults.Buffer).ToHexString()
+      );
 
       buffer.Write(receivedResults.Buffer);
 
@@ -119,7 +122,11 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
   }
 
   private void LogSend(IPEndPoint remoteEndPoint, ReadOnlyMemory<byte> buffer)
-    => logger.LogDebug($"UDP送信:{remoteEndPoint.Address} {buffer.ToHexString()}");
+    => logger.LogTrace(
+      "UDP send to {Address}: {Buffer}",
+      remoteEndPoint.Address,
+      buffer.ToHexString()
+    );
 
   /// <summary>
   /// Performs multicast send.
