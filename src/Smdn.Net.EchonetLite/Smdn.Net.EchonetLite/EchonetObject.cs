@@ -54,17 +54,17 @@ public sealed partial class EchonetObject {
   /// <summary>
   /// GETプロパティの一覧
   /// </summary>
-  public IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.Spec.CanGet);
+  public IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.CanGet);
 
   /// <summary>
   /// SETプロパティの一覧
   /// </summary>
-  public IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.Spec.CanSet);
+  public IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.CanSet);
 
   /// <summary>
   /// ANNOプロパティの一覧
   /// </summary>
-  public IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.Spec.CanAnnounceStatusChange);
+  public IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.CanAnnounceStatusChange);
 
   /// <summary>
   /// EOJ
@@ -99,8 +99,8 @@ public sealed partial class EchonetObject {
 
     properties = new();
 
-    foreach (var prop in classObject.AllProperties.Values) {
-      properties.Add(new(prop));
+    foreach (var spec in classObject.AllProperties.Values) {
+      properties.Add(EchonetProperty.Create(this, spec));
     }
 
     properties.CollectionChanged += (_, e) => OnPropertiesChanged(e);

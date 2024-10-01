@@ -40,13 +40,13 @@ partial class EchonetClient
   }
 
   private static PropertyValue ConvertToPropertyValue(EchonetProperty p)
-    => new(epc: p.Spec.Code, edt: p.ValueMemory);
+    => new(epc: p.Code, edt: p.ValueMemory);
 
   private static PropertyValue ConvertToPropertyValue(byte epc)
     => new(epc: epc);
 
   private static PropertyValue ConvertToPropertyValueExceptValueData(EchonetProperty p)
-    => new(epc: p.Spec.Code);
+    => new(epc: p.Code);
 
   /// <summary>
   /// インスタンスリスト通知を行います。
@@ -62,7 +62,7 @@ partial class EchonetClient
   )
   {
     // インスタンスリスト通知プロパティ
-    var property = SelfNode.NodeProfile.AnnoProperties.First(p => p.Spec.Code == 0xD5);
+    var property = SelfNode.NodeProfile.AnnoProperties.First(static p => p.Code == 0xD5);
 
     property.WriteValue(writer => {
       var contents = writer.GetSpan(253); // インスタンスリスト通知 0xD5 unsigned char×(MAX)253
@@ -265,11 +265,11 @@ partial class EchonetClient
 
         foreach (var prop in props) {
           // 一部成功した書き込みを反映
-          var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
 
           if (prop.PDC == 0x00) {
             // 書き込み成功
-            target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueMemory);
+            target.SetValue(properties.First(p => p.Code == prop.EPC).ValueMemory);
           }
         }
 
@@ -305,7 +305,7 @@ partial class EchonetClient
     catch (Exception ex) {
       if (ex is OperationCanceledException exOperationCanceled && cancellationToken.Equals(exOperationCanceled.CancellationToken)) {
         foreach (var prop in properties) {
-          var target = destinationObject.Properties.First(p => p.Spec.Code == prop.Spec.Code);
+          var target = destinationObject.Properties.First(p => p.Code == prop.Code);
           // 成功した書き込みを反映(全部OK)
           target.SetValue(prop.ValueMemory);
         }
@@ -386,11 +386,11 @@ partial class EchonetClient
 
         foreach (var prop in props) {
           // 成功した書き込みを反映
-          var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
 
           if (prop.PDC == 0x00) {
             // 書き込み成功
-            target.SetValue(properties.First(p => p.Spec.Code == prop.EPC).ValueMemory);
+            target.SetValue(properties.First(p => p.Code == prop.EPC).ValueMemory);
           }
         }
 
@@ -499,7 +499,7 @@ partial class EchonetClient
 
         foreach (var prop in props) {
           // 成功した読み込みを反映
-          var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
           if (prop.PDC != 0x00) {
             // 読み込み成功
             target.SetValue(prop.EDT);
@@ -617,17 +617,17 @@ partial class EchonetClient
 
         foreach (var prop in propsForSet) {
           // 成功した書き込みを反映
-          var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
 
           if (prop.PDC == 0x00) {
             // 書き込み成功
-            target.SetValue(propertiesSet.First(p => p.Spec.Code == prop.EPC).ValueMemory);
+            target.SetValue(propertiesSet.First(p => p.Code == prop.EPC).ValueMemory);
           }
         }
 
         foreach (var prop in propsForGet) {
           // 成功した読み込みを反映
-          var target = destinationObject.Properties.First(p => p.Spec.Code == prop.EPC);
+          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
 
           if (prop.PDC != 0x00) {
             // 読み込み成功
@@ -1034,7 +1034,7 @@ partial class EchonetClient
         sourceObject: SelfNode.NodeProfile,
         destinationNode: sourceNode,
         destinationObject: device,
-        properties: device.Properties.Where(static p => p.Spec.Code is EPCPropMapAnno or EPCPropMapSet or EPCPropMapGet),
+        properties: device.Properties.Where(static p => p.Code is EPCPropMapAnno or EPCPropMapSet or EPCPropMapGet),
         cancellationToken: ctsTimeout.Token
       ).ConfigureAwait(false);
 
@@ -1076,25 +1076,24 @@ partial class EchonetClient
 
     device.ResetProperties(
       codes.Select(
-        code => new EchonetProperty(
-          device.Spec.ClassGroup.Code,
-          device.Spec.Class.Code,
-          code,
-          mapCanAnno.Contains(code),
-          mapCanSet.Contains(code),
-          mapCanGet.Contains(code)
+        code => new UnspecifiedEchonetProperty(
+          device: device,
+          code: code,
+          canSet: mapCanAnno.Contains(code),
+          canGet: mapCanSet.Contains(code),
+          canAnnounceStatusChange: mapCanGet.Contains(code)
         )
       )
     );
 
     logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
 
-    foreach (var p in device.Properties.OrderBy(static p => p.Spec.Code)) {
+    foreach (var p in device.Properties.OrderBy(static p => p.Code)) {
       logger?.LogDebug(
         "Node: {NodeAddress} EOJ: {EOJ}, EPC: {EPC:X2}, Access Rule: {CanSet}/{CanGet}/{CanAnnounceStatusChange}",
         sourceNode.Address,
         device.EOJ,
-        p.Spec.Code,
+        p.Code,
         p.CanSet ? "SET" : "---",
         p.CanGet ? "GET" : "---",
         p.CanAnnounceStatusChange ? "ANNO" : "----"
@@ -1277,13 +1276,9 @@ partial class EchonetClient
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
 
     foreach (var prop in requestProps) {
-      var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
+      var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
 
-      if (
-        property is null ||
-        prop.EDT.Length > property.Spec.MaxSize ||
-        prop.EDT.Length < property.Spec.MinSize
-      ) {
+      if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
         hasError = true;
         // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
         // 要求された EDT を付け、要求を受理できなかったことを示す。
@@ -1356,13 +1351,9 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestProps) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
+        var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
 
-        if (
-          property is null ||
-          prop.EDT.Length > property.Spec.MaxSize ||
-          prop.EDT.Length < property.Spec.MinSize
-        ) {
+        if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
@@ -1434,13 +1425,9 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestProps) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
+        var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
 
-        if (
-          property is null ||
-          prop.EDT.Length > property.Spec.MaxSize ||
-          prop.EDT.Length < property.Spec.MinSize
-        ) {
+        if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
@@ -1517,13 +1504,9 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestPropsForSet) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
+        var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
 
-        if (
-          property is null ||
-          prop.EDT.Length > property.Spec.MaxSize ||
-          prop.EDT.Length < property.Spec.MinSize
-        ) {
+        if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
@@ -1538,13 +1521,9 @@ partial class EchonetClient
       }
 
       foreach (var prop in requestPropsForGet) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
+        var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
 
-        if (
-          property is null ||
-          prop.EDT.Length > property.Spec.MaxSize ||
-          prop.EDT.Length < property.Spec.MinSize
-        ) {
+        if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
@@ -1627,26 +1606,30 @@ partial class EchonetClient
     }
 
     foreach (var prop in requestProps) {
-      var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
+      var property = sourceObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
 
       if (property is null) {
         // 未知のプロパティ
         // 新規作成
-        property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, prop.EPC);
+        property = new UnspecifiedEchonetProperty(
+          device: sourceObject,
+          code: prop.EPC,
+          canSet: false, // Setアクセス可能かどうか不明なので、暫定的にfalseを設定
+          canGet: true, // 通知してきたので少なくともGetアクセス可能と推定
+          canAnnounceStatusChange: true // 通知してきたので少なくともAnnoアクセス可能と推定
+        );
+
         sourceObject.AddProperty(property);
 
         logger?.LogInformation(
           "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
           sourceNode.Address,
           sourceObject.EOJ,
-          property.Spec.Code
+          property.Code
         );
       }
 
-      if (
-        prop.EDT.Length > property.Spec.MaxSize ||
-        prop.EDT.Length < property.Spec.MinSize
-      ) {
+      if (!property.IsAcceptableValue(prop.EDT.Span)) {
         // スペック外なので、格納しない
         hasError = true;
       }
@@ -1716,26 +1699,30 @@ partial class EchonetClient
     }
 
     foreach (var prop in requestProps) {
-      var property = sourceObject.Properties.FirstOrDefault(p => p.Spec.Code == prop.EPC);
+      var property = sourceObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
 
       if (property is null) {
         // 未知のプロパティ
         // 新規作成
-        property = new(message.SEOJ.ClassGroupCode, message.SEOJ.ClassCode, prop.EPC);
+        property = new UnspecifiedEchonetProperty(
+          device: sourceObject,
+          code: prop.EPC,
+          canSet: false, // Setアクセス可能かどうか不明なので、暫定的にfalseを設定
+          canGet: true, // 通知してきたので少なくともGetアクセス可能と推定
+          canAnnounceStatusChange: true // 通知してきたので少なくともAnnoアクセス可能と推定
+        );
+
         sourceObject.AddProperty(property);
 
         logger?.LogInformation(
           "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
           sourceNode.Address,
           sourceObject.EOJ,
-          property.Spec.Code
+          property.Code
         );
       }
 
-      if (
-        (property.Spec.MaxSize != null && prop.EDT.Length > property.Spec.MaxSize) ||
-        (property.Spec.MinSize != null && prop.EDT.Length < property.Spec.MinSize)
-      ) {
+      if (!property.IsAcceptableValue(prop.EDT.Span)) {
         // スペック外なので、格納しない
         hasError = true;
       }
