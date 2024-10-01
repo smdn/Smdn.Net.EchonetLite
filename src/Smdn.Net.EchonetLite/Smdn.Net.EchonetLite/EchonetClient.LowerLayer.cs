@@ -62,7 +62,7 @@ partial class EchonetClient
   /// </param>
   private void EchonetDataReceived(object? sender, (IPAddress Address, ReadOnlyMemory<byte> Data) value)
   {
-    if (!FrameSerializer.TryDeserialize(value.Data.Span, out var ehd1, out var ehd2, out var tid, out var edata))
+    if (!FrameSerializer.TryDeserialize(value.Data, out var ehd1, out var ehd2, out var tid, out var edata))
       // ECHONETLiteフレームではないため無視
       return;
 
@@ -74,16 +74,12 @@ partial class EchonetClient
       (byte)ehd1,
       (byte)ehd2,
       (byte)tid,
-#if SYSTEM_CONVERT_TOHEXSTRING
-      Convert.ToHexString(edata)
-#else
-      BitConverter.ToString(edata.ToArray())
-#endif
+      edata.ToHexString()
     );
 
     switch (ehd2) {
       case EHD2.Format1:
-        if (!FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
+        if (!FrameSerializer.TryParseEDataAsFormat1Message(edata.Span, out var format1Message)) {
           logger?.LogWarning(
             "Invalid Format 1 message (From: {Address}, TID: {TID:X4})",
             value.Address,
@@ -109,11 +105,7 @@ partial class EchonetClient
           "Format 2 message (From: {Address}, TID: {TID:X4}, Message: {Message})",
           value.Address,
           tid,
-#if SYSTEM_CONVERT_TOHEXSTRING
-          Convert.ToHexString(edata)
-#else
-          BitConverter.ToString(edata.ToArray())
-#endif
+          edata.ToHexString()
         );
         break;
 
@@ -123,11 +115,7 @@ partial class EchonetClient
           "Undefined format message (From: {Address}, TID: {TID:X4}, Message: {Message})",
           value.Address,
           tid,
-#if SYSTEM_CONVERT_TOHEXSTRING
-          Convert.ToHexString(edata)
-#else
-          BitConverter.ToString(edata.ToArray())
-#endif
+          edata.ToHexString()
         );
         break;
     }
@@ -156,7 +144,7 @@ partial class EchonetClient
       writeFrame(requestFrameBuffer);
 
       if (logger is not null)
-        LogFrame(requestFrameBuffer.WrittenSpan);
+        LogFrame(requestFrameBuffer.WrittenMemory);
 
       await echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }
@@ -170,7 +158,7 @@ partial class EchonetClient
       requestSemaphore.Release();
     }
 
-    void LogFrame(ReadOnlySpan<byte> frame)
+    void LogFrame(ReadOnlyMemory<byte> frame)
     {
       if (!FrameSerializer.TryDeserialize(frame, out var ehd1, out var ehd2, out var tid, out var edata))
         throw new InvalidOperationException("attempted to send an invalid format of ECHONET Lite frame");
@@ -182,16 +170,12 @@ partial class EchonetClient
           (byte)ehd1,
           (byte)ehd2,
           (byte)tid,
-#if SYSTEM_CONVERT_TOHEXSTRING
-          Convert.ToHexString(edata)
-#else
-          BitConverter.ToString(edata.ToArray())
-#endif
+          edata.ToHexString()
         );
       }
 
       if (ehd2 == EHD2.Format1) {
-        if (logger.IsEnabled(LogLevel.Debug) && FrameSerializer.TryParseEDataAsFormat1Message(edata, out var format1Message)) {
+        if (logger.IsEnabled(LogLevel.Debug) && FrameSerializer.TryParseEDataAsFormat1Message(edata.Span, out var format1Message)) {
           logger.LogDebug(
             "Format 1 message (To: {Address}, TID: {TID:X4}, Message: {Message})",
             address,

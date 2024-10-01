@@ -198,13 +198,6 @@ public readonly struct Format1Message {
         : $@"""{opcName}"": {properties.Count}, ""Properties"": [{string.Join(", ", properties.Select(PropertyValueToString))}]";
 
     static string PropertyValueToString(PropertyValue property)
-      => $@"{{""EPC"": ""{property.EPC:X2}"", ""PDC"": ""{property.PDC:X2}"", ""EDT"": ""{ToHexString(property.EDT.Span)}""}}";
-
-    static string ToHexString(ReadOnlySpan<byte> bytes)
-#if SYSTEM_CONVERT_TOHEXSTRING
-      => Convert.ToHexString(bytes);
-#else
-      => BitConverter.ToString(bytes.ToArray());
-#endif
+      => $@"{{""EPC"": ""{property.EPC:X2}"", ""PDC"": ""{property.PDC:X2}"", ""EDT"": ""{property.EDT.ToHexString()}""}}";
   }
 }

@@ -956,11 +956,7 @@ partial class EchonetClient
     if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt.Span, out var instanceList)) {
       logger?.LogWarning(
         "Invalid instance list received (EDT: {EDT})",
-#if SYSTEM_CONVERT_TOHEXSTRING
-        Convert.ToHexString(edt.Span)
-#else
-        BitConverter.ToString(edt.ToArray())
-#endif
+        edt.ToHexString()
       );
 
       return false;

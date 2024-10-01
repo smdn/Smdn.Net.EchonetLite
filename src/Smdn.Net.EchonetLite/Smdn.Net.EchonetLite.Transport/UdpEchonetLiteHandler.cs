@@ -12,9 +12,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-#if !SYSTEM_CONVERT_TOHEXSTRING
-using System.Runtime.InteropServices; // MemoryMarshal
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -113,7 +110,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
         // ブロードキャストを自分で受信した(無視)
         continue;
 
-      logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address} {BitConverter.ToString(receivedResults.Buffer)}");
+      logger.LogDebug($"UDP受信:{receivedResults.RemoteEndPoint.Address} {((ReadOnlyMemory<byte>)receivedResults.Buffer).ToHexString()}");
 
       buffer.Write(receivedResults.Buffer);
 
@@ -122,16 +119,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
   }
 
   private void LogSend(IPEndPoint remoteEndPoint, ReadOnlyMemory<byte> buffer)
-  {
-#if SYSTEM_CONVERT_TOHEXSTRING
-    logger.LogDebug($"UDP送信:{remoteEndPoint.Address} {Convert.ToHexString(buffer.Span)}");
-#else
-    if (MemoryMarshal.TryGetArray(buffer, out var segment))
-      logger.LogDebug($"UDP送信:{remoteEndPoint.Address} {BitConverter.ToString(segment.Array!, segment.Offset, segment.Count)}");
-    else
-      logger.LogDebug($"UDP送信:{remoteEndPoint.Address} {BitConverter.ToString(buffer.ToArray())}");
-#endif
-  }
+    => logger.LogDebug($"UDP送信:{remoteEndPoint.Address} {buffer.ToHexString()}");
 
   /// <summary>
   /// Performs multicast send.

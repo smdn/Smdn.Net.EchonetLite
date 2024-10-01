@@ -11,6 +11,25 @@ namespace Smdn.Net.EchonetLite.Protocol;
 partial class FrameSerializer {
 #pragma warning restore IDE0040
   public static bool TryDeserialize(
+    ReadOnlyMemory<byte> bytes,
+    out EHD1 ehd1,
+    out EHD2 ehd2,
+    out int tid,
+    out ReadOnlyMemory<byte> edata
+  )
+  {
+    edata = default;
+
+    if (!TryDeserialize(bytes.Span, out ehd1, out ehd2, out tid, out _))
+      return false;
+
+    // ECHONET Liteデータ(4バイト目以降)
+    edata = bytes.Slice(4);
+
+    return true;
+  }
+
+  public static bool TryDeserialize(
     ReadOnlySpan<byte> bytes,
     out EHD1 ehd1,
     out EHD2 ehd2,
