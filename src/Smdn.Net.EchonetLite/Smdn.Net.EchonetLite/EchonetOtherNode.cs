@@ -19,8 +19,8 @@ internal sealed class EchonetOtherNode : EchonetNode {
 
   public override IReadOnlyCollection<EchonetObject> Devices => readOnlyDevices.Values;
 
-  private readonly ConcurrentDictionary<EOJ, EchonetObject> devices;
-  private readonly ReadOnlyDictionary<EOJ, EchonetObject> readOnlyDevices;
+  private readonly ConcurrentDictionary<EOJ, UnspecifiedEchonetObject> devices;
+  private readonly ReadOnlyDictionary<EOJ, UnspecifiedEchonetObject> readOnlyDevices;
 
   internal EchonetOtherNode(EchonetClient owner, IPAddress address, EchonetObject nodeProfile)
     : base(nodeProfile)
@@ -35,14 +35,14 @@ internal sealed class EchonetOtherNode : EchonetNode {
   protected internal override EchonetObject? FindDevice(EOJ eoj)
     => devices.TryGetValue(eoj, out var device) ? device : null;
 
-  internal EchonetObject GetOrAddDevice(EOJ eoj, out bool added)
+  internal UnspecifiedEchonetObject GetOrAddDevice(EOJ eoj, out bool added)
   {
     added = false;
 
     if (devices.TryGetValue(eoj, out var device))
       return device;
 
-    var newDevice = new EchonetObject(eoj);
+    var newDevice = new UnspecifiedEchonetObject(eoj);
 
     device = devices.GetOrAdd(eoj, newDevice);
 

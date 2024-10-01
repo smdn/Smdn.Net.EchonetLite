@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
@@ -15,7 +14,13 @@ namespace Smdn.Net.EchonetLite;
 /// <summary>
 /// ECHONET Lite オブジェクトインスタンス
 /// </summary>
-public sealed partial class EchonetObject {
+public abstract partial class EchonetObject {
+  public static EchonetObject Create(EchonetObjectSpecification objectDetail, byte instanceCode)
+    => new DetailedEchonetObject(
+      objectDetail ?? throw new ArgumentNullException(nameof(objectDetail)),
+      instanceCode
+    );
+
   /// <summary>
   /// プロパティの一覧<see cref="Properties"/>に変更があったときに発生するイベント。
   /// </summary>
@@ -27,100 +32,62 @@ public sealed partial class EchonetObject {
   public event NotifyCollectionChangedEventHandler? PropertiesChanged;
 
   /// <summary>
-  /// プロパティマップ取得状態
+  /// プロパティマップが取得済みであるかどうかを表す<see langword="bool"/>型の値を取得します。
   /// </summary>
+  /// <value>
+  /// 現在のECHONET オブジェクトの詳細仕様が参照可能な場合は、常に<see langword="true"/>を返します。
+  /// </value>
   /// <seealso cref="EchonetClient.PropertyMapAcquiring"/>
   /// <seealso cref="EchonetClient.PropertyMapAcquired"/>
-  public bool HasPropertyMapAcquired { get; internal set; } = false;
+  public abstract bool HasPropertyMapAcquired { get; internal set; }
 
   /// <summary>
-  /// クラスグループコード、クラスグループ名
-  /// ECHONET機器オブジェクト詳細規定がある場合、詳細仕様
+  /// クラスグループコードを表す<see langword="byte"/>型の値を取得します。
   /// </summary>
-  public EchonetObjectSpecification Spec { get; }
+  public abstract byte ClassGroupCode { get; }
 
   /// <summary>
-  /// インスタンスコード
+  /// クラスコードを表す<see langword="byte"/>型の値を取得します。
   /// </summary>
-  public byte InstanceCode { get; }
+  public abstract byte ClassCode { get; }
 
   /// <summary>
-  /// プロパティの一覧
+  /// インスタンスコードを表す<see langword="byte"/>型の値を取得します。
   /// </summary>
-  public IReadOnlyCollection<EchonetProperty> Properties => properties;
-
-  private readonly ObservableCollection<EchonetProperty> properties;
-
-  /// <summary>
-  /// GETプロパティの一覧
-  /// </summary>
-  public IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.CanGet);
-
-  /// <summary>
-  /// SETプロパティの一覧
-  /// </summary>
-  public IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.CanSet);
-
-  /// <summary>
-  /// ANNOプロパティの一覧
-  /// </summary>
-  public IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.CanAnnounceStatusChange);
+  public abstract byte InstanceCode { get; }
 
   /// <summary>
   /// EOJ
   /// </summary>
   internal EOJ EOJ => new(
-    classGroupCode: Spec.ClassGroup.Code,
-    classCode: Spec.Class.Code,
+    classGroupCode: ClassGroupCode,
+    classCode: ClassCode,
     instanceCode: InstanceCode
   );
 
   /// <summary>
-  /// デフォルトコンストラクタ
+  /// プロパティの一覧
   /// </summary>
-  public EchonetObject(EOJ eoj)
-    : this(
-      classObject: DeviceClasses.LookupOrCreateClass(eoj.ClassGroupCode, eoj.ClassCode, includeProfiles: true),
-      instanceCode: eoj.InstanceCode
-    )
-  {
-  }
+  public abstract IReadOnlyCollection<EchonetProperty> Properties { get; }
 
   /// <summary>
-  /// スペック指定のコンストラクタ
-  /// プロパティは仕様から取得する
+  /// GETプロパティの一覧
   /// </summary>
-  /// <param name="classObject">オブジェクトクラス</param>
-  /// <param name="instanceCode">インスタンスコード</param>
-  public EchonetObject(EchonetObjectSpecification classObject, byte instanceCode)
-  {
-    Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
-    InstanceCode = instanceCode;
+  public virtual IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.CanGet);
 
-    properties = new();
+  /// <summary>
+  /// SETプロパティの一覧
+  /// </summary>
+  public virtual IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.CanSet);
 
-    foreach (var spec in classObject.AllProperties.Values) {
-      properties.Add(EchonetProperty.Create(this, spec));
-    }
+  /// <summary>
+  /// ANNOプロパティの一覧
+  /// </summary>
+  public virtual IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.CanAnnounceStatusChange);
 
-    properties.CollectionChanged += (_, e) => OnPropertiesChanged(e);
-  }
-
-  private void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
+  private protected void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
   {
     // TODO: use ISynchronizeInvoke
     PropertiesChanged?.Invoke(this, e);
-  }
-
-  internal void AddProperty(EchonetProperty prop)
-    => properties.Add(prop);
-
-  internal void ResetProperties(IEnumerable<EchonetProperty> props)
-  {
-    properties.Clear();
-
-    foreach (var prop in props) {
-      properties.Add(prop);
-    }
   }
 }

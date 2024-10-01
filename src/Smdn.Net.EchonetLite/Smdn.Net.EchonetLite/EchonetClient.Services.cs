@@ -1074,7 +1074,11 @@ partial class EchonetClient
       }
     }
 
-    device.ResetProperties(
+    // 詳細仕様が不明なオブジェクト(UnspecifiedEchonetObject)の場合は、読み取ったプロパティマップを適用する
+    // 詳細仕様が参照可能なオブジェクト(DetailedEchonetObject)の場合は、詳細仕様で定められた
+    // プロパティが適用されているため、読み取ったプロパティマップは適用しない
+    // (HasPropertyMapAcquiredは常にtrueであるため、そもそもプロパティマップの読み取りは行われない)
+    (device as UnspecifiedEchonetObject)?.ResetProperties(
       codes.Select(
         code => new UnspecifiedEchonetProperty(
           device: device,
@@ -1608,10 +1612,10 @@ partial class EchonetClient
     foreach (var prop in requestProps) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
 
-      if (property is null) {
+      if (sourceObject is UnspecifiedEchonetObject unspecifiedSourceObject && property is null) {
         // 未知のプロパティ
         // 新規作成
-        property = new UnspecifiedEchonetProperty(
+        var unspecifiedProperty = new UnspecifiedEchonetProperty(
           device: sourceObject,
           code: prop.EPC,
           canSet: false, // Setアクセス可能かどうか不明なので、暫定的にfalseを設定
@@ -1619,17 +1623,23 @@ partial class EchonetClient
           canAnnounceStatusChange: true // 通知してきたので少なくともAnnoアクセス可能と推定
         );
 
-        sourceObject.AddProperty(property);
+        unspecifiedSourceObject.AddProperty(unspecifiedProperty);
 
         logger?.LogInformation(
           "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
           sourceNode.Address,
           sourceObject.EOJ,
-          property.Code
+          unspecifiedProperty.Code
         );
+
+        property = unspecifiedProperty;
       }
 
-      if (!property.IsAcceptableValue(prop.EDT.Span)) {
+      if (property is null) {
+        // 詳細仕様で定義されていないプロパティなので、格納しない
+        hasError = true;
+      }
+      else if (!property.IsAcceptableValue(prop.EDT.Span)) {
         // スペック外なので、格納しない
         hasError = true;
       }
@@ -1701,10 +1711,10 @@ partial class EchonetClient
     foreach (var prop in requestProps) {
       var property = sourceObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
 
-      if (property is null) {
+      if (sourceObject is UnspecifiedEchonetObject unspecifiedSourceObject && property is null) {
         // 未知のプロパティ
         // 新規作成
-        property = new UnspecifiedEchonetProperty(
+        var unspecifiedProperty = new UnspecifiedEchonetProperty(
           device: sourceObject,
           code: prop.EPC,
           canSet: false, // Setアクセス可能かどうか不明なので、暫定的にfalseを設定
@@ -1712,17 +1722,23 @@ partial class EchonetClient
           canAnnounceStatusChange: true // 通知してきたので少なくともAnnoアクセス可能と推定
         );
 
-        sourceObject.AddProperty(property);
+        unspecifiedSourceObject.AddProperty(unspecifiedProperty);
 
         logger?.LogInformation(
           "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
           sourceNode.Address,
           sourceObject.EOJ,
-          property.Code
+          unspecifiedProperty.Code
         );
+
+        property = unspecifiedProperty;
       }
 
-      if (!property.IsAcceptableValue(prop.EDT.Span)) {
+      if (property is null) {
+        // 詳細仕様で定義されていないプロパティなので、格納しない
+        hasError = true;
+      }
+      else if (!property.IsAcceptableValue(prop.EDT.Span)) {
         // スペック外なので、格納しない
         hasError = true;
       }

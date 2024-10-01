@@ -6,6 +6,8 @@ using System.Linq;
 
 using NUnit.Framework;
 
+using Smdn.Net.EchonetLite.Appendix;
+
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite;
@@ -14,9 +16,9 @@ namespace Smdn.Net.EchonetLite;
 public class EchonetPropertyTests {
   private static EchonetProperty CreateProperty()
   {
-    var profile = new EchonetObject(new(0x0E, 0xF0, 0x00)); // node profile object
+    var profile = EchonetObject.Create(Profiles.NodeProfile, 0x00);
 
-    return EchonetProperty.Create(profile, profile.Spec.SetProperties.Values.First());
+    return EchonetProperty.Create(profile, Profiles.NodeProfile.SetProperties.Values.First());
   }
 
   [Test]
