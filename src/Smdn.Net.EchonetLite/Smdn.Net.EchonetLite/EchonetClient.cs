@@ -34,7 +34,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   private readonly ConcurrentDictionary<IPAddress, EchonetOtherNode> otherNodes;
   private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyOtherNodes;
 
-  /// <inheritdoc cref="EchonetClient(IPAddress, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
   public EchonetClient(
     IPAddress nodeAddress,
     IEchonetLiteHandler echonetLiteHandler,
@@ -49,13 +49,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   {
   }
 
-  /// <summary>
-  /// <see cref="EchonetClient"/>クラスのインスタンスを初期化します。
-  /// </summary>
-  /// <param name="nodeAddress">自ノードのアドレスを表す<see cref="IPAddress"/>。</param>
-  /// <param name="echonetLiteHandler">このインスタンスがECHONET Lite フレームを送受信するために使用する<see cref="IEchonetLiteHandler"/>。</param>
-  /// <param name="shouldDisposeEchonetLiteHandler">オブジェクトが破棄される際に、<paramref name="echonetLiteHandler"/>も破棄するかどうかを表す値。</param>
-  /// <param name="logger">このインスタンスの動作を記録する<see cref="ILogger{EchonetClient}"/>。</param>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="nodeAddress"/>が<see langword="null"/>です。
   /// あるいは、<paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
@@ -66,16 +60,42 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
     bool shouldDisposeEchonetLiteHandler,
     ILogger<EchonetClient>? logger
   )
+    : this(
+      selfNode: EchonetNode.CreateSelfNode(
+        address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
+        devices: Array.Empty<EchonetObject>()
+      ),
+      echonetLiteHandler: echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler)),
+      shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler,
+      logger: logger
+    )
+  {
+  }
+
+  /// <summary>
+  /// <see cref="EchonetClient"/>クラスのインスタンスを初期化します。
+  /// </summary>
+  /// <param name="selfNode">自ノードを表す<see cref="EchonetNode"/>。</param>
+  /// <param name="echonetLiteHandler">このインスタンスがECHONET Lite フレームを送受信するために使用する<see cref="IEchonetLiteHandler"/>。</param>
+  /// <param name="shouldDisposeEchonetLiteHandler">オブジェクトが破棄される際に、<paramref name="echonetLiteHandler"/>も破棄するかどうかを表す値。</param>
+  /// <param name="logger">このインスタンスの動作を記録する<see cref="ILogger{EchonetClient}"/>。</param>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="selfNode"/>が<see langword="null"/>です。
+  /// あるいは、<paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
+  /// </exception>
+  public EchonetClient(
+    EchonetNode selfNode,
+    IEchonetLiteHandler echonetLiteHandler,
+    bool shouldDisposeEchonetLiteHandler,
+    ILogger<EchonetClient>? logger
+  )
   {
     this.logger = logger;
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
     this.echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
     this.echonetLiteHandler.Received += EchonetDataReceived;
 
-    SelfNode = new EchonetSelfNode(
-      address: nodeAddress ?? throw new ArgumentNullException(nameof(nodeAddress)),
-      nodeProfile: EchonetObject.CreateGeneralNodeProfile()
-    );
+    SelfNode = selfNode ?? throw new ArgumentNullException(nameof(selfNode));
 
     otherNodes = new();
     readOnlyOtherNodes = new(otherNodes);
