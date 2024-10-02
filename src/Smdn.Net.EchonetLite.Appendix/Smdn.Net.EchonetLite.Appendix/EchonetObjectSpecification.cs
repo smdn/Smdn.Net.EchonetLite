@@ -12,7 +12,7 @@ namespace Smdn.Net.EchonetLite.Appendix;
 /// <summary>
 /// ECHONET Lite オブジェクト
 /// </summary>
-public sealed class EchonetObjectSpecification {
+public sealed class EchonetObjectSpecification : IEchonetObjectSpecification {
   private static readonly IReadOnlyDictionary<byte, EchonetPropertySpecification> EmptyPropertyDictionary
 #if SYSTEM_COLLECTIONS_OBJECTMODEL_READONLYDICTIONARY_EMPTY
     = ReadOnlyDictionary<byte, EchonetPropertySpecification>.Empty;
@@ -46,6 +46,9 @@ public sealed class EchonetObjectSpecification {
   /*
    * instance members
    */
+  byte IEchonetObjectSpecification.ClassGroupCode => ClassGroup.Code;
+  byte IEchonetObjectSpecification.ClassCode => Class.Code;
+  IEnumerable<IEchonetPropertySpecification> IEchonetObjectSpecification.Properties => AllProperties.Values;
 
   /// <summary>
   /// クラスグループ情報

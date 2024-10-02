@@ -17,14 +17,16 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup Label="assembly attributes">
     <Description>
-<![CDATA[Provides the APIs based on the specifications described in the "ECHONET Lite SPECIFICATION II ECHONET Lite Communication Middleware Specifications". Including APIs such as `IEchonetLiteHandler`, which is the interface for implementing the communication endpoint to the "Lower Communication Layers".
+<![CDATA[Provides common types and abstractions for `Smdn.Net.EchonetLite.*`.
+Also provides the APIs based on the specifications described in the "ECHONET Lite SPECIFICATION II ECHONET Lite Communication Middleware Specifications". Including APIs such as `IEchonetLiteHandler`, which is the interface for implementing the communication endpoint to the "Lower Communication Layers".
 
-「ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様」に記載されている「下位通信層」との通信エンドポイントを実装するための抽象インターフェース`IEchonetLiteHandler`などのAPIを提供します。]]>
+`Smdn.Net.EchonetLite.*`で共通して使用される型と抽象化機能を提供します。
+また「ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様」に記載されている「下位通信層」との通信エンドポイントを実装するための抽象インターフェース`IEchonetLiteHandler`などのAPIも提供します。]]>
     </Description>
   </PropertyGroup>
 
   <PropertyGroup Label="package properties">
-    <PackageTags>transport;connection;$(PackageTags)</PackageTags>
+    <PackageTags>abstraction;transport;connection;$(PackageTags)</PackageTags>
     <GenerateNupkgReadmeFileDependsOnTargets>$(GenerateNupkgReadmeFileDependsOnTargets);GenerateReadmeFileContent</GenerateNupkgReadmeFileDependsOnTargets>
   </PropertyGroup>
 

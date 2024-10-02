@@ -9,9 +9,6 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// ECHONET オブジェクト（EOJ）
 /// </summary>
 public readonly struct EOJ : IEquatable<EOJ> {
-  private const byte ClassGroupCodeForProfileClassGroup = 0x0E;
-  private const byte ClassCodeForNodeProfile = 0xF0;
-
   /// <summary>
   /// クラスグループコード
   /// </summary>
@@ -27,7 +24,7 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// </summary>
   public byte InstanceCode { get; }
 
-  internal bool IsNodeProfile => ClassGroupCode == ClassGroupCodeForProfileClassGroup && ClassCode == ClassCodeForNodeProfile;
+  internal bool IsNodeProfile => ClassGroupCode == Codes.ClassGroups.ProfileClass && ClassCode == Codes.Classes.NodeProfile;
 
   /// <summary>
   /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
@@ -53,7 +50,7 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// <param name="y">比較する2つめのECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <returns>2つのECHONET オブジェクトが同じである場合、もしくはどちらも同じプロファイルクラスグループのオブジェクトである場合は<see langword="true"/>、そうでない場合は<see langword="false"/>。</returns>
   public static bool AreSame(EOJ x, EOJ y)
-    => x.ClassGroupCode == ClassGroupCodeForProfileClassGroup && y.ClassGroupCode == ClassGroupCodeForProfileClassGroup
+    => x.ClassGroupCode == Codes.ClassGroups.ProfileClass && y.ClassGroupCode == Codes.ClassGroups.ProfileClass
       ? x.ClassCode == y.ClassCode // 同じプロファイルクラスグループのオブジェクトかどうか比較
       : x == y; // 同じECHONETオブジェクトかどうか比較
 

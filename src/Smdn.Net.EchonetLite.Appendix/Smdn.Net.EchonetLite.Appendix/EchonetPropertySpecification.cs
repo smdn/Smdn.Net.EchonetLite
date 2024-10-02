@@ -23,7 +23,7 @@ namespace Smdn.Net.EchonetLite.Appendix;
 /// <seealso href="https://echonet.jp/spec_g/">
 /// APPENDIX ECHONET 機器オブジェクト詳細規定 第２章 機器オブジェクトスーパークラス規定
 /// </seealso>
-public sealed class EchonetPropertySpecification {
+public sealed class EchonetPropertySpecification : IEchonetPropertySpecification {
   /// <summary>
   /// 指定されたプロパティコードをもつ、未知のECHONET プロパティを作成します。
   /// </summary>
@@ -252,5 +252,16 @@ public sealed class EchonetPropertySpecification {
     else {
       HasUnit = true;
     }
+  }
+
+  bool IEchonetPropertySpecification.IsAcceptableValue(ReadOnlySpan<byte> edt)
+  {
+    if (MaxSize < edt.Length)
+      return false;
+
+    if (MinSize > edt.Length)
+      return false;
+
+    return true;
   }
 }
