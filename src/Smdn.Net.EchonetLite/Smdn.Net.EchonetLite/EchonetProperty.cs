@@ -27,19 +27,19 @@ public abstract class EchonetProperty {
   /// 詳細仕様を指定して<see cref="EchonetProperty"/>インスタンスを作成します。
   /// </summary>
   /// <param name="device">このプロパティが属するECHONET オブジェクトを表す<see cref="EchonetObject"/>。</param>
-  /// <param name="spec">プロパティの詳細仕様を表す<see cref="IEchonetPropertySpecification"/>。</param>
+  /// <param name="propertyDetail">プロパティの詳細仕様を表す<see cref="IEchonetPropertySpecification"/>。</param>
   /// <returns>作成された<see cref="EchonetProperty"/>インスタンス。</returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="device"/>が<see langword="null"/>です。
-  /// または、<paramref name="spec"/>が<see langword="null"/>です。
+  /// または、<paramref name="propertyDetail"/>が<see langword="null"/>です。
   /// </exception>
   public static EchonetProperty Create(
     EchonetObject device,
-    IEchonetPropertySpecification spec
+    IEchonetPropertySpecification propertyDetail
   )
     => new DetailedEchonetProperty(
       device: device ?? throw new ArgumentNullException(nameof(device)),
-      spec: spec ?? throw new ArgumentNullException(nameof(spec))
+      propertyDetail: propertyDetail ?? throw new ArgumentNullException(nameof(propertyDetail))
     );
 
   /// <summary>

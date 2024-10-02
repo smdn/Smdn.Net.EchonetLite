@@ -15,14 +15,14 @@ internal sealed class DetailedEchonetObject : EchonetObject {
     internal set => throw new InvalidOperationException();
   }
 
-  public override byte ClassGroupCode => Spec.ClassGroupCode;
-  public override byte ClassCode => Spec.ClassCode;
+  public override byte ClassGroupCode => Detail.ClassGroupCode;
+  public override byte ClassCode => Detail.ClassCode;
   public override byte InstanceCode { get; }
 
   /// <summary>
   /// このインスタンスが表すECHONET オブジェクトの詳細仕様を表す<see cref="IEchonetObjectSpecification"/>。
   /// </summary>
-  public IEchonetObjectSpecification Spec { get; }
+  public IEchonetObjectSpecification Detail { get; }
 
   /// <summary>
   /// プロパティの一覧
@@ -34,31 +34,31 @@ internal sealed class DetailedEchonetObject : EchonetObject {
   /// <summary>
   /// GETプロパティの一覧
   /// </summary>
-  public override IEnumerable<EchonetProperty> GetProperties => properties.Where(static p => p.Spec.CanGet);
+  public override IEnumerable<EchonetProperty> GetProperties => properties.Where(static p => p.Detail.CanGet);
 
   /// <summary>
   /// SETプロパティの一覧
   /// </summary>
-  public override IEnumerable<EchonetProperty> SetProperties => properties.Where(static p => p.Spec.CanSet);
+  public override IEnumerable<EchonetProperty> SetProperties => properties.Where(static p => p.Detail.CanSet);
 
   /// <summary>
   /// ANNOプロパティの一覧
   /// </summary>
-  public override IEnumerable<EchonetProperty> AnnoProperties => properties.Where(static p => p.Spec.CanAnnounceStatusChange);
+  public override IEnumerable<EchonetProperty> AnnoProperties => properties.Where(static p => p.Detail.CanAnnounceStatusChange);
 
   /// <summary>
   /// スペック指定のコンストラクタ
   /// プロパティは仕様から取得する
   /// </summary>
-  /// <param name="classObject">オブジェクトクラス</param>
+  /// <param name="objectDetail">オブジェクトクラス</param>
   /// <param name="instanceCode">インスタンスコード</param>
-  public DetailedEchonetObject(IEchonetObjectSpecification classObject, byte instanceCode)
+  public DetailedEchonetObject(IEchonetObjectSpecification objectDetail, byte instanceCode)
   {
-    Spec = classObject ?? throw new ArgumentNullException(nameof(classObject));
+    Detail = objectDetail ?? throw new ArgumentNullException(nameof(objectDetail));
     InstanceCode = instanceCode;
 
     properties = new(
-      classObject.Properties.Select(spec => new DetailedEchonetProperty(this, spec))
+      objectDetail.Properties.Select(propertyDetail => new DetailedEchonetProperty(this, propertyDetail))
     );
   }
 }

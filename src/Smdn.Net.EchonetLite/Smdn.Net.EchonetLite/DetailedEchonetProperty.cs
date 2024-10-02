@@ -8,25 +8,25 @@ namespace Smdn.Net.EchonetLite;
 /// 詳細仕様が参照可能なECHONET プロパティを表すクラスです。
 /// </summary>
 internal sealed class DetailedEchonetProperty : EchonetProperty {
-  public override byte Code => Spec.Code;
-  public override bool CanSet => Spec.CanSet;
-  public override bool CanGet => Spec.CanGet;
-  public override bool CanAnnounceStatusChange => Spec.CanAnnounceStatusChange;
+  public override byte Code => Detail.Code;
+  public override bool CanSet => Detail.CanSet;
+  public override bool CanGet => Detail.CanGet;
+  public override bool CanAnnounceStatusChange => Detail.CanAnnounceStatusChange;
 
   /// <summary>
   /// このインスタンスが表すECHONET プロパティの詳細仕様を表す<see cref="IEchonetPropertySpecification"/>。
   /// </summary>
-  public IEchonetPropertySpecification Spec { get; }
+  public IEchonetPropertySpecification Detail { get; }
 
   internal DetailedEchonetProperty(
     EchonetObject device,
-    IEchonetPropertySpecification spec
+    IEchonetPropertySpecification propertyDetail
   )
     : base(device)
   {
-    Spec = spec ?? throw new ArgumentNullException(nameof(spec));
+    Detail = propertyDetail ?? throw new ArgumentNullException(nameof(propertyDetail));
   }
 
   protected internal override bool IsAcceptableValue(ReadOnlySpan<byte> edt)
-    => Spec.IsAcceptableValue(edt);
+    => Detail.IsAcceptableValue(edt);
 }
