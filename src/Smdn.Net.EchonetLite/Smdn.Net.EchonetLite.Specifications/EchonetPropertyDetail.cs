@@ -10,8 +10,8 @@ namespace Smdn.Net.EchonetLite.Specifications;
 /// <seealso href="https://echonet.jp/spec_v114_lite/">
 /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 第６章 ECHONET オブジェクト詳細規定
 /// </seealso>
-internal sealed class EchonetPropertyDetail : IEchonetPropertySpecification {
-  public byte Code { get; init; }
+internal sealed class EchonetPropertyDetail(byte code) : IEchonetPropertySpecification {
+  public byte Code { get; } = code;
   public int SizeMin { get; init; }
   public int? SizeMax { get; init; }
   public bool CanSet { get; init; }

@@ -17,10 +17,9 @@ internal sealed class EchonetNodeProfileDetail : EchonetProfileObjectDetail {
   public override byte ClassCode => Codes.Classes.NodeProfile;
   public override IEnumerable<IEchonetPropertySpecification> Properties => BasePropertyDetails.Concat(PropertyDetails);
 
-  private static readonly IReadOnlyList<IEchonetPropertySpecification> PropertyDetails = [
+  private static readonly IReadOnlyList<EchonetPropertyDetail> PropertyDetails = [
     // 動作状態
-    new EchonetPropertyDetail() {
-      Code = 0x80,
+    new(0x80) {
       SizeMin = 1,
       SizeMax = 1,
       CanSet = true,
@@ -29,71 +28,62 @@ internal sealed class EchonetNodeProfileDetail : EchonetProfileObjectDetail {
       CanAnnounceStatusChange = true,
     },
     // Version 情報
-    new EchonetPropertyDetail() {
-      Code = 0x82,
+    new(0x82) {
       SizeMin = 4,
       SizeMax = 4,
       CanGet = true,
       IsGetMandatory = true,
     },
     // 識別番号
-    new EchonetPropertyDetail() {
-      Code = 0x83,
+    new(0x83) {
       SizeMin = 17,
       SizeMax = 17,
       CanGet = true,
       IsGetMandatory = true,
     },
     // 異常内容
-    new EchonetPropertyDetail() {
-      Code = 0x89,
+    new(0x89) {
       SizeMin = 2,
       SizeMax = 2,
       CanGet = true,
     },
     // 個体識別情報
-    new EchonetPropertyDetail() {
-      Code = 0xBF,
+    new(0xBF) {
       SizeMin = 2,
       SizeMax = 2,
       CanSet = true,
       CanGet = true,
     },
     // 自ノードインスタンス数
-    new EchonetPropertyDetail() {
-      Code = 0xD3,
+    new(0xD3) {
       SizeMin = 3,
       SizeMax = 3,
       CanGet = true,
       IsGetMandatory = true,
     },
     // 自ノードクラス数
-    new EchonetPropertyDetail() {
-      Code = 0xD4,
+    new(0xD4) {
       SizeMin = 2,
       SizeMax = 2,
       CanGet = true,
       IsGetMandatory = true,
     },
     // インスタンスリスト通知
-    new EchonetPropertyDetail() {
-      Code = 0xD5,
+    new(0xD5) {
       SizeMin = 0,
       SizeMax = 253,
       CanAnnounceStatusChange = true,
       IsStatusChangeAnnouncementMandatory = true,
     },
     // 自ノードインスタンスリスト S
-    new EchonetPropertyDetail() {
-      Code = 0xD6,
+    new(0xD6) {
       SizeMin = 0,
       SizeMax = 253,
       CanGet = true,
       IsGetMandatory = true,
     },
     // 自ノードクラスリストS
-    new EchonetPropertyDetail() {
-      Code = 0xD7,
+    new(0xD7) {
       SizeMin = 0,
       SizeMax = 17,
       CanGet = true,
