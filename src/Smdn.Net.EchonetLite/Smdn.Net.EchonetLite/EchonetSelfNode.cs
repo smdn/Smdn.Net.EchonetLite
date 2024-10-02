@@ -30,6 +30,10 @@ internal sealed class EchonetSelfNode : EchonetNode {
     : base(nodeProfile)
   {
     this.devices = new(devices);
+
+    foreach (var device in this.devices) {
+      device.OwnerNode = this;
+    }
   }
 
   protected internal override EchonetObject? FindDevice(EOJ eoj)

@@ -54,9 +54,9 @@ public abstract class EchonetProperty {
   public event EventHandler<(ReadOnlyMemory<byte> OldValue, ReadOnlyMemory<byte> NewValue)>? ValueChanged;
 
   /// <summary>
-  /// このインスタンスが属するECHONETオブジェクトを表す<see cref="EchonetObject"/>を返します。
+  /// このインスタンスが属するECHONETオブジェクトを表す<see cref="EchonetObject"/>を取得します。
   /// </summary>
-  public EchonetObject Device { get; }
+  public abstract EchonetObject Device { get; }
 
   /// <summary>
   /// プロパティ値を保持するバッファとなる<see cref="IBufferWriter{T}"/> 。
@@ -138,13 +138,8 @@ public abstract class EchonetProperty {
   /// <summary>
   /// コンストラクタ。
   /// </summary>
-  /// <param name="device">このプロパティが属するECHONET オブジェクトを表す<see cref="EchonetObject"/>。</param>
-  /// <exception cref="ArgumentNullException">
-  /// <paramref name="device"/>が<see langword="null"/>です。
-  /// </exception>
-  private protected EchonetProperty(EchonetObject device)
+  private protected EchonetProperty()
   {
-    Device = device ?? throw new ArgumentNullException(nameof(device));
   }
 
   /// <summary>
