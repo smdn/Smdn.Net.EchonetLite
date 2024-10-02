@@ -4,6 +4,8 @@
 using System;
 using System.Buffers;
 
+using Smdn.Net.EchonetLite.ComponentModel;
+
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
@@ -24,25 +26,6 @@ namespace Smdn.Net.EchonetLite;
 /// </seealso>
 public abstract class EchonetProperty {
   /// <summary>
-  /// 詳細仕様を指定して<see cref="EchonetProperty"/>インスタンスを作成します。
-  /// </summary>
-  /// <param name="device">このプロパティが属するECHONET オブジェクトを表す<see cref="EchonetObject"/>。</param>
-  /// <param name="propertyDetail">プロパティの詳細仕様を表す<see cref="IEchonetPropertySpecification"/>。</param>
-  /// <returns>作成された<see cref="EchonetProperty"/>インスタンス。</returns>
-  /// <exception cref="ArgumentNullException">
-  /// <paramref name="device"/>が<see langword="null"/>です。
-  /// または、<paramref name="propertyDetail"/>が<see langword="null"/>です。
-  /// </exception>
-  public static EchonetProperty Create(
-    EchonetObject device,
-    IEchonetPropertySpecification propertyDetail
-  )
-    => new DetailedEchonetProperty(
-      device: device ?? throw new ArgumentNullException(nameof(device)),
-      propertyDetail: propertyDetail ?? throw new ArgumentNullException(nameof(propertyDetail))
-    );
-
-  /// <summary>
   /// このインスタンスのプロパティ値データ(EDT)に変更があった場合に発生するイベント。
   /// </summary>
   /// <remarks>
@@ -54,9 +37,16 @@ public abstract class EchonetProperty {
   public event EventHandler<(ReadOnlyMemory<byte> OldValue, ReadOnlyMemory<byte> NewValue)>? ValueChanged;
 
   /// <summary>
-  /// このインスタンスが属するECHONETオブジェクトを表す<see cref="EchonetObject"/>を返します。
+  /// このインスタンスが属するECHONETオブジェクトを表す<see cref="EchonetObject"/>を取得します。
   /// </summary>
-  public EchonetObject Device { get; }
+  public abstract EchonetObject Device { get; }
+
+  /// <summary>
+  /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
+  /// </summary>
+  /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
+  protected virtual IEventInvoker EventInvoker
+    => Device.OwnerNode?.EventInvoker ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
 
   /// <summary>
   /// プロパティ値を保持するバッファとなる<see cref="IBufferWriter{T}"/> 。
@@ -138,13 +128,11 @@ public abstract class EchonetProperty {
   /// <summary>
   /// コンストラクタ。
   /// </summary>
-  /// <param name="device">このプロパティが属するECHONET オブジェクトを表す<see cref="EchonetObject"/>。</param>
-  /// <exception cref="ArgumentNullException">
-  /// <paramref name="device"/>が<see langword="null"/>です。
-  /// </exception>
-  private protected EchonetProperty(EchonetObject device)
+  /// <remarks>
+  /// このコンストラクタはテスト目的で公開されています。　コードから直接使用することを意図したものではありません。
+  /// </remarks>
+  protected /* private protected */ EchonetProperty()
   {
-    Device = device ?? throw new ArgumentNullException(nameof(device));
   }
 
   /// <summary>
@@ -251,8 +239,7 @@ public abstract class EchonetProperty {
         var oldValueMemory = oldValue is null ? ReadOnlyMemory<byte>.Empty : oldValue.AsMemory(0, oldValueLength);
         var newValueMemory = value.WrittenMemory;
 
-        // TODO: use ISynchronizeInvoke; Device.SynchronizingObject.Invoke(...)
-        valueChangedHandlers.Invoke(this, (oldValueMemory, newValueMemory));
+        EventInvoker.InvokeEvent(this, valueChangedHandlers, e: (oldValueMemory, newValueMemory));
       }
     }
     finally {

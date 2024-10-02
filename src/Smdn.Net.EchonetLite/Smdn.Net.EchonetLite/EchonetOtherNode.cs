@@ -42,7 +42,7 @@ internal sealed class EchonetOtherNode : EchonetNode {
     if (devices.TryGetValue(eoj, out var device))
       return device;
 
-    var newDevice = new UnspecifiedEchonetObject(eoj);
+    var newDevice = new UnspecifiedEchonetObject(this, eoj);
 
     device = devices.GetOrAdd(eoj, newDevice);
 

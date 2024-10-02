@@ -3,9 +3,12 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using NUnit.Framework;
+
+using Smdn.Net.EchonetLite.ComponentModel;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
@@ -13,36 +16,25 @@ namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class EchonetPropertyTests {
-  private class PseudoObjectSpecification : IEchonetObjectSpecification {
-    public byte ClassGroupCode => 0x00;
-    public byte ClassCode => 0x00;
-    public IEnumerable<IEchonetPropertySpecification> Properties { get; } = [
-      new PseudoPropertySpecification(0x00)
-    ];
+  private class PseudoEventInvoker : IEventInvoker {
+    public ISynchronizeInvoke? SynchronizingObject { get; set; }
+
+    public void InvokeEvent<TEventArgs>(object? sender, EventHandler<TEventArgs>? eventHandler, TEventArgs e)
+      => eventHandler?.Invoke(sender, e);
   }
 
-  private class PseudoPropertySpecification(byte code) : IEchonetPropertySpecification {
-    public byte Code { get; } = code;
-    public bool CanSet => true;
-    public bool IsSetMandatory => false;
-    public bool CanGet => true;
-    public bool IsGetMandatory => false;
-    public bool CanAnnounceStatusChange => true;
-    public bool IsStatusChangeAnnouncementMandatory => false;
+  private class PseudoProperty : EchonetProperty {
+    public override EchonetObject Device => throw new NotImplementedException();
+    protected override IEventInvoker EventInvoker { get; } = new PseudoEventInvoker();
 
-    public bool IsAcceptableValue(ReadOnlySpan<byte> edt) => true;
+    public override byte Code => 0x00;
+    public override bool CanSet => true;
+    public override bool CanGet => true;
+    public override bool CanAnnounceStatusChange => true;
   }
 
   private static EchonetProperty CreateProperty()
-  {
-    var deviceDetail = new PseudoObjectSpecification();
-    var device = EchonetObject.Create(
-      objectDetail: deviceDetail,
-      instanceCode: 0x00
-    );
-
-    return EchonetProperty.Create(device, deviceDetail.Properties.First());
-  }
+    => new PseudoProperty();
 
   [Test]
   public void ValueSpan_InitialState()

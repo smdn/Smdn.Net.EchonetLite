@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
+using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -28,7 +29,30 @@ public abstract partial class EchonetObject {
   /// 現在のオブジェクトにECHONET Lite プロパティが追加・削除された際にイベントが発生します。
   /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
   /// </remarks>
-  public event NotifyCollectionChangedEventHandler? PropertiesChanged;
+  public event EventHandler<NotifyCollectionChangedEventArgs>? PropertiesChanged;
+
+  /// <summary>
+  /// このオブジェクトが属するECHONET Liteノードを表す<see cref="EchonetNode"/>を取得します。
+  /// </summary>
+  public EchonetNode Node {
+    get {
+#if DEBUG
+      if (OwnerNode is null)
+        throw new InvalidOperationException($"{nameof(OwnerNode)} is null");
+#endif
+
+      return OwnerNode!;
+    }
+  }
+
+  internal EchonetNode? OwnerNode { get; set; }
+
+  /// <summary>
+  /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
+  /// </summary>
+  /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
+  protected virtual IEventInvoker EventInvoker
+    => OwnerNode?.EventInvoker ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
 
   /// <summary>
   /// プロパティマップが取得済みであるかどうかを表す<see langword="bool"/>型の値を取得します。
@@ -84,9 +108,29 @@ public abstract partial class EchonetObject {
   /// </summary>
   public virtual IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.CanAnnounceStatusChange);
 
-  private protected void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
+  /// <summary>
+  /// このオブジェクトが属するECHONET Liteノードを指定せずにインスタンスを作成します。
+  /// </summary>
+  /// <remarks>
+  /// このコンストラクタを使用してインスタンスを作成した場合、インスタンスが使用されるまでの間に、
+  /// <see cref="OwnerNode"/>プロパティへ明示的に<see cref="EchonetNode"/>を設定する必要があります。
+  /// </remarks>
+  private protected EchonetObject()
   {
-    // TODO: use ISynchronizeInvoke
-    PropertiesChanged?.Invoke(this, e);
   }
+
+  /// <summary>
+  /// このオブジェクトが属するECHONET Liteノードを指定してインスタンスを作成します。
+  /// </summary>
+  /// <param name="node">このオブジェクトが属するECHONET Liteノードを表す<see cref="EchonetNode"/>を指定します。</param>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="node"/>が<see langword="null"/>です。
+  /// </exception>
+  private protected EchonetObject(EchonetNode node)
+  {
+    OwnerNode = node ?? throw new ArgumentNullException(nameof(node));
+  }
+
+  private protected void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
+    => EventInvoker.InvokeEvent(this, PropertiesChanged, e);
 }

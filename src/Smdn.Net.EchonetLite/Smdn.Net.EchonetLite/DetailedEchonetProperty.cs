@@ -8,6 +8,8 @@ namespace Smdn.Net.EchonetLite;
 /// 詳細仕様が参照可能なECHONET プロパティを表すクラスです。
 /// </summary>
 internal sealed class DetailedEchonetProperty : EchonetProperty {
+  public override EchonetObject Device { get; }
+
   public override byte Code => Detail.Code;
   public override bool CanSet => Detail.CanSet;
   public override bool CanGet => Detail.CanGet;
@@ -22,8 +24,8 @@ internal sealed class DetailedEchonetProperty : EchonetProperty {
     EchonetObject device,
     IEchonetPropertySpecification propertyDetail
   )
-    : base(device)
   {
+    Device = device ?? throw new ArgumentNullException(nameof(device));
     Detail = propertyDetail ?? throw new ArgumentNullException(nameof(propertyDetail));
   }
 

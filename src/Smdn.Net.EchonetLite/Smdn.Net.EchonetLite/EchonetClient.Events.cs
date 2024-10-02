@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
+using Smdn.Net.EchonetLite.ComponentModel;
+
 namespace Smdn.Net.EchonetLite;
 
 #pragma warning disable IDE0040
@@ -142,6 +144,20 @@ partial class EchonetClient
     EventHandler<TEventArgs>? eventHandler,
     TEventArgs e
   )
+    => InvokeEvent(this, eventHandler, e);
+
+  void IEventInvoker.InvokeEvent<TEventArgs>(
+    object? sender,
+    EventHandler<TEventArgs>? eventHandler,
+    TEventArgs e
+  )
+    => InvokeEvent(sender, eventHandler, e);
+
+  protected void InvokeEvent<TEventArgs>(
+    object? sender,
+    EventHandler<TEventArgs>? eventHandler,
+    TEventArgs e
+  )
   {
     if (eventHandler is null)
       return;
@@ -150,7 +166,7 @@ partial class EchonetClient
 
     if (synchronizingObject is null || !synchronizingObject.InvokeRequired) {
       try {
-        eventHandler(this, e);
+        eventHandler(sender, e);
       }
 #pragma warning disable CA1031
       catch {
@@ -161,7 +177,7 @@ partial class EchonetClient
     else {
       _ = synchronizingObject.BeginInvoke(
         method: eventHandler,
-        args: [this, e]
+        args: [sender, e]
       );
     }
   }

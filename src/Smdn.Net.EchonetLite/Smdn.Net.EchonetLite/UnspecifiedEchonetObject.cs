@@ -25,7 +25,8 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
   public override IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.CanSet);
   public override IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.CanAnnounceStatusChange);
 
-  internal UnspecifiedEchonetObject(EOJ eoj)
+  internal UnspecifiedEchonetObject(EchonetNode node, EOJ eoj)
+    : base(node)
   {
     ClassGroupCode = eoj.ClassGroupCode;
     ClassCode = eoj.ClassCode;
