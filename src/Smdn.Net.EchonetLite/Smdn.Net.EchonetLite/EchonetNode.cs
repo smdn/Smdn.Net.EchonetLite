@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 
+using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -24,6 +25,13 @@ public abstract class EchonetNode {
   /// 現在このインスタンスを管理している<see cref="EchonetClient"/>を取得します。
   /// </summary>
   internal EchonetClient? Owner { get; set; }
+
+  /// <summary>
+  /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
+  /// </summary>
+  /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
+  internal IEventInvoker EventInvoker
+    => Owner ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
 
   /// <summary>
   /// 下位スタックのアドレスを表す<see cref="IPAddress"/>を取得します。
@@ -48,7 +56,7 @@ public abstract class EchonetNode {
   /// このインスタンスが他のECHONET Liteノード(他ノード)を表す場合、ノードへECHONET Lite オブジェクトが追加された際にイベントが発生します。
   /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
   /// </remarks>
-  public event NotifyCollectionChangedEventHandler? DevicesChanged;
+  public event EventHandler<NotifyCollectionChangedEventArgs>? DevicesChanged;
 
   private protected EchonetNode(EchonetObject nodeProfile)
   {
@@ -58,7 +66,5 @@ public abstract class EchonetNode {
   protected internal abstract EchonetObject? FindDevice(EOJ eoj);
 
   private protected void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
-  {
-    DevicesChanged?.Invoke(this, e);
-  }
+    => EventInvoker.InvokeEvent(this, DevicesChanged, e);
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
+using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -28,7 +29,7 @@ public abstract partial class EchonetObject {
   /// 現在のオブジェクトにECHONET Lite プロパティが追加・削除された際にイベントが発生します。
   /// 変更の詳細は、イベント引数<see cref="NotifyCollectionChangedEventArgs"/>を参照してください。
   /// </remarks>
-  public event NotifyCollectionChangedEventHandler? PropertiesChanged;
+  public event EventHandler<NotifyCollectionChangedEventArgs>? PropertiesChanged;
 
   /// <summary>
   /// このオブジェクトが属するECHONET Liteノードを表す<see cref="EchonetNode"/>を取得します。
@@ -45,6 +46,13 @@ public abstract partial class EchonetObject {
   }
 
   internal EchonetNode? OwnerNode { get; set; }
+
+  /// <summary>
+  /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
+  /// </summary>
+  /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
+  protected virtual IEventInvoker EventInvoker
+    => OwnerNode?.EventInvoker ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
 
   /// <summary>
   /// プロパティマップが取得済みであるかどうかを表す<see langword="bool"/>型の値を取得します。
@@ -124,8 +132,5 @@ public abstract partial class EchonetObject {
   }
 
   private protected void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
-  {
-    // TODO: use ISynchronizeInvoke
-    PropertiesChanged?.Invoke(this, e);
-  }
+    => EventInvoker.InvokeEvent(this, PropertiesChanged, e);
 }

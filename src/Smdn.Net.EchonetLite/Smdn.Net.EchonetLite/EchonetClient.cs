@@ -10,11 +10,12 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Transport;
 
 namespace Smdn.Net.EchonetLite;
 
-public partial class EchonetClient : IDisposable, IAsyncDisposable {
+public partial class EchonetClient : IEventInvoker, IDisposable, IAsyncDisposable {
   private readonly bool shouldDisposeEchonetLiteHandler;
   private IEchonetLiteHandler echonetLiteHandler; // null if disposed
   private readonly ILogger? logger;
