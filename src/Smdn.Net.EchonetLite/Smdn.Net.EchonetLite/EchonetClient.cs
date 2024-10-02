@@ -31,7 +31,7 @@ public partial class EchonetClient : IDisposable, IAsyncDisposable {
   /// 新しいECHONET Lite ノードが追加された場合は、イベント<see cref="NodeJoined"/>が発生します。
   /// </remarks>
   /// <seealso cref="NodeJoined"/>
-  public IReadOnlyCollection<EchonetNode> Nodes => readOnlyOtherNodes.Values;
+  public IReadOnlyCollection<EchonetNode> OtherNodes => readOnlyOtherNodes.Values;
 
   private readonly ConcurrentDictionary<IPAddress, EchonetOtherNode> otherNodes;
   private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyOtherNodes;
