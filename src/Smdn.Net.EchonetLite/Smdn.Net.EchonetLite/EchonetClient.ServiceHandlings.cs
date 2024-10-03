@@ -21,6 +21,14 @@ partial class EchonetClient
 #pragma warning restore IDE0040
 {
   /// <summary>
+  /// 受信したECHONET Lite サービス要求を処理するためのタスクを作成し、スケジューリングするための<see cref="TaskFactory"/>を取得・設定します。
+  /// </summary>
+  /// <remarks>
+  /// <see langword="null"/>を設定した場合、<see cref="Task.Factory"/>を使用します。
+  /// </remarks>
+  public TaskFactory? ServiceHandlerTaskFactory { get; set; }
+
+  /// <summary>
   /// 指定された時間でタイムアウトする<see cref="CancellationTokenSource"/>を作成します。
   /// </summary>
   /// <param name="timeoutMilliseconds">
@@ -79,25 +87,26 @@ partial class EchonetClient
       ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
       : SelfNode.FindDevice(message.DEOJ);
 
+    var handlerTaskFactory = ServiceHandlerTaskFactory ?? Task.Factory;
     Task? task = null;
 
     switch (message.ESV) {
       case ESV.SetI: // プロパティ値書き込み要求（応答不要）
         // あれば、書き込んでおわり
         // なければ、プロパティ値書き込み要求不可応答 SetI_SNA
-        task = Task.Run(() => HandlePropertyValueWriteRequestAsync(address, tid, message, destObject));
+        task = handlerTaskFactory.StartNew(() => HandlePropertyValueWriteRequestAsync(address, tid, message, destObject));
         break;
 
       case ESV.SetC: // プロパティ値書き込み要求（応答要）
         // あれば、書き込んで プロパティ値書き込み応答 Set_Res
         // なければ、プロパティ値書き込み要求不可応答 SetC_SNA
-        task = Task.Run(() => HandlePropertyValueWriteRequestResponseRequiredAsync(address, tid, message, destObject));
+        task = handlerTaskFactory.StartNew(() => HandlePropertyValueWriteRequestResponseRequiredAsync(address, tid, message, destObject));
         break;
 
       case ESV.Get: // プロパティ値読み出し要求
         // あれば、プロパティ値読み出し応答 Get_Res
         // なければ、プロパティ値読み出し不可応答 Get_SNA
-        task = Task.Run(() => HandlePropertyValueReadRequest(address, tid, message, destObject));
+        task = handlerTaskFactory.StartNew(() => HandlePropertyValueReadRequest(address, tid, message, destObject));
         break;
 
       case ESV.InfRequest: // プロパティ値通知要求
@@ -108,19 +117,19 @@ partial class EchonetClient
       case ESV.SetGet: // プロパティ値書き込み・読み出し要求
         // あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
         // なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
-        task = Task.Run(() => HandlePropertyValueWriteReadRequestAsync(address, tid, message, destObject));
+        task = handlerTaskFactory.StartNew(() => HandlePropertyValueWriteReadRequestAsync(address, tid, message, destObject));
         break;
 
       case ESV.Inf: // プロパティ値通知
         // プロパティ値通知要求 INF_REQのレスポンス
         // または、自発的な通知のケースがある。
         // なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
-        task = Task.Run(() => HandlePropertyValueNotificationRequestAsync(address, tid, message, sourceNode));
+        task = handlerTaskFactory.StartNew(() => HandlePropertyValueNotificationRequestAsync(address, tid, message, sourceNode));
         break;
 
       case ESV.InfC: // プロパティ値通知（応答要）
         // プロパティ値通知応答 INFC_Res
-        task = Task.Run(() => HandlePropertyValueNotificationResponseRequiredAsync(address, tid, message, sourceNode, destObject));
+        task = handlerTaskFactory.StartNew(() => HandlePropertyValueNotificationResponseRequiredAsync(address, tid, message, sourceNode, destObject));
         break;
 
       case ESV.SetIServiceNotAvailable: // プロパティ値書き込み要求不可応答
