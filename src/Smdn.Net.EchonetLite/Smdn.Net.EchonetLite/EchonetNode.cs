@@ -61,6 +61,7 @@ public abstract class EchonetNode {
   private protected EchonetNode(EchonetObject nodeProfile)
   {
     NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
+    NodeProfile.OwnerNode = this;
   }
 
   protected internal abstract EchonetObject? FindDevice(EOJ eoj);
