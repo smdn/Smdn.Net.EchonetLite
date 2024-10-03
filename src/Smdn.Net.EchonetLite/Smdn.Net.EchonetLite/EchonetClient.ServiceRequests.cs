@@ -1111,7 +1111,7 @@ partial class EchonetClient
         sourceObject: SelfNode.NodeProfile,
         destinationNode: sourceNode,
         destinationObject: device,
-        properties: device.Properties.Where(static p => p.Code is EPCPropMapAnno or EPCPropMapSet or EPCPropMapGet),
+        propertyCodes: [EPCPropMapAnno, EPCPropMapSet, EPCPropMapGet],
         cancellationToken: ctsTimeout.Token
       ).ConfigureAwait(false);
 
