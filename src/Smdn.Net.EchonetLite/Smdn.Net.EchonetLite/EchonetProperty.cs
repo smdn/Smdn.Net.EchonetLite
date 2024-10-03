@@ -320,10 +320,10 @@ public abstract class EchonetProperty {
 
       // 値が新規に設定される場合、または以前の値から変更がある場合はValueChangedイベントを起こす
       if (oldValue is null || !oldValue.AsSpan(0, oldValueLength).SequenceEqual(value.WrittenSpan)) {
-        var oldValueMemory = oldValue is null ? ReadOnlyMemory<byte>.Empty : oldValue.AsMemory(0, oldValueLength);
+        var oldValueCopy = oldValue is null ? Array.Empty<byte>() : oldValue.AsSpan(0, oldValueLength).ToArray();
         var newValueMemory = value.WrittenMemory;
 
-        EventInvoker.InvokeEvent(this, valueChangedHandlers, e: (oldValueMemory, newValueMemory));
+        EventInvoker.InvokeEvent(this, valueChangedHandlers, e: (oldValueCopy, newValueMemory));
       }
     }
     finally {
