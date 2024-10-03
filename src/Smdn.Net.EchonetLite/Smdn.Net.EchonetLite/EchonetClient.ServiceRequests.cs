@@ -442,7 +442,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
-  public async Task<(
+  public Task<(
     bool Result,
     IReadOnlyCollection<PropertyValue> Properties
   )>
@@ -451,6 +451,92 @@ partial class EchonetClient
     EchonetNode? destinationNode,
     EchonetObject destinationObject,
     IEnumerable<EchonetProperty> properties,
+    CancellationToken cancellationToken = default
+  )
+    => PerformPropertyValueReadRequestAsync(
+      sourceObject: sourceObject ?? throw new ArgumentNullException(nameof(sourceObject)),
+      destinationNode: destinationNode,
+      destinationObject: destinationObject ?? throw new ArgumentNullException(nameof(destinationObject)),
+      properties: (properties ?? throw new ArgumentNullException(nameof(properties))).Select(ConvertToPropertyValueExceptValueData),
+      cancellationToken: cancellationToken
+    );
+
+  /// <summary>
+  /// ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。　このサービスは一斉同報が可能です。
+  /// </summary>
+  /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchonetNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+  /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="propertyCodes">処理対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>
+  /// 非同期の操作を表す<see cref="Task{T}"/>。
+  /// 成功応答(Get_Res <c>0x72</c>)の場合は<see langword="true"/>、不可応答(Get_SNA <c>0x52</c>)その他の場合は<see langword="false"/>を返します。
+  /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
+  /// </returns>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+  /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+  /// または、<paramref name="propertyCodes"/>が<see langword="null"/>です。
+  /// </exception>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
+  /// </seealso>
+  public Task<(
+    bool Result,
+    IReadOnlyCollection<PropertyValue> Properties
+  )>
+  PerformPropertyValueReadRequestAsync(
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<byte> propertyCodes,
+    CancellationToken cancellationToken = default
+  )
+    => PerformPropertyValueReadRequestAsync(
+      sourceObject: sourceObject ?? throw new ArgumentNullException(nameof(sourceObject)),
+      destinationNode: destinationNode,
+      destinationObject: destinationObject ?? throw new ArgumentNullException(nameof(destinationObject)),
+      properties: (propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))).Select(ConvertToPropertyValue),
+      cancellationToken: cancellationToken
+    );
+
+  /// <summary>
+  /// ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。　このサービスは一斉同報が可能です。
+  /// </summary>
+  /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="destinationNode">相手先ECHONET Lite ノードを表す<see cref="EchonetNode"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+  /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="properties">処理対象のECHONET Lite プロパティの一覧を表す<see cref="IEnumerable{PropertyValue}"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>
+  /// 非同期の操作を表す<see cref="Task{T}"/>。
+  /// 成功応答(Get_Res <c>0x72</c>)の場合は<see langword="true"/>、不可応答(Get_SNA <c>0x52</c>)その他の場合は<see langword="false"/>を返します。
+  /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
+  /// </returns>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="sourceObject"/>が<see langword="null"/>です。
+  /// または、<paramref name="destinationObject"/>が<see langword="null"/>です。
+  /// または、<paramref name="properties"/>が<see langword="null"/>です。
+  /// </exception>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
+  /// </seealso>
+  private async Task<(
+    bool Result,
+    IReadOnlyCollection<PropertyValue> Properties
+  )>
+  PerformPropertyValueReadRequestAsync(
+    EchonetObject sourceObject,
+    EchonetNode? destinationNode,
+    EchonetObject destinationObject,
+    IEnumerable<PropertyValue> properties,
     CancellationToken cancellationToken = default
   )
   {
@@ -513,7 +599,7 @@ partial class EchonetClient
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.Get,
-        properties: properties.Select(ConvertToPropertyValueExceptValueData)
+        properties: properties
       ),
       cancellationToken
     ).ConfigureAwait(false);
