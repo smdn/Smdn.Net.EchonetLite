@@ -22,9 +22,9 @@ public abstract class EchonetNode {
     );
 
   /// <summary>
-  /// 現在このインスタンスを管理している<see cref="EchonetClient"/>を取得します。
+  /// 現在このインスタンスを管理している<see cref="IEchonetClientService"/>を取得します。
   /// </summary>
-  internal EchonetClient? Owner { get; set; }
+  internal IEchonetClientService? Owner { get; set; }
 
   /// <summary>
   /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
