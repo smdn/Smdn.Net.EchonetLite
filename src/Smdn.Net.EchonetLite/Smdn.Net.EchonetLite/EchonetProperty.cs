@@ -303,7 +303,7 @@ public abstract class EchonetProperty {
 
       if (esv != default) {
         Device.OwnerNode?.Owner?.Logger?.LogDebug(
-          "Property value changed (ESV: {ESV}, TID: {TID}, Node: {Node}, Object: {Object}, EPC: {EPC})",
+          "Property value changed (ESV: {ESV}, TID: {TID:X4}, Node: {Node}, Object: {Object}, EPC: {EPC:X2})",
           esv,
           tid,
           Device.Node.Address,
