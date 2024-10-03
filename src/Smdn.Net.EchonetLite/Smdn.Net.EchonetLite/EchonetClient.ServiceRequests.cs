@@ -934,17 +934,20 @@ partial class EchonetClient
   /// インスタンスリスト通知受信時の処理を行います。
   /// </summary>
   /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
-  /// <param name="edt">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
+  /// <param name="edtInstantListNotification">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
   /// <seealso cref="PerformInstanceListNotificationAsync"/>
   /// <seealso cref="AcquirePropertyMapsAsync"/>
-  private async ValueTask<bool> HandleInstanceListNotificationReceivedAsync(EchonetOtherNode sourceNode, ReadOnlyMemory<byte> edt)
+  private async ValueTask<bool> ProcessReceivingInstanceListNotificationAsync(
+    EchonetOtherNode sourceNode,
+    ReadOnlyMemory<byte> edtInstantListNotification
+  )
   {
     using var scope = logger?.BeginScope("Instance list notification");
 
-    if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edt.Span, out var instanceList)) {
+    if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edtInstantListNotification.Span, out var instanceList)) {
       logger?.LogWarning(
         "Invalid instance list received (EDT: {EDT})",
-        edt.ToHexString()
+        edtInstantListNotification.ToHexString()
       );
 
       return false;
@@ -1002,7 +1005,7 @@ partial class EchonetClient
   /// <param name="sourceNode">対象のECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
   /// <exception cref="InvalidOperationException">受信したEDTは無効なプロパティマップです。</exception>
-  /// <seealso cref="HandleInstanceListNotificationReceivedAsync"/>
+  /// <seealso cref="ProcessReceivingInstanceListNotificationAsync"/>
   private async ValueTask<bool> AcquirePropertyMapsAsync(EchonetOtherNode sourceNode, EchonetObject device)
   {
     const byte EPCPropMapAnno = 0x9D; // 状変アナウンスプロパティマップ

@@ -574,7 +574,7 @@ partial class EchonetClient
 
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
-          _ = await HandleInstanceListNotificationReceivedAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+          _ = await ProcessReceivingInstanceListNotificationAsync(sourceNode, prop.EDT).ConfigureAwait(false);
       }
     }
 
@@ -673,7 +673,7 @@ partial class EchonetClient
 
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
-          _ = await HandleInstanceListNotificationReceivedAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+          _ = await ProcessReceivingInstanceListNotificationAsync(sourceNode, prop.EDT).ConfigureAwait(false);
       }
 
       // EPC には通知時と同じプロパティコードを設定するが、
