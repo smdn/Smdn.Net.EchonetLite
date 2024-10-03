@@ -4,6 +4,7 @@
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -61,20 +62,26 @@ partial class EchonetClient
     CancellationToken cancellationToken = default
   )
   {
-    // インスタンスリスト通知プロパティ
+    // インスタンスリスト通知 0xD5 (TODO: refer EchonetNodeProfileDetail)
+    const int SizeMax = 253; // unsigned char×(MAX)253
     var property = SelfNode.NodeProfile.AnnoProperties.First(static p => p.Code == 0xD5);
+    byte[]? buffer = null;
 
-    property.WriteValue(writer => {
-      var contents = writer.GetSpan(253); // インスタンスリスト通知 0xD5 unsigned char×(MAX)253
+    try {
+      buffer = ArrayPool<byte>.Shared.Rent(SizeMax);
 
       _ = PropertyContentSerializer.TrySerializeInstanceListNotification(
         SelfNode.Devices.Select(static o => o.EOJ),
-        contents,
+        buffer.AsSpan(0, SizeMax),
         out var bytesWritten
       );
 
-      writer.Advance(bytesWritten);
-    });
+      property.SetValue(buffer, raiseValueChangedEvent: false, setLastUpdatedTime: true);
+    }
+    finally {
+      if (buffer is not null)
+        ArrayPool<byte>.Shared.Return(buffer);
+    }
 
     // インスタンスリスト通知
     // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
@@ -502,7 +509,7 @@ partial class EchonetClient
           var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
           if (prop.PDC != 0x00) {
             // 読み込み成功
-            target.SetValue(prop.EDT);
+            target.SetValue(value.Message.ESV, value.TID, prop);
           }
         }
 
@@ -631,7 +638,7 @@ partial class EchonetClient
 
           if (prop.PDC != 0x00) {
             // 読み込み成功
-            target.SetValue(prop.EDT);
+            target.SetValue(value.Message.ESV, value.TID, prop);
           }
         }
 
@@ -1290,7 +1297,7 @@ partial class EchonetClient
       }
       else {
         // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-        property.SetValue(prop.EDT);
+        property.SetValue(esv: ESV.SetI, tid, prop);
 
         responseProps.Add(new(prop.EPC));
       }
@@ -1365,7 +1372,7 @@ partial class EchonetClient
         }
         else {
           // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-          property.SetValue(prop.EDT);
+          property.SetValue(esv: ESV.SetC, tid, prop);
 
           responseProps.Add(new(prop.EPC));
         }
@@ -1518,7 +1525,7 @@ partial class EchonetClient
         }
         else {
           // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-          property.SetValue(prop.EDT);
+          property.SetValue(esv: ESV.SetGet, tid, prop);
 
           responsePropsForSet.Add(new(prop.EPC));
         }
@@ -1644,7 +1651,7 @@ partial class EchonetClient
         hasError = true;
       }
       else {
-        property.SetValue(prop.EDT);
+        property.SetValue(esv: ESV.InfRequest, tid, prop);
 
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
@@ -1743,7 +1750,7 @@ partial class EchonetClient
         hasError = true;
       }
       else {
-        property.SetValue(prop.EDT);
+        property.SetValue(esv: ESV.InfC, tid, prop);
 
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
