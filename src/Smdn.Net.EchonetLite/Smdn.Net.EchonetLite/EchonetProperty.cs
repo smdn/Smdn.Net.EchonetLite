@@ -57,7 +57,8 @@ public abstract class EchonetProperty {
   /// <summary>
   /// <see cref="LastUpdatedTime"/>に設定する時刻の取得元となる<see cref="TimeProvider"/>を取得します。
   /// </summary>
-  protected virtual TimeProvider TimeProvider => TimeProvider.System;
+  protected virtual TimeProvider TimeProvider
+    => Device.OwnerNode?.Owner?.TimeProvider ?? TimeProvider.System;
 #endif
 
   /// <summary>
@@ -301,10 +302,7 @@ public abstract class EchonetProperty {
       }
 
       if (esv != default) {
-        // TODO: log
-        ILogger? logger = null;
-
-        logger?.LogDebug(
+        Device.OwnerNode?.Owner?.Logger?.LogDebug(
           "Property value changed (ESV: {ESV}, TID: {TID}, Node: {Node}, Object: {Object}, EPC: {EPC})",
           esv,
           tid,

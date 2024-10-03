@@ -18,7 +18,9 @@ namespace Smdn.Net.EchonetLite;
 public partial class EchonetClient : IEventInvoker, IDisposable, IAsyncDisposable {
   private readonly bool shouldDisposeEchonetLiteHandler;
   private IEchonetLiteHandler echonetLiteHandler; // null if disposed
+#pragma warning disable IDE0032
   private readonly ILogger? logger;
+#pragma warning restore IDE0032
 
   /// <summary>
   /// 現在の<see cref="EchonetClient"/>インスタンスが扱うECHONET Lite ノード(自ノード)を表す<see cref="SelfNode"/>を取得します。
@@ -36,6 +38,16 @@ public partial class EchonetClient : IEventInvoker, IDisposable, IAsyncDisposabl
 
   private readonly ConcurrentDictionary<IPAddress, EchonetOtherNode> otherNodes;
   private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyOtherNodes;
+
+#pragma warning disable IDE0032
+  internal ILogger? Logger => logger;
+#pragma warning restore IDE0032
+
+#if SYSTEM_TIMEPROVIDER
+#pragma warning disable CA1822
+  internal TimeProvider? TimeProvider => null; // TODO: make configurable, retrieve via IServiceProvider
+#pragma warning restore CA1822
+#endif
 
   /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
   public EchonetClient(
