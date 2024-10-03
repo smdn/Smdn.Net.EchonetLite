@@ -1590,14 +1590,12 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
-#pragma warning disable IDE0060
   private async Task<bool> HandlePropertyValueNotificationRequestAsync(
     IPAddress address,
     ushort tid,
     Format1Message message,
     EchonetOtherNode sourceNode
   )
-#pragma warning restore IDE0060
   {
     logger?.LogDebug("Handling INF_REQ (From: {Address}, TID: {TID:X4})", address, tid);
 
