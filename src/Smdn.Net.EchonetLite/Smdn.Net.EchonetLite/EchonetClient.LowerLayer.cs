@@ -95,7 +95,18 @@ partial class EchonetClient
           format1Message
         );
 
-        Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
+        try {
+          Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
+        }
+        catch (Exception ex) {
+          logger?.LogError(
+            ex,
+            "An exception occured while handling format 1 message."
+          );
+
+          // this exception might be swallow by IEchonetLiteHandler
+          throw;
+        }
 
         break;
 
