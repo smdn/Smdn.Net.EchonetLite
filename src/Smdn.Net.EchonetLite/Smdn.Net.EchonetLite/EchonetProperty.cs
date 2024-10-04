@@ -290,7 +290,22 @@ public abstract class EchonetProperty {
 #endif
       }
 
-      write(value);
+      try {
+        write(value);
+      }
+      catch (Exception ex) {
+        Device.OwnerNode?.Owner?.Logger?.LogError(
+          ex,
+          "Failed to set property value (ESV: {ESV}, TID: {TID:X4}, Node: {Node}, Object: {Object}, EPC: {EPC:X2})",
+          esv,
+          tid,
+          Device.Node.Address,
+          Device.EOJ,
+          Code
+        );
+
+        throw;
+      }
 
       if (setLastUpdatedTime) {
         LastUpdatedTime =
