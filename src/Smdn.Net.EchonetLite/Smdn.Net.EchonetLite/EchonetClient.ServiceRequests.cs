@@ -1160,9 +1160,9 @@ partial class EchonetClient
         code => new UnspecifiedEchonetProperty(
           device: device,
           code: code,
-          canSet: mapCanAnno.Contains(code),
-          canGet: mapCanSet.Contains(code),
-          canAnnounceStatusChange: mapCanGet.Contains(code)
+          canSet: mapCanSet.Contains(code),
+          canGet: mapCanGet.Contains(code),
+          canAnnounceStatusChange: mapCanAnno.Contains(code)
         )
       )
     );
