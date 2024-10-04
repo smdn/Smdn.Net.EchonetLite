@@ -106,7 +106,7 @@ partial class EchonetClient
       case ESV.Get: // プロパティ値読み出し要求
         // あれば、プロパティ値読み出し応答 Get_Res
         // なければ、プロパティ値読み出し不可応答 Get_SNA
-        task = handlerTaskFactory.StartNew(() => HandlePropertyValueReadRequest(address, tid, message, destObject));
+        task = handlerTaskFactory.StartNew(() => HandlePropertyValueReadRequestAsync(address, tid, message, destObject));
         break;
 
       case ESV.InfRequest: // プロパティ値通知要求
@@ -346,7 +346,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
-  private async Task<bool> HandlePropertyValueReadRequest(
+  private async Task<bool> HandlePropertyValueReadRequestAsync(
     IPAddress address,
     ushort tid,
     Format1Message message,
