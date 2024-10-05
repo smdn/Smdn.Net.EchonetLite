@@ -231,6 +231,7 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(properties));
 
     var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyValue>>();
+    var tid = GetNewTid();
 
     void HandleSetISNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -241,6 +242,8 @@ partial class EchonetClient
         }
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
+          return;
+        if (tid != value.TID)
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
@@ -271,8 +274,6 @@ partial class EchonetClient
     }
 
     Format1MessageReceived += HandleSetISNA;
-
-    var tid = GetNewTid();
 
     await SendFrameAsync(
       destinationNode?.Address,
@@ -355,6 +356,7 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(properties));
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyValue>)>();
+    var tid = GetNewTid();
 
     void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -365,6 +367,8 @@ partial class EchonetClient
         }
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
+          return;
+        if (tid != value.TID)
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
@@ -403,7 +407,7 @@ partial class EchonetClient
       destinationNode?.Address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: GetNewTid(),
+        tid: tid,
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetC,
@@ -554,6 +558,7 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(properties));
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyValue>)>();
+    var tid = GetNewTid();
 
     void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -564,6 +569,8 @@ partial class EchonetClient
         }
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
+          return;
+        if (tid != value.TID)
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
@@ -602,7 +609,7 @@ partial class EchonetClient
       destinationNode?.Address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: GetNewTid(),
+        tid: tid,
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.Get,
@@ -673,6 +680,7 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(propertiesGet));
 
     var responseTCS = new TaskCompletionSource<(bool, IReadOnlyCollection<PropertyValue>, IReadOnlyCollection<PropertyValue>)>();
+    var tid = GetNewTid();
 
     void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -683,6 +691,8 @@ partial class EchonetClient
         }
 
         if (destinationNode is not null && !destinationNode.Address.Equals(value.Address))
+          return;
+        if (tid != value.TID)
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
@@ -731,7 +741,7 @@ partial class EchonetClient
       destinationNode?.Address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: GetNewTid(),
+        tid: tid,
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetGet,
@@ -971,6 +981,7 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(properties));
 
     var responseTCS = new TaskCompletionSource<IReadOnlyCollection<PropertyValue>>();
+    var tid = GetNewTid();
 
     void HandleINFCRes(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -981,6 +992,8 @@ partial class EchonetClient
         }
 
         if (!destinationNode.Address.Equals(value.Address))
+          return;
+        if (tid != value.TID)
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject.EOJ))
           return;
@@ -1002,7 +1015,7 @@ partial class EchonetClient
       destinationNode.Address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: GetNewTid(),
+        tid: tid,
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.InfC,
