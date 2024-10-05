@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#if !NET8_0_OR_GREATER
 using System;
+#endif
 
 namespace Smdn.Net.EchonetLite;
 
