@@ -52,9 +52,9 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     OnPropertiesChanged(new(NotifyCollectionChangedAction.Reset));
   }
 
-  protected internal override bool StorePropertyValue(
+  internal override bool StorePropertyValue(
     ESV esv,
-    int tid,
+    ushort tid,
     PropertyValue value,
     bool validateValue
   )
@@ -92,7 +92,7 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     // 詳細仕様が未解決・不明なため、プロパティ値の検証はできない
     // if (validateValue) { }
 
-    property.SetValue(esv, unchecked((ushort)tid), value);
+    property.SetValue(esv, tid, value);
 
     return true;
   }

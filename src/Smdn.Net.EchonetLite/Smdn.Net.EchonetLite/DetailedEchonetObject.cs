@@ -54,9 +54,9 @@ internal sealed class DetailedEchonetObject : EchonetObject {
     readOnlyPropertiesView = new(properties);
   }
 
-  protected internal override bool StorePropertyValue(
+  internal override bool StorePropertyValue(
     ESV esv,
-    int tid,
+    ushort tid,
     PropertyValue value,
     bool validateValue
   )
@@ -69,7 +69,7 @@ internal sealed class DetailedEchonetObject : EchonetObject {
       // 詳細仕様の規定に違反する値のため、格納しない
       return false;
 
-    property.SetValue(esv, unchecked((ushort)tid), value);
+    property.SetValue(esv, tid, value);
 
     return true;
   }

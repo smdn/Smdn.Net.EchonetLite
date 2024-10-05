@@ -154,9 +154,9 @@ public abstract partial class EchonetObject {
   /// または<paramref name="validateValue"/>の指定による検証の結果、詳細仕様での規定に即していない値の場合は<see langword="false"/>。
   /// それ以外の場合は、<see langword="true"/>。
   /// </returns>
-  protected internal abstract bool StorePropertyValue(
+  internal abstract bool StorePropertyValue(
     ESV esv,
-    int tid,
+    ushort tid,
     PropertyValue value,
     bool validateValue
   );
