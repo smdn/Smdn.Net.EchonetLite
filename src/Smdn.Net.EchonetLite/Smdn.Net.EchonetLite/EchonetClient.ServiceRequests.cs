@@ -45,7 +45,7 @@ partial class EchonetClient
   {
     // インスタンスリスト通知 0xD5 (TODO: refer EchonetNodeProfileDetail)
     const int SizeMax = 253; // unsigned char×(MAX)253
-    var property = SelfNode.NodeProfile.AnnoProperties.First(static p => p.Code == 0xD5);
+    var property = SelfNode.NodeProfile.Properties[0xD5];
     byte[]? buffer = null;
 
     try {

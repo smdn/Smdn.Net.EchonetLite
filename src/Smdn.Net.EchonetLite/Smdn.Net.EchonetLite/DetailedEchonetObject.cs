@@ -33,21 +33,6 @@ internal sealed class DetailedEchonetObject : EchonetObject {
   private readonly ReadOnlyEchonetPropertyDictionary<DetailedEchonetProperty> readOnlyPropertiesView;
 
   /// <summary>
-  /// GETプロパティの一覧
-  /// </summary>
-  public override IEnumerable<EchonetProperty> GetProperties => properties.Values.Where(static p => p.Detail.CanGet);
-
-  /// <summary>
-  /// SETプロパティの一覧
-  /// </summary>
-  public override IEnumerable<EchonetProperty> SetProperties => properties.Values.Where(static p => p.Detail.CanSet);
-
-  /// <summary>
-  /// ANNOプロパティの一覧
-  /// </summary>
-  public override IEnumerable<EchonetProperty> AnnoProperties => properties.Values.Where(static p => p.Detail.CanAnnounceStatusChange);
-
-  /// <summary>
   /// スペック指定のコンストラクタ
   /// プロパティは仕様から取得する
   /// </summary>

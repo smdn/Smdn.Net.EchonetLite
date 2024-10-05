@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 
 using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
@@ -94,21 +93,6 @@ public abstract partial class EchonetObject {
   /// <see cref="IReadOnlyDictionary{Byte,EchonetProperty}"/>を取得します。
   /// </summary>
   public abstract IReadOnlyDictionary<byte, EchonetProperty> Properties { get; }
-
-  /// <summary>
-  /// GETプロパティの一覧
-  /// </summary>
-  public virtual IEnumerable<EchonetProperty> GetProperties => Properties.Values.Where(static p => p.CanGet);
-
-  /// <summary>
-  /// SETプロパティの一覧
-  /// </summary>
-  public virtual IEnumerable<EchonetProperty> SetProperties => Properties.Values.Where(static p => p.CanSet);
-
-  /// <summary>
-  /// ANNOプロパティの一覧
-  /// </summary>
-  public virtual IEnumerable<EchonetProperty> AnnoProperties => Properties.Values.Where(static p => p.CanAnnounceStatusChange);
 
   /// <summary>
   /// このオブジェクトが属するECHONET Liteノードを指定せずにインスタンスを作成します。

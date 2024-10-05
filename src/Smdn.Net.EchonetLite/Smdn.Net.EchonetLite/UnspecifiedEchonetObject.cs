@@ -5,7 +5,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
@@ -27,9 +26,6 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
   private readonly ReadOnlyEchonetPropertyDictionary<UnspecifiedEchonetProperty> readOnlyPropertiesView;
 
   public override IReadOnlyDictionary<byte, EchonetProperty> Properties => readOnlyPropertiesView;
-  public override IEnumerable<EchonetProperty> GetProperties => Properties.Values.Where(static p => p.CanGet);
-  public override IEnumerable<EchonetProperty> SetProperties => Properties.Values.Where(static p => p.CanSet);
-  public override IEnumerable<EchonetProperty> AnnoProperties => Properties.Values.Where(static p => p.CanAnnounceStatusChange);
 
   internal UnspecifiedEchonetObject(EchonetNode node, EOJ eoj)
     : base(node)
