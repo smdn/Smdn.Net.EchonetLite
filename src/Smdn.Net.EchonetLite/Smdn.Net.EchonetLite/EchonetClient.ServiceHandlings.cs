@@ -74,6 +74,10 @@ partial class EchonetClient
   {
     var (address, tid, message) = value;
 
+    if (TryFindTransaction(tid, out _))
+      // 自発の要求に対する応答は個別のハンドラで処理するため、ここでは処理せず無視する
+      return;
+
     if (!otherNodes.TryGetValue(address, out var sourceNode)) {
       // 未知のノードの場合、ノードを生成
       // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
