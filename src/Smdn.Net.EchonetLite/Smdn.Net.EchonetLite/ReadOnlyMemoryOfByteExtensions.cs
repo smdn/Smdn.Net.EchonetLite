@@ -5,6 +5,8 @@ using System;
 using System.Runtime.InteropServices; // MemoryMarshal
 #endif
 
+namespace Smdn.Net.EchonetLite;
+
 internal static class ReadOnlyMemoryOfByteExtensions {
   /// <summary>
   /// Converts the byte sequence represented by <see cref="ReadOnlyMemory{Byte}"/> to a <see cref="string"/> in hexadecimal representation.
