@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -422,25 +423,19 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestProps) {
-        // FIXME: 読み出し要求なので格納は不要
-        var accepted = destObject.StorePropertyValue(
-          esv: ESV.Get,
-          tid: tid,
-          value: prop,
-          validateValue: false
-        );
+        var property = destObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
 
-        if (!accepted) {
+        if (property is null) {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
-          responseProps.Add(prop); // FIXME: 実装とコメントの不一致、逆になっている
+          responseProps.Add(new(prop.EPC));
         }
         else {
           // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
           // EDT には読み出したプロパティ値を設定する
-          responseProps.Add(new(prop.EPC)); // FIXME: 実装とコメントの不一致、逆になっている
+          responseProps.Add(new(prop.EPC, property.ValueMemory));
         }
       }
     }
@@ -527,25 +522,19 @@ partial class EchonetClient
       }
 
       foreach (var prop in requestPropsForGet) {
-        // FIXME: 読み出し要求なので格納は不要
-        var accepted = destObject.StorePropertyValue(
-          esv: ESV.SetGet,
-          tid: tid,
-          value: prop,
-          validateValue: false
-        );
+        var property = destObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
 
-        if (accepted) {
+        if (property is null) {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
-          responsePropsForGet.Add(prop); // FIXME: 実装とコメントの不一致、逆になっている
+          responsePropsForGet.Add(new(prop.EPC));
         }
         else {
           // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
           // EDT には読み出したプロパティ値を設定する
-          responsePropsForGet.Add(new(prop.EPC)); // FIXME: 実装とコメントの不一致、逆になっている
+          responsePropsForGet.Add(new(prop.EPC, property.ValueMemory));
         }
       }
     }
