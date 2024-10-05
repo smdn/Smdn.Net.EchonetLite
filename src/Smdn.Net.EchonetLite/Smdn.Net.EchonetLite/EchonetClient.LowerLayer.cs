@@ -37,16 +37,14 @@ partial class EchonetClient
   /// </summary>
   private event EventHandler<(IPAddress Address, ushort TID, Format1Message Message)>? Format1MessageReceived;
 
-  private ushort tid;
+  private int tid;
 
   /// <summary>
   /// ECHONET Lite フレームの新しいトランザクションID(TID)を生成して取得します。
   /// </summary>
   /// <returns>新しいトランザクションID。</returns>
   private ushort GetNewTid()
-  {
-    return ++tid;
-  }
+    => unchecked((ushort)Interlocked.Increment(ref tid));
 
   /// <summary>
   /// イベント<see cref="IEchonetLiteHandler.Received"/>をハンドルするメソッドを実装します。
