@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 
 using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
@@ -89,24 +88,11 @@ public abstract partial class EchonetObject {
   );
 
   /// <summary>
-  /// プロパティの一覧
+  /// ECHONET プロパティを規定するコード(EPC)を表す<see cref="byte"/>型の値をキーとして、
+  /// それに対応するEchonetPropertyを格納する読み取り専用のディクショナリを表す
+  /// <see cref="IReadOnlyDictionary{Byte,EchonetProperty}"/>を取得します。
   /// </summary>
-  public abstract IReadOnlyCollection<EchonetProperty> Properties { get; }
-
-  /// <summary>
-  /// GETプロパティの一覧
-  /// </summary>
-  public virtual IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.CanGet);
-
-  /// <summary>
-  /// SETプロパティの一覧
-  /// </summary>
-  public virtual IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.CanSet);
-
-  /// <summary>
-  /// ANNOプロパティの一覧
-  /// </summary>
-  public virtual IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.CanAnnounceStatusChange);
+  public abstract IReadOnlyDictionary<byte, EchonetProperty> Properties { get; }
 
   /// <summary>
   /// このオブジェクトが属するECHONET Liteノードを指定せずにインスタンスを作成します。
@@ -133,4 +119,45 @@ public abstract partial class EchonetObject {
 
   private protected void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
     => EventInvoker.InvokeEvent(this, PropertiesChanged, e);
+
+  /// <summary>
+  /// ECHONET サービスによって確定したECHONET プロパティの値を<see cref="EchonetProperty"/>に格納します。
+  /// </summary>
+  /// <remarks>
+  ///   <para>
+  ///     このメソッドでは、<see cref="PropertyValue"/>で与えられるプロパティ値を<see cref="EchonetProperty"/>に格納します。
+  ///     このとき、格納対象となる<see cref="EchonetProperty"/>が存在しない場合は、作成して追加します。
+  ///     ただし、指定されたECHONET プロパティ(EPC)が詳細仕様として規定されていない場合は、
+  ///     <see cref="EchonetProperty"/>の作成は行いません。
+  ///     また、<paramref name="validateValue"/>の指定による検証の結果、詳細仕様の規定に違反する値と判断される場合は、
+  ///     値の格納は行いません。
+  ///   </para>
+  ///   <para>
+  ///     このメソッドは、Setアクセスの結果として設定されるプロパティ値を格納する場合にも呼び出されるため、
+  ///     対象の<see cref="EchonetProperty"/>が実際にSetアクセス可能かどうかは考慮しません。
+  ///   </para>
+  /// </remarks>
+  /// <param name="esv">
+  /// このプロパティ値を設定する契機となったECHONET Lite サービスを表す<see cref="ESV"/>。
+  /// </param>
+  /// <param name="tid">
+  /// このプロパティ値を設定する契機となったECHONET Lite フレームのトランザクションIDを表す<see cref="ushort"/>。
+  /// </param>
+  /// <param name="value">
+  /// ECHONET Lite サービスの処理結果として内容が確定したプロパティ値を表す<see cref="PropertyValue"/>。
+  /// </param>
+  /// <param name="validateValue">
+  /// 格納される値が、詳細仕様での規定に即しているか検証するかどうかを指定する<see cref="bool"/>値。
+  /// </param>
+  /// <returns>
+  /// 格納対象となるECHONET プロパティ(EPC)が詳細仕様として規定されていない場合、
+  /// または<paramref name="validateValue"/>の指定による検証の結果、詳細仕様での規定に即していない値の場合は<see langword="false"/>。
+  /// それ以外の場合は、<see langword="true"/>。
+  /// </returns>
+  internal abstract bool StorePropertyValue(
+    ESV esv,
+    ushort tid,
+    PropertyValue value,
+    bool validateValue
+  );
 }

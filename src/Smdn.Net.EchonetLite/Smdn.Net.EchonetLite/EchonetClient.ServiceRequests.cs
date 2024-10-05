@@ -45,7 +45,7 @@ partial class EchonetClient
   {
     // インスタンスリスト通知 0xD5 (TODO: refer EchonetNodeProfileDetail)
     const int SizeMax = 253; // unsigned char×(MAX)253
-    var property = SelfNode.NodeProfile.AnnoProperties.First(static p => p.Code == 0xD5);
+    var property = SelfNode.NodeProfile.Properties[0xD5];
     byte[]? buffer = null;
 
     try {
@@ -251,14 +251,14 @@ partial class EchonetClient
 
         var props = value.Message.GetProperties();
 
-        foreach (var prop in props) {
-          // 一部成功した書き込みを反映
-          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
-
-          if (prop.PDC == 0x00) {
-            // 書き込み成功
-            target.SetValue(properties.First(p => p.Code == prop.EPC).ValueMemory);
-          }
+        // 一部成功した書き込みを反映
+        foreach (var prop in props.Where(static p => p.PDC == 0)) {
+          _ = destinationObject.StorePropertyValue(
+            esv: value.Message.ESV,
+            tid: value.TID,
+            value: ConvertToPropertyValue(properties.First(p => p.Code == prop.EPC)),
+            validateValue: false // Setした内容をそのまま格納するため、検証しない
+          );
         }
 
         responseTCS.SetResult(props);
@@ -272,11 +272,13 @@ partial class EchonetClient
 
     Format1MessageReceived += HandleSetISNA;
 
+    var tid = GetNewTid();
+
     await SendFrameAsync(
       destinationNode?.Address,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: GetNewTid(),
+        tid: tid,
         sourceObject: sourceObject.EOJ,
         destinationObject: destinationObject.EOJ,
         esv: ESV.SetI,
@@ -292,10 +294,14 @@ partial class EchonetClient
     }
     catch (Exception ex) {
       if (ex is OperationCanceledException exOperationCanceled && cancellationToken.Equals(exOperationCanceled.CancellationToken)) {
-        foreach (var prop in properties) {
-          var target = destinationObject.Properties.First(p => p.Code == prop.Code);
-          // 成功した書き込みを反映(全部OK)
-          target.SetValue(prop.ValueMemory);
+        // 成功した書き込みを反映(全部OK)
+        foreach (var prop in properties.Select(ConvertToPropertyValue)) {
+          _ = destinationObject.StorePropertyValue(
+            esv: ESV.SetI,
+            tid: tid,
+            value: prop,
+            validateValue: false // Setした内容をそのまま格納するため、検証しない
+          );
         }
       }
 
@@ -372,14 +378,14 @@ partial class EchonetClient
 
         var props = value.Message.GetProperties();
 
-        foreach (var prop in props) {
-          // 成功した書き込みを反映
-          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
-
-          if (prop.PDC == 0x00) {
-            // 書き込み成功
-            target.SetValue(properties.First(p => p.Code == prop.EPC).ValueMemory);
-          }
+        // 成功した書き込みを反映
+        foreach (var prop in props.Where(static p => p.PDC == 0)) {
+          _ = destinationObject.StorePropertyValue(
+            esv: value.Message.ESV,
+            tid: value.TID,
+            value: ConvertToPropertyValue(properties.First(p => p.Code == prop.EPC)),
+            validateValue: false // Setした内容をそのまま格納するため、検証しない
+          );
         }
 
         responseTCS.SetResult((value.Message.ESV == ESV.SetResponse, props));
@@ -571,13 +577,14 @@ partial class EchonetClient
 
         var props = value.Message.GetProperties();
 
-        foreach (var prop in props) {
-          // 成功した読み込みを反映
-          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
-          if (prop.PDC != 0x00) {
-            // 読み込み成功
-            target.SetValue(value.Message.ESV, value.TID, prop);
-          }
+        // 成功した読み込みを反映
+        foreach (var prop in props.Where(static p => 0 < p.PDC)) {
+          _ = destinationObject.StorePropertyValue(
+            esv: value.Message.ESV,
+            tid: value.TID,
+            value: prop,
+            validateValue: false // Getされた内容をそのまま格納するため、検証しない
+          );
         }
 
         responseTCS.SetResult((value.Message.ESV == ESV.GetResponse, props));
@@ -689,24 +696,24 @@ partial class EchonetClient
 
         var (propsForSet, propsForGet) = value.Message.GetPropertiesForSetAndGet();
 
-        foreach (var prop in propsForSet) {
-          // 成功した書き込みを反映
-          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
-
-          if (prop.PDC == 0x00) {
-            // 書き込み成功
-            target.SetValue(propertiesSet.First(p => p.Code == prop.EPC).ValueMemory);
-          }
+        // 成功した書き込みを反映
+        foreach (var prop in propsForSet.Where(static p => p.PDC == 0)) {
+          _ = destinationObject.StorePropertyValue(
+            esv: value.Message.ESV,
+            tid: value.TID,
+            value: ConvertToPropertyValue(propertiesSet.First(p => p.Code == prop.EPC)),
+            validateValue: false // Setした内容をそのまま格納するため、検証しない
+          );
         }
 
-        foreach (var prop in propsForGet) {
-          // 成功した読み込みを反映
-          var target = destinationObject.Properties.First(p => p.Code == prop.EPC);
-
-          if (prop.PDC != 0x00) {
-            // 読み込み成功
-            target.SetValue(value.Message.ESV, value.TID, prop);
-          }
+        // 成功した読み込みを反映
+        foreach (var prop in propsForGet.Where(static p => 0 < p.PDC)) {
+          _ = destinationObject.StorePropertyValue(
+            esv: value.Message.ESV,
+            tid: value.TID,
+            value: prop,
+            validateValue: false // Getされた内容をそのまま格納するため、検証しない
+          );
         }
 
         responseTCS.SetResult((value.Message.ESV == ESV.SetGetResponse, propsForSet, propsForGet));
@@ -1169,7 +1176,7 @@ partial class EchonetClient
 
     logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
 
-    foreach (var p in device.Properties.OrderBy(static p => p.Code)) {
+    foreach (var (_, p) in device.Properties.OrderBy(static pair => pair.Key)) {
       logger?.LogDebug(
         "Node: {NodeAddress} EOJ: {EOJ}, EPC: {EPC:X2}, Access Rule: {CanSet}/{CanGet}/{CanAnnounceStatusChange}",
         sourceNode.Address,

@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -268,19 +267,22 @@ partial class EchonetClient
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
 
     foreach (var prop in requestProps) {
-      var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
+      var accepted = destObject.StorePropertyValue(
+        esv: ESV.SetI,
+        tid: tid,
+        value: prop,
+        validateValue: true // Setされる内容を検証する
+      );
 
-      if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
+      if (accepted) {
+        // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
+        responseProps.Add(new(prop.EPC));
+      }
+      else {
         hasError = true;
         // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
         // 要求された EDT を付け、要求を受理できなかったことを示す。
         responseProps.Add(prop);
-      }
-      else {
-        // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-        property.SetValue(esv: ESV.SetI, tid, prop);
-
-        responseProps.Add(new(prop.EPC));
       }
     }
 
@@ -343,19 +345,22 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestProps) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
+        var accepted = destObject.StorePropertyValue(
+          esv: ESV.SetC,
+          tid: tid,
+          value: prop,
+          validateValue: true // Setされる内容を検証する
+        );
 
-        if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
+        if (accepted) {
+          // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
+          responseProps.Add(new(prop.EPC));
+        }
+        else {
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
           responseProps.Add(prop);
-        }
-        else {
-          // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-          property.SetValue(esv: ESV.SetC, tid, prop);
-
-          responseProps.Add(new(prop.EPC));
         }
       }
     }
@@ -417,19 +422,17 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestProps) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
-
-        if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
+        if (destObject.Properties.TryGetValue(prop.EPC, out var property)) {
+          // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
+          // EDT には読み出したプロパティ値を設定する
+          responseProps.Add(new(prop.EPC, property.ValueMemory));
+        }
+        else {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
-          responseProps.Add(prop);
-        }
-        else {
-          // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
-          // EDT には読み出したプロパティ値を設定する
-          responseProps.Add(new(prop.EPC, property.ValueMemory));
+          responseProps.Add(new(prop.EPC));
         }
       }
     }
@@ -496,36 +499,37 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestPropsForSet) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
+        var accepted = destObject.StorePropertyValue(
+          esv: ESV.SetGet,
+          tid: tid,
+          value: prop,
+          validateValue: true // Setされる内容を検証する
+        );
 
-        if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
+        if (accepted) {
+          // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
+          responsePropsForSet.Add(new(prop.EPC));
+        }
+        else {
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
           responsePropsForSet.Add(prop);
         }
-        else {
-          // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-          property.SetValue(esv: ESV.SetGet, tid, prop);
-
-          responsePropsForSet.Add(new(prop.EPC));
-        }
       }
 
       foreach (var prop in requestPropsForGet) {
-        var property = destObject.SetProperties.FirstOrDefault(p => p.Code == prop.EPC);
-
-        if (property is null || !property.IsAcceptableValue(prop.EDT.Span)) {
+        if (destObject.Properties.TryGetValue(prop.EPC, out var property)) {
+          // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
+          // EDT には読み出したプロパティ値を設定する
+          responsePropsForGet.Add(new(prop.EPC, property.ValueMemory));
+        }
+        else {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
-          responsePropsForGet.Add(prop);
-        }
-        else {
-          // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
-          // EDT には読み出したプロパティ値を設定する
-          responsePropsForGet.Add(new(prop.EPC, property.ValueMemory));
+          responsePropsForGet.Add(new(prop.EPC));
         }
       }
     }
@@ -596,45 +600,20 @@ partial class EchonetClient
     }
 
     foreach (var prop in requestProps) {
-      var property = sourceObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
+      var accepted = sourceObject.StorePropertyValue(
+        esv: ESV.InfRequest,
+        tid: tid,
+        value: prop,
+        validateValue: false // 通知された内容をそのまま格納するため、検証しない
+      );
 
-      if (sourceObject is UnspecifiedEchonetObject unspecifiedSourceObject && property is null) {
-        // 未知のプロパティ
-        // 新規作成
-        var unspecifiedProperty = new UnspecifiedEchonetProperty(
-          device: sourceObject,
-          code: prop.EPC,
-          canSet: false, // Setアクセス可能かどうか不明なので、暫定的にfalseを設定
-          canGet: true, // 通知してきたので少なくともGetアクセス可能と推定
-          canAnnounceStatusChange: true // 通知してきたので少なくともAnnoアクセス可能と推定
-        );
-
-        unspecifiedSourceObject.AddProperty(unspecifiedProperty);
-
-        logger?.LogInformation(
-          "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
-          sourceNode.Address,
-          sourceObject.EOJ,
-          unspecifiedProperty.Code
-        );
-
-        property = unspecifiedProperty;
-      }
-
-      if (property is null) {
-        // 詳細仕様で定義されていないプロパティなので、格納しない
-        hasError = true;
-      }
-      else if (!property.IsAcceptableValue(prop.EDT.Span)) {
-        // スペック外なので、格納しない
-        hasError = true;
-      }
-      else {
-        property.SetValue(esv: ESV.InfRequest, tid, prop);
-
+      if (accepted) {
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
           _ = await ProcessReceivingInstanceListNotificationAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+      }
+      else {
+        hasError = true;
       }
     }
 
@@ -695,45 +674,20 @@ partial class EchonetClient
     }
 
     foreach (var prop in requestProps) {
-      var property = sourceObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
+      var accepted = sourceObject.StorePropertyValue(
+        esv: ESV.InfC,
+        tid: tid,
+        value: prop,
+        validateValue: false // 通知された内容をそのまま格納するため、検証しない
+      );
 
-      if (sourceObject is UnspecifiedEchonetObject unspecifiedSourceObject && property is null) {
-        // 未知のプロパティ
-        // 新規作成
-        var unspecifiedProperty = new UnspecifiedEchonetProperty(
-          device: sourceObject,
-          code: prop.EPC,
-          canSet: false, // Setアクセス可能かどうか不明なので、暫定的にfalseを設定
-          canGet: true, // 通知してきたので少なくともGetアクセス可能と推定
-          canAnnounceStatusChange: true // 通知してきたので少なくともAnnoアクセス可能と推定
-        );
-
-        unspecifiedSourceObject.AddProperty(unspecifiedProperty);
-
-        logger?.LogInformation(
-          "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
-          sourceNode.Address,
-          sourceObject.EOJ,
-          unspecifiedProperty.Code
-        );
-
-        property = unspecifiedProperty;
-      }
-
-      if (property is null) {
-        // 詳細仕様で定義されていないプロパティなので、格納しない
-        hasError = true;
-      }
-      else if (!property.IsAcceptableValue(prop.EDT.Span)) {
-        // スペック外なので、格納しない
-        hasError = true;
-      }
-      else {
-        property.SetValue(esv: ESV.InfC, tid, prop);
-
+      if (accepted) {
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
           _ = await ProcessReceivingInstanceListNotificationAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+      }
+      else {
+        hasError = true;
       }
 
       // EPC には通知時と同じプロパティコードを設定するが、
