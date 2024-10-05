@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -423,9 +422,7 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestProps) {
-        var property = destObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
-
-        if (property is null) {
+        if (!destObject.Properties.TryGetValue(prop.EPC, out var property)) {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
@@ -522,9 +519,7 @@ partial class EchonetClient
       }
 
       foreach (var prop in requestPropsForGet) {
-        var property = destObject.Properties.FirstOrDefault(p => p.Code == prop.EPC);
-
-        if (property is null) {
+        if (!destObject.Properties.TryGetValue(prop.EPC, out var property)) {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。

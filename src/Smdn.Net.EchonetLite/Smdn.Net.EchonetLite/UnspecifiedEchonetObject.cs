@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 using Microsoft.Extensions.Logging;
@@ -22,12 +23,13 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
   public override byte ClassCode { get; }
   public override byte InstanceCode { get; }
 
-  private readonly ObservableCollection<UnspecifiedEchonetProperty> properties = [];
+  private readonly ConcurrentDictionary<byte, UnspecifiedEchonetProperty> properties;
+  private readonly ReadOnlyEchonetPropertyDictionary<UnspecifiedEchonetProperty> readOnlyPropertiesView;
 
-  public override IReadOnlyCollection<EchonetProperty> Properties => properties;
-  public override IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.CanGet);
-  public override IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.CanSet);
-  public override IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.CanAnnounceStatusChange);
+  public override IReadOnlyDictionary<byte, EchonetProperty> Properties => readOnlyPropertiesView;
+  public override IEnumerable<EchonetProperty> GetProperties => Properties.Values.Where(static p => p.CanGet);
+  public override IEnumerable<EchonetProperty> SetProperties => Properties.Values.Where(static p => p.CanSet);
+  public override IEnumerable<EchonetProperty> AnnoProperties => Properties.Values.Where(static p => p.CanAnnounceStatusChange);
 
   internal UnspecifiedEchonetObject(EchonetNode node, EOJ eoj)
     : base(node)
@@ -36,7 +38,11 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     ClassCode = eoj.ClassCode;
     InstanceCode = eoj.InstanceCode;
 
-    properties.CollectionChanged += (_, e) => OnPropertiesChanged(e);
+    properties = new(
+      concurrencyLevel: -1, // default
+      capacity: 20 // TODO: best initial capacity
+    );
+    readOnlyPropertiesView = new(properties);
   }
 
   internal void ResetProperties(IEnumerable<UnspecifiedEchonetProperty> props)
@@ -44,8 +50,10 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     properties.Clear();
 
     foreach (var prop in props) {
-      properties.Add(prop);
+      _ = properties.TryAdd(prop.Code, prop);
     }
+
+    OnPropertiesChanged(new(NotifyCollectionChangedAction.Reset));
   }
 
   protected internal override bool StorePropertyValue(
@@ -55,11 +63,8 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     bool validateValue
   )
   {
-    var property = properties.FirstOrDefault(p => p.Code == value.EPC);
-
-    if (property is null) {
-      // 未知のプロパティ
-      // 新規作成
+    if (!properties.TryGetValue(value.EPC, out var property)) {
+      // 未知のプロパティのため、新規作成して追加する
       property = new UnspecifiedEchonetProperty(
         device: this,
         code: value.EPC,
@@ -69,14 +74,23 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
         canAnnounceStatusChange: true
       );
 
-      properties.Add(property);
+      var p = properties.GetOrAdd(property.Code, property);
 
-      Node.Owner?.Logger?.LogInformation(
-        "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
-        Node.Address,
-        EOJ,
-        property.Code
-      );
+      if (ReferenceEquals(p, property)) {
+        Node.Owner?.Logger?.LogInformation(
+          "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
+          Node.Address,
+          EOJ,
+          property.Code
+        );
+
+        OnPropertiesChanged(
+          new(
+            action: NotifyCollectionChangedAction.Add,
+            changedItem: property
+          )
+        );
+      }
     }
 
     // 詳細仕様が未解決・不明なため、プロパティ値の検証はできない

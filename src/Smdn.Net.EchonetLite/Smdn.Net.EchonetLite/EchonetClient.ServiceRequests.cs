@@ -1176,7 +1176,7 @@ partial class EchonetClient
 
     logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
 
-    foreach (var p in device.Properties.OrderBy(static p => p.Code)) {
+    foreach (var (_, p) in device.Properties.OrderBy(static pair => pair.Key)) {
       logger?.LogDebug(
         "Node: {NodeAddress} EOJ: {EOJ}, EPC: {EPC:X2}, Access Rule: {CanSet}/{CanGet}/{CanAnnounceStatusChange}",
         sourceNode.Address,

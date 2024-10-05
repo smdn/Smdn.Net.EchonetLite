@@ -89,24 +89,26 @@ public abstract partial class EchonetObject {
   );
 
   /// <summary>
-  /// プロパティの一覧
+  /// ECHONET プロパティを規定するコード(EPC)を表す<see cref="byte"/>型の値をキーとして、
+  /// それに対応するEchonetPropertyを格納する読み取り専用のディクショナリを表す
+  /// <see cref="IReadOnlyDictionary{Byte,EchonetProperty}"/>を取得します。
   /// </summary>
-  public abstract IReadOnlyCollection<EchonetProperty> Properties { get; }
+  public abstract IReadOnlyDictionary<byte, EchonetProperty> Properties { get; }
 
   /// <summary>
   /// GETプロパティの一覧
   /// </summary>
-  public virtual IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.CanGet);
+  public virtual IEnumerable<EchonetProperty> GetProperties => Properties.Values.Where(static p => p.CanGet);
 
   /// <summary>
   /// SETプロパティの一覧
   /// </summary>
-  public virtual IEnumerable<EchonetProperty> SetProperties => Properties.Where(static p => p.CanSet);
+  public virtual IEnumerable<EchonetProperty> SetProperties => Properties.Values.Where(static p => p.CanSet);
 
   /// <summary>
   /// ANNOプロパティの一覧
   /// </summary>
-  public virtual IEnumerable<EchonetProperty> AnnoProperties => Properties.Where(static p => p.CanAnnounceStatusChange);
+  public virtual IEnumerable<EchonetProperty> AnnoProperties => Properties.Values.Where(static p => p.CanAnnounceStatusChange);
 
   /// <summary>
   /// このオブジェクトが属するECHONET Liteノードを指定せずにインスタンスを作成します。

@@ -26,27 +26,26 @@ internal sealed class DetailedEchonetObject : EchonetObject {
   /// </summary>
   public IEchonetObjectSpecification Detail { get; }
 
-  /// <summary>
-  /// プロパティの一覧
-  /// </summary>
-  public override IReadOnlyCollection<EchonetProperty> Properties => properties;
+  /// <inheritdoc/>
+  public override IReadOnlyDictionary<byte, EchonetProperty> Properties => readOnlyPropertiesView;
 
-  private readonly List<DetailedEchonetProperty> properties;
+  private readonly Dictionary<byte, DetailedEchonetProperty> properties;
+  private readonly ReadOnlyEchonetPropertyDictionary<DetailedEchonetProperty> readOnlyPropertiesView;
 
   /// <summary>
   /// GETプロパティの一覧
   /// </summary>
-  public override IEnumerable<EchonetProperty> GetProperties => properties.Where(static p => p.Detail.CanGet);
+  public override IEnumerable<EchonetProperty> GetProperties => properties.Values.Where(static p => p.Detail.CanGet);
 
   /// <summary>
   /// SETプロパティの一覧
   /// </summary>
-  public override IEnumerable<EchonetProperty> SetProperties => properties.Where(static p => p.Detail.CanSet);
+  public override IEnumerable<EchonetProperty> SetProperties => properties.Values.Where(static p => p.Detail.CanSet);
 
   /// <summary>
   /// ANNOプロパティの一覧
   /// </summary>
-  public override IEnumerable<EchonetProperty> AnnoProperties => properties.Where(static p => p.Detail.CanAnnounceStatusChange);
+  public override IEnumerable<EchonetProperty> AnnoProperties => properties.Values.Where(static p => p.Detail.CanAnnounceStatusChange);
 
   /// <summary>
   /// スペック指定のコンストラクタ
@@ -60,8 +59,14 @@ internal sealed class DetailedEchonetObject : EchonetObject {
     InstanceCode = instanceCode;
 
     properties = new(
-      objectDetail.Properties.Select(propertyDetail => new DetailedEchonetProperty(this, propertyDetail))
+      objectDetail.Properties.Select(
+        propertyDetail => KeyValuePair.Create(
+          propertyDetail.Code,
+          new DetailedEchonetProperty(this, propertyDetail)
+        )
+      )
     );
+    readOnlyPropertiesView = new(properties);
   }
 
   protected internal override bool StorePropertyValue(
@@ -71,9 +76,7 @@ internal sealed class DetailedEchonetObject : EchonetObject {
     bool validateValue
   )
   {
-    var property = properties.FirstOrDefault(p => p.Code == value.EPC);
-
-    if (property is null)
+    if (!properties.TryGetValue(value.EPC, out var property))
       // 詳細仕様で規定されていないプロパティのため、格納しない
       return false;
 
