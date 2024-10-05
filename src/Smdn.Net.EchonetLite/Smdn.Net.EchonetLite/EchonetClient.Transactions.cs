@@ -22,7 +22,7 @@ partial class EchonetClient
   /// <c>ConcurrentSet&lt;ushort&gt;</c>の代わりとして、<see cref="ConcurrentDictionary{TKey, TValue}"/>を用いる。
   /// </remarks>
   private readonly ConcurrentDictionary<ushort, Transaction> transactionsInProgress = new(
-    concurrencyLevel: -1, // default
+    concurrencyLevel: ConcurrentDictionaryUtils.DefaultConcurrencyLevel,
     capacity: 2 // TODO: best initial capacity
   );
 
