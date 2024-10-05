@@ -26,6 +26,13 @@ partial class EchonetClient
     formatString: "An error occured while handling received message (Address: {Address}, TID: {TID:X4}, ESV: {ESV}, SEOJ: {SEOJ}, DEOJ: {DEOJ})"
   );
 
+  private static readonly Action<ILogger, IPAddress, ushort, ESV, EOJ, EOJ, Exception?>
+  LogUnmanagedTransactionAtFormat1MessageHandler = LoggerMessage.Define<IPAddress, ushort, ESV, EOJ, EOJ>(
+    LogLevel.Warning,
+    eventId: default, // TODO
+    formatString: "An unmanaged transaction (Address: {Address}, TID: {TID:X4}, ESV: {ESV}, SEOJ: {SEOJ}, DEOJ: {DEOJ})"
+  );
+
   /// <summary>
   /// 受信したECHONET Lite サービス要求を処理するためのタスクを作成し、スケジューリングするための<see cref="TaskFactory"/>を取得・設定します。
   /// </summary>
@@ -93,12 +100,13 @@ partial class EchonetClient
       ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
       : SelfNode.FindDevice(message.DEOJ);
     var handlerTaskFactory = ServiceHandlerTaskFactory ?? Task.Factory;
+    Task? handlerTask = null;
 
     switch (message.ESV) {
       case ESV.SetI: // プロパティ値書き込み要求（応答不要）
         // あれば、書き込んでおわり
         // なければ、プロパティ値書き込み要求不可応答 SetI_SNA
-        _ = handlerTaskFactory.StartNew(async () => {
+        handlerTask = handlerTaskFactory.StartNew(async () => {
           try {
             _ = await HandlePropertyValueWriteRequestAsync(address, tid, message, destObject).ConfigureAwait(false);
           }
@@ -114,7 +122,7 @@ partial class EchonetClient
       case ESV.SetC: // プロパティ値書き込み要求（応答要）
         // あれば、書き込んで プロパティ値書き込み応答 Set_Res
         // なければ、プロパティ値書き込み要求不可応答 SetC_SNA
-        _ = handlerTaskFactory.StartNew(async () => {
+        handlerTask = handlerTaskFactory.StartNew(async () => {
           try {
             _ = await HandlePropertyValueWriteRequestResponseRequiredAsync(address, tid, message, destObject).ConfigureAwait(false);
           }
@@ -130,7 +138,7 @@ partial class EchonetClient
       case ESV.Get: // プロパティ値読み出し要求
         // あれば、プロパティ値読み出し応答 Get_Res
         // なければ、プロパティ値読み出し不可応答 Get_SNA
-        _ = handlerTaskFactory.StartNew(async () => {
+        handlerTask = handlerTaskFactory.StartNew(async () => {
           try {
             _ = await HandlePropertyValueReadRequestAsync(address, tid, message, destObject).ConfigureAwait(false);
           }
@@ -151,7 +159,7 @@ partial class EchonetClient
       case ESV.SetGet: // プロパティ値書き込み・読み出し要求
         // あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
         // なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
-        _ = handlerTaskFactory.StartNew(async () => {
+        handlerTask = handlerTaskFactory.StartNew(async () => {
           try {
             _ = await HandlePropertyValueWriteReadRequestAsync(address, tid, message, destObject).ConfigureAwait(false);
           }
@@ -168,7 +176,7 @@ partial class EchonetClient
         // プロパティ値通知要求 INF_REQのレスポンス
         // または、自発的な通知のケースがある。
         // なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
-        _ = handlerTaskFactory.StartNew(async () => {
+        handlerTask = handlerTaskFactory.StartNew(async () => {
           try {
             _ = await HandlePropertyValueNotificationRequestAsync(address, tid, message, sourceNode).ConfigureAwait(false);
           }
@@ -183,7 +191,7 @@ partial class EchonetClient
 
       case ESV.InfC: // プロパティ値通知（応答要）
         // プロパティ値通知応答 INFC_Res
-        _ = handlerTaskFactory.StartNew(async () => {
+        handlerTask = handlerTaskFactory.StartNew(async () => {
           try {
             _ = await HandlePropertyValueNotificationResponseRequiredAsync(address, tid, message, sourceNode, destObject).ConfigureAwait(false);
           }
@@ -225,6 +233,13 @@ partial class EchonetClient
 
       default:
         break;
+    }
+
+    // ハンドリングを行うタスクがなく、進行中のトランザクションにも該当しない場合
+    if (handlerTask is null && !TryFindTransaction(tid, out _)) {
+      // 要求には対応しないが、ログに記録する
+      if (logger is not null)
+        LogUnmanagedTransactionAtFormat1MessageHandler(logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, null);
     }
   }
 #pragma warning restore CA1502
