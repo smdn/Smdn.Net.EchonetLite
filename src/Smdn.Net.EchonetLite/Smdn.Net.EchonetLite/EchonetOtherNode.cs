@@ -17,10 +17,10 @@ namespace Smdn.Net.EchonetLite;
 internal sealed class EchonetOtherNode : EchonetNode {
   public override IPAddress Address { get; }
 
-  public override IReadOnlyCollection<EchonetObject> Devices => readOnlyDevices.Values;
+  public override IReadOnlyCollection<EchonetObject> Devices => readOnlyDevicesView.Values;
 
   private readonly ConcurrentDictionary<EOJ, UnspecifiedEchonetObject> devices;
-  private readonly ReadOnlyDictionary<EOJ, UnspecifiedEchonetObject> readOnlyDevices;
+  private readonly ReadOnlyDictionary<EOJ, UnspecifiedEchonetObject> readOnlyDevicesView;
 
   internal EchonetOtherNode(IEchonetClientService owner, IPAddress address, EchonetObject nodeProfile)
     : base(nodeProfile)
@@ -29,7 +29,7 @@ internal sealed class EchonetOtherNode : EchonetNode {
     Address = address ?? throw new ArgumentNullException(nameof(address));
 
     devices = new();
-    readOnlyDevices = new(devices);
+    readOnlyDevicesView = new(devices);
   }
 
   protected internal override EchonetObject? FindDevice(EOJ eoj)

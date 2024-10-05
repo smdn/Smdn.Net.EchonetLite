@@ -31,10 +31,10 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// 新しいECHONET Lite ノードが追加された場合は、イベント<see cref="NodeJoined"/>が発生します。
   /// </remarks>
   /// <seealso cref="NodeJoined"/>
-  public IReadOnlyCollection<EchonetNode> OtherNodes => readOnlyOtherNodes.Values;
+  public IReadOnlyCollection<EchonetNode> OtherNodes => readOnlyOtherNodesView.Values;
 
   private readonly ConcurrentDictionary<IPAddress, EchonetOtherNode> otherNodes;
-  private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyOtherNodes;
+  private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyOtherNodesView;
 
   ILogger? IEchonetClientService.Logger => logger;
 
@@ -100,7 +100,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     SelfNode.Owner = this;
 
     otherNodes = new();
-    readOnlyOtherNodes = new(otherNodes);
+    readOnlyOtherNodesView = new(otherNodes);
 
     // 自己消費用
     Format1MessageReceived += HandleFormat1Message;
