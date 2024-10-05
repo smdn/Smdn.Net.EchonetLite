@@ -274,15 +274,15 @@ partial class EchonetClient
         validateValue: true // Setされる内容を検証する
       );
 
-      if (!accepted) {
+      if (accepted) {
+        // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
+        responseProps.Add(new(prop.EPC));
+      }
+      else {
         hasError = true;
         // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
         // 要求された EDT を付け、要求を受理できなかったことを示す。
         responseProps.Add(prop);
-      }
-      else {
-        // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-        responseProps.Add(new(prop.EPC));
       }
     }
 
@@ -352,15 +352,15 @@ partial class EchonetClient
           validateValue: true // Setされる内容を検証する
         );
 
-        if (!accepted) {
+        if (accepted) {
+          // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
+          responseProps.Add(new(prop.EPC));
+        }
+        else {
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
           responseProps.Add(prop);
-        }
-        else {
-          // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-          responseProps.Add(new(prop.EPC));
         }
       }
     }
@@ -422,17 +422,17 @@ partial class EchonetClient
     }
     else {
       foreach (var prop in requestProps) {
-        if (!destObject.Properties.TryGetValue(prop.EPC, out var property)) {
+        if (destObject.Properties.TryGetValue(prop.EPC, out var property)) {
+          // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
+          // EDT には読み出したプロパティ値を設定する
+          responseProps.Add(new(prop.EPC, property.ValueMemory));
+        }
+        else {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
           responseProps.Add(new(prop.EPC));
-        }
-        else {
-          // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
-          // EDT には読み出したプロパティ値を設定する
-          responseProps.Add(new(prop.EPC, property.ValueMemory));
         }
       }
     }
@@ -506,30 +506,30 @@ partial class EchonetClient
           validateValue: true // Setされる内容を検証する
         );
 
-        if (!accepted) {
+        if (accepted) {
+          // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
+          responsePropsForSet.Add(new(prop.EPC));
+        }
+        else {
           hasError = true;
           // 要求を受理しなかったEPCに対しては、それに続く PDC に要求時と同じ値を設定し、
           // 要求された EDT を付け、要求を受理できなかったことを示す。
           responsePropsForSet.Add(prop);
         }
-        else {
-          // 要求を受理した EPC に対しては、それに続くPDCに0を設定してEDTは付けない
-          responsePropsForSet.Add(new(prop.EPC));
-        }
       }
 
       foreach (var prop in requestPropsForGet) {
-        if (!destObject.Properties.TryGetValue(prop.EPC, out var property)) {
+        if (destObject.Properties.TryGetValue(prop.EPC, out var property)) {
+          // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
+          // EDT には読み出したプロパティ値を設定する
+          responsePropsForGet.Add(new(prop.EPC, property.ValueMemory));
+        }
+        else {
           hasError = true;
           // 要求を受理しなかった EPC に対しては、それに続く PDC に 0 を設定して
           // EDT はつけず、要求を受理できなかったことを示す。
           // (そのままでよい)
           responsePropsForGet.Add(new(prop.EPC));
-        }
-        else {
-          // 要求を受理した EPCに対しては、それに続く PDC に読み出したプロパティの長さを、
-          // EDT には読み出したプロパティ値を設定する
-          responsePropsForGet.Add(new(prop.EPC, property.ValueMemory));
         }
       }
     }
@@ -607,13 +607,13 @@ partial class EchonetClient
         validateValue: false // 通知された内容をそのまま格納するため、検証しない
       );
 
-      if (!accepted) {
-        hasError = true;
-      }
-      else {
+      if (accepted) {
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
           _ = await ProcessReceivingInstanceListNotificationAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+      }
+      else {
+        hasError = true;
       }
     }
 
@@ -681,13 +681,13 @@ partial class EchonetClient
         validateValue: false // 通知された内容をそのまま格納するため、検証しない
       );
 
-      if (!accepted) {
-        hasError = true;
-      }
-      else {
+      if (accepted) {
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
           _ = await ProcessReceivingInstanceListNotificationAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+      }
+      else {
+        hasError = true;
       }
 
       // EPC には通知時と同じプロパティコードを設定するが、
