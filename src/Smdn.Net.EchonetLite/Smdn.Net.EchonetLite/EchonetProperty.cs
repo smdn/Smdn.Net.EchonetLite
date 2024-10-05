@@ -199,7 +199,7 @@ public abstract class EchonetProperty {
       write: writer => writer.Write(newValue.EDT.Span),
       newValueSize: newValue.PDC,
       raiseValueChangedEvent: true,
-      setLastUpdatedTime: true
+      setLastUpdatedTime: true // TODO: switch by esv
     );
 
   /// <summary>

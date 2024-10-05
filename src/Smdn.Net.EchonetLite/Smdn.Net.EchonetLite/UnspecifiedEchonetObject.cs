@@ -1,8 +1,12 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
 
 using Smdn.Net.EchonetLite.Protocol;
 
@@ -18,7 +22,7 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
   public override byte ClassCode { get; }
   public override byte InstanceCode { get; }
 
-  private readonly ObservableCollection<EchonetProperty> properties = [];
+  private readonly ObservableCollection<UnspecifiedEchonetProperty> properties = [];
 
   public override IReadOnlyCollection<EchonetProperty> Properties => properties;
   public override IEnumerable<EchonetProperty> GetProperties => Properties.Where(static p => p.CanGet);
@@ -35,9 +39,6 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     properties.CollectionChanged += (_, e) => OnPropertiesChanged(e);
   }
 
-  internal void AddProperty(UnspecifiedEchonetProperty prop)
-    => properties.Add(prop);
-
   internal void ResetProperties(IEnumerable<UnspecifiedEchonetProperty> props)
   {
     properties.Clear();
@@ -45,5 +46,44 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     foreach (var prop in props) {
       properties.Add(prop);
     }
+  }
+
+  protected internal override bool StorePropertyValue(
+    ESV esv,
+    int tid,
+    PropertyValue value,
+    bool validateValue
+  )
+  {
+    var property = properties.FirstOrDefault(p => p.Code == value.EPC);
+
+    if (property is null) {
+      // 未知のプロパティ
+      // 新規作成
+      property = new UnspecifiedEchonetProperty(
+        device: this,
+        code: value.EPC,
+        // 詳細仕様が未解決・不明なため、すべてのアクセスが可能であると仮定する
+        canSet: true,
+        canGet: true,
+        canAnnounceStatusChange: true
+      );
+
+      properties.Add(property);
+
+      Node.Owner?.Logger?.LogInformation(
+        "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
+        Node.Address,
+        EOJ,
+        property.Code
+      );
+    }
+
+    // 詳細仕様が未解決・不明なため、プロパティ値の検証はできない
+    // if (validateValue) { }
+
+    property.SetValue(esv, unchecked((ushort)tid), value);
+
+    return true;
   }
 }

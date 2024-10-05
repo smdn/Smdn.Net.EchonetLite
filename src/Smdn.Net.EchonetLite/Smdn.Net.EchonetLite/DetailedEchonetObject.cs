@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Smdn.Net.EchonetLite.Protocol;
+
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
@@ -60,5 +62,27 @@ internal sealed class DetailedEchonetObject : EchonetObject {
     properties = new(
       objectDetail.Properties.Select(propertyDetail => new DetailedEchonetProperty(this, propertyDetail))
     );
+  }
+
+  protected internal override bool StorePropertyValue(
+    ESV esv,
+    int tid,
+    PropertyValue value,
+    bool validateValue
+  )
+  {
+    var property = properties.FirstOrDefault(p => p.Code == value.EPC);
+
+    if (property is null)
+      // 詳細仕様で規定されていないプロパティのため、格納しない
+      return false;
+
+    if (validateValue && !property.IsAcceptableValue(value.EDT.Span))
+      // 詳細仕様の規定に違反する値のため、格納しない
+      return false;
+
+    property.SetValue(esv, unchecked((ushort)tid), value);
+
+    return true;
   }
 }
