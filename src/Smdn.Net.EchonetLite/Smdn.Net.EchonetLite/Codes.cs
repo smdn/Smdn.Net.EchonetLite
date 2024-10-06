@@ -39,7 +39,7 @@ internal static class Codes {
     /// <summary>
     /// ノードプロファイルクラスにおいて、一般ノード(general node)を表すインスタンスコード。
     /// </summary>
-    /// <seealso cref="EchonetObject.CreateGeneralNodeProfile"/>
+    /// <seealso cref="EchonetObject.CreateNodeProfile(byte)"/>
     /// <seealso href="https://echonet.jp/spec_v114_lite/">
     /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
     /// </seealso>
@@ -48,7 +48,7 @@ internal static class Codes {
     /// <summary>
     /// ノードプロファイルクラスにおいて、送信専用ノード(transmission-only node)を表すインスタンスコード。
     /// </summary>
-    /// <seealso cref="EchonetObject.CreateTransmissionOnlyNodeProfile"/>
+    /// <seealso cref="EchonetObject.CreateNodeProfile(byte)"/>
     /// <seealso href="https://echonet.jp/spec_v114_lite/">
     /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
     /// </seealso>
