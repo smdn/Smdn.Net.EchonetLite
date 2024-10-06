@@ -15,10 +15,30 @@ namespace Smdn.Net.EchonetLite;
 /// ECHONET Liteノードを表す抽象クラス。
 /// </summary>
 public abstract class EchonetNode {
+  /// <summary>
+  /// 自ノードとなる<see cref="EchonetNode"/>を作成します。
+  /// </summary>
+  /// <param name="devices">自ノードに属する機器オブジェクトの一覧を表す<see cref="IEnumerable{EchonetObject}"/>。</param>
+  /// <returns>作成された<see cref="EchonetNode"/>。</returns>
   public static EchonetNode CreateSelfNode(IEnumerable<EchonetObject> devices)
-    => new EchonetSelfNode(
-      nodeProfile: EchonetObject.CreateGeneralNodeProfile(),
+    => CreateSelfNode(
+      nodeProfile: EchonetObject.CreateNodeProfile(),
       devices: devices
+    );
+
+  /// <summary>
+  /// 自ノードとなる<see cref="EchonetNode"/>を作成します。
+  /// </summary>
+  /// <param name="nodeProfile">自ノードのノードプロファイルオブジェクトとなる<see cref="EchonetObject"/>。</param>
+  /// <param name="devices">自ノードに属する機器オブジェクトの一覧を表す<see cref="IEnumerable{EchonetObject}"/>。</param>
+  /// <returns>作成された<see cref="EchonetNode"/>。</returns>
+  public static EchonetNode CreateSelfNode(
+    EchonetObject nodeProfile,
+    IEnumerable<EchonetObject> devices
+  )
+    => new EchonetSelfNode(
+      nodeProfile: nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile)),
+      devices: devices ?? throw new ArgumentNullException(nameof(nodeProfile))
     );
 
   /// <summary>
