@@ -35,7 +35,7 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     InstanceCode = eoj.InstanceCode;
 
     properties = new(
-      concurrencyLevel: -1, // default
+      concurrencyLevel: ConcurrentDictionaryUtils.DefaultConcurrencyLevel, // default
       capacity: 20 // TODO: best initial capacity
     );
     readOnlyPropertiesView = new(properties);
