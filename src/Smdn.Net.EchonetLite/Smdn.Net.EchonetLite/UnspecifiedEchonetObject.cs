@@ -61,7 +61,7 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
   {
     if (!properties.TryGetValue(value.EPC, out var property)) {
       // 未知のプロパティのため、新規作成して追加する
-      property = new UnspecifiedEchonetProperty(
+      property = new(
         device: this,
         code: value.EPC,
         // 詳細仕様が未解決・不明なため、すべてのアクセスが可能であると仮定する
