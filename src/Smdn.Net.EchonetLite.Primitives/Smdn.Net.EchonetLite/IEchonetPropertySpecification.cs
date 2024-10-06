@@ -23,14 +23,7 @@ public interface IEchonetPropertySpecification {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
   /// </seealso>
-  /// <seealso cref="IsSetMandatory"/>
   bool CanSet { get; }
-
-  /// <summary>
-  /// このプロパティとアクセスルール"Set"のサービスの実装が必須であるかどうかを表す値を取得します。
-  /// </summary>
-  /// <seealso cref="CanSet"/>
-  bool IsSetMandatory { get; }
 
   /// <summary>
   /// アクセスルールに"Get"が規定されているかどうかを表す値を取得します。
@@ -42,14 +35,7 @@ public interface IEchonetPropertySpecification {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
   /// </seealso>
-  /// <seealso cref="IsGetMandatory"/>
   bool CanGet { get; }
-
-  /// <summary>
-  /// このプロパティとアクセスルール"Get"のサービスの実装が必須であるかどうかを表す値を取得します。
-  /// </summary>
-  /// <seealso cref="CanGet"/>
-  bool IsGetMandatory { get; }
 
   /// <summary>
   /// アクセスルールに"Anno"が規定されているかどうかを表す値を取得します。
@@ -61,14 +47,7 @@ public interface IEchonetPropertySpecification {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．２．５ アクセスルール
   /// </seealso>
-  /// <seealso cref="IsStatusChangeAnnouncementMandatory"/>
   bool CanAnnounceStatusChange { get; }
-
-  /// <summary>
-  /// このプロパティとアクセスルール"Anno"のサービスの実装が必須であるかどうかを表す値を取得します。
-  /// </summary>
-  /// <seealso cref="CanAnnounceStatusChange"/>
-  bool IsStatusChangeAnnouncementMandatory { get; }
 
   /// <summary>
   /// 指定されたバイト列がこのプロパティの値として受け入れ可能かどうかを検証した結果を返します。
