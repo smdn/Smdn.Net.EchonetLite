@@ -12,8 +12,6 @@ namespace Smdn.Net.EchonetLite.Specifications;
 /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
 /// </seealso>
 internal sealed class EchonetNodeProfileDetail : EchonetProfileObjectDetail {
-  public static readonly EchonetNodeProfileDetail Instance = new();
-
   public override byte ClassCode => Codes.Classes.NodeProfile;
   public override IEnumerable<IEchonetPropertySpecification> Properties { get; }
     = PropertyDetails
@@ -22,7 +20,9 @@ internal sealed class EchonetNodeProfileDetail : EchonetProfileObjectDetail {
       .ToList();
 
   private static new class PropertyDetails {
-    public static readonly IReadOnlyList<EchonetPropertyDetail> Properties = [
+    public static IReadOnlyList<IEchonetPropertySpecification> Properties => PropertyList;
+
+    private static readonly IReadOnlyList<EchonetPropertyDetail> PropertyList = [
       // 動作状態
       new(0x80) {
         SizeMin = 1,

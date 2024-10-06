@@ -36,5 +36,5 @@ partial class EchonetObject {
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
   /// </seealso>
   internal static EchonetObject CreateNodeProfile(byte instanceCode)
-    => new DetailedEchonetObject(EchonetNodeProfileDetail.Instance, instanceCode);
+    => new DetailedEchonetObject(EchonetProfileObjectDetail.NodeProfile, instanceCode);
 }
