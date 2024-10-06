@@ -13,7 +13,9 @@ namespace Smdn.Net.EchonetLite;
 /// </summary>
 internal sealed class DetailedEchonetObject : EchonetObject {
   public override bool HasPropertyMapAcquired {
+    // 詳細仕様で規定されているプロパティのみを扱うため、プロパティマップは初期状態で「取得済み」として扱う
     get => true;
+    // 同上、プロパティマップは「取得済み」として扱うため、取得状態は変更できない
     internal set => throw new InvalidOperationException();
   }
 
