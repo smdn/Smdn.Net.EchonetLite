@@ -15,64 +15,66 @@ internal abstract class EchonetProfileObjectDetail : IEchonetObjectSpecification
   public abstract byte ClassCode { get; }
   public abstract IEnumerable<IEchonetPropertySpecification> Properties { get; }
 
-  private protected static readonly IReadOnlyList<EchonetPropertyDetail> BasePropertyDetails = [
-    // 異常発生状態
-    new(0x88) {
-      SizeMin = 1,
-      SizeMax = 1,
-      CanGet = true,
-    },
-    // メーカコード
-    new(0x8A) {
-      SizeMin = 3,
-      SizeMax = 3,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-    // 事業場コード
-    new(0x8B) {
-      SizeMin = 3,
-      SizeMax = 3,
-      CanGet = true,
-    },
-    // 商品コード
-    new(0x8C) {
-      SizeMin = 12,
-      SizeMax = 12,
-      CanGet = true,
-    },
-    // 製造番号
-    new(0x8D) {
-      SizeMin = 12,
-      SizeMax = 12,
-      CanGet = true,
-    },
-    // 製造年月日
-    new(0x8E) {
-      SizeMin = 4,
-      SizeMax = 4,
-      CanGet = true,
-    },
-    // 状変アナウンスプロパティマップ
-    new(0x9D) {
-      SizeMin = 0,
-      SizeMax = 17,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-    // Set プロパティマップ
-    new(0x9E) {
-      SizeMin = 0,
-      SizeMax = 17,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-    // Get プロパティマップ
-    new(0x9F) {
-      SizeMin = 0,
-      SizeMax = 17,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-  ];
+  protected static class PropertyDetails {
+    public static readonly IReadOnlyList<EchonetPropertyDetail> Properties = [
+      // 異常発生状態
+      new(0x88) {
+        SizeMin = 1,
+        SizeMax = 1,
+        CanGet = true,
+      },
+      // メーカコード
+      new(0x8A) {
+        SizeMin = 3,
+        SizeMax = 3,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+      // 事業場コード
+      new(0x8B) {
+        SizeMin = 3,
+        SizeMax = 3,
+        CanGet = true,
+      },
+      // 商品コード
+      new(0x8C) {
+        SizeMin = 12,
+        SizeMax = 12,
+        CanGet = true,
+      },
+      // 製造番号
+      new(0x8D) {
+        SizeMin = 12,
+        SizeMax = 12,
+        CanGet = true,
+      },
+      // 製造年月日
+      new(0x8E) {
+        SizeMin = 4,
+        SizeMax = 4,
+        CanGet = true,
+      },
+      // 状変アナウンスプロパティマップ
+      new(0x9D) {
+        SizeMin = 0,
+        SizeMax = 17,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+      // Set プロパティマップ
+      new(0x9E) {
+        SizeMin = 0,
+        SizeMax = 17,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+      // Get プロパティマップ
+      new(0x9F) {
+        SizeMin = 0,
+        SizeMax = 17,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+    ];
+  }
 }

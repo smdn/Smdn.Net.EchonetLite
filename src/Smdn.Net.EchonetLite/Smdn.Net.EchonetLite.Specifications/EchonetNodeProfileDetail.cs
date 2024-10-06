@@ -15,79 +15,85 @@ internal sealed class EchonetNodeProfileDetail : EchonetProfileObjectDetail {
   public static readonly EchonetNodeProfileDetail Instance = new();
 
   public override byte ClassCode => Codes.Classes.NodeProfile;
-  public override IEnumerable<IEchonetPropertySpecification> Properties => BasePropertyDetails.Concat(PropertyDetails);
+  public override IEnumerable<IEchonetPropertySpecification> Properties { get; }
+    = PropertyDetails
+      .Properties
+      .Concat(EchonetProfileObjectDetail.PropertyDetails.Properties)
+      .ToList();
 
-  private static readonly IReadOnlyList<EchonetPropertyDetail> PropertyDetails = [
-    // 動作状態
-    new(0x80) {
-      SizeMin = 1,
-      SizeMax = 1,
-      CanSet = true,
-      CanGet = true,
-      IsGetMandatory = true,
-      CanAnnounceStatusChange = true,
-    },
-    // Version 情報
-    new(0x82) {
-      SizeMin = 4,
-      SizeMax = 4,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-    // 識別番号
-    new(0x83) {
-      SizeMin = 17,
-      SizeMax = 17,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-    // 異常内容
-    new(0x89) {
-      SizeMin = 2,
-      SizeMax = 2,
-      CanGet = true,
-    },
-    // 個体識別情報
-    new(0xBF) {
-      SizeMin = 2,
-      SizeMax = 2,
-      CanSet = true,
-      CanGet = true,
-    },
-    // 自ノードインスタンス数
-    new(0xD3) {
-      SizeMin = 3,
-      SizeMax = 3,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-    // 自ノードクラス数
-    new(0xD4) {
-      SizeMin = 2,
-      SizeMax = 2,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-    // インスタンスリスト通知
-    new(0xD5) {
-      SizeMin = 0,
-      SizeMax = 253,
-      CanAnnounceStatusChange = true,
-      IsStatusChangeAnnouncementMandatory = true,
-    },
-    // 自ノードインスタンスリスト S
-    new(0xD6) {
-      SizeMin = 0,
-      SizeMax = 253,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-    // 自ノードクラスリストS
-    new(0xD7) {
-      SizeMin = 0,
-      SizeMax = 17,
-      CanGet = true,
-      IsGetMandatory = true,
-    },
-  ];
+  private static new class PropertyDetails {
+    public static readonly IReadOnlyList<EchonetPropertyDetail> Properties = [
+      // 動作状態
+      new(0x80) {
+        SizeMin = 1,
+        SizeMax = 1,
+        CanSet = true,
+        CanGet = true,
+        IsGetMandatory = true,
+        CanAnnounceStatusChange = true,
+      },
+      // Version 情報
+      new(0x82) {
+        SizeMin = 4,
+        SizeMax = 4,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+      // 識別番号
+      new(0x83) {
+        SizeMin = 17,
+        SizeMax = 17,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+      // 異常内容
+      new(0x89) {
+        SizeMin = 2,
+        SizeMax = 2,
+        CanGet = true,
+      },
+      // 個体識別情報
+      new(0xBF) {
+        SizeMin = 2,
+        SizeMax = 2,
+        CanSet = true,
+        CanGet = true,
+      },
+      // 自ノードインスタンス数
+      new(0xD3) {
+        SizeMin = 3,
+        SizeMax = 3,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+      // 自ノードクラス数
+      new(0xD4) {
+        SizeMin = 2,
+        SizeMax = 2,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+      // インスタンスリスト通知
+      new(0xD5) {
+        SizeMin = 0,
+        SizeMax = 253,
+        CanAnnounceStatusChange = true,
+        IsStatusChangeAnnouncementMandatory = true,
+      },
+      // 自ノードインスタンスリスト S
+      new(0xD6) {
+        SizeMin = 0,
+        SizeMax = 253,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+      // 自ノードクラスリストS
+      new(0xD7) {
+        SizeMin = 0,
+        SizeMax = 17,
+        CanGet = true,
+        IsGetMandatory = true,
+      },
+    ];
+  }
 }
