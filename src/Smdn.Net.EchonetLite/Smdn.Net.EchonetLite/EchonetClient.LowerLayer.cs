@@ -174,8 +174,8 @@ partial class EchonetClient
         );
       }
 
-      if (ehd2 == EHD2.Format1) {
-        if (logger.IsEnabled(LogLevel.Debug) && FrameSerializer.TryParseEDataAsFormat1Message(edata.Span, out var format1Message)) {
+      if (ehd2 == EHD2.Format1 && logger.IsEnabled(LogLevel.Debug)) {
+        if (FrameSerializer.TryParseEDataAsFormat1Message(edata.Span, out var format1Message)) {
           logger.LogDebug(
             "Format 1 message (To: {Address}, TID: {TID:X4}, Message: {Message})",
             address,
@@ -186,8 +186,8 @@ partial class EchonetClient
         else {
           logger.LogWarning(
             "Invalid Format 1 message (To: {Address}, TID: {TID:X4})",
-            tid,
-            address
+            address,
+            tid
           );
         }
       }
