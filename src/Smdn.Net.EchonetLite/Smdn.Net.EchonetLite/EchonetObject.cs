@@ -160,4 +160,7 @@ public abstract partial class EchonetObject {
     PropertyValue value,
     bool validateValue
   );
+
+  public override string ToString()
+    => $"{GetType().FullName}<{EOJ}@{OwnerNode?.Address?.ToString() ?? "(null)"}>";
 }
