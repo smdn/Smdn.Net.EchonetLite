@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
     <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-    <PackageReference Update="System.Text.Json" Version="6.0.0" />
+    <PackageReference Update="System.Text.Json" Version="6.0.10" />
     <PackageReference Update="Smdn.Devices.BP35XX" Version="[1.0.0,3.0.0)" />
     <PackageReference Update="Smdn.Net.SkStackIP" Version="[1.2.0,2.0.0)" />
   </ItemGroup>
