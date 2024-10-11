@@ -360,4 +360,7 @@ public abstract class EchonetProperty {
   /// <paramref name="edt"/>が詳細仕様で定められているサイズ・値域などに適合すると判断される場合は<see langword="true"/>、そうでなければ<see langword="false"/>。
   /// </returns>
   protected internal virtual bool IsAcceptableValue(ReadOnlySpan<byte> edt) => true;
+
+  public override string ToString()
+    => $"{GetType().FullName} (Code: 0x{Code:X2}, Value: {ValueMemory.ToHexString()})";
 }
