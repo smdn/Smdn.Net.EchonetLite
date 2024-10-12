@@ -80,16 +80,8 @@ partial class EchonetClient
   /// インスタンスリスト通知要求を行います。
   /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)に対するECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を送信します。
   /// </summary>
-  /// <param name="onInstanceListPropertyMapAcquiring">
-  /// インスタンスリスト受信後・プロパティマップの取得前に呼び出されるコールバックを表すデリゲートを指定します。
-  /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
-  /// </param>
   /// <param name="onInstanceListUpdated">
-  /// インスタンスリスト受信後・プロパティマップの取得完了後に呼び出されるコールバックを表すデリゲートを指定します。
-  /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
-  /// </param>
-  /// <param name="onPropertyMapAcquired">
-  /// ノードの各インスタンスに対するプロパティマップの取得完了後に呼び出されるコールバックを表すデリゲートを指定します。
+  /// インスタンスリスト受信後に呼び出されるコールバックを表すデリゲートを指定します。
   /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
   /// </param>
   /// <param name="state">各コールバックに共通して渡される状態変数を指定します。</param>
@@ -100,56 +92,33 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
   /// </seealso>
   public async Task PerformInstanceListNotificationRequestAsync<TState>(
-    Func<EchonetClient, EchonetNode, TState, bool>? onInstanceListPropertyMapAcquiring,
-    Func<EchonetClient, EchonetNode, TState, bool>? onInstanceListUpdated,
-    Func<EchonetClient, EchonetNode, EchonetObject, TState, bool>? onPropertyMapAcquired,
+    Func<EchonetNode, TState, bool> onInstanceListUpdated,
     TState state,
     CancellationToken cancellationToken = default
   )
   {
+    if (onInstanceListUpdated is null)
+      throw new ArgumentNullException(nameof(onInstanceListUpdated));
+
     const bool RetVoid = default;
 
     var tcs = new TaskCompletionSource<bool>();
 
-    // インスタンスリスト受信後・プロパティマップの取得前に発生するイベントをハンドリングする
-    void HandleInstanceListPropertyMapAcquiring(object? sender, (EchonetNode Node, IReadOnlyList<EchonetObject> Instances) e)
-    {
-      logger?.LogDebug("HandleInstanceListPropertyMapAcquiring");
-
-      // この時点で条件がtrueとなったら、結果を確定する
-      if (onInstanceListPropertyMapAcquiring(this, e.Node, state))
-        _ = tcs.TrySetResult(RetVoid);
-    }
-
-    // インスタンスリスト受信後・プロパティマップの取得完了後に発生するイベントをハンドリングする
+    // インスタンスリスト受信後に発生するイベントをハンドリングする
     void HandleInstanceListUpdated(object? sender, (EchonetNode Node, IReadOnlyList<EchonetObject> Instances) e)
     {
       logger?.LogDebug("HandleInstanceListUpdated");
 
       // この時点で条件がtrueとなったら、結果を確定する
-      if (onInstanceListUpdated(this, e.Node, state))
-        _ = tcs.TrySetResult(RetVoid);
-    }
-
-    // ノードの各インスタンスに対するプロパティマップの取得完了後に発生するイベントをハンドリングする
-    void HandlePropertyMapAcquired(object? sender, (EchonetNode Node, EchonetObject Device) e)
-    {
-      logger?.LogDebug("HandlePropertyMapAcquired");
-
-      // この時点で条件がtrueとなったら、結果を確定する
-      if (onPropertyMapAcquired(this, e.Node, e.Device, state))
+      if (onInstanceListUpdated(e.Node, state))
         _ = tcs.TrySetResult(RetVoid);
     }
 
     try {
       using var ctr = cancellationToken.Register(() => _ = tcs.TrySetCanceled(cancellationToken));
 
-      if (onInstanceListPropertyMapAcquiring is not null)
-        InstanceListPropertyMapAcquiring += HandleInstanceListPropertyMapAcquiring;
       if (onInstanceListUpdated is not null)
         InstanceListUpdated += HandleInstanceListUpdated;
-      if (onPropertyMapAcquired is not null)
-        PropertyMapAcquired += HandlePropertyMapAcquired;
 
       await PerformInstanceListNotificationRequestAsync(cancellationToken).ConfigureAwait(false);
 
@@ -157,12 +126,8 @@ partial class EchonetClient
       _ = await tcs.Task.ConfigureAwait(false);
     }
     finally {
-      if (onInstanceListPropertyMapAcquiring is not null)
-        InstanceListPropertyMapAcquiring -= HandleInstanceListPropertyMapAcquiring;
       if (onInstanceListUpdated is not null)
         InstanceListUpdated -= HandleInstanceListUpdated;
-      if (onPropertyMapAcquired is not null)
-        PropertyMapAcquired -= HandlePropertyMapAcquired;
     }
   }
 
@@ -1050,13 +1015,12 @@ partial class EchonetClient
   /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="edtInstantListNotification">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
   /// <seealso cref="PerformInstanceListNotificationAsync"/>
-  /// <seealso cref="AcquirePropertyMapsAsync"/>
-  private async ValueTask<bool> ProcessReceivingInstanceListNotificationAsync(
+  private bool ProcessReceivingInstanceListNotification(
     EchonetOtherNode sourceNode,
     ReadOnlyMemory<byte> edtInstantListNotification
   )
   {
-    using var scope = logger?.BeginScope("Instance list notification");
+    using var scope = logger?.BeginScope($"Instance list (Node: {sourceNode.Address})");
 
     if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edtInstantListNotification.Span, out var instanceList)) {
       logger?.LogWarning(
@@ -1067,7 +1031,7 @@ partial class EchonetClient
       return false;
     }
 
-    logger?.LogDebug("Updating (Node: {NodeAddress})", sourceNode.Address);
+    logger?.LogDebug("Updating");
 
     OnInstanceListUpdating(sourceNode);
 
@@ -1080,34 +1044,16 @@ partial class EchonetClient
 
       if (added) {
         logger?.LogInformation(
-          "New object added (Node: {NodeAddress}, EOJ: {EOJ})",
+          "New object (Node: {NodeAddress}, EOJ: {EOJ})",
           sourceNode.Address,
           instance.EOJ
         );
       }
     }
 
-    OnInstanceListPropertyMapAcquiring(sourceNode, instances);
-
-    foreach (var device in instances) {
-      if (!device.HasPropertyMapAcquired) {
-        logger?.LogInformation("Acquiring property maps (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
-
-        if (await AcquirePropertyMapsAsync(sourceNode, device).ConfigureAwait(false))
-          logger?.LogInformation("Updated property maps (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
-      }
-    }
-
-    if (!sourceNode.NodeProfile.HasPropertyMapAcquired) {
-      logger?.LogInformation("Acquiring property maps for node profile (Node: {NodeAddress})", sourceNode.Address);
-
-      if (await AcquirePropertyMapsAsync(sourceNode, sourceNode.NodeProfile).ConfigureAwait(false))
-        logger?.LogInformation("Updated property maps for node profile (Node: {NodeAddress})", sourceNode.Address);
-    }
-
     OnInstanceListUpdated(sourceNode, instances);
 
-    logger?.LogDebug("Updated (Node: {NodeAddress})", sourceNode.Address);
+    logger?.LogDebug("Updated");
 
     return true;
   }
@@ -1116,41 +1062,47 @@ partial class EchonetClient
   /// 指定されたECHONET Lite オブジェクトに対して、ECHONETプロパティ「状変アナウンスプロパティマップ」(EPC <c>0x9D</c>)・
   /// 「Set プロパティマップ」(EPC <c>0x9E</c>)・「Get プロパティマップ」(EPC <c>0x9F</c>)の読み出しを行います。
   /// </summary>
-  /// <param name="sourceNode">対象のECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
-  /// <exception cref="InvalidOperationException">受信したEDTは無効なプロパティマップです。</exception>
-  /// <seealso cref="ProcessReceivingInstanceListNotificationAsync"/>
-  private async ValueTask<bool> AcquirePropertyMapsAsync(EchonetOtherNode sourceNode, EchonetObject device)
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="device"/>が<see langword="null"/>です。
+  /// </exception>
+  /// <exception cref="InvalidOperationException">
+  /// <paramref name="device"/>は自ノードのECHONET Lite オブジェクトです。
+  /// このメソッドでは自ノードのECHONET Lite オブジェクトからプロパティマップを読み出すことはできません。
+  /// または、受信したEDTは無効なプロパティマップです。
+  /// </exception>
+  public async ValueTask<bool> AcquirePropertyMapsAsync(
+    EchonetObject device,
+    CancellationToken cancellationToken = default
+  )
   {
     const byte EPCPropMapAnno = 0x9D; // 状変アナウンスプロパティマップ
     const byte EPCPropMapSet = 0x9E; // Set プロパティマップ
     const byte EPCPropMapGet = 0x9F; // Get プロパティマップ
 
+    if (device is null)
+      throw new ArgumentNullException(nameof(device));
+    if (device.Node is not EchonetOtherNode otherNode)
+      throw new InvalidOperationException("Cannot acquire property maps of self node.");
+
     using var scope = logger?.BeginScope("Acquiring property maps");
 
-    OnPropertyMapAcquiring(sourceNode, device); // TODO: support setting cancel and timeout
-
-    using var ctsTimeout = CreateTimeoutCancellationTokenSource(20_000);
+    OnPropertyMapAcquiring(otherNode, device);
 
     IReadOnlyCollection<PropertyValue> props;
 
-    try {
-      (var result, props) = await PerformPropertyValueReadRequestAsync(
-        sourceObject: SelfNode.NodeProfile,
-        destinationNode: sourceNode,
-        destinationObject: device,
-        propertyCodes: [EPCPropMapAnno, EPCPropMapSet, EPCPropMapGet],
-        cancellationToken: ctsTimeout.Token
-      ).ConfigureAwait(false);
+    (var result, props) = await PerformPropertyValueReadRequestAsync(
+      sourceObject: SelfNode.NodeProfile,
+      destinationNode: otherNode,
+      destinationObject: device,
+      propertyCodes: [EPCPropMapAnno, EPCPropMapSet, EPCPropMapGet],
+      cancellationToken: cancellationToken
+    ).ConfigureAwait(false);
 
-      // 不可応答は無視
-      if (!result) {
-        logger?.LogWarning("Service not available (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
-        return false;
-      }
-    }
-    catch (OperationCanceledException ex) when (ctsTimeout.Token.Equals(ex.CancellationToken)) {
-      logger?.LogWarning("Operation timed out (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
+    // 不可応答は無視
+    if (!result) {
+      logger?.LogWarning("Service not available (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
       return false;
     }
 
@@ -1191,12 +1143,12 @@ partial class EchonetClient
       )
     );
 
-    logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", sourceNode.Address, device.EOJ);
+    logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
 
     foreach (var (_, p) in device.Properties.OrderBy(static pair => pair.Key)) {
       logger?.LogDebug(
         "Node: {NodeAddress} EOJ: {EOJ}, EPC: {EPC:X2}, Access Rule: {CanSet}/{CanGet}/{CanAnnounceStatusChange}",
-        sourceNode.Address,
+        otherNode.Address,
         device.EOJ,
         p.Code,
         p.CanSet ? "SET" : "---",
@@ -1207,7 +1159,7 @@ partial class EchonetClient
 
     device.HasPropertyMapAcquired = true;
 
-    OnPropertyMapAcquired(sourceNode, device);
+    OnPropertyMapAcquired(otherNode, device);
 
     return true;
   }

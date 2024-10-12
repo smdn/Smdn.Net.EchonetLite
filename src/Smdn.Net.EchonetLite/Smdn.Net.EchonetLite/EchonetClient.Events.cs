@@ -48,36 +48,12 @@ partial class EchonetClient
   ///   インスタンスリスト通知を受信した場合、以下の順でイベントが発生します。
   ///   <list type="number">
   ///     <item><description><see cref="InstanceListUpdating"/></description></item>
-  ///     <item><description><see cref="InstanceListPropertyMapAcquiring"/></description></item>
   ///     <item><description><see cref="InstanceListUpdated"/></description></item>
   ///   </list>
   ///   </para>
   /// </remarks>
-  /// <seealso cref="InstanceListPropertyMapAcquiring"/>
   /// <seealso cref="InstanceListUpdated"/>
   public event EventHandler<EchonetNode>? InstanceListUpdating;
-
-  /// <summary>
-  /// インスタンスリスト通知を受信した際に、プロパティマップの取得を開始するときに発生するイベント。
-  /// </summary>
-  /// <remarks>
-  ///   <para>
-  ///   イベント引数には、<see cref="ValueTuple{T1,T2}"/>が設定されます。
-  ///   イベント引数は、インスタンスリスト通知の送信元のECHONET Lite ノードを表す<see cref="EchonetNode"/>、
-  ///   および通知されたインスタンスリストを表す<see cref="IReadOnlyList{EchonetObject}"/>を保持します。
-  ///   </para>
-  ///   <para>
-  ///   インスタンスリスト通知を受信した場合、以下の順でイベントが発生します。
-  ///   <list type="number">
-  ///     <item><description><see cref="InstanceListUpdating"/></description></item>
-  ///     <item><description><see cref="InstanceListPropertyMapAcquiring"/></description></item>
-  ///     <item><description><see cref="InstanceListUpdated"/></description></item>
-  ///   </list>
-  ///   </para>
-  /// </remarks>
-  /// <seealso cref="InstanceListUpdating"/>
-  /// <seealso cref="InstanceListUpdated"/>
-  public event EventHandler<(EchonetNode, IReadOnlyList<EchonetObject>)>? InstanceListPropertyMapAcquiring;
 
   /// <summary>
   /// インスタンスリスト通知の受信による更新が完了したときに発生するイベント。
@@ -92,20 +68,15 @@ partial class EchonetClient
   ///   インスタンスリスト通知を受信した場合、以下の順でイベントが発生します。
   ///   <list type="number">
   ///     <item><description><see cref="InstanceListUpdating"/></description></item>
-  ///     <item><description><see cref="InstanceListPropertyMapAcquiring"/></description></item>
   ///     <item><description><see cref="InstanceListUpdated"/></description></item>
   ///   </list>
   ///   </para>
   /// </remarks>
   /// <seealso cref="InstanceListUpdating"/>
-  /// <seealso cref="InstanceListPropertyMapAcquiring"/>
   public event EventHandler<(EchonetNode, IReadOnlyList<EchonetObject>)>? InstanceListUpdated;
 
   protected virtual void OnInstanceListUpdating(EchonetNode node)
     => RaiseEvent(InstanceListUpdating, node);
-
-  protected virtual void OnInstanceListPropertyMapAcquiring(EchonetNode node, IReadOnlyList<EchonetObject> instances)
-    => RaiseEvent(InstanceListPropertyMapAcquiring, (node, instances));
 
   protected virtual void OnInstanceListUpdated(EchonetNode node, IReadOnlyList<EchonetObject> instances)
     => RaiseEvent(InstanceListUpdated, (node, instances));

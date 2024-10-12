@@ -180,9 +180,9 @@ partial class EchonetClient
         // プロパティ値通知要求 INF_REQのレスポンス
         // または、自発的な通知のケースがある。
         // なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
-        handlerTask = handlerTaskFactory.StartNew(async () => {
+        handlerTask = handlerTaskFactory.StartNew(() => {
           try {
-            _ = await HandlePropertyValueNotificationRequestAsync(address, tid, message, sourceNode).ConfigureAwait(false);
+            _ = HandlePropertyValueNotificationRequest(address, tid, message, sourceNode);
           }
           catch (Exception ex) {
             if (logger is not null)
@@ -594,7 +594,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
-  private async Task<bool> HandlePropertyValueNotificationRequestAsync(
+  private bool HandlePropertyValueNotificationRequest(
     IPAddress address,
     ushort tid,
     Format1Message message,
@@ -629,7 +629,7 @@ partial class EchonetClient
       if (accepted) {
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
-          _ = await ProcessReceivingInstanceListNotificationAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+          _ = ProcessReceivingInstanceListNotification(sourceNode, prop.EDT);
       }
       else {
         hasError = true;
@@ -703,7 +703,7 @@ partial class EchonetClient
       if (accepted) {
         // ノードプロファイルのインスタンスリスト通知の場合
         if (sourceNode.NodeProfile == sourceObject && prop.EPC == 0xD5)
-          _ = await ProcessReceivingInstanceListNotificationAsync(sourceNode, prop.EDT).ConfigureAwait(false);
+          _ = ProcessReceivingInstanceListNotification(sourceNode, prop.EDT);
       }
       else {
         hasError = true;
