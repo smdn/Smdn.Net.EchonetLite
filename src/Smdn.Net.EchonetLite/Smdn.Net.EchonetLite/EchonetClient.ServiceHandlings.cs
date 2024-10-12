@@ -608,7 +608,7 @@ partial class EchonetClient
     var requestProps = message.GetProperties();
     var sourceObject = message.SEOJ.IsNodeProfile
       ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
-      : sourceNode.GetOrAddDevice(message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
+      : sourceNode.GetOrAddDevice(deviceFactory, message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
 
     if (objectAdded) {
       logger?.LogInformation(
@@ -682,7 +682,7 @@ partial class EchonetClient
     var objectAdded = false;
     var sourceObject = message.SEOJ.IsNodeProfile
       ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
-      : sourceNode.GetOrAddDevice(message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
+      : sourceNode.GetOrAddDevice(deviceFactory, message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
 
     if (objectAdded) {
       logger?.LogInformation(
