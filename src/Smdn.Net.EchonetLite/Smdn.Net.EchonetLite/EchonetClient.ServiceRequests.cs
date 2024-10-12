@@ -1074,7 +1074,7 @@ partial class EchonetClient
     var instances = new List<EchonetObject>(capacity: instanceList.Count);
 
     foreach (var eoj in instanceList) {
-      var instance = sourceNode.GetOrAddDevice(eoj, out var added);
+      var instance = sourceNode.GetOrAddDevice(deviceFactory, eoj, out var added);
 
       instances.Add(instance);
 

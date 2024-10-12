@@ -18,6 +18,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   private readonly bool shouldDisposeEchonetLiteHandler;
   private IEchonetLiteHandler echonetLiteHandler; // null if disposed
   private readonly ILogger? logger;
+  private readonly IEchonetDeviceFactory? deviceFactory;
 
   /// <summary>
   /// 現在の<see cref="EchonetClient"/>インスタンスが扱うECHONET Lite ノード(自ノード)を表す<see cref="SelfNode"/>を取得します。
@@ -42,7 +43,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   TimeProvider? IEchonetClientService.TimeProvider => null; // TODO: make configurable, retrieve via IServiceProvider
 #endif
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ILogger{EchonetClient})"/>
   public EchonetClient(
     IEchonetLiteHandler echonetLiteHandler,
     ILogger<EchonetClient>? logger = null
@@ -55,7 +56,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   {
   }
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, ILogger{EchonetClient})"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ILogger{EchonetClient})"/>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
   /// </exception>
@@ -68,6 +69,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
       selfNode: EchonetNode.CreateSelfNode(devices: Array.Empty<EchonetObject>()),
       echonetLiteHandler: echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler)),
       shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler,
+      deviceFactory: null,
       logger: logger
     )
   {
@@ -79,6 +81,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// <param name="selfNode">自ノードを表す<see cref="EchonetNode"/>。</param>
   /// <param name="echonetLiteHandler">このインスタンスがECHONET Lite フレームを送受信するために使用する<see cref="IEchonetLiteHandler"/>。</param>
   /// <param name="shouldDisposeEchonetLiteHandler">オブジェクトが破棄される際に、<paramref name="echonetLiteHandler"/>も破棄するかどうかを表す値。</param>
+  /// <param name="deviceFactory">機器オブジェクトのファクトリとして使用される<see cref="IEchonetDeviceFactory"/>。</param>
   /// <param name="logger">このインスタンスの動作を記録する<see cref="ILogger{EchonetClient}"/>。</param>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="selfNode"/>が<see langword="null"/>です。
@@ -88,6 +91,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     EchonetNode selfNode,
     IEchonetLiteHandler echonetLiteHandler,
     bool shouldDisposeEchonetLiteHandler,
+    IEchonetDeviceFactory? deviceFactory,
     ILogger<EchonetClient>? logger
   )
   {
@@ -95,6 +99,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
     this.echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
     this.echonetLiteHandler.Received += EchonetDataReceived;
+    this.deviceFactory = deviceFactory;
 
     SelfNode = selfNode ?? throw new ArgumentNullException(nameof(selfNode));
     SelfNode.Owner = this;

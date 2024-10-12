@@ -11,8 +11,14 @@ using Smdn.Net.EchonetLite.Protocol;
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
-/// ECHONET Lite オブジェクトインスタンス
+/// ECHONET オブジェクトを表し、その機能に関するAPIを提供する抽象クラスです。
+/// このクラスは、機器オブジェクトおよびプロファイルオブジェクトを表現します。
 /// </summary>
+/// <seealso href="https://echonet.jp/spec_v114_lite/">
+/// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 第２章 ECHONET オブジェクト
+/// </seealso>
+/// <seealso cref="EchonetNode.Devices"/>
+/// <seealso cref="EchonetDevice"/>
 public abstract partial class EchonetObject {
   public static EchonetObject Create(IEchonetObjectSpecification objectDetail, byte instanceCode)
     => new DetailedEchonetObject(
@@ -33,18 +39,20 @@ public abstract partial class EchonetObject {
   /// <summary>
   /// このオブジェクトが属するECHONET Liteノードを表す<see cref="EchonetNode"/>を取得します。
   /// </summary>
-  public EchonetNode Node {
-    get {
-#if DEBUG
-      if (OwnerNode is null)
-        throw new InvalidOperationException($"{nameof(OwnerNode)} is null");
-#endif
+  public EchonetNode Node => OwnerNode;
 
-      return OwnerNode!;
-    }
+  internal EchonetNode OwnerNode {
+#if false // requires semi-auto properties
+    get => field ?? throw new InvalidOperationException($"{nameof(OwnerNode)} is not set to a valid value.");
+    set => field = value ?? throw new InvalidOperationException($"{nameof(OwnerNode)} can not be null");
+  }
+#else
+    get => ownerNode ?? throw new InvalidOperationException($"{nameof(OwnerNode)} is not set to a valid value.");
+    set => ownerNode = value ?? throw new InvalidOperationException($"{nameof(OwnerNode)} can not be null.");
   }
 
-  internal EchonetNode? OwnerNode { get; set; }
+  private EchonetNode? ownerNode;
+#endif
 
   /// <summary>
   /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
@@ -95,26 +103,14 @@ public abstract partial class EchonetObject {
   public abstract IReadOnlyDictionary<byte, EchonetProperty> Properties { get; }
 
   /// <summary>
-  /// このオブジェクトが属するECHONET Liteノードを指定せずにインスタンスを作成します。
+  /// 任意のECHONET オブジェクトを表す<see cref="EchonetObject"/>インスタンスを作成します。
   /// </summary>
   /// <remarks>
-  /// このコンストラクタを使用してインスタンスを作成した場合、インスタンスが使用されるまでの間に、
-  /// <see cref="OwnerNode"/>プロパティへ明示的に<see cref="EchonetNode"/>を設定する必要があります。
+  /// このコンストラクタを使用してインスタンスを作成したあと、インスタンスが使用されるまでの間に、
+  /// <see cref="OwnerNode"/>プロパティへ明示的に<see cref="EchonetNode"/>を設定してください。
   /// </remarks>
   private protected EchonetObject()
   {
-  }
-
-  /// <summary>
-  /// このオブジェクトが属するECHONET Liteノードを指定してインスタンスを作成します。
-  /// </summary>
-  /// <param name="node">このオブジェクトが属するECHONET Liteノードを表す<see cref="EchonetNode"/>を指定します。</param>
-  /// <exception cref="ArgumentNullException">
-  /// <paramref name="node"/>が<see langword="null"/>です。
-  /// </exception>
-  private protected EchonetObject(EchonetNode node)
-  {
-    OwnerNode = node ?? throw new ArgumentNullException(nameof(node));
   }
 
   /// <summary>

@@ -27,8 +27,7 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
 
   public override IReadOnlyDictionary<byte, EchonetProperty> Properties => readOnlyPropertiesView;
 
-  internal UnspecifiedEchonetObject(EchonetNode node, EOJ eoj)
-    : base(node)
+  internal UnspecifiedEchonetObject(EOJ eoj)
   {
     ClassGroupCode = eoj.ClassGroupCode;
     ClassCode = eoj.ClassCode;
