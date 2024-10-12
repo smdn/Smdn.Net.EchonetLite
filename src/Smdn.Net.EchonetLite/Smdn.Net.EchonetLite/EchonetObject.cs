@@ -117,6 +117,17 @@ public abstract partial class EchonetObject {
     OwnerNode = node ?? throw new ArgumentNullException(nameof(node));
   }
 
+  /// <summary>
+  /// プロパティマップを適用する。
+  /// </summary>
+  /// <param name="propertyMap">
+  /// プロパティマップを表す<see cref="IEnumerable{ValueTuple}"/>。
+  /// <paramref name="propertyMap"/>から列挙される各要素は、プロパティコード(EPC)・Setアクセス・Getアクセス・Annoアクセスからなる<see cref="ValueTuple"/>です。
+  /// </param>
+  internal abstract void ApplyPropertyMap(
+    IEnumerable<(byte Code, bool CanSet, bool CanGet, bool CanAnnounceStatusChange)> propertyMap
+  );
+
   private protected void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
     => EventInvoker.InvokeEvent(this, PropertiesChanged, e);
 

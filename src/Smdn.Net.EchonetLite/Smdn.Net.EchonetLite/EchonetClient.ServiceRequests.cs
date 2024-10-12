@@ -1179,18 +1179,14 @@ partial class EchonetClient
       }
     }
 
-    // 詳細仕様が不明なオブジェクト(UnspecifiedEchonetObject)の場合は、読み取ったプロパティマップを適用する
-    // 詳細仕様が参照可能なオブジェクト(DetailedEchonetObject)の場合は、詳細仕様で定められた
-    // プロパティが適用されているため、読み取ったプロパティマップは適用しない
-    // (HasPropertyMapAcquiredは常にtrueであるため、そもそもプロパティマップの読み取りは行われない)
-    (device as UnspecifiedEchonetObject)?.ResetProperties(
-      codes.Select(
-        code => new UnspecifiedEchonetProperty(
-          device: device,
-          code: code,
-          canSet: mapCanSet.Contains(code),
-          canGet: mapCanGet.Contains(code),
-          canAnnounceStatusChange: mapCanAnno.Contains(code)
+    // 読み取ったプロパティマップを適用する
+    device.ApplyPropertyMap(
+      propertyMap: codes.Select(
+        code => (
+          code,
+          mapCanSet.Contains(code),
+          mapCanGet.Contains(code),
+          mapCanAnno.Contains(code)
         )
       )
     );

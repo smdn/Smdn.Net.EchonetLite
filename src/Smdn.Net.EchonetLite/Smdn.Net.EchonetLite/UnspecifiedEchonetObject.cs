@@ -41,12 +41,23 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     readOnlyPropertiesView = new(properties);
   }
 
-  internal void ResetProperties(IEnumerable<UnspecifiedEchonetProperty> props)
+  internal override void ApplyPropertyMap(
+    IEnumerable<(byte Code, bool CanSet, bool CanGet, bool CanAnnounceStatusChange)> propertyMap
+  )
   {
     properties.Clear();
 
-    foreach (var prop in props) {
-      _ = properties.TryAdd(prop.Code, prop);
+    foreach (var (code, canSet, canGet, canAnnounceStatusChange) in propertyMap) {
+      _ = properties.TryAdd(
+        code,
+        new(
+          device: this,
+          code: code,
+          canSet: canSet,
+          canGet: canGet,
+          canAnnounceStatusChange: canAnnounceStatusChange
+        )
+      );
     }
 
     OnPropertiesChanged(new(NotifyCollectionChangedAction.Reset));

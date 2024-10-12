@@ -56,6 +56,15 @@ internal sealed class DetailedEchonetObject : EchonetObject {
     readOnlyPropertiesView = new(properties);
   }
 
+  internal override void ApplyPropertyMap(
+    IEnumerable<(byte Code, bool CanSet, bool CanGet, bool CanAnnounceStatusChange)> propertyMap
+  )
+  {
+    // 詳細仕様で定められたプロパティが適用されているため、読み取られたプロパティマップは適用しない
+    // (HasPropertyMapAcquiredは常にtrueであるため、そもそもプロパティマップの読み取りは行われない)
+    return;
+  }
+
   internal override bool StorePropertyValue(
     ESV esv,
     ushort tid,
