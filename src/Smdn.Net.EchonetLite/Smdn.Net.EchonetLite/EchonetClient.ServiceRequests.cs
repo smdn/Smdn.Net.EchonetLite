@@ -5,6 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+#if !SYSTEM_COLLECTIONS_OBJECTMODEL_READONLYDICTIONARY_EMPTY
+using System.Collections.ObjectModel;
+#endif
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -14,12 +17,28 @@ using Microsoft.Extensions.Logging;
 
 using Smdn.Net.EchonetLite.Protocol;
 
+using ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary =
+#if SYSTEM_COLLECTIONS_OBJECTMODEL_READONLYDICTIONARY_EMPTY
+  System.Collections.ObjectModel.ReadOnlyDictionary<
+#else
+  Smdn.Net.EchonetLite.EchonetClient.ReadOnlyDictionaryShim<
+#endif
+    Smdn.Net.EchonetLite.EchonetProperty,
+    Smdn.Net.EchonetLite.EchonetServicePropertyResult
+  >;
+
 namespace Smdn.Net.EchonetLite;
 
 #pragma warning disable IDE0040
 partial class EchonetClient
 #pragma warning restore IDE0040
 {
+#if !SYSTEM_COLLECTIONS_OBJECTMODEL_READONLYDICTIONARY_EMPTY
+  internal class ReadOnlyDictionaryShim<TKey, TValue> where TKey : notnull {
+    public static readonly IReadOnlyDictionary<TKey, TValue> Empty = new ReadOnlyDictionary<TKey, TValue>(new Dictionary<TKey, TValue>(0));
+  }
+#endif
+
   /// <summary>
   /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を行います。　このサービスは一斉同報が可能です。
   /// </summary>
@@ -29,7 +48,7 @@ partial class EchonetClient
   /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
-  /// 非同期の操作を表す<see cref="Task{T}"/>。
+  /// 非同期の操作を表す<see cref="ValueTask"/>。
   /// 書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
@@ -44,7 +63,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
-  public async Task RequestWriteOneWayAsync(
+  public async ValueTask RequestWriteOneWayAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
@@ -154,7 +173,7 @@ partial class EchonetClient
   /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
-  /// 非同期の操作を表す<see cref="Task{T}"/>。
+  /// 非同期の操作を表す<see cref="ValueTask{T}"/>。
   /// 成功応答(Set_Res <c>0x71</c>)の場合は<see langword="true"/>、不可応答(SetC_SNA <c>0x51</c>)その他の場合は<see langword="false"/>を返します。
   /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
@@ -170,7 +189,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
   /// </seealso>
-  public async Task<bool>
+  public async ValueTask<EchonetServiceResponse>
   RequestWriteAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
@@ -182,7 +201,7 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
-    var responseTCS = new TaskCompletionSource<bool>();
+    var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
     using var transaction = StartNewTransaction();
 
     void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
@@ -220,7 +239,13 @@ partial class EchonetClient
           );
         }
 
-        responseTCS.SetResult(value.Message.ESV == ESV.SetResponse);
+        responseTCS.SetResult(
+          new(
+            isSuccess: value.Message.ESV == ESV.SetResponse,
+            // TODO: 個々のプロパティの処理結果を設定する
+            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          )
+        );
 
         // TODO 一斉通知の応答の扱いが…
       }
@@ -266,7 +291,7 @@ partial class EchonetClient
   /// <param name="propertyCodes">処理対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
-  /// 非同期の操作を表す<see cref="Task{T}"/>。
+  /// 非同期の操作を表す<see cref="ValueTask{T}"/>。
   /// 成功応答(Get_Res <c>0x72</c>)の場合は<see langword="true"/>、不可応答(Get_SNA <c>0x52</c>)その他の場合は<see langword="false"/>を返します。
   /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
@@ -282,7 +307,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
-  public async Task<bool>
+  public async ValueTask<EchonetServiceResponse>
   RequestReadAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
@@ -294,7 +319,7 @@ partial class EchonetClient
     if (propertyCodes is null)
       throw new ArgumentNullException(nameof(propertyCodes));
 
-    var responseTCS = new TaskCompletionSource<bool>();
+    var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
     using var transaction = StartNewTransaction();
 
     void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
@@ -332,7 +357,13 @@ partial class EchonetClient
           );
         }
 
-        responseTCS.SetResult(value.Message.ESV == ESV.GetResponse);
+        responseTCS.SetResult(
+          new(
+            isSuccess: value.Message.ESV == ESV.GetResponse,
+            // TODO: 個々のプロパティの処理結果を設定する
+            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          )
+        );
 
         // TODO 一斉通知の応答の扱いが…
       }
@@ -379,7 +410,7 @@ partial class EchonetClient
   /// <param name="propertyCodesToGet">読み出し対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
-  /// 非同期の操作を表す<see cref="Task{T}"/>。
+  /// 非同期の操作を表す<see cref="ValueTask{T}"/>。
   /// 成功応答(SetGet_Res <c>0x7E</c>)の場合は<see langword="true"/>、不可応答(SetGet_SNA <c>0x5E</c>)その他の場合は<see langword="false"/>を返します。
   /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
@@ -396,7 +427,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// </seealso>
-  public async Task<bool>
+  public async ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)>
   RequestWriteReadAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
@@ -411,7 +442,11 @@ partial class EchonetClient
     if (propertyCodesToGet is null)
       throw new ArgumentNullException(nameof(propertyCodesToGet));
 
-    var responseTCS = new TaskCompletionSource<bool>();
+    var responseTCS = new TaskCompletionSource<(
+      EchonetServiceResponse SetResponse,
+      EchonetServiceResponse GetResponse
+    )>();
+
     using var transaction = StartNewTransaction();
 
     void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
@@ -459,7 +494,22 @@ partial class EchonetClient
           );
         }
 
-        responseTCS.SetResult(value.Message.ESV == ESV.SetGetResponse);
+        var isSuccess = value.Message.ESV == ESV.GetResponse;
+
+        responseTCS.SetResult(
+          (
+            SetResponse: new(
+              isSuccess: isSuccess,
+              // TODO: 個々のプロパティの処理結果を設定する
+              properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+            ),
+            GetResponse: new(
+              isSuccess: isSuccess,
+              // TODO: 個々のプロパティの処理結果を設定する
+              properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+            )
+          )
+        );
 
         // TODO 一斉通知の応答の扱いが…
       }
@@ -610,7 +660,7 @@ partial class EchonetClient
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
-  /// 非同期の操作を表す<see cref="Task{T}"/>。
+  /// 非同期の操作を表す<see cref="ValueTask{T}"/>。
   /// 通知に成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
@@ -626,7 +676,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
   /// </seealso>
-  public async Task
+  public async ValueTask<EchonetServiceResponse>
   NotifyAsync(
     EOJ sourceObject,
     IEnumerable<PropertyValue> properties,
@@ -640,7 +690,7 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
-    var responseTCS = new TaskCompletionSource();
+    var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
     using var transaction = StartNewTransaction();
 
     void HandleINFCRes(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
@@ -662,7 +712,13 @@ partial class EchonetClient
 
         logger?.LogDebug("Handling INFC_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
 
-        responseTCS.SetResult();
+        responseTCS.SetResult(
+          new(
+            isSuccess: true,
+            // TODO: 個々のプロパティの処理結果を設定する
+            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          )
+        );
       }
       finally {
         Format1MessageReceived -= HandleINFCRes;
@@ -687,7 +743,7 @@ partial class EchonetClient
     try {
       using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
 
-      await responseTCS.Task.ConfigureAwait(false);
+      return await responseTCS.Task.ConfigureAwait(false);
     }
     catch {
       Format1MessageReceived -= HandleINFCRes;

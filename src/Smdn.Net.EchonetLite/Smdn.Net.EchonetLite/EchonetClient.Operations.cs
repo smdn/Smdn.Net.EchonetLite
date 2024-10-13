@@ -195,7 +195,7 @@ partial class EchonetClient
     ).ConfigureAwait(false);
 
     // 不可応答は無視
-    if (!result) {
+    if (!result.IsSuccess) {
       logger?.LogWarning("Service not available (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
       return false;
     }
