@@ -29,7 +29,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．３．１ ECHONET Lite ノードスタート時の基本シーケンス
   /// </seealso>
-  public async ValueTask PerformInstanceListNotificationAsync(
+  public async ValueTask NotifyInstanceListAsync(
     CancellationToken cancellationToken = default
   )
   {
@@ -87,7 +87,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
   /// </seealso>
-  public async Task PerformInstanceListNotificationRequestAsync<TState>(
+  public async Task RequestNotifyInstanceListAsync<TState>(
     Func<EchonetNode, TState, bool> onInstanceListUpdated,
     TState state,
     CancellationToken cancellationToken = default
@@ -116,7 +116,7 @@ partial class EchonetClient
       if (onInstanceListUpdated is not null)
         InstanceListUpdated += HandleInstanceListUpdated;
 
-      await PerformInstanceListNotificationRequestAsync(cancellationToken).ConfigureAwait(false);
+      await RequestNotifyInstanceListAsync(cancellationToken).ConfigureAwait(false);
 
       // イベントの発生およびコールバックの処理を待機する
       _ = await tcs.Task.ConfigureAwait(false);
@@ -136,7 +136,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
   /// </seealso>
-  public ValueTask PerformInstanceListNotificationRequestAsync(
+  public ValueTask RequestNotifyInstanceListAsync(
     CancellationToken cancellationToken = default
   )
     // インスタンスリスト通知要求
