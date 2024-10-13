@@ -35,13 +35,16 @@ partial class EchonetClient
   /// <exception cref="ArgumentNullException">
   /// <paramref name="properties"/>が<see langword="null"/>です。
   /// </exception>
+  /// <remarks>
+  /// このメソッドでは応答を待機しません。　ECHONET Lite サービスの要求を行ったら即座に処理を返します。
+  /// </remarks>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
-  public async Task PerformPropertyValueWriteRequestAsync(
+  public async Task RequestWriteOneWayAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
@@ -158,6 +161,9 @@ partial class EchonetClient
   /// <exception cref="ArgumentNullException">
   /// <paramref name="properties"/>が<see langword="null"/>です。
   /// </exception>
+  /// <remarks>
+  /// このメソッドではECHONET Lite サービスの要求を送信したあと、応答を待機します。
+  /// </remarks>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
@@ -165,7 +171,7 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
   /// </seealso>
   public async Task<bool>
-  PerformPropertyValueWriteRequestResponseRequiredAsync(
+  RequestWriteAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
@@ -267,6 +273,9 @@ partial class EchonetClient
   /// <exception cref="ArgumentNullException">
   /// <paramref name="propertyCodes"/>が<see langword="null"/>です。
   /// </exception>
+  /// <remarks>
+  /// このメソッドではECHONET Lite サービスの要求を送信したあと、応答を待機します。
+  /// </remarks>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
@@ -274,7 +283,7 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
   public async Task<bool>
-  PerformPropertyValueReadRequestAsync(
+  RequestReadAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
@@ -378,6 +387,9 @@ partial class EchonetClient
   /// <paramref name="propertiesToSet"/>が<see langword="null"/>です。
   /// または、<paramref name="propertyCodesToGet"/>が<see langword="null"/>です。
   /// </exception>
+  /// <remarks>
+  /// このメソッドではECHONET Lite サービスの要求を送信したあと、応答を待機します。
+  /// </remarks>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
@@ -385,7 +397,7 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// </seealso>
   public async Task<bool>
-  PerformPropertyValueWriteReadRequestAsync(
+  RequestWriteReadAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
@@ -499,13 +511,16 @@ partial class EchonetClient
   /// <exception cref="ArgumentNullException">
   /// <paramref name="propertyCodes"/>が<see langword="null"/>です。
   /// </exception>
+  /// <remarks>
+  /// このメソッドでは応答を待機しません。　ECHONET Lite サービスの要求を行ったら即座に処理を返します。
+  /// </remarks>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
-  public ValueTask PerformPropertyValueNotificationRequestAsync(
+  public ValueTask RequestNotifyOneWayAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
@@ -548,13 +563,16 @@ partial class EchonetClient
   /// <exception cref="ArgumentNullException">
   /// <paramref name="properties"/>が<see langword="null"/>です。
   /// </exception>
+  /// <remarks>
+  /// このメソッドでは応答を待機しません。　ECHONET Lite サービスの要求を行ったら即座に処理を返します。
+  /// </remarks>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
-  public ValueTask PerformPropertyValueNotificationAsync(
+  public ValueTask NotifyOneWayAsync(
     EOJ sourceObject,
     IEnumerable<PropertyValue> properties,
     IPAddress? destinationNodeAddress,
@@ -599,6 +617,9 @@ partial class EchonetClient
   /// <paramref name="properties"/>が<see langword="null"/>です。
   /// または、<paramref name="destinationNodeAddress"/>が<see langword="null"/>です。
   /// </exception>
+  /// <remarks>
+  /// このメソッドではECHONET Lite サービスの要求を送信したあと、応答を待機します。
+  /// </remarks>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
@@ -606,7 +627,7 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
   /// </seealso>
   public async Task
-  PerformPropertyValueNotificationResponseRequiredAsync(
+  NotifyAsync(
     EOJ sourceObject,
     IEnumerable<PropertyValue> properties,
     IPAddress destinationNodeAddress,
