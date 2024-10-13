@@ -20,6 +20,8 @@ namespace Smdn.Net.EchonetLite;
 partial class EchonetClient
 #pragma warning restore IDE0040
 {
+  private const byte EPCInstanceListNotification = 0xD5; // 0xD5 インスタンスリスト通知
+
   /// <summary>
   /// インスタンスリスト通知を行います。
   /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)を設定し、ECHONET Lite サービス「INF:プロパティ値通知」(ESV <c>0x73</c>)を送信します。
@@ -35,7 +37,7 @@ partial class EchonetClient
   {
     // インスタンスリスト通知 0xD5 (TODO: refer EchonetNodeProfileDetail)
     const int SizeMax = 253; // unsigned char×(MAX)253
-    var property = SelfNode.NodeProfile.Properties[0xD5];
+    var property = SelfNode.NodeProfile.Properties[EPCInstanceListNotification];
     byte[]? buffer = null;
 
     try {
@@ -63,12 +65,10 @@ partial class EchonetClient
     // インスタンスリスト通知
     // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
     // > 自発的「通知」の場合は、DEOJに特に明示的に指定する EOJ がない場合は、ノードプロファイルクラスを格納することとする。
-    await NotifyOneWayAsync(
-      SelfNode.NodeProfile.EOJ, // ノードプロファイルから
-      Enumerable.Repeat(new PropertyValue(property.Code, property.ValueMemory), 1),
-      null, // 一斉通知
-      SelfNode.NodeProfile.EOJ, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
-      cancellationToken
+    await SelfNode.NodeProfile.NotifyPropertiesOneWayMulticastAsync(
+      notifyPropertyCodes: Enumerable.Repeat(EPCInstanceListNotification, 1),
+      destinationObject: EOJ.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
+      cancellationToken: cancellationToken
     ).ConfigureAwait(false);
   }
 
@@ -142,15 +142,10 @@ partial class EchonetClient
     // インスタンスリスト通知要求
     // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
     // > 自発的「通知」の場合は、DEOJに特に明示的に指定する EOJ がない場合は、ノードプロファイルクラスを格納することとする。
-    => RequestNotifyOneWayAsync(
-      SelfNode.NodeProfile.EOJ, // ノードプロファイルから
-      null, // 一斉通知
-      SelfNode.NodeProfile.EOJ, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
-      Enumerable.Repeat<byte>(
-        0xD5, // インスタンスリスト通知
-        1
-      ),
-      cancellationToken
+    => SelfNode.NodeProfile.RequestNotifyPropertiesOneWayMulticastAsync(
+      destinationObject: EOJ.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
+      requestNotifyPropertyCodes: Enumerable.Repeat(EPCInstanceListNotification, 1),
+      cancellationToken: cancellationToken
     );
 
   private const byte EPCPropMapAnno = 0x9D; // 状変アナウンスプロパティマップ
@@ -186,11 +181,9 @@ partial class EchonetClient
 
     OnPropertyMapAcquiring(otherNode, device);
 
-    var result = await RequestReadAsync(
-      sourceObject: SelfNode.NodeProfile.EOJ,
-      destinationNodeAddress: otherNode.Address,
-      destinationObject: device.EOJ,
-      propertyCodes: EPCPropertyMaps,
+    var result = await device.ReadPropertiesAsync(
+      readPropertyCodes: EPCPropertyMaps,
+      sourceObject: SelfNode.NodeProfile,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
 

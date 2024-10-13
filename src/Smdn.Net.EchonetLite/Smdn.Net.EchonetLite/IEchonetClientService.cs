@@ -3,11 +3,15 @@
 #if SYSTEM_TIMEPROVIDER
 using System;
 #endif
+using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
 using Smdn.Net.EchonetLite.ComponentModel;
+using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
 
@@ -36,4 +40,65 @@ internal interface IEchonetClientService : IEventInvoker {
   /// 自ノードのアドレスを規定できない場合は、<see langword="null"/>を返します。
   /// </returns>
   IPAddress? GetSelfNodeAddress();
+
+  ValueTask RequestWriteOneWayAsync(
+    EOJ sourceObject,
+    IPAddress? destinationNodeAddress,
+    EOJ destinationObject,
+    IEnumerable<PropertyValue> properties,
+    CancellationToken cancellationToken
+  );
+
+  ValueTask<EchonetServiceResponse>
+  RequestWriteAsync(
+    EOJ sourceObject,
+    IPAddress? destinationNodeAddress,
+    EOJ destinationObject,
+    IEnumerable<PropertyValue> properties,
+    CancellationToken cancellationToken
+  );
+
+  ValueTask<EchonetServiceResponse>
+  RequestReadAsync(
+    EOJ sourceObject,
+    IPAddress? destinationNodeAddress,
+    EOJ destinationObject,
+    IEnumerable<byte> propertyCodes,
+    CancellationToken cancellationToken
+  );
+
+  ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)>
+  RequestWriteReadAsync(
+    EOJ sourceObject,
+    IPAddress? destinationNodeAddress,
+    EOJ destinationObject,
+    IEnumerable<PropertyValue> propertiesToSet,
+    IEnumerable<byte> propertyCodesToGet,
+    CancellationToken cancellationToken
+  );
+
+  ValueTask RequestNotifyOneWayAsync(
+    EOJ sourceObject,
+    IPAddress? destinationNodeAddress,
+    EOJ destinationObject,
+    IEnumerable<byte> propertyCodes,
+    CancellationToken cancellationToken
+  );
+
+  ValueTask NotifyOneWayAsync(
+    EOJ sourceObject,
+    IEnumerable<PropertyValue> properties,
+    IPAddress? destinationNodeAddress,
+    EOJ destinationObject,
+    CancellationToken cancellationToken
+  );
+
+  ValueTask<EchonetServiceResponse>
+  NotifyAsync(
+    EOJ sourceObject,
+    IEnumerable<PropertyValue> properties,
+    IPAddress destinationNodeAddress,
+    EOJ destinationObject,
+    CancellationToken cancellationToken
+  );
 }
