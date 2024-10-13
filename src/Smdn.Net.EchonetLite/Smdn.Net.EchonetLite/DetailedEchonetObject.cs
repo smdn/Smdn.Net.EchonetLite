@@ -69,7 +69,8 @@ internal sealed class DetailedEchonetObject : EchonetObject {
     ESV esv,
     ushort tid,
     PropertyValue value,
-    bool validateValue
+    bool validateValue,
+    bool? newModificationState
   )
   {
     if (!properties.TryGetValue(value.EPC, out var property))
@@ -80,7 +81,7 @@ internal sealed class DetailedEchonetObject : EchonetObject {
       // 詳細仕様の規定に違反する値のため、格納しない
       return false;
 
-    property.SetValue(esv, tid, value);
+    property.SetValue(esv, tid, value, newModificationState);
 
     return true;
   }

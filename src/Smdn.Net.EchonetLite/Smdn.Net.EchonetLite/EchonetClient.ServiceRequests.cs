@@ -105,8 +105,11 @@ partial class EchonetClient
             esv: value.Message.ESV,
             tid: value.TID,
             value: properties.First(p => p.EPC == prop.EPC),
-            validateValue: false // Setした内容をそのまま格納するため、検証しない
+            validateValue: false, // Setした内容をそのまま格納するため、検証しない
+            newModificationState: false // 要求は受理されたため、値を未変更状態にする
           );
+
+          // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
         }
 
         responseTCS.SetResult();
@@ -153,7 +156,8 @@ partial class EchonetClient
             esv: ESV.SetI,
             tid: transaction.ID,
             value: prop,
-            validateValue: false // Setした内容をそのまま格納するため、検証しない
+            validateValue: false, // Setした内容をそのまま格納するため、検証しない
+            newModificationState: true // 要求は受理されたと仮定するため、値は未変更状態とする
           );
         }
       }
@@ -235,8 +239,11 @@ partial class EchonetClient
             esv: value.Message.ESV,
             tid: value.TID,
             value: properties.First(p => p.EPC == prop.EPC),
-            validateValue: false // Setした内容をそのまま格納するため、検証しない
+            validateValue: false, // Setした内容をそのまま格納するため、検証しない
+            newModificationState: false // 要求は受理されたため、値を未変更状態にする
           );
+
+          // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
         }
 
         responseTCS.SetResult(
@@ -353,7 +360,8 @@ partial class EchonetClient
             esv: value.Message.ESV,
             tid: value.TID,
             value: prop,
-            validateValue: false // Getされた内容をそのまま格納するため、検証しない
+            validateValue: false, // Getされた内容をそのまま格納するため、検証しない
+            newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
           );
         }
 
@@ -480,8 +488,11 @@ partial class EchonetClient
             esv: value.Message.ESV,
             tid: value.TID,
             value: propertiesToSet.First(p => p.EPC == prop.EPC),
-            validateValue: false // Setした内容をそのまま格納するため、検証しない
+            validateValue: false, // Setした内容をそのまま格納するため、検証しない
+            newModificationState: false // 要求は受理されたため、値を未変更状態にする
           );
+
+          // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
         }
 
         // 要求が受理された読み出しを反映
@@ -490,7 +501,8 @@ partial class EchonetClient
             esv: value.Message.ESV,
             tid: value.TID,
             value: prop,
-            validateValue: false // Getされた内容をそのまま格納するため、検証しない
+            validateValue: false, // Getされた内容をそのまま格納するため、検証しない
+            newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
           );
         }
 

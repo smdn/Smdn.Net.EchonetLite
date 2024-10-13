@@ -139,6 +139,21 @@ public abstract class EchonetProperty {
   public DateTimeOffset LastUpdatedTime { get; private set; }
 
   /// <summary>
+  /// プロパティ値データ(EDT)が変更されているかどうかを表す<see cref="bool"/>型の値を返します。
+  /// </summary>
+  /// <value>
+  /// <see cref="SetValue(ReadOnlyMemory{byte}, bool, bool)"/>などのメソッドによってプロパティ値データが変更されているが、
+  /// その変更が未送信である場合、または、変更されたプロパティ値の送信を要求したが、要求が受理されなかった場合は<see langword="true"/> 。
+  /// プロパティ値が変更されていない場合、あるいは変更したプロパティ値の送信が受理されている場合は<see langword="false"/> 。
+  /// </value>
+  /// <seealso cref="SetValue(ReadOnlyMemory{byte}, bool, bool)"/>
+  /// <seealso cref="WriteValue(Action{IBufferWriter{byte}}, bool, bool)"/>
+  /// <seealso cref="EchonetClient.RequestWriteAsync"/>
+  /// <seealso cref="EchonetClient.RequestWriteOneWayAsync"/>
+  /// <seealso cref="EchonetClient.RequestWriteReadAsync"/>
+  public bool HasModified { get; private set; }
+
+  /// <summary>
   /// コンストラクタ。
   /// </summary>
   /// <remarks>
@@ -170,7 +185,8 @@ public abstract class EchonetProperty {
       write: writer => writer.Write(newValue.Span),
       newValueSize: newValue.Length,
       raiseValueChangedEvent: raiseValueChangedEvent,
-      setLastUpdatedTime: setLastUpdatedTime
+      setLastUpdatedTime: setLastUpdatedTime,
+      newModificationState: true
     );
 
   /// <summary>
@@ -186,20 +202,31 @@ public abstract class EchonetProperty {
   /// <param name="newValue">
   /// プロパティ値として設定する値を表す<see cref="PropertyValue"/>。
   /// </param>
+  /// <param name="newModificationState">
+  /// <see cref="HasModified"/>に値を設定する場合は<see langword="true"/>または<see langword="false"/>、
+  /// そのままにする場合は<see langword="null"/>。
+  /// </param>
   /// <remarks>
   /// このメソッドでは、プロパティ値の更新後に<see cref="LastUpdatedTime"/>の値も更新します。
   /// また、<paramref name="newValue"/>が以前の値と異なる場合、イベント<see cref="ValueChanged"/>を発生させます。
   /// </remarks>
   /// <seealso cref="LastUpdatedTime"/>
   /// <seealso cref="ValueChanged"/>
-  internal void SetValue(ESV esv, ushort tid, PropertyValue newValue)
+  /// <seealso cref="HasModified"/>
+  internal void SetValue(
+    ESV esv,
+    ushort tid,
+    PropertyValue newValue,
+    bool? newModificationState
+  )
     => WriteValue(
       esv: esv == default ? throw new InvalidOperationException("invalid ESV") : esv,
       tid: tid,
       write: writer => writer.Write(newValue.EDT.Span),
       newValueSize: newValue.PDC,
       raiseValueChangedEvent: true,
-      setLastUpdatedTime: true // TODO: switch by esv
+      setLastUpdatedTime: true, // TODO: switch by esv
+      newModificationState: newModificationState
     );
 
   /// <summary>
@@ -228,7 +255,8 @@ public abstract class EchonetProperty {
       write: write ?? throw new ArgumentNullException(nameof(write)),
       newValueSize: 0,
       raiseValueChangedEvent: raiseValueChangedEvent,
-      setLastUpdatedTime: setLastUpdatedTime
+      setLastUpdatedTime: setLastUpdatedTime,
+      newModificationState: true
     );
 
   /// <summary>
@@ -254,6 +282,10 @@ public abstract class EchonetProperty {
   /// </param>
   /// <param name="raiseValueChangedEvent"><see cref="ValueChanged"/>イベントを発生させるかどうかを指定する<see cref="bool"/>値。</param>
   /// <param name="setLastUpdatedTime"><see cref="LastUpdatedTime"/>を更新するかどうかを指定する<see cref="bool"/>値。</param>
+  /// <param name="newModificationState">
+  /// <see cref="HasModified"/>に値を設定する場合は<see langword="true"/>または<see langword="false"/>、
+  /// そのままにする場合は<see langword="null"/>。
+  /// </param>
   /// <exception cref="ArgumentNullException"><paramref name="write"/>が<see langword="null"/>です。</exception>
   /// <seealso cref="ValueChanged"/>
   private void WriteValue(
@@ -262,7 +294,8 @@ public abstract class EchonetProperty {
     Action<IBufferWriter<byte>> write,
     int newValueSize,
     bool raiseValueChangedEvent,
-    bool setLastUpdatedTime
+    bool setLastUpdatedTime,
+    bool? newModificationState
   )
   {
     var valueChangedHandlers = ValueChanged;
@@ -306,6 +339,9 @@ public abstract class EchonetProperty {
 
         throw;
       }
+
+      if (newModificationState.HasValue)
+        HasModified = newModificationState.Value;
 
       if (setLastUpdatedTime) {
         LastUpdatedTime =

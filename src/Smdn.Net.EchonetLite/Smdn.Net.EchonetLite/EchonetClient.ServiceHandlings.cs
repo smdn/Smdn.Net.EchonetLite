@@ -269,7 +269,8 @@ partial class EchonetClient
         esv: ESV.SetI,
         tid: tid,
         value: prop,
-        validateValue: true // Setされる内容を検証する
+        validateValue: true, // Setされる内容を検証する
+        newModificationState: false // Setされた内容が格納されるため、値を未変更状態にする
       );
 
       if (accepted) {
@@ -347,7 +348,8 @@ partial class EchonetClient
           esv: ESV.SetC,
           tid: tid,
           value: prop,
-          validateValue: true // Setされる内容を検証する
+          validateValue: true, // Setされる内容を検証する
+          newModificationState: false // Setされた内容が格納されるため、値を未変更状態にする
         );
 
         if (accepted) {
@@ -501,7 +503,8 @@ partial class EchonetClient
           esv: ESV.SetGet,
           tid: tid,
           value: prop,
-          validateValue: true // Setされる内容を検証する
+          validateValue: true, // Setされる内容を検証する
+          newModificationState: false // Setされた内容が格納されるため、値を未変更状態にする
         );
 
         if (accepted) {
@@ -602,7 +605,8 @@ partial class EchonetClient
         esv: ESV.InfRequest,
         tid: tid,
         value: prop,
-        validateValue: false // 通知された内容をそのまま格納するため、検証しない
+        validateValue: false, // 通知された内容をそのまま格納するため、検証しない
+        newModificationState: false // 通知された内容が格納されるため、値を未変更状態にする
       );
 
       if (accepted) {
@@ -676,7 +680,8 @@ partial class EchonetClient
         esv: ESV.InfC,
         tid: tid,
         value: prop,
-        validateValue: false // 通知された内容をそのまま格納するため、検証しない
+        validateValue: false, // 通知された内容をそのまま格納するため、検証しない
+        newModificationState: false // 通知された内容が格納されるため、値を未変更状態にする
       );
 
       if (accepted) {

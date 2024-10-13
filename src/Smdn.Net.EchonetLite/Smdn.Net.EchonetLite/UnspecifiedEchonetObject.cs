@@ -66,7 +66,8 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     ESV esv,
     ushort tid,
     PropertyValue value,
-    bool validateValue
+    bool validateValue,
+    bool? newModificationState
   )
   {
     if (!properties.TryGetValue(value.EPC, out var property)) {
@@ -102,7 +103,7 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     // 詳細仕様が未解決・不明なため、プロパティ値の検証はできない
     // if (validateValue) { }
 
-    property.SetValue(esv, tid, value);
+    property.SetValue(esv, tid, value, newModificationState);
 
     return true;
   }
