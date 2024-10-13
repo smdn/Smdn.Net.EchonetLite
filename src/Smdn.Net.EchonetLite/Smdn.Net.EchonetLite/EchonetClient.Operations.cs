@@ -64,10 +64,10 @@ partial class EchonetClient
     // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
     // > 自発的「通知」の場合は、DEOJに特に明示的に指定する EOJ がない場合は、ノードプロファイルクラスを格納することとする。
     await PerformPropertyValueNotificationAsync(
-      SelfNode.NodeProfile, // ノードプロファイルから
+      SelfNode.NodeProfile.EOJ, // ノードプロファイルから
+      Enumerable.Repeat(new PropertyValue(property.Code, property.ValueMemory), 1),
       null, // 一斉通知
-      SelfNode.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
-      Enumerable.Repeat(property, 1),
+      SelfNode.NodeProfile.EOJ, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
       cancellationToken
     ).ConfigureAwait(false);
   }
@@ -143,15 +143,20 @@ partial class EchonetClient
     // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
     // > 自発的「通知」の場合は、DEOJに特に明示的に指定する EOJ がない場合は、ノードプロファイルクラスを格納することとする。
     => PerformPropertyValueNotificationRequestAsync(
-      SelfNode.NodeProfile, // ノードプロファイルから
+      SelfNode.NodeProfile.EOJ, // ノードプロファイルから
       null, // 一斉通知
-      SelfNode.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
+      SelfNode.NodeProfile.EOJ, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
       Enumerable.Repeat<byte>(
         0xD5, // インスタンスリスト通知
         1
       ),
       cancellationToken
     );
+
+  private const byte EPCPropMapAnno = 0x9D; // 状変アナウンスプロパティマップ
+  private const byte EPCPropMapSet = 0x9E; // Set プロパティマップ
+  private const byte EPCPropMapGet = 0x9F; // Get プロパティマップ
+  private static readonly byte[] EPCPropertyMaps = [EPCPropMapAnno, EPCPropMapSet, EPCPropMapGet];
 
   /// <summary>
   /// 指定されたECHONET Lite オブジェクトに対して、ECHONETプロパティ「状変アナウンスプロパティマップ」(EPC <c>0x9D</c>)・
@@ -172,10 +177,6 @@ partial class EchonetClient
     CancellationToken cancellationToken = default
   )
   {
-    const byte EPCPropMapAnno = 0x9D; // 状変アナウンスプロパティマップ
-    const byte EPCPropMapSet = 0x9E; // Set プロパティマップ
-    const byte EPCPropMapGet = 0x9F; // Get プロパティマップ
-
     if (device is null)
       throw new ArgumentNullException(nameof(device));
     if (device.Node is not EchonetOtherNode otherNode)
@@ -185,13 +186,11 @@ partial class EchonetClient
 
     OnPropertyMapAcquiring(otherNode, device);
 
-    IReadOnlyCollection<PropertyValue> props;
-
-    (var result, props) = await PerformPropertyValueReadRequestAsync(
-      sourceObject: SelfNode.NodeProfile,
-      destinationNode: otherNode,
-      destinationObject: device,
-      propertyCodes: [EPCPropMapAnno, EPCPropMapSet, EPCPropMapGet],
+    var result = await PerformPropertyValueReadRequestAsync(
+      sourceObject: SelfNode.NodeProfile.EOJ,
+      destinationNodeAddress: otherNode.Address,
+      destinationObject: device.EOJ,
+      propertyCodes: EPCPropertyMaps,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
 
@@ -206,18 +205,21 @@ partial class EchonetClient
     var mapCanGet = new HashSet<byte>(capacity: 16);
     var codes = new HashSet<byte>(capacity: 16);
 
-    foreach (var pr in props) {
+    foreach (var epc in EPCPropertyMaps) {
       HashSet<byte> map;
 
-      switch (pr.EPC) {
+      switch (epc) {
         case EPCPropMapAnno: map = mapCanAnno; break;
         case EPCPropMapSet: map = mapCanSet; break;
         case EPCPropMapGet: map = mapCanGet; break;
         default: continue;
       }
 
-      if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.EDT.Span, out var propertyMap))
-        throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.EPC:X2})");
+      if (!device.Properties.TryGetValue(epc, out var pr))
+        continue;
+
+      if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.ValueSpan, out var propertyMap))
+        throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.Code:X2})");
 
       foreach (var code in propertyMap) {
         _ = map.Add(code);

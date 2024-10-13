@@ -393,7 +393,7 @@ partial class EchonetClient
   /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
-  /// <seealso cref="PerformPropertyValueReadRequestAsync(EchonetObject, EchonetNode?, EchonetObject, IEnumerable{PropertyValue}, CancellationToken)"/>
+  /// <seealso cref="PerformPropertyValueReadRequestAsync"/>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
@@ -566,7 +566,7 @@ partial class EchonetClient
   /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
-  /// <seealso cref="PerformPropertyValueNotificationRequestAsync(EchonetObject, EchonetNode?, EchonetObject, IEnumerable{EchonetProperty}, CancellationToken)"/>
+  /// <seealso cref="PerformPropertyValueNotificationRequestAsync"/>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>

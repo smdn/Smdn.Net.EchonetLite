@@ -251,5 +251,17 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     return otherNode;
   }
 
+  /// <summary>
+  /// 他ノードに属するECHONET オブジェクトを表す<see cref="EchonetObject"/>を取得または作成します。
+  /// </summary>
+  /// <param name="address">他ノードのアドレス。</param>
+  /// <param name="obj">他ノードのECHONET オブジェクトの<see cref="EOJ"/>。</param>
+  /// <param name="esv">この要求を行う契機となったECHONETサービスを表す<see cref="ESV"/> 。</param>
+  /// <returns>
+  /// 該当するECHONET オブジェクトを表すsee cref="EchonetObject"/>。
+  /// </returns>
+  private EchonetObject GetOrAddOtherNodeObject(IPAddress address, EOJ obj, ESV esv)
+    => GetOrAddOtherNode(address, esv).GetOrAddDevice(deviceFactory, obj, out _);
+
   IPAddress? IEchonetClientService.GetSelfNodeAddress() => GetSelfNodeAddress();
 }

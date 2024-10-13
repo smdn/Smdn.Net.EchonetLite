@@ -38,6 +38,7 @@ SPDX-License-Identifier: MIT
 
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\Common\Shim\System.Runtime.CompilerServices\IsExternalInit.cs"/>
+    <Compile Include="$(MSBuildThisFileDirectory)..\Common\Shim\System.Threading.Tasks\TaskCompletionSource.cs"/>
   </ItemGroup>
 
   <Target Name="GenerateReadmeFileContent">
