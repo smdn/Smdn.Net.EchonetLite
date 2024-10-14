@@ -32,7 +32,7 @@ internal sealed class EchonetOtherNode : EchonetNode {
     readOnlyDevicesView = new(devices);
   }
 
-  protected internal override EchonetObject? FindDevice(EOJ eoj)
+  internal override EchonetObject? FindDevice(EOJ eoj)
     => devices.TryGetValue(eoj, out var device) ? device : null;
 
   internal EchonetObject GetOrAddDevice(

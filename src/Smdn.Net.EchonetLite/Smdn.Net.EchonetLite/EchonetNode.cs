@@ -84,7 +84,7 @@ public abstract class EchonetNode {
     NodeProfile.OwnerNode = this;
   }
 
-  protected internal abstract EchonetObject? FindDevice(EOJ eoj);
+  internal abstract EchonetObject? FindDevice(EOJ eoj);
 
   private protected void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
     => EventInvoker.InvokeEvent(this, DevicesChanged, e);

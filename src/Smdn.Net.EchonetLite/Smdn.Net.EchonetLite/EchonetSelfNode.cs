@@ -36,6 +36,6 @@ internal sealed class EchonetSelfNode : EchonetNode {
     }
   }
 
-  protected internal override EchonetObject? FindDevice(EOJ eoj)
+  internal override EchonetObject? FindDevice(EOJ eoj)
     => devices.FirstOrDefault(obj => obj.EOJ == eoj);
 }
