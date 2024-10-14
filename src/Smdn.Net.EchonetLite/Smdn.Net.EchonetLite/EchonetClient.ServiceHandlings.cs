@@ -710,4 +710,54 @@ partial class EchonetClient
 
     return !hasError;
   }
+
+  /// <summary>
+  /// インスタンスリスト通知受信時の処理を行います。
+  /// </summary>
+  /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
+  /// <param name="edtInstantListNotification">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
+  /// <seealso cref="HandlePropertyValueNotificationRequest"/>
+  /// <seealso cref="HandlePropertyValueNotificationResponseRequiredAsync"/>
+  private bool ProcessReceivingInstanceListNotification(
+    EchonetOtherNode sourceNode,
+    ReadOnlyMemory<byte> edtInstantListNotification
+  )
+  {
+    using var scope = logger?.BeginScope($"Instance list (Node: {sourceNode.Address})");
+
+    if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edtInstantListNotification.Span, out var instanceList)) {
+      logger?.LogWarning(
+        "Invalid instance list received (EDT: {EDT})",
+        edtInstantListNotification.ToHexString()
+      );
+
+      return false;
+    }
+
+    logger?.LogDebug("Updating");
+
+    OnInstanceListUpdating(sourceNode);
+
+    var instances = new List<EchonetObject>(capacity: instanceList.Count);
+
+    foreach (var eoj in instanceList) {
+      var instance = sourceNode.GetOrAddDevice(deviceFactory, eoj, out var added);
+
+      instances.Add(instance);
+
+      if (added) {
+        logger?.LogInformation(
+          "New object (Node: {NodeAddress}, EOJ: {EOJ})",
+          sourceNode.Address,
+          instance.EOJ
+        );
+      }
+    }
+
+    OnInstanceListUpdated(sourceNode, instances);
+
+    logger?.LogDebug("Updated");
+
+    return true;
+  }
 }
