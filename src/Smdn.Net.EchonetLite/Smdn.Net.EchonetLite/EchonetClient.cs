@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,6 +12,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Smdn.Net.EchonetLite.Protocol;
 using Smdn.Net.EchonetLite.Transport;
 
 namespace Smdn.Net.EchonetLite;
@@ -209,6 +212,43 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
       return handler.LocalAddress;
 
     return null;
+  }
+
+  /// <summary>
+  /// <see cref="IPAddress"/>に対応する他ノードを取得または作成します。
+  /// </summary>
+  /// <param name="address">他ノードのアドレス。</param>
+  /// <param name="esv">この要求を行う契機となったECHONETサービスを表す<see cref="ESV"/> 。</param>
+  /// <returns>
+  /// <paramref name="address"/>に対応する既知の他ノードを表す<see cref="EchonetOtherNode"/>、
+  /// または新たに作成した未知の他ノードを表す<see cref="EchonetOtherNode"/>。
+  /// </returns>
+  private EchonetOtherNode GetOrAddOtherNode(IPAddress address, ESV esv)
+  {
+    if (otherNodes.TryGetValue(address, out var otherNode))
+      return otherNode;
+
+    // 未知の他ノードの場合、ノードを生成
+    // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
+    var newNode = new EchonetOtherNode(
+      owner: this,
+      address: address,
+      nodeProfile: EchonetObject.CreateNodeProfile(instanceCode: 0x00)
+    );
+
+    otherNode = otherNodes.GetOrAdd(address, newNode);
+
+    if (ReferenceEquals(otherNode, newNode)) {
+      logger?.LogInformation(
+        "New node added (Address: {Address}, ESV: {ESV})",
+        otherNode.Address,
+        esv
+      );
+
+      OnNodeJoined(otherNode);
+    }
+
+    return otherNode;
   }
 
   IPAddress? IEchonetClientService.GetSelfNodeAddress() => GetSelfNodeAddress();

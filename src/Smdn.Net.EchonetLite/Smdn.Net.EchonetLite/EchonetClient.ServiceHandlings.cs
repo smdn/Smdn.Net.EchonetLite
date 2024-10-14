@@ -78,28 +78,7 @@ partial class EchonetClient
       // 自発の要求に対する応答は個別のハンドラで処理するため、ここでは処理せず無視する
       return;
 
-    if (!otherNodes.TryGetValue(address, out var sourceNode)) {
-      // 未知のノードの場合、ノードを生成
-      // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
-      var newNode = new EchonetOtherNode(
-        owner: this,
-        address: address,
-        nodeProfile: EchonetObject.CreateNodeProfile(instanceCode: 0x00)
-      );
-
-      sourceNode = otherNodes.GetOrAdd(address, newNode);
-
-      if (ReferenceEquals(sourceNode, newNode)) {
-        logger?.LogInformation(
-          "New node added (Address: {Address}, ESV: {ESV})",
-          sourceNode.Address,
-          message.ESV
-        );
-
-        OnNodeJoined(sourceNode);
-      }
-    }
-
+    var sourceNode = GetOrAddOtherNode(address, message.ESV);
     var destObject = message.DEOJ.IsNodeProfile
       ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
       : SelfNode.FindDevice(message.DEOJ);
