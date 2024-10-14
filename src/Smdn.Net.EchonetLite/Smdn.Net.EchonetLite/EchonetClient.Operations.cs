@@ -41,13 +41,19 @@ partial class EchonetClient
     try {
       buffer = ArrayPool<byte>.Shared.Rent(SizeMax);
 
+      var bufferMemory = buffer.AsMemory(0, SizeMax);
+
       _ = PropertyContentSerializer.TrySerializeInstanceListNotification(
         SelfNode.Devices.Select(static o => o.EOJ),
-        buffer.AsSpan(0, SizeMax),
+        bufferMemory.Span,
         out var bytesWritten
       );
 
-      property.SetValue(buffer, raiseValueChangedEvent: false, setLastUpdatedTime: true);
+      property.SetValue(
+        newValue: bufferMemory,
+        raiseValueChangedEvent: false,
+        setLastUpdatedTime: true
+      );
     }
     finally {
       if (buffer is not null)
