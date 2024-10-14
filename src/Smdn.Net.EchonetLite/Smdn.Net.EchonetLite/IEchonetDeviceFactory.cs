@@ -8,6 +8,7 @@ namespace Smdn.Net.EchonetLite;
 /// </summary>
 /// <seealso cref="EchonetDevice"/>
 /// <seealso cref="EchonetOtherNode.Devices"/>
+/// <seealso cref="ObjectModel.DeviceSuperClass"/>
 public interface IEchonetDeviceFactory {
   /// <summary>
   /// 指定されたコードに対応する機器オブジェクトを表す<see cref="EchonetDevice"/>を作成します。
