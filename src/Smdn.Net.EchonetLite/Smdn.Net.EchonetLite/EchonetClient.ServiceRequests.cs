@@ -24,9 +24,6 @@ partial class EchonetClient
   private static PropertyValue ConvertToPropertyValue(EchonetProperty p)
     => new(epc: p.Code, edt: p.ValueMemory);
 
-  private static PropertyValue ConvertToPropertyValue(byte epc)
-    => new(epc: epc);
-
   private static PropertyValue ConvertToPropertyValueExceptValueData(EchonetProperty p)
     => new(epc: p.Code);
 
@@ -475,7 +472,7 @@ partial class EchonetClient
       sourceObject: sourceObject ?? throw new ArgumentNullException(nameof(sourceObject)),
       destinationNode: destinationNode,
       destinationObject: destinationObject ?? throw new ArgumentNullException(nameof(destinationObject)),
-      properties: (propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))).Select(ConvertToPropertyValue),
+      properties: (propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))).Select(PropertyValue.Create),
       cancellationToken: cancellationToken
     );
 
@@ -798,7 +795,7 @@ partial class EchonetClient
       sourceObject: sourceObject ?? throw new ArgumentNullException(nameof(sourceObject)),
       destinationNode: destinationNode,
       destinationObject: destinationObject ?? throw new ArgumentNullException(nameof(destinationObject)),
-      properties: (propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))).Select(ConvertToPropertyValue),
+      properties: (propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))).Select(PropertyValue.Create),
       cancellationToken: cancellationToken
     );
 

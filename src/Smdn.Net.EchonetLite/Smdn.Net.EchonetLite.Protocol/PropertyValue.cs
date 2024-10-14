@@ -20,6 +20,17 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// </seealso>
 public readonly struct PropertyValue {
   /// <summary>
+  /// <see cref="EPC"/>のみを指定して、<see cref="PropertyValue"/>を作成します。
+  /// </summary>
+  /// <param name="epc"><see cref="EPC"/>に指定する値。</param>
+  /// <returns>
+  /// <see cref="PDC"/>に<c>0</c>、<see cref="EDT"/>に<see cref="ReadOnlyMemory{Byte}.Empty"/>が
+  /// 設定された<see cref="PropertyValue"/>を返します。
+  /// </returns>
+  internal static PropertyValue Create(byte epc)
+    => new(epc: epc);
+
+  /// <summary>
   /// ECHONET プロパティ（EPC）を表す値を<see cref="byte"/>で返します。
   /// </summary>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
@@ -47,7 +58,7 @@ public readonly struct PropertyValue {
   /// <see cref="EPC"/>のみを指定して、<see cref="PropertyValue"/>を作成します。
   /// </summary>
   /// <remarks>
-  /// <see cref="PDC"/>には<c>0</c>、<see cref="EDT"/>には<see langword="null"/>が設定されます。
+  /// <see cref="PDC"/>には<c>0</c>、<see cref="EDT"/>には<see cref="ReadOnlyMemory{Byte}.Empty"/>が設定されます。
   /// </remarks>
   /// <param name="epc"><see cref="EPC"/>に指定する値。</param>
   public PropertyValue(byte epc)
