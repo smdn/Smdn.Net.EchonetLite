@@ -156,6 +156,10 @@ public abstract partial class EchonetObject {
   /// <param name="validateValue">
   /// 格納される値が、詳細仕様での規定に即しているか検証するかどうかを指定する<see cref="bool"/>値。
   /// </param>
+  /// <param name="newModificationState">
+  /// 格納対象のプロパティの<see cref="EchonetProperty.HasModified"/>を設定する場合は<see langword="true"/>または<see langword="false"/>、
+  /// そのままにする場合は<see langword="null"/>。
+  /// </param>
   /// <returns>
   /// 格納対象となるECHONET プロパティ(EPC)が詳細仕様として規定されていない場合、
   /// または<paramref name="validateValue"/>の指定による検証の結果、詳細仕様での規定に即していない値の場合は<see langword="false"/>。
@@ -165,7 +169,8 @@ public abstract partial class EchonetObject {
     ESV esv,
     ushort tid,
     PropertyValue value,
-    bool validateValue
+    bool validateValue,
+    bool? newModificationState
   );
 
   public override string ToString()

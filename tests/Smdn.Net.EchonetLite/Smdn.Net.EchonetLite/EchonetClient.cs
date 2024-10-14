@@ -92,7 +92,7 @@ public class EchonetClientTests {
 
     Assert.DoesNotThrow(() => handler.RaiseEDATA2Received(), "frame received after dispose");
 
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.PerformInstanceListNotificationAsync(), "send request after dispose");
+    Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.NotifyInstanceListAsync(), "send request after dispose");
 
     Assert.DoesNotThrow(() => client.Dispose(), "Dispose #2");
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync");
@@ -110,7 +110,7 @@ public class EchonetClientTests {
 
     Assert.DoesNotThrow(() => handler.RaiseEDATA2Received(), "frame received after dispose");
 
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.PerformInstanceListNotificationAsync(), "send request after dispose");
+    Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.NotifyInstanceListAsync(), "send request after dispose");
 
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync #2");
     Assert.DoesNotThrow(() => client.Dispose(), "Dispose");

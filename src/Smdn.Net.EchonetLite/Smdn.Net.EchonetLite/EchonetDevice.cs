@@ -113,7 +113,8 @@ public class EchonetDevice : EchonetObject {
     ESV esv,
     ushort tid,
     PropertyValue value,
-    bool validateValue
+    bool validateValue,
+    bool? newModificationState
   )
   {
     if (!properties.TryGetValue(value.EPC, out var property)) {
@@ -142,7 +143,7 @@ public class EchonetDevice : EchonetObject {
     if (validateValue && !property.IsAcceptableValue(value.EDT.Span))
       return false;
 
-    property.SetValue(esv, tid, value);
+    property.SetValue(esv, tid, value, newModificationState);
 
     return true;
   }

@@ -10,6 +10,15 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// </summary>
 public readonly struct EOJ : IEquatable<EOJ> {
   /// <summary>
+  /// ノードプロファイルを表す<see cref="EOJ"/>を取得します。　インスタンスコードは<c>0</c>を使用します。
+  /// </summary>
+  public static readonly EOJ NodeProfile = new(
+    classGroupCode: Codes.ClassGroups.ProfileClass,
+    classCode: Codes.Classes.NodeProfile,
+    instanceCode: 0x00
+  );
+
+  /// <summary>
   /// クラスグループコード
   /// </summary>
   public byte ClassGroupCode { get; }
