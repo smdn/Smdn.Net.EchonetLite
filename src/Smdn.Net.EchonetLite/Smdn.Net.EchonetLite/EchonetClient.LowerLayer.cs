@@ -84,6 +84,8 @@ partial class EchonetClient
           format1Message
         );
 
+        scope?.Dispose(); // exit from the logger scope
+
         try {
           Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
         }
