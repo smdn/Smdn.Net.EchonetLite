@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -169,17 +170,22 @@ public static class EchonetObjectExtensions {
     ).ConfigureAwait(false);
   }
 
+#pragma warning disable CS1573, SA1612
   /// <summary>
   /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を行います。　このサービスは一斉同報が可能です。
   /// </summary>
+  /// <param name="destinationNodeAddress">
+  /// 相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。
+  /// </param>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
-  public static ValueTask RequestNotifyPropertiesOneWayMulticastAsync(
+  public static ValueTask RequestNotifyPropertiesOneWayAsync(
     this EchonetObject sourceObject,
+    IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<byte> requestNotifyPropertyCodes,
     CancellationToken cancellationToken = default
@@ -195,11 +201,12 @@ public static class EchonetObjectExtensions {
     return GetClientServiceOrThrow(sourceObject).RequestNotifyOneWayAsync(
       sourceObject: sourceObject.EOJ,
       propertyCodes: requestNotifyPropertyCodes,
-      destinationNodeAddress: null, // multicast
+      destinationNodeAddress: destinationNodeAddress,
       destinationObject: destinationObject,
       cancellationToken: cancellationToken
     );
   }
+#pragma warning restore CS1573, SA1612
 
   /// <summary>
   /// ECHONET Lite サービス「INF:プロパティ値通知」(ESV <c>0x73</c>)を行います。　このサービスは個別通知・一斉同報通知ともに可能です。
