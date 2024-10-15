@@ -397,6 +397,18 @@ public abstract class EchonetProperty {
   /// </returns>
   protected internal virtual bool IsAcceptableValue(ReadOnlySpan<byte> edt) => true;
 
+  internal void CopyFrom(EchonetProperty other)
+  {
+    SetValue(
+      other.ValueMemory,
+      raiseValueChangedEvent: false,
+      setLastUpdatedTime: false
+    );
+
+    LastUpdatedTime = other.LastUpdatedTime;
+    HasModified = other.HasModified;
+  }
+
   public override string ToString()
     => $"{GetType().FullName} (Code: 0x{Code:X2}, Value: {ValueMemory.ToHexString()})";
 }

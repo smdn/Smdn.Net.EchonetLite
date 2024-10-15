@@ -100,10 +100,25 @@ public class EchonetDevice : EchonetObject {
     if (propertyMap is null)
       throw new ArgumentNullException(nameof(propertyMap));
 
+    var prevProperties = new Dictionary<byte, EchonetProperty>(properties);
+
     properties.Clear();
 
     foreach (var (code, canSet, canGet, canAnnounceStatusChange) in propertyMap) {
-      _ = properties.TryAdd(code, CreateProperty(code, canSet, canGet, canAnnounceStatusChange));
+      var added = properties.TryAdd(code, CreateProperty(code, canSet, canGet, canAnnounceStatusChange));
+
+      if (added) {
+        Node.Owner?.Logger?.LogInformation(
+          "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
+          Node.Address,
+          EOJ,
+          code
+        );
+
+        if (prevProperties.TryGetValue(code, out var prevProperty))
+          // 以前の状態を新しく作成したEchonetPropertyに複写する
+          properties[code].CopyFrom(prevProperty);
+      }
     }
 
     OnPropertiesChanged(new(NotifyCollectionChangedAction.Reset));
