@@ -158,6 +158,10 @@ partial class EchonetClient
   /// 「Set プロパティマップ」(EPC <c>0x9E</c>)・「Get プロパティマップ」(EPC <c>0x9F</c>)の読み出しを行います。
   /// </summary>
   /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="extraPropertyCodes">
+  /// 読み出しを行う追加のECHONETプロパティを指定する<see cref="IEnumerable{Byte}"/>。
+  /// <see langword="null"/>を指定した場合は、プロパティマップのみを読み出します。
+  /// </param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="device"/>が<see langword="null"/>です。
@@ -169,6 +173,7 @@ partial class EchonetClient
   /// </exception>
   public async ValueTask<bool> AcquirePropertyMapsAsync(
     EchonetObject device,
+    IEnumerable<byte>? extraPropertyCodes = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -182,7 +187,9 @@ partial class EchonetClient
     OnPropertyMapAcquiring(otherNode, device);
 
     var result = await device.ReadPropertiesAsync(
-      readPropertyCodes: EPCPropertyMaps,
+      readPropertyCodes: extraPropertyCodes is null
+        ? EPCPropertyMaps
+        : EPCPropertyMaps.Concat(extraPropertyCodes).Distinct(),
       sourceObject: SelfNode.NodeProfile,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
