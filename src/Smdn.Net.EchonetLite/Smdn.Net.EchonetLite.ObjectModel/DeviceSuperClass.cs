@@ -207,7 +207,7 @@ public abstract class DeviceSuperClass : EchonetDevice {
   private static readonly EchonetPropertyValueParser<string> TryParseSerialNumber
     = static (ReadOnlySpan<byte> data, out string value) =>
       {
-        value = Encoding.ASCII.GetString(data).TrimEnd(); // trim null terminator etc.
+        value = Encoding.ASCII.GetString(data).TrimEnd('\0');
 
         return true;
       };
