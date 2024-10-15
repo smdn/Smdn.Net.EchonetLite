@@ -140,7 +140,7 @@ partial class EchonetClient
   /// <param name="destinationNodeAddress">
   /// 相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。
   /// </param>
-  /// /// <param name="cancellationToken">
+  /// <param name="cancellationToken">
   /// キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。
   /// </param>
   /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
