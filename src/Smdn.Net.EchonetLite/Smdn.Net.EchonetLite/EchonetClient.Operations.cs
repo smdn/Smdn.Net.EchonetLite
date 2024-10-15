@@ -96,9 +96,7 @@ partial class EchonetClient
     if (onInstanceListUpdated is null)
       throw new ArgumentNullException(nameof(onInstanceListUpdated));
 
-    const bool RetVoid = default;
-
-    var tcs = new TaskCompletionSource<bool>();
+    var tcs = new TaskCompletionSource();
 
     // インスタンスリスト受信後に発生するイベントをハンドリングする
     void HandleInstanceListUpdated(object? sender, (EchonetNode Node, IReadOnlyList<EchonetObject> Instances) e)
@@ -107,7 +105,7 @@ partial class EchonetClient
 
       // この時点で条件がtrueとなったら、結果を確定する
       if (onInstanceListUpdated(e.Node, state))
-        _ = tcs.TrySetResult(RetVoid);
+        _ = tcs.TrySetResult();
     }
 
     try {
@@ -119,7 +117,7 @@ partial class EchonetClient
       await RequestNotifyInstanceListAsync(cancellationToken).ConfigureAwait(false);
 
       // イベントの発生およびコールバックの処理を待機する
-      _ = await tcs.Task.ConfigureAwait(false);
+      await tcs.Task.ConfigureAwait(false);
     }
     finally {
       if (onInstanceListUpdated is not null)
