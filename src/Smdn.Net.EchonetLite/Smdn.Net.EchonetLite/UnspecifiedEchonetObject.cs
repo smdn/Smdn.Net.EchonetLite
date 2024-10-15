@@ -1,13 +1,5 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-
-using Microsoft.Extensions.Logging;
-
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -16,51 +8,40 @@ namespace Smdn.Net.EchonetLite;
 /// 詳細仕様と関連付けられていないECHONET オブジェクトインスタンスを表すクラスです。
 /// 他のECHONET Liteノード(他ノード)に属するオブジェクトなど、詳細仕様が未参照・未解決・不明なプロパティを表します。
 /// </summary>
-internal sealed class UnspecifiedEchonetObject : EchonetObject {
-  public override bool HasPropertyMapAcquired { get; internal set; }
-  public override byte ClassGroupCode { get; }
-  public override byte ClassCode { get; }
-  public override byte InstanceCode { get; }
-
-  private readonly ConcurrentDictionary<byte, UnspecifiedEchonetProperty> properties;
-  private readonly ReadOnlyEchonetPropertyDictionary<UnspecifiedEchonetProperty> readOnlyPropertiesView;
-
-  public override IReadOnlyDictionary<byte, EchonetProperty> Properties => readOnlyPropertiesView;
-
+internal sealed class UnspecifiedEchonetObject : EchonetDevice {
   internal UnspecifiedEchonetObject(EOJ eoj)
+    : base(
+      classGroupCode: eoj.ClassGroupCode,
+      classCode: eoj.ClassCode,
+      instanceCode: eoj.InstanceCode
+    )
   {
-    ClassGroupCode = eoj.ClassGroupCode;
-    ClassCode = eoj.ClassCode;
-    InstanceCode = eoj.InstanceCode;
-
-    properties = new(
-      concurrencyLevel: ConcurrentDictionaryUtils.DefaultConcurrencyLevel, // default
-      capacity: 20 // TODO: best initial capacity
-    );
-    readOnlyPropertiesView = new(properties);
   }
 
-  internal override void ApplyPropertyMap(
-    IEnumerable<(byte Code, bool CanSet, bool CanGet, bool CanAnnounceStatusChange)> propertyMap
+  protected override EchonetProperty CreateProperty(
+    byte propertyCode
   )
-  {
-    properties.Clear();
+    => CreateProperty(
+      propertyCode: propertyCode,
+      // 詳細仕様が未解決・不明なため、すべてのアクセスが可能であると仮定する
+      canSet: true,
+      canGet: true,
+      canAnnounceStatusChange: true
+    );
 
-    foreach (var (code, canSet, canGet, canAnnounceStatusChange) in propertyMap) {
-      _ = properties.TryAdd(
-        code,
-        new(
-          device: this,
-          code: code,
-          canSet: canSet,
-          canGet: canGet,
-          canAnnounceStatusChange: canAnnounceStatusChange
-        )
-      );
-    }
-
-    OnPropertiesChanged(new(NotifyCollectionChangedAction.Reset));
-  }
+  protected override EchonetProperty CreateProperty(
+    byte propertyCode,
+    bool canSet,
+    bool canGet,
+    bool canAnnounceStatusChange
+  )
+    => new UnspecifiedEchonetProperty(
+      device: this,
+      code: propertyCode,
+      canSet: canSet,
+      canGet: canGet,
+      canAnnounceStatusChange: canAnnounceStatusChange
+    );
 
   internal override bool StorePropertyValue(
     ESV esv,
@@ -69,42 +50,11 @@ internal sealed class UnspecifiedEchonetObject : EchonetObject {
     bool validateValue,
     bool? newModificationState
   )
-  {
-    if (!properties.TryGetValue(value.EPC, out var property)) {
-      // 未知のプロパティのため、新規作成して追加する
-      property = new(
-        device: this,
-        code: value.EPC,
-        // 詳細仕様が未解決・不明なため、すべてのアクセスが可能であると仮定する
-        canSet: true,
-        canGet: true,
-        canAnnounceStatusChange: true
-      );
-
-      var p = properties.GetOrAdd(property.Code, property);
-
-      if (ReferenceEquals(p, property)) {
-        Node.Owner?.Logger?.LogInformation(
-          "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
-          Node.Address,
-          EOJ,
-          property.Code
-        );
-
-        OnPropertiesChanged(
-          new(
-            action: NotifyCollectionChangedAction.Add,
-            changedItem: property
-          )
-        );
-      }
-    }
-
-    // 詳細仕様が未解決・不明なため、プロパティ値の検証はできない
-    // if (validateValue) { }
-
-    property.SetValue(esv, tid, value, newModificationState);
-
-    return true;
-  }
+    => base.StorePropertyValue(
+      esv: esv,
+      tid: tid,
+      value: value,
+      validateValue: false, // 詳細仕様が未解決・不明であり、つまりプロパティ値の検証はできないため、常に検証しない
+      newModificationState: newModificationState
+    );
 }
