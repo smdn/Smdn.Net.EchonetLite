@@ -7,6 +7,12 @@ namespace Smdn.Net.EchonetLite;
 /// </summary>
 public enum EchonetServicePropertyResult {
   /// <summary>
+  /// 応答に受理・不受理の結果が含まれなていないことを表す値を示します。
+  /// プロパティ値は処理されませんでした。
+  /// </summary>
+  Unavailable = 0,
+
+  /// <summary>
   /// 要求が受理されたことを表す値を示します。
   /// プロパティ値の書き込み要求・読み出し要求・通知は行われました。
   /// </summary>
@@ -17,10 +23,4 @@ public enum EchonetServicePropertyResult {
   /// プロパティ値の書き込み要求・読み出し要求・通知は行われませんでした。
   /// </summary>
   NotAccepted,
-
-  /// <summary>
-  /// 応答に受理・不受理の結果が含まれなていないことを表す値を示します。
-  /// プロパティ値は処理されませんでした。
-  /// </summary>
-  Unavailable,
 }
