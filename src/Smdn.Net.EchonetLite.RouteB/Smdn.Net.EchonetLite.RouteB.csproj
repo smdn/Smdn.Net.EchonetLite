@@ -17,9 +17,11 @@ SPDX-License-Identifier: MIT
   <PropertyGroup Label="assembly attributes">
     <Description>
 <![CDATA[Provides an application layer implementation for communication via the **route-B**, based on the specifications described in the "Interface Specifications for Application Layer Communication between Smart Electric Energy Meters and Controllers".
+
 Provides APIs such as the `HemsController` class, which implements the "HEMS controller" in the specification, and the `LowVoltageSmartElectricEnergyMeter` class, which implements the "Requirements for low-voltage smart electric energy meter class".
 
 「低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書」に記載されている仕様に基づく、「Bルート」を介した通信を行うアプリケーション層の実装を提供します。
+
 同仕様書における「HEMS コントローラ」に相当する`HemsController`クラス、「低圧スマート電力量メータクラス規定」を実装する`LowVoltageSmartElectricEnergyMeter`クラスなどのAPIを提供します。]]>
     </Description>
     <CopyrightYear>2024</CopyrightYear>
@@ -40,6 +42,17 @@ Provides APIs such as the `HemsController` class, which implements the "HEMS con
     <PropertyGroup>
       <PackageReadmeFileContent><![CDATA[# $(PackageId) $(PackageVersion)
 $(Description)
+
+## Usage
+This is an example of connecting to a smart meter and reading the measurement values.
+
+以下のコードでは、スマートメーターに接続し、計測値を読み出します。
+
+```cs
+$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\..\examples\$(PackageId)\GettingStarted\Program.cs').TrimEnd())
+```
+
+More examples can be found on the [GitHub repository]($(RepositoryUrl)/tree/main/examples/$(PackageId)/).
 
 ## Contributing
 This project welcomes contributions, feedbacks and suggestions. You can contribute to this project by submitting [Issues]($(RepositoryUrl)/issues/new/choose) or [Pull Requests]($(RepositoryUrl)/pulls/) on the [GitHub repository]($(RepositoryUrl)).
