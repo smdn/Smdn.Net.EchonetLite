@@ -1,0 +1,27 @@
+<!--
+SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Project InitialTargets="ReplaceSmdnNetEchonetLitePackageReferencesToProjectReferences">
+  <!-- Replace PackageReference to ProjectReference of the local project -->
+  <Target
+    Name="ReplaceSmdnNetEchonetLitePackageReferencesToProjectReferences"
+    Condition=" '$(UseLocalProjectInsteadOfPublishedPackage)' == 'true' "
+  >
+    <ItemGroup>
+      <_SmdnNetEchonetLiteReference
+        Include="@(PackageReference)"
+        Condition="$([System.String]::new('%(Identity)').StartsWith('Smdn.Net.EchonetLite'))"
+        ProjectPath="$(MSBuildThisFileDirectory)..\src\%(Identity)\%(Identity).csproj"
+      />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- Remove package references to Smdn.Net.EchonetLite.* -->
+      <PackageReference Remove="@(_SmdnNetEchonetLiteReference)" />
+
+      <!-- Include project reference to Smdn.Net.EchonetLite.* -->
+      <ProjectReference Include="%(_SmdnNetEchonetLiteReference.ProjectPath)" />
+    </ItemGroup>
+  </Target>
+</Project>
