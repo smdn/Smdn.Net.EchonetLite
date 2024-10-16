@@ -45,16 +45,16 @@ public readonly struct Format1Message {
   public ESV ESV { get; }
 
   /// <summary>
-  /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Set操作に対応する処理対象プロパティのコレクション。
-  /// そうでない場合は、<see cref="ESV"/>で指定されるサービスにおいて処理対象となるプロパティのコレクション。
+  /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Set操作に対応する処理対象プロパティのリスト。
+  /// そうでない場合は、<see cref="ESV"/>で指定されるサービスにおいて処理対象となるプロパティのリスト。
   /// </summary>
-  private readonly IReadOnlyCollection<PropertyValue> propsForSetOrGet;
+  private readonly IReadOnlyList<PropertyValue> propsForSetOrGet;
 
   /// <summary>
-  /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Get操作に対応する処理対象プロパティのコレクション。
+  /// <see cref="ESV"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかの場合は、Get操作に対応する処理対象プロパティのリスト。
   /// そうでない場合は、<see langword="null"/>。
   /// </summary>
-  private readonly IReadOnlyCollection<PropertyValue>? propsForGet;
+  private readonly IReadOnlyList<PropertyValue>? propsForGet;
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(true, nameof(propsForGet))]
@@ -70,13 +70,13 @@ public readonly struct Format1Message {
   /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
   /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
   /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-  /// <param name="properties"><paramref name="esv"/>で指定されるサービスにおいて処理対象となるプロパティ(<see cref="PropertyValue"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyValue}"/>を指定します。</param>
+  /// <param name="properties"><paramref name="esv"/>で指定されるサービスにおいて処理対象となるプロパティ(<see cref="PropertyValue"/>)のリストを表す<see cref="IReadOnlyList{PropertyValue}"/>を指定します。</param>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかです。
-  /// この場合、Set操作とGet操作のそれぞれに対応する処理対象プロパティのコレクションを指定する必要があります。
+  /// この場合、Set操作とGet操作のそれぞれに対応する処理対象プロパティのリストを指定する必要があります。
   /// </exception>
   /// <exception cref="ArgumentNullException"><paramref name="properties"/>が<see langword="null"/>です。</exception>
-  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyValue> properties)
+  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyList<PropertyValue> properties)
   {
     if (FrameSerializer.IsESVWriteOrReadService(esv))
       throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
@@ -96,14 +96,14 @@ public readonly struct Format1Message {
   /// <param name="seoj"><see cref="SEOJ"/>に指定する値。</param>
   /// <param name="deoj"><see cref="DEOJ"/>に指定する値。</param>
   /// <param name="esv"><see cref="ESV"/>に指定する値。</param>
-  /// <param name="propertiesForSet"><paramref name="esv"/>で指定されるサービスのSet操作において処理対象となるプロパティ(<see cref="PropertyValue"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyValue}"/>を指定します。</param>
-  /// <param name="propertiesForGet"><paramref name="esv"/>で指定されるサービスのGet操作において処理対象となるプロパティ(<see cref="PropertyValue"/>)のコレクションを表す<see cref="IReadOnlyCollection{PropertyValue}"/>を指定します。</param>
+  /// <param name="propertiesForSet"><paramref name="esv"/>で指定されるサービスのSet操作において処理対象となるプロパティ(<see cref="PropertyValue"/>)のリストを表す<see cref="IReadOnlyList{PropertyValue}"/>を指定します。</param>
+  /// <param name="propertiesForGet"><paramref name="esv"/>で指定されるサービスのGet操作において処理対象となるプロパティ(<see cref="PropertyValue"/>)のリストを表す<see cref="IReadOnlyList{PropertyValue}"/>を指定します。</param>
   /// <exception cref="ArgumentException">
   /// <paramref name="esv"/>が<see cref="ESV.SetGet"/>, <see cref="ESV.SetGetResponse"/>, <see cref="ESV.SetGetServiceNotAvailable"/>のいずれかではありません。
-  /// この場合、Set操作またはGet操作のどちらかに対応する処理対象プロパティのコレクションのみを指定する必要があります。
+  /// この場合、Set操作またはGet操作のどちらかに対応する処理対象プロパティのリストのみを指定する必要があります。
   /// </exception>
   /// <exception cref="ArgumentNullException"><paramref name="propertiesForSet"/>もしくは<paramref name="propertiesForGet"/>が<see langword="null"/>です。</exception>
-  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyCollection<PropertyValue> propertiesForSet, IReadOnlyCollection<PropertyValue> propertiesForGet)
+  public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyList<PropertyValue> propertiesForSet, IReadOnlyList<PropertyValue> propertiesForGet)
   {
     if (!FrameSerializer.IsESVWriteOrReadService(esv))
       throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
@@ -116,7 +116,7 @@ public readonly struct Format1Message {
   }
 
   /// <summary>
-  /// <see cref="ESV"/>で指定されるECHONET Liteサービスにおける、処理対象となるプロパティのコレクションを取得します。
+  /// <see cref="ESV"/>で指定されるECHONET Liteサービスにおける、処理対象となるプロパティのリストを取得します。
   /// このメソッドの戻り値は、電文形式 1（規定電文形式）における処理プロパティ数(OPC)・ECHONET Liteプロパティ(EPC)・EDTのバイト数(PDC)・プロパティ値データ(EDT)の部分を表現します。
   /// </summary>
   /// <exception cref="InvalidOperationException">
@@ -126,7 +126,7 @@ public readonly struct Format1Message {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２ 電文構成
   /// </seealso>
-  public IReadOnlyCollection<PropertyValue> GetProperties()
+  public IReadOnlyList<PropertyValue> GetProperties()
   {
     if (IsWriteOrReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV.ToSymbolString()})");
@@ -139,7 +139,7 @@ public readonly struct Format1Message {
   }
 
   /// <summary>
-  /// <see cref="ESV"/>で指定されるECHONET Liteサービスにおける、Set操作・Get操作の処理対象となるプロパティのコレクションを取得します。
+  /// <see cref="ESV"/>で指定されるECHONET Liteサービスにおける、Set操作・Get操作の処理対象となるプロパティのリストを取得します。
   /// このメソッドの戻り値は、電文形式 1（規定電文形式）における処理プロパティ数(OPC)・ECHONET Liteプロパティ(EPC)・EDTのバイト数(PDC)・プロパティ値データ(EDT)の部分を表現します。
   /// </summary>
   /// <exception cref="InvalidOperationException">
@@ -150,8 +150,8 @@ public readonly struct Format1Message {
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２ 電文構成
   /// </seealso>
   public (
-    IReadOnlyCollection<PropertyValue> PropertiesForSet,
-    IReadOnlyCollection<PropertyValue> PropertiesForGet
+    IReadOnlyList<PropertyValue> PropertiesForSet,
+    IReadOnlyList<PropertyValue> PropertiesForGet
   )
   GetPropertiesForSetAndGet()
   {
@@ -171,7 +171,7 @@ public readonly struct Format1Message {
       ? $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}"", {PropertiesToString("OPCSet", propsForSetOrGet)}, {PropertiesToString("OPCGet", propsForGet)}}}"
       : $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}"", {PropertiesToString("OPC", propsForSetOrGet)}}}";
 
-    static string PropertiesToString(string opcName, IReadOnlyCollection<PropertyValue>? properties)
+    static string PropertiesToString(string opcName, IReadOnlyList<PropertyValue>? properties)
       => properties is null || properties.Count == 0
         ? $@"""{opcName}"": 0, ""Properties"": []"
         : $@"""{opcName}"": {properties.Count}, ""Properties"": [{string.Join(", ", properties.Select(PropertyValueToString))}]";

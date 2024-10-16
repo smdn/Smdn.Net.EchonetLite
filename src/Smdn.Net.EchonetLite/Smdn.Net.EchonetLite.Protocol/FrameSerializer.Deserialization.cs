@@ -143,7 +143,7 @@ partial class FrameSerializer {
 
   private static bool TryParseProcessingTargetProperties(
     ReadOnlySpan<byte> bytes,
-    [NotNullWhen(true)] out IReadOnlyCollection<PropertyValue>? processingTargetProperties,
+    [NotNullWhen(true)] out IReadOnlyList<PropertyValue>? processingTargetProperties,
     out int bytesRead
   )
   {
