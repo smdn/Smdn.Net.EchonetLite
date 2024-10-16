@@ -3,7 +3,7 @@
 using System;
 using NUnit.Framework;
 
-namespace Smdn.Net.EchonetLite.ObjectModel;
+namespace Smdn.Net.EchonetLite.RouteB;
 
 [TestFixture]
 public class MeasurementValueTests {

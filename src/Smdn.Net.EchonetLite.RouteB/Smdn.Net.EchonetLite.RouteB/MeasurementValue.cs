@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 
-namespace Smdn.Net.EchonetLite.ObjectModel;
+namespace Smdn.Net.EchonetLite.RouteB;
 
 /// <summary>
 /// <see cref="MeasurementValue{TValue}"/>のインスタンスを作成するメソッドを提供します。
