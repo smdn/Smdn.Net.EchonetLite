@@ -94,7 +94,12 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.SetIServiceNotAvailable)
           return;
 
-        logger?.LogDebug("Handling SetI_SNA (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+        logger?.LogDebug(
+          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+          value.Message.ESV.ToSymbolString(),
+          value.Address,
+          value.TID
+        );
 
         // 不可応答ながらも要求が受理された書き込みを反映
         var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
@@ -222,13 +227,15 @@ partial class EchonetClient
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
           return;
-
-        if (value.Message.ESV == ESV.SetResponse)
-          logger?.LogDebug("Handling Set_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
-        else if (value.Message.ESV == ESV.SetCServiceNotAvailable)
-          logger?.LogDebug("Handling SetC_SNA (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
-        else
+        if (!(value.Message.ESV == ESV.SetResponse || value.Message.ESV == ESV.SetCServiceNotAvailable))
           return;
+
+        logger?.LogDebug(
+          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+          value.Message.ESV.ToSymbolString(),
+          value.Address,
+          value.TID
+        );
 
         // 要求が受理された書き込みを反映
         var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
@@ -343,13 +350,15 @@ partial class EchonetClient
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
           return;
-
-        if (value.Message.ESV == ESV.GetResponse)
-          logger?.LogDebug("Handling Get_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
-        else if (value.Message.ESV == ESV.GetServiceNotAvailable)
-          logger?.LogDebug("Handling Get_SNA (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
-        else
+        if (!(value.Message.ESV == ESV.GetResponse || value.Message.ESV == ESV.GetServiceNotAvailable))
           return;
+
+        logger?.LogDebug(
+          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+          value.Message.ESV.ToSymbolString(),
+          value.Address,
+          value.TID
+        );
 
         // 要求が受理された読み出しを反映
         var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
@@ -471,13 +480,15 @@ partial class EchonetClient
           return;
         if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
           return;
-
-        if (value.Message.ESV == ESV.SetGetResponse)
-          logger?.LogDebug("Handling SetGet_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
-        else if (value.Message.ESV == ESV.SetGetServiceNotAvailable)
-          logger?.LogDebug("Handling SetGet_SNA (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
-        else
+        if (!(value.Message.ESV == ESV.SetGetResponse || value.Message.ESV == ESV.SetGetServiceNotAvailable))
           return;
+
+        logger?.LogDebug(
+          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+          value.Message.ESV.ToSymbolString(),
+          value.Address,
+          value.TID
+        );
 
         var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
         var (propsForSet, propsForGet) = value.Message.GetPropertiesForSetAndGet();
@@ -722,7 +733,12 @@ partial class EchonetClient
         if (value.Message.ESV != ESV.InfCResponse)
           return;
 
-        logger?.LogDebug("Handling INFC_Res (From: {Address}, TID: {TID:X4})", value.Address, value.TID);
+        logger?.LogDebug(
+          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+          value.Message.ESV.ToSymbolString(),
+          value.Address,
+          value.TID
+        );
 
         responseTCS.SetResult(
           new(

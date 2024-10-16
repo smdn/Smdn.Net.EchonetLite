@@ -129,7 +129,7 @@ public readonly struct Format1Message {
   public IReadOnlyCollection<PropertyValue> GetProperties()
   {
     if (IsWriteOrReadService)
-      throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
+      throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV.ToSymbolString()})");
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
     return propsForSetOrGet;
@@ -156,7 +156,7 @@ public readonly struct Format1Message {
   GetPropertiesForSetAndGet()
   {
     if (!IsWriteOrReadService)
-      throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV})");
+      throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV.ToSymbolString()})");
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
     return (propsForSetOrGet, propsForGet);
@@ -168,29 +168,8 @@ public readonly struct Format1Message {
   public override string ToString()
   {
     return IsWriteOrReadService
-      ? $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESVToServiceSymbol(ESV)}"", {PropertiesToString("OPCSet", propsForSetOrGet)}, {PropertiesToString("OPCGet", propsForGet)}}}"
-      : $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESVToServiceSymbol(ESV)}"", {PropertiesToString("OPC", propsForSetOrGet)}}}";
-
-    static string ESVToServiceSymbol(ESV esv)
-      => esv switch {
-        ESV.SetI => "SetI",
-        ESV.SetC => "SetC",
-        ESV.Get => "Get",
-        ESV.InfRequest => "INF_REQ",
-        ESV.SetGet => "SetGet",
-        ESV.SetResponse => "Set_Res",
-        ESV.GetResponse => "Get_Res",
-        ESV.Inf => "INF",
-        ESV.InfC => "INFC",
-        ESV.InfCResponse => "INFC_Res",
-        ESV.SetGetResponse => "SetGet_Res",
-        ESV.SetIServiceNotAvailable => "SetI_SNA",
-        ESV.SetCServiceNotAvailable => "SetC_SNA",
-        ESV.GetServiceNotAvailable => "Get_SNA",
-        ESV.InfServiceNotAvailable => "INF_SNA",
-        ESV.SetGetServiceNotAvailable => "SetGet_SNA",
-        _ => ((byte)esv).ToString("X2", provider: null),
-      };
+      ? $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}"", {PropertiesToString("OPCSet", propsForSetOrGet)}, {PropertiesToString("OPCGet", propsForGet)}}}"
+      : $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}"", {PropertiesToString("OPC", propsForSetOrGet)}}}";
 
     static string PropertiesToString(string opcName, IReadOnlyCollection<PropertyValue>? properties)
       => properties is null || properties.Count == 0

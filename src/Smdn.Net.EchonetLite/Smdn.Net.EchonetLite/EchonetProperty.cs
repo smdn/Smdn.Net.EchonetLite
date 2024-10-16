@@ -330,7 +330,7 @@ public abstract class EchonetProperty {
         Device.OwnerNode?.Owner?.Logger?.LogError(
           ex,
           "Failed to set property value (ESV: {ESV}, TID: {TID:X4}, Node: {Node}, Object: {Object}, EPC: {EPC:X2})",
-          esv,
+          esv.ToSymbolString(),
           tid,
           Device.Node.Address,
           Device.EOJ,
@@ -355,7 +355,7 @@ public abstract class EchonetProperty {
       if (esv != default) {
         Device.OwnerNode?.Owner?.Logger?.LogDebug(
           "Property value changed (ESV: {ESV}, TID: {TID:X4}, Node: {Node}, Object: {Object}, EPC: {EPC:X2})",
-          esv,
+          esv.ToSymbolString(),
           tid,
           Device.Node.Address,
           Device.EOJ,

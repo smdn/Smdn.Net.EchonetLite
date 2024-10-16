@@ -243,7 +243,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
       logger?.LogInformation(
         "New node added (Address: {Address}, ESV: {ESV})",
         otherNode.Address,
-        esv
+        esv.ToSymbolString()
       );
 
       OnNodeJoined(otherNode);
