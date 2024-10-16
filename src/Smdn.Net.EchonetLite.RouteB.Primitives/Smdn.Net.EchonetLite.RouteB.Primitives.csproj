@@ -16,13 +16,20 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup Label="assembly attributes">
     <Description>
-<![CDATA[スマート電力量メータとの情報伝達手段である「Bルート」を介してECHONET Lite規格の通信を扱うための抽象クラス`RouteBEchonetLiteHandler`を提供します。　また、その際に使用される認証情報を扱うための抽象インターフェイス`IRouteBCredential`を提供します。]]>
+<![CDATA[Provides common types and abstractions for `Smdn.Net.EchonetLite.RouteB.*`.
+Provides a transport layer abstraction class `RouteBEchonetLiteHandler` to handle ECHONET Lite communication via the **route-B**, the communication path for communicating information with smart electricity meters.
+Also provides an abstract interface `IRouteBCredential` to handle credentials used in B-route communication path.
+
+`Smdn.Net.EchonetLite.RouteB.*`で共通して使用される型と抽象化機能を提供します。
+スマート電力量メータとの情報伝達手段である「Bルート」を介してECHONET Lite規格の通信を扱うためのトランスポート層抽象クラス`RouteBEchonetLiteHandler`を提供します。
+また、その際に使用される認証情報を扱うための抽象インターフェイス`IRouteBCredential`を提供します。
+]]>
     </Description>
     <CopyrightYear>2024</CopyrightYear>
   </PropertyGroup>
 
   <PropertyGroup Label="package properties">
-    <PackageTags>Route-B;B-Route;smart-meter;smart-energy-meter;$(PackageTags)</PackageTags>
+    <PackageTags>abstraction;transport;Route-B;B-Route;smart-meter;smart-energy-meter;$(PackageTags)</PackageTags>
     <GenerateNupkgReadmeFileDependsOnTargets>$(GenerateNupkgReadmeFileDependsOnTargets);GenerateReadmeFileContent</GenerateNupkgReadmeFileDependsOnTargets>
   </PropertyGroup>
 
