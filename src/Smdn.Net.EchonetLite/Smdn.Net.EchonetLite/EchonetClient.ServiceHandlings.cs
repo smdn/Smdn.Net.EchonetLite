@@ -743,23 +743,19 @@ partial class EchonetClient
 
     OnInstanceListUpdating(sourceNode);
 
-    var instances = new List<EchonetObject>(capacity: instanceList.Count);
-
     foreach (var eoj in instanceList) {
-      var instance = sourceNode.GetOrAddDevice(deviceFactory, eoj, out var added);
-
-      instances.Add(instance);
+      _ = sourceNode.GetOrAddDevice(deviceFactory, eoj, out var added);
 
       if (added) {
         logger?.LogInformation(
           "New object (Node: {NodeAddress}, EOJ: {EOJ})",
           sourceNode.Address,
-          instance.EOJ
+          eoj
         );
       }
     }
 
-    OnInstanceListUpdated(sourceNode, instances);
+    OnInstanceListUpdated(sourceNode);
 
     logger?.LogDebug("Updated");
 

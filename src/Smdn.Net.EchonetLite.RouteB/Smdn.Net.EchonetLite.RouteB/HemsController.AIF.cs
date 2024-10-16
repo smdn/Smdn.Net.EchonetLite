@@ -3,7 +3,6 @@
 #pragma warning disable CA1848 // CA1848: For improved performance, use the LoggerMessage delegates instead of calling 'LoggerExtensions.LogXXX'
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE || SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 using System.Diagnostics.CodeAnalysis;
@@ -416,10 +415,10 @@ partial class HemsController {
       var tcs = new TaskCompletionSource<LowVoltageSmartElectricEnergyMeter>();
 
       try {
-        void HandleInstanceListUpdated(object? sender, (EchonetNode Node, IReadOnlyList<EchonetObject> Instances) e)
+        void HandleInstanceListUpdated(object? sender, EchonetNode node)
         {
-          if (e.Node.Address.Equals(smartMeterNodeAddress)) {
-            var lvsm = e.Instances.OfType<LowVoltageSmartElectricEnergyMeter>().FirstOrDefault();
+          if (node.Address.Equals(smartMeterNodeAddress)) {
+            var lvsm = node.Devices.OfType<LowVoltageSmartElectricEnergyMeter>().FirstOrDefault();
 
             if (lvsm is not null)
               tcs.SetResult(lvsm);

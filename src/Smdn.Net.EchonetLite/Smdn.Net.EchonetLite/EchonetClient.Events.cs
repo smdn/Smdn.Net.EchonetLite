@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 
 using Smdn.Net.EchonetLite.ComponentModel;
@@ -60,9 +59,7 @@ partial class EchonetClient
   /// </summary>
   /// <remarks>
   ///   <para>
-  ///   イベント引数には、<see cref="ValueTuple{EchonetNode,T2}"/>が設定されます。
-  ///   イベント引数は、インスタンスリスト通知の送信元のECHONET Lite ノードを表す<see cref="EchonetNode"/>、
-  ///   および通知されたインスタンスリストを表す<see cref="IReadOnlyList{EchonetObject}"/>を保持します。
+  ///   イベント引数には、インスタンスリスト通知の送信元のECHONET Lite ノードを表す<see cref="EchonetNode"/>が設定されます。
   ///   </para>
   ///   <para>
   ///   インスタンスリスト通知を受信した場合、以下の順でイベントが発生します。
@@ -73,43 +70,39 @@ partial class EchonetClient
   ///   </para>
   /// </remarks>
   /// <seealso cref="InstanceListUpdating"/>
-  public event EventHandler<(EchonetNode, IReadOnlyList<EchonetObject>)>? InstanceListUpdated;
+  public event EventHandler<EchonetNode>? InstanceListUpdated;
 
   protected virtual void OnInstanceListUpdating(EchonetNode node)
     => RaiseEvent(InstanceListUpdating, node);
 
-  protected virtual void OnInstanceListUpdated(EchonetNode node, IReadOnlyList<EchonetObject> instances)
-    => RaiseEvent(InstanceListUpdated, (node, instances));
+  protected virtual void OnInstanceListUpdated(EchonetNode node)
+    => RaiseEvent(InstanceListUpdated, node);
 
   /// <summary>
   /// プロパティマップの取得を開始するときに発生するイベント。
   /// </summary>
   /// <remarks>
-  /// イベント引数には、<see cref="ValueTuple{EchonetNode,EchonetObject}"/>が設定されます。
-  /// イベント引数は、対象オブジェクトが属するECHONET Lite ノードを表す<see cref="EchonetNode"/>、
-  /// およびプロパティマップ取得対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>を保持します。
+  /// イベント引数には、プロパティマップ取得対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>が設定されます。
   /// </remarks>
   /// <seealso cref="PropertyMapAcquired"/>
   /// <seealso cref="EchonetObject.HasPropertyMapAcquired"/>
-  public event EventHandler<(EchonetNode, EchonetObject)>? PropertyMapAcquiring;
+  public event EventHandler<EchonetObject>? PropertyMapAcquiring;
 
   /// <summary>
   /// プロパティマップの取得を完了したときに発生するイベント。
   /// </summary>
   /// <remarks>
-  /// イベント引数には、<see cref="ValueTuple{EchonetNode,EchonetObject}"/>が設定されます。
-  /// イベント引数は、対象オブジェクトが属するECHONET Lite ノードを表す<see cref="EchonetNode"/>、
-  /// およびプロパティマップ取得対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>を保持します。
+  /// イベント引数には、プロパティマップ取得対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>が設定されます。
   /// </remarks>
   /// <seealso cref="PropertyMapAcquiring"/>
   /// <seealso cref="EchonetObject.HasPropertyMapAcquired"/>
-  public event EventHandler<(EchonetNode, EchonetObject)>? PropertyMapAcquired;
+  public event EventHandler<EchonetObject>? PropertyMapAcquired;
 
-  protected virtual void OnPropertyMapAcquiring(EchonetNode node, EchonetObject device)
-    => RaiseEvent(PropertyMapAcquiring, (node, device));
+  protected virtual void OnPropertyMapAcquiring(EchonetObject device)
+    => RaiseEvent(PropertyMapAcquiring, device);
 
-  protected virtual void OnPropertyMapAcquired(EchonetNode node, EchonetObject device)
-    => RaiseEvent(PropertyMapAcquired, (node, device));
+  protected virtual void OnPropertyMapAcquired(EchonetObject device)
+    => RaiseEvent(PropertyMapAcquired, device);
 
   private void RaiseEvent<TEventArgs>(
     EventHandler<TEventArgs>? eventHandler,
