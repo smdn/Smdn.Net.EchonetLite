@@ -1,7 +1,7 @@
-// Smdn.Net.EchonetLite.RouteB.SkStackIP.dll (Smdn.Net.EchonetLite.RouteB.SkStackIP-2.0.0-preview2)
+// Smdn.Net.EchonetLite.RouteB.SkStackIP.dll (Smdn.Net.EchonetLite.RouteB.SkStackIP-2.0.0-preview3)
 //   Name: Smdn.Net.EchonetLite.RouteB.SkStackIP
 //   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0-preview2+4d034f0903ea62ea00625815ef039b64f3ec2917
+//   InformationalVersion: 2.0.0-preview3+370bdac018b42e5e04f531669d50f03b3bb6922f
 //   TargetFramework: .NETCoreApp,Version=v8.0
 //   Configuration: Release
 //   Referenced assemblies:
@@ -9,8 +9,8 @@
 //     Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
-//     Smdn.Net.EchonetLite.RouteB, Version=2.0.0.0, Culture=neutral
-//     Smdn.Net.EchonetLite.Transport, Version=2.0.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite.Primitives, Version=2.0.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.0.0.0, Culture=neutral
 //     Smdn.Net.SkStackIP, Version=1.2.0.0, Culture=neutral
 //     System.ComponentModel, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.ComponentModel.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
@@ -29,6 +29,7 @@ using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
 using Smdn.Net.EchonetLite.RouteB.Credentials;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
@@ -37,6 +38,7 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP {
   public interface ISkStackRouteBEchonetLiteHandlerFactory : IRouteBEchonetLiteHandlerFactory {
     Action<SkStackRouteBSessionConfiguration>? ConfigureRouteBSessionConfiguration { get; set; }
+    Action<SkStackClient>? ConfigureSkStackClient { get; set; }
   }
 
   public enum SkStackRouteBTransportProtocol : int {
@@ -45,7 +47,9 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP {
   }
 
   public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler {
+    public static readonly string ResiliencePipelineKeyForAuthenticate = "SkStackRouteBEchonetLiteHandler.resiliencePipelineAuthenticate";
     public static readonly string ResiliencePipelineKeyForSend = "SkStackRouteBEchonetLiteHandler.resiliencePipelineSend";
+    public static readonly ResiliencePropertyKey<SkStackClient?> ResiliencePropertyKeyForClient; // = "ResiliencePropertyKeyForClient"
 
     public override IPAddress? LocalAddress { get; }
     public override IPAddress? PeerAddress { get; }
@@ -63,6 +67,7 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP {
   }
 
   public static class SkStackRouteBEchonetLiteHandlerBuilderExtensions {
+    public static ISkStackRouteBEchonetLiteHandlerFactory ConfigureClient(this ISkStackRouteBEchonetLiteHandlerFactory factory, Action<SkStackClient> configureSkStackClient) {}
     public static ISkStackRouteBEchonetLiteHandlerFactory ConfigureSession(this ISkStackRouteBEchonetLiteHandlerFactory factory, Action<SkStackRouteBSessionConfiguration> configureRouteBSessionConfiguration) {}
   }
 
@@ -70,6 +75,7 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP {
     protected SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection services) {}
 
     public Action<SkStackRouteBSessionConfiguration>? ConfigureRouteBSessionConfiguration { get; set; }
+    public Action<SkStackClient>? ConfigureSkStackClient { get; set; }
     protected abstract SkStackRouteBTransportProtocol TransportProtocol { get; }
 
     public virtual async ValueTask<RouteBEchonetLiteHandler> CreateAsync(CancellationToken cancellationToken) {}
