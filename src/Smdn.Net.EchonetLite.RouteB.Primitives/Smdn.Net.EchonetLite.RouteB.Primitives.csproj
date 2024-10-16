@@ -3,8 +3,9 @@ SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 SPDX-License-Identifier: MIT
 -->
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net6.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net6.0;net8.0</TargetFrameworks>
     <VersionPrefix>2.0.0</VersionPrefix>
     <VersionSuffix>preview2</VersionSuffix>
     <!-- <PackageValidationBaselineVersion>2.0.0</PackageValidationBaselineVersion> -->
@@ -13,24 +14,28 @@ SPDX-License-Identifier: MIT
     <NoWarn>CS1591;$(NoWarn)</NoWarn> <!-- CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member' -->
   </PropertyGroup>
 
-  <PropertyGroup Label="metadata">
+  <PropertyGroup Label="assembly attributes">
     <Description>
-<![CDATA[Skyley Networksの[SKSTACK IP](https://www.skyley.com/wiki/?SKSTACK+IP+for+HAN)を使用して、 スマート電力量メータとの情報伝達手段である「Bルート」を介したECHONET Lite規格の通信を扱うためのAPIを提供します。
-ECHONET Lite規格における下位通信層に相当する実装である`SkStackRouteBUdpEchonetLiteHandler`クラスをはじめとするAPIを提供します。
+<![CDATA[Provides common types and abstractions for `Smdn.Net.EchonetLite.RouteB.*`.
+Provides a transport layer abstraction class `RouteBEchonetLiteHandler` to handle ECHONET Lite communication via the **route-B**, the communication path for communicating information with smart electricity meters.
+Also provides an abstract interface `IRouteBCredential` to handle credentials used in B-route communication path.
+
+`Smdn.Net.EchonetLite.RouteB.*`で共通して使用される型と抽象化機能を提供します。
+スマート電力量メータとの情報伝達手段である「Bルート」を介してECHONET Lite規格の通信を扱うためのトランスポート層抽象クラス`RouteBEchonetLiteHandler`を提供します。
+また、その際に使用される認証情報を扱うための抽象インターフェイス`IRouteBCredential`を提供します。
 ]]>
     </Description>
     <CopyrightYear>2024</CopyrightYear>
   </PropertyGroup>
 
   <PropertyGroup Label="package properties">
-    <PackageTags>SKSTACK;SKSTACK-IP;Route-B;B-Route;smart-meter;smart-energy-meter;$(PackageTags)</PackageTags>
+    <PackageTags>abstraction;transport;Route-B;B-Route;smart-meter;smart-energy-meter;$(PackageTags)</PackageTags>
     <GenerateNupkgReadmeFileDependsOnTargets>$(GenerateNupkgReadmeFileDependsOnTargets);GenerateReadmeFileContent</GenerateNupkgReadmeFileDependsOnTargets>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Smdn.Net.SkStackIP" />
-    <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.RouteB.Primitives\Smdn.Net.EchonetLite.RouteB.Primitives.csproj'))" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.Primitives\Smdn.Net.EchonetLite.Primitives.csproj'))" />
   </ItemGroup>
 
   <Target Name="GenerateReadmeFileContent">

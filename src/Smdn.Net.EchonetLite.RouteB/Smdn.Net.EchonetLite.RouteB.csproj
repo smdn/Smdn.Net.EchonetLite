@@ -16,19 +16,24 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup Label="assembly attributes">
     <Description>
-<![CDATA[スマート電力量メータとの情報伝達手段である「Bルート」を介してECHONET Lite規格の通信を扱うための抽象クラス`RouteBEchonetLiteHandler`を提供します。　また、その際に使用される認証情報を扱うための抽象インターフェイス`IRouteBCredential`を提供します。]]>
+<![CDATA[Provides an application layer implementation for communication via the **route-B**, based on the specifications described in the "Interface Specifications for Application Layer Communication between Smart Electric Energy Meters and Controllers".
+Provides APIs such as the `HemsController` class, which implements the "HEMS controller" in the specification, and the `LowVoltageSmartElectricEnergyMeter` class, which implements the "Requirements for low-voltage smart electric energy meter class".
+
+「低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書」に記載されている仕様に基づく、「Bルート」を介した通信を行うアプリケーション層の実装を提供します。
+同仕様書における「HEMS コントローラ」に相当する`HemsController`クラス、「低圧スマート電力量メータクラス規定」を実装する`LowVoltageSmartElectricEnergyMeter`クラスなどのAPIを提供します。]]>
     </Description>
     <CopyrightYear>2024</CopyrightYear>
   </PropertyGroup>
 
   <PropertyGroup Label="package properties">
-    <PackageTags>Route-B;B-Route;smart-meter;smart-energy-meter;$(PackageTags)</PackageTags>
+    <PackageTags>Route-B;B-Route;smart-meter;smart-energy-meter;HEMS;HEMS-controller;LVSM;$(PackageTags)</PackageTags>
     <GenerateNupkgReadmeFileDependsOnTargets>$(GenerateNupkgReadmeFileDependsOnTargets);GenerateReadmeFileContent</GenerateNupkgReadmeFileDependsOnTargets>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.Primitives\Smdn.Net.EchonetLite.Primitives.csproj'))" />
+    <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite\Smdn.Net.EchonetLite.csproj'))" />
+    <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.RouteB.Primitives\Smdn.Net.EchonetLite.RouteB.Primitives.csproj'))" />
   </ItemGroup>
 
   <Target Name="GenerateReadmeFileContent">

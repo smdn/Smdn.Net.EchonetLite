@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 
-namespace Smdn.Net.EchonetLite.ObjectModel;
+namespace Smdn.Net.EchonetLite.RouteB;
 
 /// <summary>
 /// 特定の日時における計測値を表す構造体です。
