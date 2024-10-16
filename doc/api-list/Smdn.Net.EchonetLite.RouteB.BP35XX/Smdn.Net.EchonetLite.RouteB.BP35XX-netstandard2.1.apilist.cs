@@ -1,13 +1,13 @@
-// Smdn.Net.EchonetLite.RouteB.BP35XX.dll (Smdn.Net.EchonetLite.RouteB.BP35XX-2.0.0-preview3)
+// Smdn.Net.EchonetLite.RouteB.BP35XX.dll (Smdn.Net.EchonetLite.RouteB.BP35XX-2.0.0-preview4)
 //   Name: Smdn.Net.EchonetLite.RouteB.BP35XX
 //   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0-preview3+f083b2de6dc07603893bff9d4a263609fd1a919e
+//   InformationalVersion: 2.0.0-preview4+c7a206f316403313ee223391269df5de9d965d32
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
 //     Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Smdn.Devices.BP35XX, Version=1.0.0.0, Culture=neutral
-//     Smdn.Net.EchonetLite.RouteB, Version=2.0.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.0.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.RouteB.SkStackIP, Version=2.0.0.0, Culture=neutral
 //     Smdn.Net.SkStackIP, Version=1.2.0.0, Culture=neutral
 //     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
