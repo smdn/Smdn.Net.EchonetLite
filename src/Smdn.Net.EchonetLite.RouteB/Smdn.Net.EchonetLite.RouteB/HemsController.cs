@@ -31,7 +31,6 @@ namespace Smdn.Net.EchonetLite.RouteB;
 /// <seealso href="https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/Release/Release_R/Appendix_Release_R.pdf">
 /// APPENDIX ECHONET 機器オブジェクト詳細規定 Release R
 /// </seealso>
-[CLSCompliant(false)]
 public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IAsyncDisposable {
   private readonly IRouteBEchonetLiteHandlerFactory echonetLiteHandlerFactory;
   private readonly IRouteBCredentialProvider credentialProvider;
@@ -79,7 +78,6 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
   /// <paramref name="echonetLiteHandlerFactory"/>が<see langword="null"/>です。
   /// または、<paramref name="routeBCredentialProvider"/>が<see langword="null"/>です。
   /// </exception>
-  [CLSCompliant(false)]
   public HemsController(
     IRouteBEchonetLiteHandlerFactory echonetLiteHandlerFactory,
     IRouteBCredentialProvider routeBCredentialProvider,
