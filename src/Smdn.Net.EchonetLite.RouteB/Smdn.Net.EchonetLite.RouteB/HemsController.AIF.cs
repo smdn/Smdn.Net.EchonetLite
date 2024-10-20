@@ -195,7 +195,7 @@ partial class HemsController {
   )
   CreateEchonetObject(
     IEchonetLiteHandler echonetLiteHandler,
-    ILoggerFactory? loggerFactory
+    ILoggerFactory? loggerFactoryForEchonetClient
   )
   {
     // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
@@ -222,7 +222,7 @@ partial class HemsController {
       shouldDisposeEchonetLiteHandler: ShouldDisposeEchonetLiteHandlerByClient,
       deviceFactory: RouteBDeviceFactory.Instance,
       resiliencePipelineForSendingResponseFrame: null, // TODO: make configurable
-      logger: loggerFactory?.CreateLogger<EchonetClient>()
+      logger: loggerFactoryForEchonetClient?.CreateLogger<EchonetClient>()
     );
 
     return (client, controllerObject);
@@ -232,13 +232,13 @@ partial class HemsController {
     CancellationToken cancellationToken
   )
   {
-    var stopwatchForConnection = logger is null ? null : Stopwatch.StartNew();
+    var stopwatchForConnection = Logger is null ? null : Stopwatch.StartNew();
 
     echonetLiteHandler = await echonetLiteHandlerFactory.CreateAsync(
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
 
-    logger?.LogInformation("Starting the connection sequence ...");
+    Logger?.LogInformation("Starting the connection sequence ...");
 
     try {
       using var credential = credentialProvider.GetCredential(this);
@@ -248,28 +248,28 @@ partial class HemsController {
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
-      using (var scope = logger?.BeginScope("Establishing route-B connection")) {
-        logger?.LogDebug("EchonetLiteHandler: {EchonetLiteHandler}", echonetLiteHandler.GetType().FullName);
+      using (var scope = Logger?.BeginScope("Establishing route-B connection")) {
+        Logger?.LogDebug("EchonetLiteHandler: {EchonetLiteHandler}", echonetLiteHandler.GetType().FullName);
 
         if (echonetLiteHandler.LocalAddress is null)
           throw new InvalidOperationException($"The local address is not set with this handler. ({echonetLiteHandler.GetType().FullName})");
         if (echonetLiteHandler.PeerAddress is null)
           throw new InvalidOperationException($"The peer address is not set with this handler. ({echonetLiteHandler.GetType().FullName})");
 
-        logger?.LogDebug("Local address: {LocalAddress}", echonetLiteHandler.LocalAddress);
-        logger?.LogDebug("Peer address: {PeerAddress}", echonetLiteHandler.PeerAddress);
+        Logger?.LogDebug("Local address: {LocalAddress}", echonetLiteHandler.LocalAddress);
+        Logger?.LogDebug("Peer address: {PeerAddress}", echonetLiteHandler.PeerAddress);
       }
 
-      logger?.LogInformation("Route-B connection established.");
+      Logger?.LogInformation("Route-B connection established.");
 
       (client, controllerObject) = CreateEchonetObject(
         echonetLiteHandler,
-        loggerFactory
+        loggerFactoryForEchonetClient
       );
 
-      logger?.LogInformation("Finding smart meter node and device object (this may take a few seconds) ...");
+      Logger?.LogInformation("Finding smart meter node and device object (this may take a few seconds) ...");
 
-      using (var scope = logger?.BeginScope("Finding smart meter")) {
+      using (var scope = Logger?.BeginScope("Finding smart meter")) {
         smartMeterObject = await WaitForRouteBSmartMeterProactiveNotificationAsync(
           smartMeterNodeAddress: echonetLiteHandler.PeerAddress,
           cancellationToken: cancellationToken
@@ -283,16 +283,16 @@ partial class HemsController {
         if (smartMeterObject is null)
           throw new TimeoutException("Could not find smart meter device object within the specified time span.");
 
-        logger?.LogDebug(
+        Logger?.LogDebug(
           "Smart meter device object found. (Node: {NodeAddress}, Instance code: 0x{InstanceCode})",
           smartMeterObject.Node.Address,
           smartMeterObject.InstanceCode
         );
       }
 
-      logger?.LogInformation("Acquiring smart meter information (this may take a few seconds) ...");
+      Logger?.LogInformation("Acquiring smart meter information (this may take a few seconds) ...");
 
-      using (var scope = logger?.BeginScope("Acquiring information")) {
+      using (var scope = Logger?.BeginScope("Acquiring information")) {
         await AcquireEchonetLiteAttributeInformationAsync(
           cancellationToken: cancellationToken
         ).ConfigureAwait(false);
@@ -301,7 +301,7 @@ partial class HemsController {
           cancellationToken: cancellationToken
         ).ConfigureAwait(false);
 
-        logger?.LogInformation(
+        Logger?.LogInformation(
           "Route-B smart meter ready. (Node: {NodeAddress}, Appendix Release: {Protocol}, Serial Number: {SerialNumber})",
           smartMeterObject.Node.Address,
           SmartMeter.Protocol.TryGetValue(out var protocol) ? protocol : "?",
@@ -326,7 +326,7 @@ partial class HemsController {
       throw;
     }
 
-    logger?.LogInformation(
+    Logger?.LogInformation(
       "Connection sequence completed. ({ElapsedSeconds:N1} secs)",
       stopwatchForConnection!.Elapsed.TotalSeconds
     );
@@ -367,7 +367,7 @@ partial class HemsController {
       echonetLiteHandler = null;
     }
 
-    logger?.LogInformation("Route B connection closed.");
+    Logger?.LogInformation("Route B connection closed.");
 #pragma warning restore CS8602
   }
 
@@ -411,7 +411,7 @@ partial class HemsController {
         cancellationToken
       );
 
-      logger?.LogDebug("Waiting for instance list notification ...");
+      Logger?.LogDebug("Waiting for instance list notification ...");
 
       var tcs = new TaskCompletionSource<LowVoltageSmartElectricEnergyMeter>();
 
@@ -440,7 +440,7 @@ partial class HemsController {
       }
       catch (OperationCanceledException) {
         if (ctsTimeout.IsCancellationRequested) {
-          logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
+          Logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
           return null; // expected timeout
         }
 
@@ -484,7 +484,7 @@ partial class HemsController {
     );
 
     try {
-      logger?.LogDebug("Requesting for instance list notification.");
+      Logger?.LogDebug("Requesting for instance list notification.");
 
       var instanceListState = new InstanceListNotificationState();
 
@@ -516,7 +516,7 @@ partial class HemsController {
     }
     catch (OperationCanceledException) {
       if (ctsResponseWaitTimer1.IsCancellationRequested) {
-        logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
+        Logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
         return null; // expected timeout
       }
 
@@ -569,10 +569,10 @@ partial class HemsController {
       ).ConfigureAwait(false);
 #pragma warning restore CS8602, CS8604
 
-      logger?.LogDebug("Listing the implemented properties of the found smart meter.");
+      Logger?.LogDebug("Listing the implemented properties of the found smart meter.");
 
       foreach (var prop in smartMeterObject.Properties.Values.OrderBy(static p => p.Code)) {
-        logger?.LogDebug(
+        Logger?.LogDebug(
           "EPC 0x{Code:X}{Get}{Set}{Anno}",
           prop.Code,
           prop.CanGet ? " GET" : string.Empty,
@@ -639,7 +639,7 @@ partial class HemsController {
         cancellationToken: ctsTimeoutOrCancellation.Token
       ).ConfigureAwait(false);
 
-      logger?.LogDebug("Response: {Response}", getResponse);
+      Logger?.LogDebug("Response: {Response}", getResponse);
 
       if (!getResponse.IsSuccess) {
         // TODO: exception type
@@ -650,7 +650,7 @@ partial class HemsController {
 
 #if false
       foreach (var prop in properties) {
-        logger?.LogDebug("EPC: 0x{Code:X2}, PDC: {PDC}", prop.EPC, prop.PDC);
+        Logger?.LogDebug("EPC: 0x{Code:X2}, PDC: {PDC}", prop.EPC, prop.PDC);
       }
 #endif
     }
@@ -661,17 +661,17 @@ partial class HemsController {
       throw;
     }
 
-    logger?.LogDebug(
+    Logger?.LogDebug(
       "Coefficient for converting electric energy (0xD3): {Value}",
       SmartMeter.Coefficient.TryGetValue(out var c) ? c.ToString(provider: null) : "-"
     );
 
-    logger?.LogDebug(
+    Logger?.LogDebug(
       "Unit for electric energy (0xE1): {Value}",
       SmartMeter.UnitForCumulativeElectricEnergy.TryGetValue(out var u) ? u.ToString(provider: null) : "-"
     );
 
-    logger?.LogDebug(
+    Logger?.LogDebug(
       "Multiplier for converting electric energy values to kWh: {Value}",
       SmartMeter.MultiplierForCumulativeElectricEnergy
     );

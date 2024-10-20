@@ -34,9 +34,10 @@ namespace Smdn.Net.EchonetLite.RouteB;
 public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IAsyncDisposable {
   private readonly IRouteBEchonetLiteHandlerFactory echonetLiteHandlerFactory;
   private readonly IRouteBCredentialProvider credentialProvider;
-  private readonly ILoggerFactory? loggerFactory;
-  private readonly ILogger<HemsController>? logger;
+  private readonly ILoggerFactory? loggerFactoryForEchonetClient;
   private RouteBEchonetLiteHandler? echonetLiteHandler;
+
+  protected ILogger? Logger { get; }
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(false, nameof(echonetLiteHandler))]
@@ -50,14 +51,15 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
   /// <paramref name="serviceProvider"/>から必須のサービス<see cref="IRouteBEchonetLiteHandlerFactory"/>を取得できません。
   /// または、<paramref name="serviceProvider"/>から必須のサービス<see cref="IRouteBCredentialProvider"/>を取得できません。
   /// </exception>
-  /// <seealso cref="HemsController(IRouteBEchonetLiteHandlerFactory, IRouteBCredentialProvider, ILoggerFactory?)"/>
+  /// <seealso cref="HemsController(IRouteBEchonetLiteHandlerFactory, IRouteBCredentialProvider, ILogger?, ILoggerFactory?)"/>
   public HemsController(
     IServiceProvider serviceProvider
   )
     : this(
       echonetLiteHandlerFactory: (serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider))).GetRequiredService<IRouteBEchonetLiteHandlerFactory>(),
       routeBCredentialProvider: serviceProvider.GetRequiredService<IRouteBCredentialProvider>(),
-      loggerFactory: serviceProvider.GetService<ILoggerFactory>()
+      logger: serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<HemsController>(),
+      loggerFactoryForEchonetClient: serviceProvider.GetService<ILoggerFactory>()
     )
   {
   }
@@ -70,9 +72,12 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
   /// Bルートでの接続の際に使用するIDおよびパスワードを表す<see cref="IRouteBCredential"/>を取得する、
   /// <see cref="IRouteBCredentialProvider"/>の実装を指定します。
   /// </param>
-  /// <param name="loggerFactory">
-  /// <see cref="HemsController"/>および<see cref="EchonetClient"/>が出力するログの出力先となる
-  /// <see cref="ILogger{T}"/>を作成するための<see cref="ILoggerFactory"/>を指定します。
+  /// <param name="logger">
+  /// <see cref="HemsController"/>が出力するログの出力先となる<see cref="ILogger"/>を指定します。
+  /// </param>
+  /// <param name="loggerFactoryForEchonetClient">
+  /// <see cref="EchonetClient"/>が出力するログの出力先となる<see cref="ILogger{T}"/>を作成するための
+  /// <see cref="ILoggerFactory"/>を指定します。
   /// </param>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="echonetLiteHandlerFactory"/>が<see langword="null"/>です。
@@ -81,7 +86,8 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
   public HemsController(
     IRouteBEchonetLiteHandlerFactory echonetLiteHandlerFactory,
     IRouteBCredentialProvider routeBCredentialProvider,
-    ILoggerFactory? loggerFactory = null
+    ILogger? logger,
+    ILoggerFactory? loggerFactoryForEchonetClient
   )
   {
 #pragma warning disable CA1510
@@ -93,9 +99,8 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
 
     this.echonetLiteHandlerFactory = echonetLiteHandlerFactory;
     credentialProvider = routeBCredentialProvider;
-    this.loggerFactory = loggerFactory;
-
-    logger = loggerFactory?.CreateLogger<HemsController>();
+    Logger = logger;
+    this.loggerFactoryForEchonetClient = loggerFactoryForEchonetClient;
   }
 
   public void Dispose()
