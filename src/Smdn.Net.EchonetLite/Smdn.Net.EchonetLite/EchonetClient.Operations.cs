@@ -119,7 +119,7 @@ partial class EchonetClient
     // インスタンスリスト受信後に発生するイベントをハンドリングする
     void HandleInstanceListUpdated(object? sender, EchonetNode node)
     {
-      logger?.LogDebug("HandleInstanceListUpdated");
+      Logger?.LogDebug("HandleInstanceListUpdated");
 
       // この時点で条件がtrueとなったら、結果を確定する
       if (onInstanceListUpdated(node, state))
@@ -220,7 +220,7 @@ partial class EchonetClient
     if (device.Node is not EchonetOtherNode otherNode)
       throw new InvalidOperationException("Cannot acquire property maps of self node.");
 
-    using var scope = logger?.BeginScope("Acquiring property maps");
+    using var scope = Logger?.BeginScope("Acquiring property maps");
 
     OnPropertyMapAcquiring(device);
 
@@ -235,7 +235,7 @@ partial class EchonetClient
 
     // 不可応答は無視
     if (!result.IsSuccess) {
-      logger?.LogWarning("Service not available (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
+      Logger?.LogWarning("Service not available (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
       return false;
     }
 
@@ -279,10 +279,10 @@ partial class EchonetClient
       )
     );
 
-    logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
+    Logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
 
     foreach (var (_, p) in device.Properties.OrderBy(static pair => pair.Key)) {
-      logger?.LogDebug(
+      Logger?.LogDebug(
         "Node: {NodeAddress} EOJ: {EOJ}, EPC: {EPC:X2}, Access Rule: {CanSet}/{CanGet}/{CanAnnounceStatusChange}",
         otherNode.Address,
         device.EOJ,

@@ -114,8 +114,8 @@ partial class EchonetClient
             _ = await HandleWriteOneWayAsync(address, tid, message, destObject).ConfigureAwait(false);
           }
           catch (Exception ex) {
-            if (logger is not null)
-              LogExceptionAtFormat1MessageHandler(logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+            if (Logger is not null)
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
 
             throw;
           }
@@ -130,8 +130,8 @@ partial class EchonetClient
             _ = await HandleWriteAsync(address, tid, message, destObject).ConfigureAwait(false);
           }
           catch (Exception ex) {
-            if (logger is not null)
-              LogExceptionAtFormat1MessageHandler(logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+            if (Logger is not null)
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
 
             throw;
           }
@@ -146,8 +146,8 @@ partial class EchonetClient
             _ = await HandleReadAsync(address, tid, message, destObject).ConfigureAwait(false);
           }
           catch (Exception ex) {
-            if (logger is not null)
-              LogExceptionAtFormat1MessageHandler(logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+            if (Logger is not null)
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
 
             throw;
           }
@@ -167,8 +167,8 @@ partial class EchonetClient
             _ = await HandleWriteReadAsync(address, tid, message, destObject).ConfigureAwait(false);
           }
           catch (Exception ex) {
-            if (logger is not null)
-              LogExceptionAtFormat1MessageHandler(logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+            if (Logger is not null)
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
 
             throw;
           }
@@ -184,8 +184,8 @@ partial class EchonetClient
             _ = HandleNotifyOneWay(address, tid, message, sourceNode);
           }
           catch (Exception ex) {
-            if (logger is not null)
-              LogExceptionAtFormat1MessageHandler(logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+            if (Logger is not null)
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
 
             throw;
           }
@@ -199,8 +199,8 @@ partial class EchonetClient
             _ = await HandleNotifyAsync(address, tid, message, sourceNode, destObject).ConfigureAwait(false);
           }
           catch (Exception ex) {
-            if (logger is not null)
-              LogExceptionAtFormat1MessageHandler(logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+            if (Logger is not null)
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
 
             throw;
           }
@@ -241,8 +241,8 @@ partial class EchonetClient
     // ハンドリングを行うタスクがなく、進行中のトランザクションにも該当しない場合
     if (handlerTask is null && !TryFindTransaction(tid, out _)) {
       // 要求には対応しないが、ログに記録する
-      if (logger is not null)
-        LogUnmanagedTransactionAtFormat1MessageHandler(logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, null);
+      if (Logger is not null)
+        LogUnmanagedTransactionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, null);
     }
   }
 #pragma warning restore CA1502
@@ -280,8 +280,8 @@ partial class EchonetClient
 
     const ESV RequestServiceCode = ESV.SetI;
 
-    if (logger is not null)
-      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+    if (Logger is not null)
+      LogHandlingServiceResponse(Logger, RequestServiceCode, address, tid);
 
     var hasError = false;
     var requestProps = message.GetProperties();
@@ -372,8 +372,8 @@ partial class EchonetClient
   {
     const ESV RequestServiceCode = ESV.SetC;
 
-    if (logger is not null)
-      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+    if (Logger is not null)
+      LogHandlingServiceResponse(Logger, RequestServiceCode, address, tid);
 
     var hasError = false;
     var requestProps = message.GetProperties();
@@ -469,8 +469,8 @@ partial class EchonetClient
   {
     const ESV RequestServiceCode = ESV.Get;
 
-    if (logger is not null)
-      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+    if (Logger is not null)
+      LogHandlingServiceResponse(Logger, RequestServiceCode, address, tid);
 
     var hasError = false;
     var requestProps = message.GetProperties();
@@ -563,8 +563,8 @@ partial class EchonetClient
   {
     const ESV RequestServiceCode = ESV.SetGet;
 
-    if (logger is not null)
-      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+    if (Logger is not null)
+      LogHandlingServiceResponse(Logger, RequestServiceCode, address, tid);
 
     var hasError = false;
     var (requestPropsForSet, requestPropsForGet) = message.GetPropertiesForSetAndGet();
@@ -681,8 +681,8 @@ partial class EchonetClient
   {
     const ESV RequestServiceCode = ESV.InfRequest;
 
-    if (logger is not null)
-      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+    if (Logger is not null)
+      LogHandlingServiceResponse(Logger, RequestServiceCode, address, tid);
 
     var hasError = false;
     var objectAdded = false;
@@ -692,7 +692,7 @@ partial class EchonetClient
       : sourceNode.GetOrAddDevice(deviceFactory, message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
 
     if (objectAdded) {
-      logger?.LogInformation(
+      Logger?.LogInformation(
         "New object added (Node: {NodeAddress}, EOJ: {EOJ})",
         sourceNode.Address,
         sourceObject.EOJ
@@ -751,8 +751,8 @@ partial class EchonetClient
   {
     const ESV RequestServiceCode = ESV.InfC;
 
-    if (logger is not null)
-      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+    if (Logger is not null)
+      LogHandlingServiceResponse(Logger, RequestServiceCode, address, tid);
 
     var hasError = false;
     var requestProps = message.GetProperties();
@@ -770,7 +770,7 @@ partial class EchonetClient
       : sourceNode.GetOrAddDevice(deviceFactory, message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
 
     if (objectAdded) {
-      logger?.LogInformation(
+      Logger?.LogInformation(
         "New object added (Node: {NodeAddress}, EOJ: {EOJ})",
         sourceNode.Address,
         sourceObject.EOJ
@@ -846,10 +846,10 @@ partial class EchonetClient
     ReadOnlyMemory<byte> edtInstantListNotification
   )
   {
-    using var scope = logger?.BeginScope($"Instance list (Node: {sourceNode.Address})");
+    using var scope = Logger?.BeginScope($"Instance list (Node: {sourceNode.Address})");
 
     if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edtInstantListNotification.Span, out var instanceList)) {
-      logger?.LogWarning(
+      Logger?.LogWarning(
         "Invalid instance list received (EDT: {EDT})",
         edtInstantListNotification.ToHexString()
       );
@@ -857,7 +857,7 @@ partial class EchonetClient
       return false;
     }
 
-    logger?.LogDebug("Updating");
+    Logger?.LogDebug("Updating");
 
     OnInstanceListUpdating(sourceNode);
 
@@ -865,7 +865,7 @@ partial class EchonetClient
       _ = sourceNode.GetOrAddDevice(deviceFactory, eoj, out var added);
 
       if (added) {
-        logger?.LogInformation(
+        Logger?.LogInformation(
           "New object (Node: {NodeAddress}, EOJ: {EOJ})",
           sourceNode.Address,
           eoj
@@ -875,7 +875,7 @@ partial class EchonetClient
 
     OnInstanceListUpdated(sourceNode);
 
-    logger?.LogDebug("Updated");
+    Logger?.LogDebug("Updated");
 
     return true;
   }

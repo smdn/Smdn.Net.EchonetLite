@@ -158,7 +158,7 @@ partial class EchonetClient
       if (value.Message.ESV != ESV.SetIServiceNotAvailable)
         return;
 
-      logger?.LogDebug(
+      Logger?.LogDebug(
         "Handling {ESV} (From: {Address}, TID: {TID:X4})",
         value.Message.ESV.ToSymbolString(),
         value.Address,
@@ -278,7 +278,7 @@ partial class EchonetClient
       if (!(value.Message.ESV == ESV.SetResponse || value.Message.ESV == ESV.SetCServiceNotAvailable))
         return;
 
-      logger?.LogDebug(
+      Logger?.LogDebug(
         "Handling {ESV} (From: {Address}, TID: {TID:X4})",
         value.Message.ESV.ToSymbolString(),
         value.Address,
@@ -404,7 +404,7 @@ partial class EchonetClient
       if (!(value.Message.ESV == ESV.GetResponse || value.Message.ESV == ESV.GetServiceNotAvailable))
         return;
 
-      logger?.LogDebug(
+      Logger?.LogDebug(
         "Handling {ESV} (From: {Address}, TID: {TID:X4})",
         value.Message.ESV.ToSymbolString(),
         value.Address,
@@ -538,7 +538,7 @@ partial class EchonetClient
       if (!(value.Message.ESV == ESV.SetGetResponse || value.Message.ESV == ESV.SetGetServiceNotAvailable))
         return;
 
-      logger?.LogDebug(
+      Logger?.LogDebug(
         "Handling {ESV} (From: {Address}, TID: {TID:X4})",
         value.Message.ESV.ToSymbolString(),
         value.Address,
@@ -825,7 +825,7 @@ partial class EchonetClient
       if (value.Message.ESV != ESV.InfCResponse)
         return;
 
-      logger?.LogDebug(
+      Logger?.LogDebug(
         "Handling {ESV} (From: {Address}, TID: {TID:X4})",
         value.Message.ESV.ToSymbolString(),
         value.Address,

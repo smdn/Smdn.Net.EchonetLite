@@ -23,8 +23,9 @@ namespace Smdn.Net.EchonetLite;
 public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncDisposable {
   private readonly bool shouldDisposeEchonetLiteHandler;
   private IEchonetLiteHandler echonetLiteHandler; // null if disposed
-  private readonly ILogger? logger;
   private readonly IEchonetDeviceFactory? deviceFactory;
+
+  protected ILogger? Logger { get; }
 
   /// <summary>
   /// 現在の<see cref="EchonetClient"/>インスタンスが扱うECHONET Lite ノード(自ノード)を表す<see cref="SelfNode"/>を取得します。
@@ -43,7 +44,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   private readonly ConcurrentDictionary<IPAddress, EchonetOtherNode> otherNodes;
   private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyOtherNodesView;
 
-  ILogger? IEchonetClientService.Logger => logger;
+  ILogger? IEchonetClientService.Logger => Logger;
 
 #if SYSTEM_TIMEPROVIDER
   TimeProvider? IEchonetClientService.TimeProvider => null; // TODO: make configurable, retrieve via IServiceProvider
@@ -105,12 +106,12 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     ILogger<EchonetClient>? logger
   )
   {
-    this.logger = logger;
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
     this.echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
     this.echonetLiteHandler.Received += EchonetDataReceived;
     this.resiliencePipelineForSendingResponseFrame = resiliencePipelineForSendingResponseFrame ?? ResiliencePipeline.Empty;
     this.deviceFactory = deviceFactory;
+    Logger = logger;
 
     SelfNode = selfNode ?? throw new ArgumentNullException(nameof(selfNode));
     SelfNode.Owner = this;
@@ -247,7 +248,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     otherNode = otherNodes.GetOrAdd(address, newNode);
 
     if (ReferenceEquals(otherNode, newNode)) {
-      logger?.LogInformation(
+      Logger?.LogInformation(
         "New node added (Address: {Address}, ESV: {ESV})",
         otherNode.Address,
         esv.ToSymbolString()
