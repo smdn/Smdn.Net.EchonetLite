@@ -140,7 +140,7 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
   [MemberNotNull(nameof(echonetLiteHandler))]
 #endif
-  private void ThrowIfDisposed()
+  protected void ThrowIfDisposed()
   {
 #pragma warning disable CA1513
     if (IsDisposed)
