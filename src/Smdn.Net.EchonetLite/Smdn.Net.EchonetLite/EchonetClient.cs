@@ -50,10 +50,10 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   TimeProvider? IEchonetClientService.TimeProvider => null; // TODO: make configurable, retrieve via IServiceProvider
 #endif
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ResiliencePipeline, ILogger{EchonetClient})"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
   public EchonetClient(
     IEchonetLiteHandler echonetLiteHandler,
-    ILogger<EchonetClient>? logger = null
+    ILogger? logger = null
   )
     : this(
       echonetLiteHandler: echonetLiteHandler,
@@ -63,14 +63,14 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   {
   }
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ResiliencePipeline, ILogger{EchonetClient})"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
   /// </exception>
   public EchonetClient(
     IEchonetLiteHandler echonetLiteHandler,
     bool shouldDisposeEchonetLiteHandler,
-    ILogger<EchonetClient>? logger
+    ILogger? logger
   )
     : this(
       selfNode: EchonetNode.CreateSelfNode(devices: Array.Empty<EchonetObject>()),
@@ -103,7 +103,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     bool shouldDisposeEchonetLiteHandler,
     IEchonetDeviceFactory? deviceFactory,
     ResiliencePipeline? resiliencePipelineForSendingResponseFrame,
-    ILogger<EchonetClient>? logger
+    ILogger? logger
   )
   {
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
