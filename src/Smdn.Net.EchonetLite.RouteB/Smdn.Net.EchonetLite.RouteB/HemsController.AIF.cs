@@ -371,6 +371,59 @@ partial class HemsController {
 #pragma warning restore CS8602
   }
 
+  private static (
+    CancellationTokenSource TimeoutTokenSource,
+    CancellationTokenSource TimeoutOrCancellationRequestTokenSource
+  )
+  CreateTimeoutCancellationTokenSource(TimeSpan timeoutDuration, CancellationToken cancellationToken)
+  {
+    var ctsTimeout = new CancellationTokenSource(delay: timeoutDuration);
+    var ctsTimeoutOrCancellationRequest = CancellationTokenSource.CreateLinkedTokenSource(
+      ctsTimeout.Token,
+      cancellationToken
+    );
+
+    return (ctsTimeout, ctsTimeoutOrCancellationRequest);
+  }
+
+  /// <summary>
+  /// 「応答待ちタイマー1」として定義される時間でキャンセルされるか、指定された<see cref="CancellationToken"/>によるキャンセル要求で
+  /// キャンセルされる<see cref="CancellationTokenSource"/>を作成します。
+  /// </summary>
+  /// <param name="cancellationToken">「応答待ちタイマー1」とリンクさせるキャンセル要求を表す<see cref="CancellationToken"/>。</param>
+  /// <returns>
+  /// 作成された<see cref="CancellationTokenSource"/>を含む<see cref="Tuple{T1,T2}"/>。
+  /// <see cref="Tuple{T1,T2}"/>の1つ目の要素には、<see cref="TimeoutWaitingResponse1"/>の時間経過でキャンセルされる<see cref="CancellationTokenSource"/>が設定されます。
+  /// <see cref="Tuple{T1,T2}"/>の2つ目の要素には、<see cref="TimeoutWaitingResponse1"/>の時間経過、もしくは<paramref name="cancellationToken"/>による
+  /// キャンセル要求のいずれかでキャンセルされる<see cref="CancellationTokenSource"/>が設定されます。
+  /// </returns>
+  /// <seealso cref="TimeoutWaitingResponse1"/>
+  public (
+    CancellationTokenSource TimeoutTokenSource,
+    CancellationTokenSource TimeoutOrCancellationRequestTokenSource
+  )
+  CreateTimeoutWaitingResponse1CancellationTokenSource(CancellationToken cancellationToken)
+    => CreateTimeoutCancellationTokenSource(TimeoutWaitingResponse1, cancellationToken);
+
+  /// <summary>
+  /// 「応答待ちタイマー2」として定義される時間でキャンセルされるか、指定された<see cref="CancellationToken"/>によるキャンセル要求で
+  /// キャンセルされる<see cref="CancellationTokenSource"/>を作成します。
+  /// </summary>
+  /// <param name="cancellationToken">「応答待ちタイマー2」とリンクさせるキャンセル要求を表す<see cref="CancellationToken"/>。</param>
+  /// <returns>
+  /// 作成された<see cref="CancellationTokenSource"/>を含む<see cref="Tuple{T1,T2}"/>。
+  /// <see cref="Tuple{T1,T2}"/>の1つ目の要素には、<see cref="TimeoutWaitingResponse2"/>の時間経過でキャンセルされる<see cref="CancellationTokenSource"/>が設定されます。
+  /// <see cref="Tuple{T1,T2}"/>の2つ目の要素には、<see cref="TimeoutWaitingResponse2"/>の時間経過、もしくは<paramref name="cancellationToken"/>による
+  /// キャンセル要求のいずれかでキャンセルされる<see cref="CancellationTokenSource"/>が設定されます。
+  /// </returns>
+  /// <seealso cref="TimeoutWaitingResponse2"/>
+  public (
+    CancellationTokenSource TimeoutTokenSource,
+    CancellationTokenSource TimeoutOrCancellationRequestTokenSource
+  )
+  CreateTimeoutWaitingResponse2CancellationTokenSource(CancellationToken cancellationToken)
+    => CreateTimeoutCancellationTokenSource(TimeoutWaitingResponse2, cancellationToken);
+
   /// <summary>
   /// 下位層でのネットワーク接続確立を契機とする、スマートメーターからの自発的なインスタンスリスト通知を待機します。
   /// </summary>
@@ -405,47 +458,49 @@ partial class HemsController {
 
     async ValueTask<LowVoltageSmartElectricEnergyMeter?> WaitForRouteBSmartMeterProactiveNotificationAsyncCore()
     {
-      using var ctsTimeout = new CancellationTokenSource(TimeoutWaitingProactiveNotification);
-      using var ctsTimeoutOrCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-        ctsTimeout.Token,
-        cancellationToken
+      var (ctsTimeout, ctsTimeoutOrCancellationRequest) = CreateTimeoutCancellationTokenSource(
+        timeoutDuration: TimeoutWaitingProactiveNotification,
+        cancellationToken: cancellationToken
       );
 
-      Logger?.LogDebug("Waiting for instance list notification ...");
+      using (ctsTimeout)
+      using (ctsTimeoutOrCancellationRequest) {
+        Logger?.LogDebug("Waiting for instance list notification ...");
 
-      var tcs = new TaskCompletionSource<LowVoltageSmartElectricEnergyMeter>();
-
-      try {
-        void HandleInstanceListUpdated(object? sender, EchonetNode node)
-        {
-          if (node.Address.Equals(smartMeterNodeAddress)) {
-            var lvsm = node.Devices.OfType<LowVoltageSmartElectricEnergyMeter>().FirstOrDefault();
-
-            if (lvsm is not null)
-              tcs.SetResult(lvsm);
-          }
-        }
+        var tcs = new TaskCompletionSource<LowVoltageSmartElectricEnergyMeter>();
 
         try {
-          using var ctr = cancellationToken.Register(() => _ = tcs.TrySetCanceled(ctsTimeoutOrCancellation.Token));
+          void HandleInstanceListUpdated(object? sender, EchonetNode node)
+          {
+            if (node.Address.Equals(smartMeterNodeAddress)) {
+              var lvsm = node.Devices.OfType<LowVoltageSmartElectricEnergyMeter>().FirstOrDefault();
 
-          client.InstanceListUpdated += HandleInstanceListUpdated;
+              if (lvsm is not null)
+                tcs.SetResult(lvsm);
+            }
+          }
 
-          // イベントの発生およびコールバックの処理を待機する
-          return await tcs.Task.ConfigureAwait(false);
-        }
-        finally {
-          client.InstanceListUpdated -= HandleInstanceListUpdated;
-        }
-      }
-      catch (OperationCanceledException) {
-        if (ctsTimeout.IsCancellationRequested) {
-          Logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
-          return null; // expected timeout
-        }
+          try {
+            using var ctr = cancellationToken.Register(() => _ = tcs.TrySetCanceled(ctsTimeoutOrCancellationRequest.Token));
 
-        throw;
-      }
+            client.InstanceListUpdated += HandleInstanceListUpdated;
+
+            // イベントの発生およびコールバックの処理を待機する
+            return await tcs.Task.ConfigureAwait(false);
+          }
+          finally {
+            client.InstanceListUpdated -= HandleInstanceListUpdated;
+          }
+        }
+        catch (OperationCanceledException) {
+          if (ctsTimeout.IsCancellationRequested) {
+            Logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
+            return null; // expected timeout
+          }
+
+          throw;
+        }
+      } // using
     }
   }
 
@@ -474,54 +529,52 @@ partial class HemsController {
     // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
     // > ２．４．２ 応答待ちタイマー
     // OPC=1 (0xD5 インスタンスリスト通知)なので、応答待ちタイマー1を使用する
-    using var ctsResponseWaitTimer1 = new CancellationTokenSource(
-      TimeoutWaitingResponse1
+    var (ctsTimeout, ctsTimeoutOrCancellationRequest) = CreateTimeoutWaitingResponse1CancellationTokenSource(
+      cancellationToken: cancellationToken
     );
 
-    using var ctsTimeoutOrCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-      ctsResponseWaitTimer1.Token,
-      cancellationToken
-    );
+    using (ctsTimeout)
+    using (ctsTimeoutOrCancellationRequest) {
+      try {
+        Logger?.LogDebug("Requesting for instance list notification.");
 
-    try {
-      Logger?.LogDebug("Requesting for instance list notification.");
-
-      var instanceListState = new InstanceListNotificationState();
+        var instanceListState = new InstanceListNotificationState();
 
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 #pragma warning disable CS8602
 #endif
-      await client.RequestNotifyInstanceListAsync(
-        destinationNodeAddress: smartMeterNodeAddress,
-        onInstanceListUpdated: (node, state) => {
-          if (!node.Address.Equals(smartMeterNodeAddress))
-            return false;
+        await client.RequestNotifyInstanceListAsync(
+          destinationNodeAddress: smartMeterNodeAddress,
+          onInstanceListUpdated: (node, state) => {
+            if (!node.Address.Equals(smartMeterNodeAddress))
+              return false;
 
-          foreach (var device in node.Devices) {
-            if (device is LowVoltageSmartElectricEnergyMeter lvsm) {
-              state.SmartMeter = lvsm;
+            foreach (var device in node.Devices) {
+              if (device is LowVoltageSmartElectricEnergyMeter lvsm) {
+                state.SmartMeter = lvsm;
 
-              return true; // done, stop awaiting
+                return true; // done, stop awaiting
+              }
             }
-          }
 
-          return false;
-        },
-        cancellationToken: ctsTimeoutOrCancellation.Token,
-        state: instanceListState
-      ).ConfigureAwait(false);
+            return false;
+          },
+          cancellationToken: ctsTimeoutOrCancellationRequest.Token,
+          state: instanceListState
+        ).ConfigureAwait(false);
 #pragma warning restore CS8602
 
-      return instanceListState.SmartMeter;
-    }
-    catch (OperationCanceledException) {
-      if (ctsResponseWaitTimer1.IsCancellationRequested) {
-        Logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
-        return null; // expected timeout
+        return instanceListState.SmartMeter;
       }
+      catch (OperationCanceledException) {
+        if (ctsTimeout.IsCancellationRequested) {
+          Logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
+          return null; // expected timeout
+        }
 
-      throw;
-    }
+        throw;
+      }
+    } // using
   }
 
   /// <summary>
@@ -543,50 +596,50 @@ partial class HemsController {
     // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
     // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
     // > 図 ３-２ ECHONET Lite 属性情報取得シーケンス例
-    using var ctsResponseWaitTimer2 = new CancellationTokenSource(TimeoutWaitingResponse2);
-
-    using var ctsTimeoutOrCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-      ctsResponseWaitTimer2.Token,
-      cancellationToken
+    var (ctsTimeout, ctsTimeoutOrCancellationRequest) = CreateTimeoutWaitingResponse2CancellationTokenSource(
+      cancellationToken: cancellationToken
     );
 
-    // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
-    // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
-    // > ３．１．２ ECHONET Lite 属性情報取得
-    // > (1) 対象プロパティ（低圧スマート電力量メータオブジェクト）
-    // > ・ 0x82：規格 Version 情報
-    // > ・ 0x9D：状変アナウンスプロパティマップ
-    // > ・ 0x9E：Set プロパティマップ
-    // > ・ 0x9F：Get プロパティマップ
-    try {
+    using (ctsTimeout)
+    using (ctsTimeoutOrCancellationRequest) {
+      // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
+      // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
+      // > ３．１．２ ECHONET Lite 属性情報取得
+      // > (1) 対象プロパティ（低圧スマート電力量メータオブジェクト）
+      // > ・ 0x82：規格 Version 情報
+      // > ・ 0x9D：状変アナウンスプロパティマップ
+      // > ・ 0x9E：Set プロパティマップ
+      // > ・ 0x9F：Get プロパティマップ
+      try {
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 #pragma warning disable CS8602, CS8604
 #endif
-      _ = await client.AcquirePropertyMapsAsync(
-        device: smartMeterObject,
-        extraPropertyCodes: [smartMeterObject.Protocol.PropertyCode],
-        cancellationToken: cancellationToken
-      ).ConfigureAwait(false);
+        _ = await client.AcquirePropertyMapsAsync(
+          device: smartMeterObject,
+          extraPropertyCodes: [smartMeterObject.Protocol.PropertyCode],
+          cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
 #pragma warning restore CS8602, CS8604
 
-      Logger?.LogDebug("Listing the implemented properties of the found smart meter.");
+        Logger?.LogDebug("Listing the implemented properties of the found smart meter.");
 
-      foreach (var prop in smartMeterObject.Properties.Values.OrderBy(static p => p.Code)) {
-        Logger?.LogDebug(
-          "EPC 0x{Code:X}{Get}{Set}{Anno}",
-          prop.Code,
-          prop.CanGet ? " GET" : string.Empty,
-          prop.CanSet ? " SET" : string.Empty,
-          prop.CanAnnounceStatusChange ? " ANNO" : string.Empty
-        );
+        foreach (var prop in smartMeterObject.Properties.Values.OrderBy(static p => p.Code)) {
+          Logger?.LogDebug(
+            "EPC 0x{Code:X}{Get}{Set}{Anno}",
+            prop.Code,
+            prop.CanGet ? " GET" : string.Empty,
+            prop.CanSet ? " SET" : string.Empty,
+            prop.CanAnnounceStatusChange ? " ANNO" : string.Empty
+          );
+        }
       }
-    }
-    catch (OperationCanceledException ex) {
-      if (ctsResponseWaitTimer2.IsCancellationRequested)
-        throw new TimeoutException("Timed out while acquiring ECHONET Lite attribute information.", ex);
+      catch (OperationCanceledException ex) {
+        if (ctsTimeout.IsCancellationRequested)
+          throw new TimeoutException("Timed out while acquiring ECHONET Lite attribute information.", ex);
 
-      throw;
-    }
+        throw;
+      }
+    } // using
   }
 
   /// <summary>
@@ -608,58 +661,58 @@ partial class HemsController {
     // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
     // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
     // > 図 ３-３ スマート電力量メータ属性情報等取得シーケンス例
-    using var ctsResponseWaitTimer2 = new CancellationTokenSource(TimeoutWaitingResponse2);
-
-    using var ctsTimeoutOrCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-      ctsResponseWaitTimer2.Token,
-      cancellationToken
+    var (ctsTimeout, ctsTimeoutOrCancellationRequest) = CreateTimeoutWaitingResponse2CancellationTokenSource(
+      cancellationToken: cancellationToken
     );
 
-    try {
-      var getResponse = await SmartMeter.ReadPropertiesAsync(
-        readPropertyCodes: [
-          // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
-          // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
-          // > ３．１．３ スマート電力量メータ属性情報等取得
-          // > (1) 対象プロパティ（低圧スマート電力量メータオブジェクト）
-          // > ・ 0x8D：製造番号［オプションプロパティ］
-          // > ・ 0xD3：係数［オプションプロパティ］
-          // > ・ 0xD7：積算電力量有効桁数
-          // > ・ 0xE1：積算電力量単位（正方向、逆方向計測値）
-          // > ・ 0xEA：定時積算電力量計測値（正方向計測値）
-          // > ・ 0xEB：定時積算電力量計測値（逆方向計測値）［逆方向計測機能がある場合］
-          SmartMeter.SerialNumber.PropertyCode,
-          SmartMeter.Coefficient.PropertyCode,
-          SmartMeter.NumberOfEffectiveDigitsCumulativeElectricEnergy.PropertyCode,
-          SmartMeter.UnitForCumulativeElectricEnergy.PropertyCode,
-          SmartMeter.NormalDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode,
-          SmartMeter.ReverseDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode,
-        ],
-        sourceObject: controllerObject!,
-        cancellationToken: ctsTimeoutOrCancellation.Token
-      ).ConfigureAwait(false);
+    using (ctsTimeout)
+    using (ctsTimeoutOrCancellationRequest) {
+      try {
+        var getResponse = await SmartMeter.ReadPropertiesAsync(
+          readPropertyCodes: [
+            // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
+            // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
+            // > ３．１．３ スマート電力量メータ属性情報等取得
+            // > (1) 対象プロパティ（低圧スマート電力量メータオブジェクト）
+            // > ・ 0x8D：製造番号［オプションプロパティ］
+            // > ・ 0xD3：係数［オプションプロパティ］
+            // > ・ 0xD7：積算電力量有効桁数
+            // > ・ 0xE1：積算電力量単位（正方向、逆方向計測値）
+            // > ・ 0xEA：定時積算電力量計測値（正方向計測値）
+            // > ・ 0xEB：定時積算電力量計測値（逆方向計測値）［逆方向計測機能がある場合］
+            SmartMeter.SerialNumber.PropertyCode,
+            SmartMeter.Coefficient.PropertyCode,
+            SmartMeter.NumberOfEffectiveDigitsCumulativeElectricEnergy.PropertyCode,
+            SmartMeter.UnitForCumulativeElectricEnergy.PropertyCode,
+            SmartMeter.NormalDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode,
+            SmartMeter.ReverseDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode,
+          ],
+          sourceObject: controllerObject!,
+          cancellationToken: ctsTimeoutOrCancellationRequest.Token
+        ).ConfigureAwait(false);
 
-      Logger?.LogDebug("Response: {Response}", getResponse);
+        Logger?.LogDebug("Response: {Response}", getResponse);
 
-      if (!getResponse.IsSuccess) {
-        // TODO: exception type
-        throw new InvalidOperationException(
-          message: $"Could not get the property values." // $"Could not get the property values ({string.Join(", ", properties.Select(prop => $"0x{prop.EPC:X2}"))})."
-        );
-      }
+        if (!getResponse.IsSuccess) {
+          // TODO: exception type
+          throw new InvalidOperationException(
+            message: $"Could not get the property values." // $"Could not get the property values ({string.Join(", ", properties.Select(prop => $"0x{prop.EPC:X2}"))})."
+          );
+        }
 
 #if false
-      foreach (var prop in properties) {
-        Logger?.LogDebug("EPC: 0x{Code:X2}, PDC: {PDC}", prop.EPC, prop.PDC);
-      }
+        foreach (var prop in properties) {
+          Logger?.LogDebug("EPC: 0x{Code:X2}, PDC: {PDC}", prop.EPC, prop.PDC);
+        }
 #endif
-    }
-    catch (OperationCanceledException ex) {
-      if (ctsResponseWaitTimer2.IsCancellationRequested)
-        throw new TimeoutException("Timed out while acquiring smart meter attribute information.", ex);
+      }
+      catch (OperationCanceledException ex) {
+        if (ctsTimeout.IsCancellationRequested)
+          throw new TimeoutException("Timed out while acquiring smart meter attribute information.", ex);
 
-      throw;
-    }
+        throw;
+      }
+    } // using
 
     Logger?.LogDebug(
       "Coefficient for converting electric energy (0xD3): {Value}",
