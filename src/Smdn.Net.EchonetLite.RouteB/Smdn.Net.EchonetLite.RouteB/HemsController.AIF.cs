@@ -371,58 +371,118 @@ partial class HemsController {
 #pragma warning restore CS8602
   }
 
-  private static (
-    CancellationTokenSource TimeoutTokenSource,
-    CancellationTokenSource TimeoutOrCancellationRequestTokenSource
+  private static async ValueTask<TResult?> RunWithTimeoutAsync<TResult>(
+    TimeSpan timeout,
+    Func<CancellationToken, ValueTask<TResult?>> asyncAction,
+    Func<TResult?>? getResultForTimeout,
+    string? messageForTimeoutException,
+    CancellationToken cancellationToken
   )
-  CreateTimeoutCancellationTokenSource(TimeSpan timeoutDuration, CancellationToken cancellationToken)
   {
-    var ctsTimeout = new CancellationTokenSource(delay: timeoutDuration);
-    var ctsTimeoutOrCancellationRequest = CancellationTokenSource.CreateLinkedTokenSource(
+    using var ctsTimeout = new CancellationTokenSource(delay: timeout);
+    using var ctsTimeoutOrCancellationRequest = CancellationTokenSource.CreateLinkedTokenSource(
       ctsTimeout.Token,
       cancellationToken
     );
 
-    return (ctsTimeout, ctsTimeoutOrCancellationRequest);
+    try {
+      return await asyncAction(
+        ctsTimeoutOrCancellationRequest.Token
+      ).ConfigureAwait(false);
+    }
+    catch (OperationCanceledException ex) {
+      if (ctsTimeout.IsCancellationRequested) {
+        if (getResultForTimeout is not null) {
+          return getResultForTimeout();
+        }
+        else {
+          throw new TimeoutException(
+            string.IsNullOrEmpty(messageForTimeoutException)
+              ? $"The operation did not complete within the specified time period {timeout}."
+              : messageForTimeoutException,
+            ex
+          );
+        }
+      }
+
+      throw;
+    }
   }
 
   /// <summary>
-  /// 「応答待ちタイマー1」として定義される時間でキャンセルされるか、指定された<see cref="CancellationToken"/>によるキャンセル要求で
-  /// キャンセルされる<see cref="CancellationTokenSource"/>を作成します。
+  /// 「応答待ちタイマー1」として定義される時間でタイムアウトする操作を実行します。
   /// </summary>
-  /// <param name="cancellationToken">「応答待ちタイマー1」とリンクさせるキャンセル要求を表す<see cref="CancellationToken"/>。</param>
-  /// <returns>
-  /// 作成された<see cref="CancellationTokenSource"/>を含む<see cref="Tuple{T1,T2}"/>。
-  /// <see cref="Tuple{T1,T2}"/>の1つ目の要素には、<see cref="TimeoutWaitingResponse1"/>の時間経過でキャンセルされる<see cref="CancellationTokenSource"/>が設定されます。
-  /// <see cref="Tuple{T1,T2}"/>の2つ目の要素には、<see cref="TimeoutWaitingResponse1"/>の時間経過、もしくは<paramref name="cancellationToken"/>による
-  /// キャンセル要求のいずれかでキャンセルされる<see cref="CancellationTokenSource"/>が設定されます。
-  /// </returns>
+  /// <typeparam name="TResult"><paramref name="asyncAction"/>の実行結果を表す型。</typeparam>
+  /// <param name="asyncAction">「応答待ちタイマー1」として定義される時間でタイムアウトする、非同期で実行される操作。</param>
+  /// <param name="messageForTimeoutException"><see cref="TimeoutException"/>がスローされる場合に、<see cref="Exception.Message"/>として使用されるメッセージ。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>非同期の操作を表す<see cref="ValueTask{TResult}"/>。</returns>
+  /// <exception cref="TimeoutException">
+  /// <paramref name="asyncAction"/>の操作が実行が、<see cref="TimeoutWaitingResponse1"/>で指定される時間内に完了しませんでした。
+  /// </exception>
   /// <seealso cref="TimeoutWaitingResponse1"/>
-  public (
-    CancellationTokenSource TimeoutTokenSource,
-    CancellationTokenSource TimeoutOrCancellationRequestTokenSource
+  public ValueTask<TResult?> RunWithResponseWaitTimer1Async<TResult>(
+    Func<CancellationToken, ValueTask<TResult?>> asyncAction,
+    string? messageForTimeoutException = null,
+    CancellationToken cancellationToken = default
   )
-  CreateTimeoutWaitingResponse1CancellationTokenSource(CancellationToken cancellationToken)
-    => CreateTimeoutCancellationTokenSource(TimeoutWaitingResponse1, cancellationToken);
+    => RunWithTimeoutAsync(
+      timeout: TimeoutWaitingResponse1,
+      asyncAction: asyncAction ?? throw new ArgumentNullException(nameof(asyncAction)),
+      getResultForTimeout: null,
+      messageForTimeoutException: messageForTimeoutException,
+      cancellationToken: cancellationToken
+    );
 
   /// <summary>
-  /// 「応答待ちタイマー2」として定義される時間でキャンセルされるか、指定された<see cref="CancellationToken"/>によるキャンセル要求で
-  /// キャンセルされる<see cref="CancellationTokenSource"/>を作成します。
+  /// 「応答待ちタイマー1」として定義される時間でタイムアウトする操作を実行します。
   /// </summary>
-  /// <param name="cancellationToken">「応答待ちタイマー2」とリンクさせるキャンセル要求を表す<see cref="CancellationToken"/>。</param>
-  /// <returns>
-  /// 作成された<see cref="CancellationTokenSource"/>を含む<see cref="Tuple{T1,T2}"/>。
-  /// <see cref="Tuple{T1,T2}"/>の1つ目の要素には、<see cref="TimeoutWaitingResponse2"/>の時間経過でキャンセルされる<see cref="CancellationTokenSource"/>が設定されます。
-  /// <see cref="Tuple{T1,T2}"/>の2つ目の要素には、<see cref="TimeoutWaitingResponse2"/>の時間経過、もしくは<paramref name="cancellationToken"/>による
-  /// キャンセル要求のいずれかでキャンセルされる<see cref="CancellationTokenSource"/>が設定されます。
-  /// </returns>
-  /// <seealso cref="TimeoutWaitingResponse2"/>
-  public (
-    CancellationTokenSource TimeoutTokenSource,
-    CancellationTokenSource TimeoutOrCancellationRequestTokenSource
+  /// <typeparam name="TResult"><paramref name="asyncAction"/>の実行結果を表す型。</typeparam>
+  /// <param name="asyncAction">「応答待ちタイマー1」として定義される時間でタイムアウトする、非同期で実行される操作。</param>
+  /// <param name="resultForTimeout">操作がタイムアウトした場合に、操作の実行結果として返される値を指定します。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>非同期の操作を表す<see cref="ValueTask{TResult}"/>。</returns>
+  /// <remarks>
+  /// このバージョンでは、非同期の操作がタイムアウトした場合でも、<see cref="TimeoutException"/>はスローされません。
+  /// </remarks>
+  /// <seealso cref="TimeoutWaitingResponse1"/>
+  public ValueTask<TResult?> RunWithResponseWaitTimer1Async<TResult>(
+    Func<CancellationToken, ValueTask<TResult?>> asyncAction,
+    TResult? resultForTimeout,
+    CancellationToken cancellationToken = default
   )
-  CreateTimeoutWaitingResponse2CancellationTokenSource(CancellationToken cancellationToken)
-    => CreateTimeoutCancellationTokenSource(TimeoutWaitingResponse2, cancellationToken);
+    => RunWithTimeoutAsync(
+      timeout: TimeoutWaitingResponse1,
+      asyncAction: asyncAction ?? throw new ArgumentNullException(nameof(asyncAction)),
+      getResultForTimeout: () => resultForTimeout,
+      messageForTimeoutException: null,
+      cancellationToken: cancellationToken
+    );
+
+  /// <summary>
+  /// 「応答待ちタイマー1」として定義される時間でタイムアウトする操作を実行します。
+  /// </summary>
+  /// <typeparam name="TResult"><paramref name="asyncAction"/>の実行結果を表す型。</typeparam>
+  /// <param name="asyncAction">「応答待ちタイマー1」として定義される時間でタイムアウトする、非同期で実行される操作。</param>
+  /// <param name="messageForTimeoutException"><see cref="TimeoutException"/>がスローされる場合に、<see cref="Exception.Message"/>として使用されるメッセージ。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>非同期の操作を表す<see cref="ValueTask{TResult}"/>。</returns>
+  /// <exception cref="TimeoutException">
+  /// <paramref name="asyncAction"/>の操作が実行が、<see cref="TimeoutWaitingResponse2"/>で指定される時間内に完了しませんでした。
+  /// </exception>
+  /// <seealso cref="TimeoutWaitingResponse2"/>
+  public ValueTask<TResult?> RunWithResponseWaitTimer2Async<TResult>(
+    Func<CancellationToken, ValueTask<TResult?>> asyncAction,
+    string? messageForTimeoutException = null,
+    CancellationToken cancellationToken = default
+  )
+    => RunWithTimeoutAsync(
+      timeout: TimeoutWaitingResponse2,
+      asyncAction: asyncAction ?? throw new ArgumentNullException(nameof(asyncAction)),
+      getResultForTimeout: null,
+      messageForTimeoutException: messageForTimeoutException,
+      cancellationToken: cancellationToken
+    );
 
   /// <summary>
   /// 下位層でのネットワーク接続確立を契機とする、スマートメーターからの自発的なインスタンスリスト通知を待機します。
@@ -452,58 +512,42 @@ partial class HemsController {
       ?.FirstOrDefault();
 #pragma warning restore CS8602
 
-    return lvsm is null
-      ? WaitForRouteBSmartMeterProactiveNotificationAsyncCore()
-      : new(lvsm);
+    if (lvsm is not null)
+      return new(lvsm);
 
-    async ValueTask<LowVoltageSmartElectricEnergyMeter?> WaitForRouteBSmartMeterProactiveNotificationAsyncCore()
-    {
-      var (ctsTimeout, ctsTimeoutOrCancellationRequest) = CreateTimeoutCancellationTokenSource(
-        timeoutDuration: TimeoutWaitingProactiveNotification,
-        cancellationToken: cancellationToken
-      );
+    Logger?.LogDebug("Waiting for instance list notification ...");
 
-      using (ctsTimeout)
-      using (ctsTimeoutOrCancellationRequest) {
-        Logger?.LogDebug("Waiting for instance list notification ...");
-
+    return RunWithTimeoutAsync(
+      timeout: TimeoutWaitingProactiveNotification,
+      asyncAction: async ct => {
         var tcs = new TaskCompletionSource<LowVoltageSmartElectricEnergyMeter>();
 
+        void HandleInstanceListUpdated(object? sender, EchonetNode node)
+        {
+          if (node.Address.Equals(smartMeterNodeAddress)) {
+            var lvsm = node.Devices.OfType<LowVoltageSmartElectricEnergyMeter>().FirstOrDefault();
+
+            if (lvsm is not null)
+              tcs.SetResult(lvsm);
+          }
+        }
+
         try {
-          void HandleInstanceListUpdated(object? sender, EchonetNode node)
-          {
-            if (node.Address.Equals(smartMeterNodeAddress)) {
-              var lvsm = node.Devices.OfType<LowVoltageSmartElectricEnergyMeter>().FirstOrDefault();
+          using var ctr = ct.Register(() => _ = tcs.TrySetCanceled(ct));
 
-              if (lvsm is not null)
-                tcs.SetResult(lvsm);
-            }
-          }
+          client.InstanceListUpdated += HandleInstanceListUpdated;
 
-          try {
-            using var ctr = ctsTimeoutOrCancellationRequest.Token.Register(
-              () => _ = tcs.TrySetCanceled(ctsTimeoutOrCancellationRequest.Token)
-            );
-
-            client.InstanceListUpdated += HandleInstanceListUpdated;
-
-            // イベントの発生およびコールバックの処理を待機する
-            return await tcs.Task.ConfigureAwait(false);
-          }
-          finally {
-            client.InstanceListUpdated -= HandleInstanceListUpdated;
-          }
+          // イベントの発生およびコールバックの処理を待機する
+          return await tcs.Task.ConfigureAwait(false);
         }
-        catch (OperationCanceledException) {
-          if (ctsTimeout.IsCancellationRequested) {
-            Logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
-            return null; // expected timeout
-          }
-
-          throw;
+        finally {
+          client.InstanceListUpdated -= HandleInstanceListUpdated;
         }
-      } // using
-    }
+      },
+      getResultForTimeout: static () => null, // expected timeout
+      messageForTimeoutException: null, // not used
+      cancellationToken: cancellationToken
+    );
   }
 
   private class InstanceListNotificationState {
@@ -520,7 +564,7 @@ partial class HemsController {
   /// 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
   /// ３．１．１ ECHONET Lite ノード立ち上げ処理
   /// </seealso>
-  private async ValueTask<LowVoltageSmartElectricEnergyMeter?> RequestRouteBSmartMeterNotifyInstanceListAsync(
+  private ValueTask<LowVoltageSmartElectricEnergyMeter?> RequestRouteBSmartMeterNotifyInstanceListAsync(
     IPAddress smartMeterNodeAddress,
     CancellationToken cancellationToken
   )
@@ -531,15 +575,10 @@ partial class HemsController {
     // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
     // > ２．４．２ 応答待ちタイマー
     // OPC=1 (0xD5 インスタンスリスト通知)なので、応答待ちタイマー1を使用する
-    var (ctsTimeout, ctsTimeoutOrCancellationRequest) = CreateTimeoutWaitingResponse1CancellationTokenSource(
-      cancellationToken: cancellationToken
-    );
+    Logger?.LogDebug("Requesting for instance list notification.");
 
-    using (ctsTimeout)
-    using (ctsTimeoutOrCancellationRequest) {
-      try {
-        Logger?.LogDebug("Requesting for instance list notification.");
-
+    return RunWithResponseWaitTimer1Async(
+      asyncAction: async ct => {
         var instanceListState = new InstanceListNotificationState();
 
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
@@ -561,22 +600,16 @@ partial class HemsController {
 
             return false;
           },
-          cancellationToken: ctsTimeoutOrCancellationRequest.Token,
+          cancellationToken: ct,
           state: instanceListState
         ).ConfigureAwait(false);
 #pragma warning restore CS8602
 
         return instanceListState.SmartMeter;
-      }
-      catch (OperationCanceledException) {
-        if (ctsTimeout.IsCancellationRequested) {
-          Logger?.LogDebug("{Operation} timed out.", nameof(WaitForRouteBSmartMeterProactiveNotificationAsync));
-          return null; // expected timeout
-        }
-
-        throw;
-      }
-    } // using
+      },
+      resultForTimeout: null,
+      cancellationToken: cancellationToken
+    );
   }
 
   /// <summary>
@@ -598,28 +631,23 @@ partial class HemsController {
     // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
     // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
     // > 図 ３-２ ECHONET Lite 属性情報取得シーケンス例
-    var (ctsTimeout, ctsTimeoutOrCancellationRequest) = CreateTimeoutWaitingResponse2CancellationTokenSource(
-      cancellationToken: cancellationToken
-    );
-
-    using (ctsTimeout)
-    using (ctsTimeoutOrCancellationRequest) {
-      // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
-      // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
-      // > ３．１．２ ECHONET Lite 属性情報取得
-      // > (1) 対象プロパティ（低圧スマート電力量メータオブジェクト）
-      // > ・ 0x82：規格 Version 情報
-      // > ・ 0x9D：状変アナウンスプロパティマップ
-      // > ・ 0x9E：Set プロパティマップ
-      // > ・ 0x9F：Get プロパティマップ
-      try {
+    _ = await RunWithResponseWaitTimer2Async(
+      asyncAction: async ct => {
+        // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
+        // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
+        // > ３．１．２ ECHONET Lite 属性情報取得
+        // > (1) 対象プロパティ（低圧スマート電力量メータオブジェクト）
+        // > ・ 0x82：規格 Version 情報
+        // > ・ 0x9D：状変アナウンスプロパティマップ
+        // > ・ 0x9E：Set プロパティマップ
+        // > ・ 0x9F：Get プロパティマップ
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 #pragma warning disable CS8602, CS8604
 #endif
-        _ = await client.AcquirePropertyMapsAsync(
+        var ret = await client.AcquirePropertyMapsAsync(
           device: smartMeterObject,
           extraPropertyCodes: [smartMeterObject.Protocol.PropertyCode],
-          cancellationToken: ctsTimeoutOrCancellationRequest.Token
+          cancellationToken: ct
         ).ConfigureAwait(false);
 #pragma warning restore CS8602, CS8604
 
@@ -634,14 +662,12 @@ partial class HemsController {
             prop.CanAnnounceStatusChange ? " ANNO" : string.Empty
           );
         }
-      }
-      catch (OperationCanceledException ex) {
-        if (ctsTimeout.IsCancellationRequested)
-          throw new TimeoutException("Timed out while acquiring ECHONET Lite attribute information.", ex);
 
-        throw;
-      }
-    } // using
+        return ret;
+      },
+      messageForTimeoutException: "Timed out while acquiring ECHONET Lite attribute information.",
+      cancellationToken: cancellationToken
+    ).ConfigureAwait(false);
   }
 
   /// <summary>
@@ -663,13 +689,8 @@ partial class HemsController {
     // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
     // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
     // > 図 ３-３ スマート電力量メータ属性情報等取得シーケンス例
-    var (ctsTimeout, ctsTimeoutOrCancellationRequest) = CreateTimeoutWaitingResponse2CancellationTokenSource(
-      cancellationToken: cancellationToken
-    );
-
-    using (ctsTimeout)
-    using (ctsTimeoutOrCancellationRequest) {
-      try {
+    _ = await RunWithResponseWaitTimer2Async(
+      asyncAction: async ct => {
         var getResponse = await SmartMeter.ReadPropertiesAsync(
           readPropertyCodes: [
             // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
@@ -690,7 +711,7 @@ partial class HemsController {
             SmartMeter.ReverseDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode,
           ],
           sourceObject: controllerObject!,
-          cancellationToken: ctsTimeoutOrCancellationRequest.Token
+          cancellationToken: ct
         ).ConfigureAwait(false);
 
         Logger?.LogDebug("Response: {Response}", getResponse);
@@ -707,14 +728,12 @@ partial class HemsController {
           Logger?.LogDebug("EPC: 0x{Code:X2}, PDC: {PDC}", prop.EPC, prop.PDC);
         }
 #endif
-      }
-      catch (OperationCanceledException ex) {
-        if (ctsTimeout.IsCancellationRequested)
-          throw new TimeoutException("Timed out while acquiring smart meter attribute information.", ex);
 
-        throw;
-      }
-    } // using
+        return getResponse;
+      },
+      messageForTimeoutException: "Timed out while acquiring smart meter attribute information.",
+      cancellationToken: cancellationToken
+    ).ConfigureAwait(false);
 
     Logger?.LogDebug(
       "Coefficient for converting electric energy (0xD3): {Value}",
