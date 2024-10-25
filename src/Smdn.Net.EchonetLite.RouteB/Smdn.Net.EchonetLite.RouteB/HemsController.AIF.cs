@@ -481,7 +481,9 @@ partial class HemsController {
           }
 
           try {
-            using var ctr = cancellationToken.Register(() => _ = tcs.TrySetCanceled(ctsTimeoutOrCancellationRequest.Token));
+            using var ctr = ctsTimeoutOrCancellationRequest.Token.Register(
+              () => _ = tcs.TrySetCanceled(ctsTimeoutOrCancellationRequest.Token)
+            );
 
             client.InstanceListUpdated += HandleInstanceListUpdated;
 
@@ -617,7 +619,7 @@ partial class HemsController {
         _ = await client.AcquirePropertyMapsAsync(
           device: smartMeterObject,
           extraPropertyCodes: [smartMeterObject.Protocol.PropertyCode],
-          cancellationToken: cancellationToken
+          cancellationToken: ctsTimeoutOrCancellationRequest.Token
         ).ConfigureAwait(false);
 #pragma warning restore CS8602, CS8604
 
