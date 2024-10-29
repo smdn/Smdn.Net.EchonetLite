@@ -267,6 +267,9 @@ partial class HemsController {
         loggerFactoryForEchonetClient
       );
 
+      // share same ISynchronizeInvoke
+      client.SynchronizingObject = synchronizingObject;
+
       Logger?.LogInformation("Finding smart meter node and device object (this may take a few seconds) ...");
 
       using (var scope = Logger?.BeginScope("Finding smart meter")) {

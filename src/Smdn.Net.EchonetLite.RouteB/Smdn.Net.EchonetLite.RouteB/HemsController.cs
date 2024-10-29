@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.ComponentModel;
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE || SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -36,6 +37,28 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
   private readonly IRouteBCredentialProvider credentialProvider;
   private readonly ILoggerFactory? loggerFactoryForEchonetClient;
   private RouteBEchonetLiteHandler? echonetLiteHandler;
+
+  private ISynchronizeInvoke? synchronizingObject;
+
+  /// <summary>
+  /// イベントの結果として発行されるイベントハンドラー呼び出しをマーシャリングするために使用する<see cref="ISynchronizeInvoke"/>オブジェクトを取得または設定します。
+  /// </summary>
+  public ISynchronizeInvoke? SynchronizingObject {
+    get {
+      ThrowIfDisposed();
+
+      return synchronizingObject;
+    }
+    set {
+      ThrowIfDisposed();
+
+      synchronizingObject = value;
+
+      // share same ISynchronizeInvoke
+      if (client is not null)
+        client.SynchronizingObject = value;
+    }
+  }
 
   protected ILogger? Logger { get; }
 
