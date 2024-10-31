@@ -24,18 +24,18 @@ partial class EchonetClient
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForResponseServiceCode = new(nameof(ResiliencePropertyKeyForResponseServiceCode));
 
-  private static readonly Action<ILogger, IPAddress, ushort, ESV, EOJ, EOJ, Exception?>
-  LogExceptionAtFormat1MessageHandler = LoggerMessage.Define<IPAddress, ushort, ESV, EOJ, EOJ>(
+  private static readonly Action<ILogger, IPAddress, ushort, Format1Message, Exception?>
+  LogExceptionAtFormat1MessageHandler = LoggerMessage.Define<IPAddress, ushort, Format1Message>(
     LogLevel.Error,
     eventId: default, // TODO
-    formatString: "An error occured while handling received message (Address: {Address}, TID: {TID:X4}, ESV: {ESV}, SEOJ: {SEOJ}, DEOJ: {DEOJ})"
+    formatString: "An error occured while handling received message (Address: {Address}, TID: {TID:X4}, Message: {Message})"
   );
 
-  private static readonly Action<ILogger, IPAddress, ushort, ESV, EOJ, EOJ, Exception?>
-  LogUnmanagedTransactionAtFormat1MessageHandler = LoggerMessage.Define<IPAddress, ushort, ESV, EOJ, EOJ>(
+  private static readonly Action<ILogger, IPAddress, ushort, Format1Message, Exception?>
+  LogUnmanagedTransactionAtFormat1MessageHandler = LoggerMessage.Define<IPAddress, ushort, Format1Message>(
     LogLevel.Warning,
     eventId: default, // TODO
-    formatString: "An unmanaged transaction (Address: {Address}, TID: {TID:X4}, ESV: {ESV}, SEOJ: {SEOJ}, DEOJ: {DEOJ})"
+    formatString: "An unmanaged transaction (Address: {Address}, TID: {TID:X4}, Message: {Message})"
   );
 
   [Obsolete("call LogHandlingServiceResponse")]
@@ -115,7 +115,7 @@ partial class EchonetClient
           }
           catch (Exception ex) {
             if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
             throw;
           }
@@ -131,7 +131,7 @@ partial class EchonetClient
           }
           catch (Exception ex) {
             if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
             throw;
           }
@@ -147,7 +147,7 @@ partial class EchonetClient
           }
           catch (Exception ex) {
             if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
             throw;
           }
@@ -168,7 +168,7 @@ partial class EchonetClient
           }
           catch (Exception ex) {
             if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
             throw;
           }
@@ -185,7 +185,7 @@ partial class EchonetClient
           }
           catch (Exception ex) {
             if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
             throw;
           }
@@ -200,7 +200,7 @@ partial class EchonetClient
           }
           catch (Exception ex) {
             if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, ex);
+              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
             throw;
           }
@@ -242,7 +242,7 @@ partial class EchonetClient
     if (handlerTask is null && !TryFindTransaction(tid, out _)) {
       // 要求には対応しないが、ログに記録する
       if (Logger is not null)
-        LogUnmanagedTransactionAtFormat1MessageHandler(Logger, address, tid, message.ESV, message.SEOJ, message.DEOJ, null);
+        LogUnmanagedTransactionAtFormat1MessageHandler(Logger, address, tid, message, null);
     }
   }
 #pragma warning restore CA1502
