@@ -279,18 +279,31 @@ partial class EchonetClient
       )
     );
 
-    Logger?.LogDebug("Acquired (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
+    Logger?.LogInformation(
+      "Acquired (Node: {NodeAddress}, EOJ: {EOJ}, Properties: {Properties})",
+      otherNode.Address,
+      device.EOJ,
+      string.Join(
+        ", ",
+        device
+          .Properties
+          .OrderBy(static pair => pair.Key)
+          .Select(static pair => pair.Key.ToString("X2", provider: null))
+      )
+    );
 
-    foreach (var (_, p) in device.Properties.OrderBy(static pair => pair.Key)) {
-      Logger?.LogDebug(
-        "Node: {NodeAddress} EOJ: {EOJ}, EPC: {EPC:X2}, Access Rule: {CanSet}/{CanGet}/{CanAnnounceStatusChange}",
-        otherNode.Address,
-        device.EOJ,
-        p.Code,
-        p.CanSet ? "SET" : "---",
-        p.CanGet ? "GET" : "---",
-        p.CanAnnounceStatusChange ? "ANNO" : "----"
-      );
+    if (Logger is not null && Logger.IsEnabled(LogLevel.Debug)) {
+      foreach (var (_, p) in device.Properties.OrderBy(static pair => pair.Key)) {
+        Logger.LogDebug(
+          "Node: {NodeAddress} EOJ: {EOJ}, EPC: {EPC:X2}, Access Rule: {CanSet}/{CanGet}/{CanAnnounceStatusChange}",
+          otherNode.Address,
+          device.EOJ,
+          p.Code,
+          p.CanSet ? "SET" : "---",
+          p.CanGet ? "GET" : "---",
+          p.CanAnnounceStatusChange ? "ANNO" : "----"
+        );
+      }
     }
 
     device.HasPropertyMapAcquired = true;

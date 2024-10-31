@@ -108,7 +108,7 @@ public class EchonetDevice : EchonetObject {
       var added = properties.TryAdd(code, CreateProperty(code, canSet, canGet, canAnnounceStatusChange));
 
       if (added) {
-        Node.Owner?.Logger?.LogInformation(
+        Node.Owner?.Logger?.LogDebug(
           "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
           Node.Address,
           EOJ,
@@ -139,7 +139,7 @@ public class EchonetDevice : EchonetObject {
       var p = properties.GetOrAdd(property.Code, property);
 
       if (ReferenceEquals(p, property)) {
-        Node.Owner?.Logger?.LogInformation(
+        Node.Owner?.Logger?.LogDebug(
           "New property added (Node: {NodeAddress}, EOJ: {EOJ}, EPC: {EPC:X2})",
           Node.Address,
           EOJ,
