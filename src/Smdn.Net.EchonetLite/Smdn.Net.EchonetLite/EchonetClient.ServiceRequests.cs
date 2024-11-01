@@ -129,11 +129,6 @@ partial class EchonetClient
 
     void HandleSetISNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      if (cancellationToken.IsCancellationRequested) {
-        _ = responseTCS.TrySetCanceled(cancellationToken);
-        return;
-      }
-
       if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
         return;
       if (transaction.ID != value.TID)
@@ -240,11 +235,6 @@ partial class EchonetClient
 
     void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      if (cancellationToken.IsCancellationRequested) {
-        _ = responseTCS.TrySetCanceled(cancellationToken);
-        return;
-      }
-
       if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
         return;
       if (transaction.ID != value.TID)
@@ -357,11 +347,6 @@ partial class EchonetClient
 
     void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      if (cancellationToken.IsCancellationRequested) {
-        _ = responseTCS.TrySetCanceled(cancellationToken);
-        return;
-      }
-
       if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
         return;
       if (transaction.ID != value.TID)
@@ -481,11 +466,6 @@ partial class EchonetClient
 
     void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      if (cancellationToken.IsCancellationRequested) {
-        _ = responseTCS.TrySetCanceled(cancellationToken);
-        return;
-      }
-
       if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
         return;
       if (transaction.ID != value.TID)
@@ -723,11 +703,6 @@ partial class EchonetClient
 
     void HandleINFCRes(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      if (cancellationToken.IsCancellationRequested) {
-        _ = responseTCS.TrySetCanceled(cancellationToken);
-        return;
-      }
-
       if (!destinationNodeAddress.Equals(value.Address))
         return;
       if (transaction.ID != value.TID)
