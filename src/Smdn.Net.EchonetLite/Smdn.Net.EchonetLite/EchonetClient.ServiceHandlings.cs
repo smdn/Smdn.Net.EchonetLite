@@ -38,6 +38,19 @@ partial class EchonetClient
     formatString: "An unmanaged transaction (Address: {Address}, TID: {TID:X4}, ESV: {ESV}, SEOJ: {SEOJ}, DEOJ: {DEOJ})"
   );
 
+  [Obsolete("call LogHandlingServiceResponse")]
+  private static readonly Action<ILogger, string, IPAddress, ushort, Exception?>
+  LogHandlingServiceResponseAction = LoggerMessage.Define<string, IPAddress, ushort>(
+    LogLevel.Debug,
+    eventId: default, // TODO
+    formatString: "Handling {ServiceSymbol} (From: {Address}, TID: {TID:X4})"
+  );
+
+  private static void LogHandlingServiceResponse(ILogger logger, ESV esv, IPAddress address, ushort tid)
+#pragma warning disable CS0618
+    => LogHandlingServiceResponseAction(logger, esv.ToSymbolString(), address, tid, null);
+#pragma warning restore CS0618
+
   /// <summary>
   /// 受信したECHONET Lite サービス要求を処理するためのタスクを作成し、スケジューリングするための<see cref="TaskFactory"/>を取得・設定します。
   /// </summary>
@@ -265,9 +278,11 @@ partial class EchonetClient
       return false;
     }
 
-    logger?.LogDebug("Handling SetI (From: {Address}, TID: {TID:X4})", address, tid);
-
     const ESV RequestServiceCode = ESV.SetI;
+
+    if (logger is not null)
+      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -355,9 +370,11 @@ partial class EchonetClient
     EchonetObject? destObject
   )
   {
-    logger?.LogDebug("Handling SetC (From: {Address}, TID: {TID:X4})", address, tid);
-
     const ESV RequestServiceCode = ESV.SetC;
+
+    if (logger is not null)
+      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -450,9 +467,11 @@ partial class EchonetClient
     EchonetObject? destObject
   )
   {
-    logger?.LogDebug("Handling Get (From: {Address}, TID: {TID:X4})", address, tid);
-
     const ESV RequestServiceCode = ESV.Get;
+
+    if (logger is not null)
+      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -542,9 +561,11 @@ partial class EchonetClient
     EchonetObject? destObject
   )
   {
-    logger?.LogDebug("Handling SetGet (From: {Address}, TID: {TID:X4})", address, tid);
-
     const ESV RequestServiceCode = ESV.SetGet;
+
+    if (logger is not null)
+      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+
     var hasError = false;
     var (requestPropsForSet, requestPropsForGet) = message.GetPropertiesForSetAndGet();
     var responsePropsForSet = new List<PropertyValue>(capacity: requestPropsForSet.Count);
@@ -658,9 +679,11 @@ partial class EchonetClient
     EchonetOtherNode sourceNode
   )
   {
-    logger?.LogDebug("Handling INF_REQ (From: {Address}, TID: {TID:X4})", address, tid);
-
     const ESV RequestServiceCode = ESV.InfRequest;
+
+    if (logger is not null)
+      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+
     var hasError = false;
     var objectAdded = false;
     var requestProps = message.GetProperties();
@@ -726,9 +749,11 @@ partial class EchonetClient
     EchonetObject? destObject
   )
   {
-    logger?.LogDebug("Handling INFC (From: {Address}, TID: {TID:X4})", address, tid);
-
     const ESV RequestServiceCode = ESV.InfC;
+
+    if (logger is not null)
+      LogHandlingServiceResponse(logger, RequestServiceCode, address, tid);
+
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
