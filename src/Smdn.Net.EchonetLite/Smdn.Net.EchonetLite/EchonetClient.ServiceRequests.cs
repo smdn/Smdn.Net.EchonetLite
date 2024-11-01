@@ -75,7 +75,54 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(properties));
 
     var responseTCS = new TaskCompletionSource();
+    using var ctr = cancellationToken.Register(
+      () => _ = responseTCS.TrySetCanceled(cancellationToken)
+    );
     using var transaction = StartNewTransaction();
+
+    Format1MessageReceived += HandleSetISNA;
+
+    try {
+      await SendFrameAsync(
+        destinationNodeAddress,
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+          buffer: buffer,
+          tid: transaction.Increment(),
+          sourceObject: sourceObject,
+          destinationObject: destinationObject,
+          esv: ESV.SetI,
+          properties: properties
+        ),
+        cancellationToken
+      ).ConfigureAwait(false);
+
+      // FIXME: キャンセル要求があるか、いずれかから不可応答があるまで処理が返らない
+      await responseTCS.Task.ConfigureAwait(false);
+    }
+    catch (Exception ex) {
+      if (
+        destinationNodeAddress is not null &&
+        ex is OperationCanceledException exOperationCanceled &&
+        cancellationToken.Equals(exOperationCanceled.CancellationToken)
+      ) {
+        // 個別送信の場合、要求がすべて受理されたと仮定して書き込みを反映
+        var destination = GetOrAddOtherNodeObject(destinationNodeAddress, destinationObject, ESV.SetI);
+
+        foreach (var prop in properties) {
+          _ = destination.StorePropertyValue(
+            esv: ESV.SetI,
+            tid: transaction.ID,
+            value: prop,
+            validateValue: false, // Setした内容をそのまま格納するため、検証しない
+            newModificationState: true // 要求は受理されたと仮定するため、値は未変更状態とする
+          );
+        }
+      }
+
+      Format1MessageReceived -= HandleSetISNA;
+
+      throw;
+    }
 
     void HandleSetISNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -125,52 +172,6 @@ partial class EchonetClient
         Format1MessageReceived -= HandleSetISNA;
       }
     }
-
-    Format1MessageReceived += HandleSetISNA;
-
-    await SendFrameAsync(
-      destinationNodeAddress,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: transaction.Increment(),
-        sourceObject: sourceObject,
-        destinationObject: destinationObject,
-        esv: ESV.SetI,
-        properties: properties
-      ),
-      cancellationToken
-    ).ConfigureAwait(false);
-
-    try {
-      using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
-
-      // FIXME: キャンセル要求があるか、いずれかから不可応答があるまで処理が返らない
-      await responseTCS.Task.ConfigureAwait(false);
-    }
-    catch (Exception ex) {
-      if (
-        destinationNodeAddress is not null &&
-        ex is OperationCanceledException exOperationCanceled &&
-        cancellationToken.Equals(exOperationCanceled.CancellationToken)
-      ) {
-        // 個別送信の場合、要求がすべて受理されたと仮定して書き込みを反映
-        var destination = GetOrAddOtherNodeObject(destinationNodeAddress, destinationObject, ESV.SetI);
-
-        foreach (var prop in properties) {
-          _ = destination.StorePropertyValue(
-            esv: ESV.SetI,
-            tid: transaction.ID,
-            value: prop,
-            validateValue: false, // Setした内容をそのまま格納するため、検証しない
-            newModificationState: true // 要求は受理されたと仮定するため、値は未変更状態とする
-          );
-        }
-      }
-
-      Format1MessageReceived -= HandleSetISNA;
-
-      throw;
-    }
   }
 
   /// <summary>
@@ -211,7 +212,35 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(properties));
 
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
+    using var ctr = cancellationToken.Register(
+      () => _ = responseTCS.TrySetCanceled(cancellationToken)
+    );
     using var transaction = StartNewTransaction();
+
+    Format1MessageReceived += HandleSetResOrSetCSNA;
+
+    try {
+      await SendFrameAsync(
+        destinationNodeAddress,
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+          buffer: buffer,
+          tid: transaction.Increment(),
+          sourceObject: sourceObject,
+          destinationObject: destinationObject,
+          esv: ESV.SetC,
+          properties: properties
+        ),
+        cancellationToken
+      ).ConfigureAwait(false);
+
+      // TODO: 一斉送信の場合、停止要求があるまで待機させる
+      return await responseTCS.Task.ConfigureAwait(false);
+    }
+    catch {
+      Format1MessageReceived -= HandleSetResOrSetCSNA;
+
+      throw;
+    }
 
     void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -267,33 +296,6 @@ partial class EchonetClient
         Format1MessageReceived -= HandleSetResOrSetCSNA;
       }
     }
-
-    Format1MessageReceived += HandleSetResOrSetCSNA;
-
-    await SendFrameAsync(
-      destinationNodeAddress,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: transaction.Increment(),
-        sourceObject: sourceObject,
-        destinationObject: destinationObject,
-        esv: ESV.SetC,
-        properties: properties
-      ),
-      cancellationToken
-    ).ConfigureAwait(false);
-
-    try {
-      using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
-
-      // TODO: 一斉送信の場合、停止要求があるまで待機させる
-      return await responseTCS.Task.ConfigureAwait(false);
-    }
-    catch {
-      Format1MessageReceived -= HandleSetResOrSetCSNA;
-
-      throw;
-    }
   }
 
   /// <summary>
@@ -334,7 +336,35 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(propertyCodes));
 
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
+    using var ctr = cancellationToken.Register(
+      () => _ = responseTCS.TrySetCanceled(cancellationToken)
+    );
     using var transaction = StartNewTransaction();
+
+    Format1MessageReceived += HandleGetResOrGetSNA;
+
+    try {
+      await SendFrameAsync(
+        destinationNodeAddress,
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+          buffer: buffer,
+          tid: transaction.Increment(),
+          sourceObject: sourceObject,
+          destinationObject: destinationObject,
+          esv: ESV.Get,
+          properties: propertyCodes.Select(PropertyValue.Create)
+        ),
+        cancellationToken
+      ).ConfigureAwait(false);
+
+      // TODO: 一斉送信の場合、停止要求があるまで待機させる
+      return await responseTCS.Task.ConfigureAwait(false);
+    }
+    catch {
+      Format1MessageReceived -= HandleGetResOrGetSNA;
+
+      throw;
+    }
 
     void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -388,33 +418,6 @@ partial class EchonetClient
         Format1MessageReceived -= HandleGetResOrGetSNA;
       }
     }
-
-    Format1MessageReceived += HandleGetResOrGetSNA;
-
-    await SendFrameAsync(
-      destinationNodeAddress,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: transaction.Increment(),
-        sourceObject: sourceObject,
-        destinationObject: destinationObject,
-        esv: ESV.Get,
-        properties: propertyCodes.Select(PropertyValue.Create)
-      ),
-      cancellationToken
-    ).ConfigureAwait(false);
-
-    try {
-      using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
-
-      // TODO: 一斉送信の場合、停止要求があるまで待機させる
-      return await responseTCS.Task.ConfigureAwait(false);
-    }
-    catch {
-      Format1MessageReceived -= HandleGetResOrGetSNA;
-
-      throw;
-    }
   }
 
   /// <summary>
@@ -463,8 +466,36 @@ partial class EchonetClient
       EchonetServiceResponse SetResponse,
       EchonetServiceResponse GetResponse
     )>();
-
+    using var ctr = cancellationToken.Register(
+      () => _ = responseTCS.TrySetCanceled(cancellationToken)
+    );
     using var transaction = StartNewTransaction();
+
+    Format1MessageReceived += HandleSetGetResOrSetGetSNA;
+
+    try {
+      await SendFrameAsync(
+        destinationNodeAddress,
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+          buffer: buffer,
+          tid: transaction.Increment(),
+          sourceObject: sourceObject,
+          destinationObject: destinationObject,
+          esv: ESV.SetGet,
+          propertiesForSet: propertiesToSet,
+          propertiesForGet: propertyCodesToGet.Select(PropertyValue.Create)
+        ),
+        cancellationToken
+      ).ConfigureAwait(false);
+
+      // TODO: 一斉送信の場合、停止要求があるまで待機させる
+      return await responseTCS.Task.ConfigureAwait(false);
+    }
+    catch {
+      Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
+
+      throw;
+    }
 
     void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -539,34 +570,6 @@ partial class EchonetClient
       finally {
         Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
       }
-    }
-
-    Format1MessageReceived += HandleSetGetResOrSetGetSNA;
-
-    await SendFrameAsync(
-      destinationNodeAddress,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: transaction.Increment(),
-        sourceObject: sourceObject,
-        destinationObject: destinationObject,
-        esv: ESV.SetGet,
-        propertiesForSet: propertiesToSet,
-        propertiesForGet: propertyCodesToGet.Select(PropertyValue.Create)
-      ),
-      cancellationToken
-    ).ConfigureAwait(false);
-
-    try {
-      using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
-
-      // TODO: 一斉送信の場合、停止要求があるまで待機させる
-      return await responseTCS.Task.ConfigureAwait(false);
-    }
-    catch {
-      Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
-
-      throw;
     }
   }
 
@@ -714,7 +717,34 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(properties));
 
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
+    using var ctr = cancellationToken.Register(
+      () => _ = responseTCS.TrySetCanceled(cancellationToken)
+    );
     using var transaction = StartNewTransaction();
+
+    Format1MessageReceived += HandleINFCRes;
+
+    try {
+      await SendFrameAsync(
+        destinationNodeAddress,
+        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+          buffer: buffer,
+          tid: transaction.Increment(),
+          sourceObject: sourceObject,
+          destinationObject: destinationObject,
+          esv: ESV.InfC,
+          properties: properties
+        ),
+        cancellationToken
+      ).ConfigureAwait(false);
+
+      return await responseTCS.Task.ConfigureAwait(false);
+    }
+    catch {
+      Format1MessageReceived -= HandleINFCRes;
+
+      throw;
+    }
 
     void HandleINFCRes(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
@@ -751,32 +781,6 @@ partial class EchonetClient
       finally {
         Format1MessageReceived -= HandleINFCRes;
       }
-    }
-
-    Format1MessageReceived += HandleINFCRes;
-
-    await SendFrameAsync(
-      destinationNodeAddress,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: transaction.Increment(),
-        sourceObject: sourceObject,
-        destinationObject: destinationObject,
-        esv: ESV.InfC,
-        properties: properties
-      ),
-      cancellationToken
-    ).ConfigureAwait(false);
-
-    try {
-      using var ctr = cancellationToken.Register(() => _ = responseTCS.TrySetCanceled(cancellationToken));
-
-      return await responseTCS.Task.ConfigureAwait(false);
-    }
-    catch {
-      Format1MessageReceived -= HandleINFCRes;
-
-      throw;
     }
   }
 }
