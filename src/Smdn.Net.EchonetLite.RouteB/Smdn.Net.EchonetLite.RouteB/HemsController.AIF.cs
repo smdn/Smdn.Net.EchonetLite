@@ -221,6 +221,7 @@ partial class HemsController {
       echonetLiteHandler: echonetLiteHandler,
       shouldDisposeEchonetLiteHandler: ShouldDisposeEchonetLiteHandlerByClient,
       deviceFactory: RouteBDeviceFactory.Instance,
+      resiliencePipelineForSendingResponseFrame: null, // TODO: make configurable
       logger: loggerFactory?.CreateLogger<EchonetClient>()
     );
 

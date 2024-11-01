@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Polly;
+
 using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
 
@@ -46,6 +48,7 @@ internal interface IEchonetClientService : IEventInvoker {
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<PropertyValue> properties,
+    ResiliencePipeline? resiliencePipeline,
     CancellationToken cancellationToken
   );
 
@@ -55,6 +58,7 @@ internal interface IEchonetClientService : IEventInvoker {
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<PropertyValue> properties,
+    ResiliencePipeline? resiliencePipeline,
     CancellationToken cancellationToken
   );
 
@@ -64,6 +68,7 @@ internal interface IEchonetClientService : IEventInvoker {
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<byte> propertyCodes,
+    ResiliencePipeline? resiliencePipeline,
     CancellationToken cancellationToken
   );
 
@@ -74,6 +79,7 @@ internal interface IEchonetClientService : IEventInvoker {
     EOJ destinationObject,
     IEnumerable<PropertyValue> propertiesToSet,
     IEnumerable<byte> propertyCodesToGet,
+    ResiliencePipeline? resiliencePipeline,
     CancellationToken cancellationToken
   );
 
@@ -82,6 +88,7 @@ internal interface IEchonetClientService : IEventInvoker {
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<byte> propertyCodes,
+    ResiliencePipeline? resiliencePipeline,
     CancellationToken cancellationToken
   );
 
@@ -90,6 +97,7 @@ internal interface IEchonetClientService : IEventInvoker {
     IEnumerable<PropertyValue> properties,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
+    ResiliencePipeline? resiliencePipeline,
     CancellationToken cancellationToken
   );
 
@@ -99,6 +107,7 @@ internal interface IEchonetClientService : IEventInvoker {
     IEnumerable<PropertyValue> properties,
     IPAddress destinationNodeAddress,
     EOJ destinationObject,
+    ResiliencePipeline? resiliencePipeline,
     CancellationToken cancellationToken
   );
 }

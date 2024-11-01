@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Polly;
+
 using Smdn.Net.EchonetLite.Protocol;
 using Smdn.Net.EchonetLite.Transport;
 
@@ -47,7 +49,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   TimeProvider? IEchonetClientService.TimeProvider => null; // TODO: make configurable, retrieve via IServiceProvider
 #endif
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ILogger{EchonetClient})"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ResiliencePipeline, ILogger{EchonetClient})"/>
   public EchonetClient(
     IEchonetLiteHandler echonetLiteHandler,
     ILogger<EchonetClient>? logger = null
@@ -60,7 +62,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   {
   }
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ILogger{EchonetClient})"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ResiliencePipeline, ILogger{EchonetClient})"/>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
   /// </exception>
@@ -74,6 +76,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
       echonetLiteHandler: echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler)),
       shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler,
       deviceFactory: null,
+      resiliencePipelineForSendingResponseFrame: null,
       logger: logger
     )
   {
@@ -86,16 +89,19 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// <param name="echonetLiteHandler">このインスタンスがECHONET Lite フレームを送受信するために使用する<see cref="IEchonetLiteHandler"/>。</param>
   /// <param name="shouldDisposeEchonetLiteHandler">オブジェクトが破棄される際に、<paramref name="echonetLiteHandler"/>も破棄するかどうかを表す値。</param>
   /// <param name="deviceFactory">機器オブジェクトのファクトリとして使用される<see cref="IEchonetDeviceFactory"/>。</param>
-  /// <param name="logger">このインスタンスの動作を記録する<see cref="ILogger{EchonetClient}"/>。</param>
+  /// <param name="resiliencePipelineForSendingResponseFrame">サービス要求に対する応答のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
+  /// <param name="logger">このインスタンスの動作を記録する<see cref="ILogger"/>。</param>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="selfNode"/>が<see langword="null"/>です。
   /// あるいは、<paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
   /// </exception>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public EchonetClient(
     EchonetNode selfNode,
     IEchonetLiteHandler echonetLiteHandler,
     bool shouldDisposeEchonetLiteHandler,
     IEchonetDeviceFactory? deviceFactory,
+    ResiliencePipeline? resiliencePipelineForSendingResponseFrame,
     ILogger<EchonetClient>? logger
   )
   {
@@ -103,6 +109,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
     this.echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
     this.echonetLiteHandler.Received += EchonetDataReceived;
+    this.resiliencePipelineForSendingResponseFrame = resiliencePipelineForSendingResponseFrame ?? ResiliencePipeline.Empty;
     this.deviceFactory = deviceFactory;
 
     SelfNode = selfNode ?? throw new ArgumentNullException(nameof(selfNode));

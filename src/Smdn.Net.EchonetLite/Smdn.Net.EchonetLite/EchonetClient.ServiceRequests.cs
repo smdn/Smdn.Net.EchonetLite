@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
+#pragma warning disable CA1506 // <Method> is coupled with 'n' different types from 'n' different namespaces. Rewrite or refactor the code to decrease its class coupling below 'n'.
 
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
+
+using Polly;
 
 using Smdn.Net.EchonetLite.Protocol;
 
@@ -39,6 +42,9 @@ partial class EchonetClient
   }
 #endif
 
+  [CLSCompliant(false)]
+  public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForRequestServiceCode = new(nameof(ResiliencePropertyKeyForRequestServiceCode));
+
   /// <summary>
   /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を行います。　このサービスは一斉同報が可能です。
   /// </summary>
@@ -46,6 +52,7 @@ partial class EchonetClient
   /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="ValueTask"/>。
@@ -63,38 +70,49 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public async ValueTask RequestWriteOneWayAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<PropertyValue> properties,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
+    const ESV ServiceCode = ESV.SetI;
     var responseTCS = new TaskCompletionSource();
     using var ctr = cancellationToken.Register(
       () => _ = responseTCS.TrySetCanceled(cancellationToken)
     );
     using var transaction = StartNewTransaction();
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
 
     try {
       Format1MessageReceived += HandleSetISNA;
 
       try {
-        await SendFrameAsync(
-          destinationNodeAddress,
-          buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-            buffer: buffer,
-            tid: transaction.Increment(),
-            sourceObject: sourceObject,
-            destinationObject: destinationObject,
-            esv: ESV.SetI,
-            properties: properties
-          ),
-          cancellationToken
+        await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+          callback: async ctx => {
+            await SendFrameAsync(
+              destinationNodeAddress,
+              buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+                buffer: buffer,
+                tid: transaction.Increment(),
+                sourceObject: sourceObject,
+                destinationObject: destinationObject,
+                esv: ServiceCode,
+                properties: properties
+              ),
+              ctx.CancellationToken
+            ).ConfigureAwait(false);
+          },
+          context: resilienceContext
         ).ConfigureAwait(false);
 
         // FIXME: キャンセル要求があるか、いずれかから不可応答があるまで処理が返らない
@@ -124,6 +142,8 @@ partial class EchonetClient
       }
     }
     finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+
       Format1MessageReceived -= HandleSetISNA;
     }
 
@@ -174,6 +194,7 @@ partial class EchonetClient
   /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="ValueTask{T}"/>。
@@ -192,44 +213,57 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public async ValueTask<EchonetServiceResponse>
   RequestWriteAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<PropertyValue> properties,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
+    const ESV ServiceCode = ESV.SetC;
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
     using var ctr = cancellationToken.Register(
       () => _ = responseTCS.TrySetCanceled(cancellationToken)
     );
     using var transaction = StartNewTransaction();
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
 
     try {
       Format1MessageReceived += HandleSetResOrSetCSNA;
 
-      await SendFrameAsync(
-        destinationNodeAddress,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: transaction.Increment(),
-          sourceObject: sourceObject,
-          destinationObject: destinationObject,
-          esv: ESV.SetC,
-          properties: properties
-        ),
-        cancellationToken
+      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            destinationNodeAddress,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: transaction.Increment(),
+              sourceObject: sourceObject,
+              destinationObject: destinationObject,
+              esv: ServiceCode,
+              properties: properties
+            ),
+            ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
       ).ConfigureAwait(false);
 
       // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+
       Format1MessageReceived -= HandleSetResOrSetCSNA;
     }
 
@@ -286,6 +320,7 @@ partial class EchonetClient
   /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="propertyCodes">処理対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="ValueTask{T}"/>。
@@ -304,44 +339,57 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public async ValueTask<EchonetServiceResponse>
   RequestReadAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<byte> propertyCodes,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
     if (propertyCodes is null)
       throw new ArgumentNullException(nameof(propertyCodes));
 
+    const ESV ServiceCode = ESV.Get;
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
     using var ctr = cancellationToken.Register(
       () => _ = responseTCS.TrySetCanceled(cancellationToken)
     );
     using var transaction = StartNewTransaction();
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
 
     try {
       Format1MessageReceived += HandleGetResOrGetSNA;
 
-      await SendFrameAsync(
-        destinationNodeAddress,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: transaction.Increment(),
-          sourceObject: sourceObject,
-          destinationObject: destinationObject,
-          esv: ESV.Get,
-          properties: propertyCodes.Select(PropertyValue.Create)
-        ),
-        cancellationToken
+      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            destinationNodeAddress,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: transaction.Increment(),
+              sourceObject: sourceObject,
+              destinationObject: destinationObject,
+              esv: ServiceCode,
+              properties: propertyCodes.Select(PropertyValue.Create)
+            ),
+            ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
       ).ConfigureAwait(false);
 
       // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+
       Format1MessageReceived -= HandleGetResOrGetSNA;
     }
 
@@ -397,6 +445,7 @@ partial class EchonetClient
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="propertiesToSet">書き込み対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
   /// <param name="propertyCodesToGet">読み出し対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="ValueTask{T}"/>。
@@ -416,6 +465,7 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public async ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)>
   RequestWriteReadAsync(
     EOJ sourceObject,
@@ -423,6 +473,7 @@ partial class EchonetClient
     EOJ destinationObject,
     IEnumerable<PropertyValue> propertiesToSet,
     IEnumerable<byte> propertyCodesToGet,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -431,6 +482,7 @@ partial class EchonetClient
     if (propertyCodesToGet is null)
       throw new ArgumentNullException(nameof(propertyCodesToGet));
 
+    const ESV ServiceCode = ESV.SetGet;
     var responseTCS = new TaskCompletionSource<(
       EchonetServiceResponse SetResponse,
       EchonetServiceResponse GetResponse
@@ -440,27 +492,38 @@ partial class EchonetClient
     );
     using var transaction = StartNewTransaction();
 
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+
     try {
       Format1MessageReceived += HandleSetGetResOrSetGetSNA;
 
-      await SendFrameAsync(
-        destinationNodeAddress,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: transaction.Increment(),
-          sourceObject: sourceObject,
-          destinationObject: destinationObject,
-          esv: ESV.SetGet,
-          propertiesForSet: propertiesToSet,
-          propertiesForGet: propertyCodesToGet.Select(PropertyValue.Create)
-        ),
-        cancellationToken
+      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            destinationNodeAddress,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: transaction.Increment(),
+              sourceObject: sourceObject,
+              destinationObject: destinationObject,
+              esv: ServiceCode,
+              propertiesForSet: propertiesToSet,
+              propertiesForGet: propertyCodesToGet.Select(PropertyValue.Create)
+            ),
+            ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
       ).ConfigureAwait(false);
 
       // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+
       Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
     }
 
@@ -537,6 +600,7 @@ partial class EchonetClient
   /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="propertyCodes">処理対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="ValueTask"/>。
@@ -553,33 +617,50 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
-  public ValueTask RequestNotifyOneWayAsync(
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
+  public async ValueTask RequestNotifyOneWayAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<byte> propertyCodes,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
     if (propertyCodes is null)
       throw new ArgumentNullException(nameof(propertyCodes));
 
+    const ESV ServiceCode = ESV.InfRequest;
+
     // 要求の送信を行ったあとは、応答を待機せずにトランザクションを終了する
     // 応答の処理は共通のハンドラで行う
     using var transaction = StartNewTransaction();
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
-    return SendFrameAsync(
-      destinationNodeAddress,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: transaction.Increment(),
-        sourceObject: sourceObject,
-        destinationObject: destinationObject,
-        esv: ESV.InfRequest,
-        properties: propertyCodes.Select(PropertyValue.Create)
-      ),
-      cancellationToken
-    );
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+
+    try {
+      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            destinationNodeAddress,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: transaction.Increment(),
+              sourceObject: sourceObject,
+              destinationObject: destinationObject,
+              esv: ServiceCode,
+              properties: propertyCodes.Select(PropertyValue.Create)
+            ),
+            ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
   }
 
   /// <summary>
@@ -589,6 +670,7 @@ partial class EchonetClient
   /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
   /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="ValueTask"/>。
@@ -605,33 +687,50 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
-  public ValueTask NotifyOneWayAsync(
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
+  public async ValueTask NotifyOneWayAsync(
     EOJ sourceObject,
     IEnumerable<PropertyValue> properties,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
+    const ESV ServiceCode = ESV.Inf;
+
     // 要求の送信を行ったあとは、応答を待機せずにトランザクションを終了する
     // 応答の処理は共通のハンドラで行う
     using var transaction = StartNewTransaction();
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
-    return SendFrameAsync(
-      destinationNodeAddress,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: transaction.Increment(),
-        sourceObject: sourceObject,
-        destinationObject: destinationObject,
-        esv: ESV.Inf,
-        properties: properties
-      ),
-      cancellationToken
-    );
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+
+    try {
+      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            destinationNodeAddress,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: transaction.Increment(),
+              sourceObject: sourceObject,
+              destinationObject: destinationObject,
+              esv: ServiceCode,
+              properties: properties
+            ),
+            ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
   }
 
   /// <summary>
@@ -641,6 +740,7 @@ partial class EchonetClient
   /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
   /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>
   /// 非同期の操作を表す<see cref="ValueTask{T}"/>。
@@ -659,12 +759,14 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public async ValueTask<EchonetServiceResponse>
   NotifyAsync(
     EOJ sourceObject,
     IEnumerable<PropertyValue> properties,
     IPAddress destinationNodeAddress,
     EOJ destinationObject,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -673,31 +775,42 @@ partial class EchonetClient
     if (properties is null)
       throw new ArgumentNullException(nameof(properties));
 
+    const ESV ServiceCode = ESV.InfC;
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
     using var ctr = cancellationToken.Register(
       () => _ = responseTCS.TrySetCanceled(cancellationToken)
     );
     using var transaction = StartNewTransaction();
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
 
     try {
       Format1MessageReceived += HandleINFCRes;
 
-      await SendFrameAsync(
-        destinationNodeAddress,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: transaction.Increment(),
-          sourceObject: sourceObject,
-          destinationObject: destinationObject,
-          esv: ESV.InfC,
-          properties: properties
-        ),
-        cancellationToken
+      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            destinationNodeAddress,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: transaction.Increment(),
+              sourceObject: sourceObject,
+              destinationObject: destinationObject,
+              esv: ServiceCode,
+              properties: properties
+            ),
+            ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
       ).ConfigureAwait(false);
 
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+
       Format1MessageReceived -= HandleINFCRes;
     }
 

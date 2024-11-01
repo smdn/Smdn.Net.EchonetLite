@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Polly;
+
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -19,6 +21,9 @@ namespace Smdn.Net.EchonetLite;
 partial class EchonetClient
 #pragma warning restore IDE0040
 {
+  [CLSCompliant(false)]
+  public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForResponseServiceCode = new(nameof(ResiliencePropertyKeyForResponseServiceCode));
+
   private static readonly Action<ILogger, IPAddress, ushort, ESV, EOJ, EOJ, Exception?>
   LogExceptionAtFormat1MessageHandler = LoggerMessage.Define<IPAddress, ushort, ESV, EOJ, EOJ>(
     LogLevel.Error,
@@ -40,6 +45,8 @@ partial class EchonetClient
   /// <see langword="null"/>を設定した場合、<see cref="Task.Factory"/>を使用します。
   /// </remarks>
   public TaskFactory? ServiceHandlerTaskFactory { get; set; }
+
+  private readonly ResiliencePipeline resiliencePipelineForSendingResponseFrame;
 
   /// <summary>
   /// 指定された時間でタイムアウトする<see cref="CancellationTokenSource"/>を作成します。
@@ -260,13 +267,14 @@ partial class EchonetClient
 
     logger?.LogDebug("Handling SetI (From: {Address}, TID: {TID:X4})", address, tid);
 
+    const ESV RequestServiceCode = ESV.SetI;
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
 
     foreach (var prop in requestProps) {
       var accepted = destObject.StorePropertyValue(
-        esv: ESV.SetI,
+        esv: RequestServiceCode,
         tid: tid,
         value: prop,
         validateValue: true, // Setされる内容を検証する
@@ -289,18 +297,34 @@ partial class EchonetClient
       // 応答不要なので、エラーなしの場合はここで処理終了する
       return true;
 
-    await SendFrameAsync(
-      address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: tid,
-        sourceObject: message.DEOJ, // 入れ替え
-        destinationObject: message.SEOJ, // 入れ替え
-        esv: ESV.SetIServiceNotAvailable, // SetI_SNA(0x50)
-        properties: responseProps
-      ),
-      cancellationToken: default
-    ).ConfigureAwait(false);
+    const ESV ResponseServiceCode = ESV.SetIServiceNotAvailable; // SetI_SNA(0x50)
+    var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, ResponseServiceCode);
+
+    try {
+      await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            address,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: tid,
+              sourceObject: message.DEOJ, // 入れ替え
+              destinationObject: message.SEOJ, // 入れ替え
+              esv: ResponseServiceCode,
+              properties: responseProps
+            ),
+            cancellationToken: ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
 
     return false;
   }
@@ -333,6 +357,7 @@ partial class EchonetClient
   {
     logger?.LogDebug("Handling SetC (From: {Address}, TID: {TID:X4})", address, tid);
 
+    const ESV RequestServiceCode = ESV.SetC;
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -345,7 +370,7 @@ partial class EchonetClient
     else {
       foreach (var prop in requestProps) {
         var accepted = destObject.StorePropertyValue(
-          esv: ESV.SetC,
+          esv: RequestServiceCode,
           tid: tid,
           value: prop,
           validateValue: true, // Setされる内容を検証する
@@ -365,20 +390,36 @@ partial class EchonetClient
       }
     }
 
-    await SendFrameAsync(
-      address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: tid,
-        sourceObject: message.DEOJ, // 入れ替え
-        destinationObject: message.SEOJ, // 入れ替え
-        esv: hasError
-          ? ESV.SetCServiceNotAvailable // SetC_SNA(0x51)
-          : ESV.SetResponse, // Set_Res(0x71)
-        properties: responseProps
-      ),
-      cancellationToken: default
-    ).ConfigureAwait(false);
+    var responseServiceCode = hasError
+      ? ESV.SetCServiceNotAvailable // SetC_SNA(0x51)
+      : ESV.SetResponse; // Set_Res(0x71)
+    var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
+
+    try {
+      await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            address,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: tid,
+              sourceObject: message.DEOJ, // 入れ替え
+              destinationObject: message.SEOJ, // 入れ替え
+              esv: responseServiceCode,
+              properties: responseProps
+            ),
+            cancellationToken: ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
 
     return !hasError;
   }
@@ -411,6 +452,7 @@ partial class EchonetClient
   {
     logger?.LogDebug("Handling Get (From: {Address}, TID: {TID:X4})", address, tid);
 
+    const ESV RequestServiceCode = ESV.Get;
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -437,20 +479,36 @@ partial class EchonetClient
       }
     }
 
-    await SendFrameAsync(
-      address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: tid,
-        sourceObject: message.DEOJ, // 入れ替え
-        destinationObject: message.SEOJ, // 入れ替え
-        esv: hasError
-          ? ESV.GetServiceNotAvailable // Get_SNA(0x52)
-          : ESV.GetResponse, // Get_Res(0x72)
-        properties: responseProps
-      ),
-      cancellationToken: default
-    ).ConfigureAwait(false);
+    var responseServiceCode = hasError
+      ? ESV.GetServiceNotAvailable // Get_SNA(0x52)
+      : ESV.GetResponse; // Get_Res(0x72)
+    var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
+
+    try {
+      await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            address,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: tid,
+              sourceObject: message.DEOJ, // 入れ替え
+              destinationObject: message.SEOJ, // 入れ替え
+              esv: responseServiceCode,
+              properties: responseProps
+            ),
+            cancellationToken: ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
 
     return !hasError;
   }
@@ -486,6 +544,7 @@ partial class EchonetClient
   {
     logger?.LogDebug("Handling SetGet (From: {Address}, TID: {TID:X4})", address, tid);
 
+    const ESV RequestServiceCode = ESV.SetGet;
     var hasError = false;
     var (requestPropsForSet, requestPropsForGet) = message.GetPropertiesForSetAndGet();
     var responsePropsForSet = new List<PropertyValue>(capacity: requestPropsForSet.Count);
@@ -500,7 +559,7 @@ partial class EchonetClient
     else {
       foreach (var prop in requestPropsForSet) {
         var accepted = destObject.StorePropertyValue(
-          esv: ESV.SetGet,
+          esv: RequestServiceCode,
           tid: tid,
           value: prop,
           validateValue: true, // Setされる内容を検証する
@@ -535,21 +594,37 @@ partial class EchonetClient
       }
     }
 
-    await SendFrameAsync(
-      address,
-      buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-        buffer: buffer,
-        tid: tid,
-        sourceObject: message.DEOJ, // 入れ替え
-        destinationObject: message.SEOJ, // 入れ替え
-        esv: hasError
-          ? ESV.SetGetServiceNotAvailable // SetGet_SNA(0x5E)
-          : ESV.SetGetResponse, // SetGet_Res(0x7E)
-        propertiesForSet: responsePropsForSet,
-        propertiesForGet: responsePropsForGet
-      ),
-      cancellationToken: default
-    ).ConfigureAwait(false);
+    var responseServiceCode = hasError
+      ? ESV.SetGetServiceNotAvailable // SetGet_SNA(0x5E)
+      : ESV.SetGetResponse; // SetGet_Res(0x7E)
+    var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
+
+    try {
+      await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            address,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: tid,
+              sourceObject: message.DEOJ, // 入れ替え
+              destinationObject: message.SEOJ, // 入れ替え
+              esv: responseServiceCode,
+              propertiesForSet: responsePropsForSet,
+              propertiesForGet: responsePropsForGet
+            ),
+            cancellationToken: ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
 
     return !hasError;
   }
@@ -585,6 +660,7 @@ partial class EchonetClient
   {
     logger?.LogDebug("Handling INF_REQ (From: {Address}, TID: {TID:X4})", address, tid);
 
+    const ESV RequestServiceCode = ESV.InfRequest;
     var hasError = false;
     var objectAdded = false;
     var requestProps = message.GetProperties();
@@ -602,7 +678,7 @@ partial class EchonetClient
 
     foreach (var prop in requestProps) {
       var accepted = sourceObject.StorePropertyValue(
-        esv: ESV.InfRequest,
+        esv: RequestServiceCode,
         tid: tid,
         value: prop,
         validateValue: false, // 通知された内容をそのまま格納するため、検証しない
@@ -652,6 +728,7 @@ partial class EchonetClient
   {
     logger?.LogDebug("Handling INFC (From: {Address}, TID: {TID:X4})", address, tid);
 
+    const ESV RequestServiceCode = ESV.InfC;
     var hasError = false;
     var requestProps = message.GetProperties();
     var responseProps = new List<PropertyValue>(capacity: requestProps.Count);
@@ -699,18 +776,34 @@ partial class EchonetClient
     }
 
     if (destObject is not null) {
-      await SendFrameAsync(
-        address,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: tid,
-          sourceObject: message.DEOJ, // 入れ替え
-          destinationObject: message.SEOJ, // 入れ替え
-          esv: ESV.InfCResponse, // INFC_Res(0x74)
-          properties: responseProps
-        ),
-        cancellationToken: default
-      ).ConfigureAwait(false);
+      const ESV ResponseServiceCode = ESV.InfCResponse; // INFC_Res(0x74)
+      var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+
+      resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
+      resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, ResponseServiceCode);
+
+      try {
+        await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
+          callback: async ctx => {
+            await SendFrameAsync(
+              address,
+              buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+                buffer: buffer,
+                tid: tid,
+                sourceObject: message.DEOJ, // 入れ替え
+                destinationObject: message.SEOJ, // 入れ替え
+                esv: ResponseServiceCode,
+                properties: responseProps
+              ),
+              cancellationToken: ctx.CancellationToken
+            ).ConfigureAwait(false);
+          },
+          context: resilienceContext
+        ).ConfigureAwait(false);
+      }
+      finally {
+        ResilienceContextPool.Shared.Return(resilienceContext);
+      }
     }
 
     return !hasError;
