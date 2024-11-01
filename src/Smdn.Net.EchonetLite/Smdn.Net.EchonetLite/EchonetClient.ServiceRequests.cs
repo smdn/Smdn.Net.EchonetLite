@@ -132,7 +132,7 @@ partial class EchonetClient
       destinationNodeAddress,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: transaction.ID,
+        tid: transaction.Increment(),
         sourceObject: sourceObject,
         destinationObject: destinationObject,
         esv: ESV.SetI,
@@ -274,7 +274,7 @@ partial class EchonetClient
       destinationNodeAddress,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: transaction.ID,
+        tid: transaction.Increment(),
         sourceObject: sourceObject,
         destinationObject: destinationObject,
         esv: ESV.SetC,
@@ -395,7 +395,7 @@ partial class EchonetClient
       destinationNodeAddress,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: transaction.ID,
+        tid: transaction.Increment(),
         sourceObject: sourceObject,
         destinationObject: destinationObject,
         esv: ESV.Get,
@@ -547,7 +547,7 @@ partial class EchonetClient
       destinationNodeAddress,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: transaction.ID,
+        tid: transaction.Increment(),
         sourceObject: sourceObject,
         destinationObject: destinationObject,
         esv: ESV.SetGet,
@@ -612,7 +612,7 @@ partial class EchonetClient
       destinationNodeAddress,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: transaction.ID,
+        tid: transaction.Increment(),
         sourceObject: sourceObject,
         destinationObject: destinationObject,
         esv: ESV.InfRequest,
@@ -664,7 +664,7 @@ partial class EchonetClient
       destinationNodeAddress,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: transaction.ID,
+        tid: transaction.Increment(),
         sourceObject: sourceObject,
         destinationObject: destinationObject,
         esv: ESV.Inf,
@@ -759,7 +759,7 @@ partial class EchonetClient
       destinationNodeAddress,
       buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: buffer,
-        tid: transaction.ID,
+        tid: transaction.Increment(),
         sourceObject: sourceObject,
         destinationObject: destinationObject,
         esv: ESV.InfC,
