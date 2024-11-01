@@ -80,97 +80,95 @@ partial class EchonetClient
     );
     using var transaction = StartNewTransaction();
 
-    Format1MessageReceived += HandleSetISNA;
-
     try {
-      await SendFrameAsync(
-        destinationNodeAddress,
-        buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-          buffer: buffer,
-          tid: transaction.Increment(),
-          sourceObject: sourceObject,
-          destinationObject: destinationObject,
-          esv: ESV.SetI,
-          properties: properties
-        ),
-        cancellationToken
-      ).ConfigureAwait(false);
+      Format1MessageReceived += HandleSetISNA;
 
-      // FIXME: キャンセル要求があるか、いずれかから不可応答があるまで処理が返らない
-      await responseTCS.Task.ConfigureAwait(false);
-    }
-    catch (Exception ex) {
-      if (
-        destinationNodeAddress is not null &&
-        ex is OperationCanceledException exOperationCanceled &&
-        cancellationToken.Equals(exOperationCanceled.CancellationToken)
-      ) {
-        // 個別送信の場合、要求がすべて受理されたと仮定して書き込みを反映
-        var destination = GetOrAddOtherNodeObject(destinationNodeAddress, destinationObject, ESV.SetI);
-
-        foreach (var prop in properties) {
-          _ = destination.StorePropertyValue(
+      try {
+        await SendFrameAsync(
+          destinationNodeAddress,
+          buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+            buffer: buffer,
+            tid: transaction.Increment(),
+            sourceObject: sourceObject,
+            destinationObject: destinationObject,
             esv: ESV.SetI,
-            tid: transaction.ID,
-            value: prop,
-            validateValue: false, // Setした内容をそのまま格納するため、検証しない
-            newModificationState: true // 要求は受理されたと仮定するため、値は未変更状態とする
-          );
-        }
+            properties: properties
+          ),
+          cancellationToken
+        ).ConfigureAwait(false);
+
+        // FIXME: キャンセル要求があるか、いずれかから不可応答があるまで処理が返らない
+        await responseTCS.Task.ConfigureAwait(false);
       }
+      catch (Exception ex) {
+        if (
+          destinationNodeAddress is not null &&
+          ex is OperationCanceledException exOperationCanceled &&
+          cancellationToken.Equals(exOperationCanceled.CancellationToken)
+        ) {
+          // 個別送信の場合、要求がすべて受理されたと仮定して書き込みを反映
+          var destination = GetOrAddOtherNodeObject(destinationNodeAddress, destinationObject, ESV.SetI);
 
+          foreach (var prop in properties) {
+            _ = destination.StorePropertyValue(
+              esv: ESV.SetI,
+              tid: transaction.ID,
+              value: prop,
+              validateValue: false, // Setした内容をそのまま格納するため、検証しない
+              newModificationState: true // 要求は受理されたと仮定するため、値は未変更状態とする
+            );
+          }
+        }
+
+        throw;
+      }
+    }
+    finally {
       Format1MessageReceived -= HandleSetISNA;
-
-      throw;
     }
 
     void HandleSetISNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      try {
-        if (cancellationToken.IsCancellationRequested) {
-          _ = responseTCS.TrySetCanceled(cancellationToken);
-          return;
-        }
+      if (cancellationToken.IsCancellationRequested) {
+        _ = responseTCS.TrySetCanceled(cancellationToken);
+        return;
+      }
 
-        if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
-          return;
-        if (transaction.ID != value.TID)
-          return;
-        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
-          return;
-        if (value.Message.ESV != ESV.SetIServiceNotAvailable)
-          return;
+      if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
+        return;
+      if (transaction.ID != value.TID)
+        return;
+      if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
+        return;
+      if (value.Message.ESV != ESV.SetIServiceNotAvailable)
+        return;
 
-        logger?.LogDebug(
-          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
-          value.Message.ESV.ToSymbolString(),
-          value.Address,
-          value.TID
+      logger?.LogDebug(
+        "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+        value.Message.ESV.ToSymbolString(),
+        value.Address,
+        value.TID
+      );
+
+      // 不可応答ながらも要求が受理された書き込みを反映
+      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
+      var props = value.Message.GetProperties();
+
+      foreach (var prop in props.Where(static p => p.PDC == 0)) {
+        _ = respondingObject.StorePropertyValue(
+          esv: value.Message.ESV,
+          tid: value.TID,
+          value: properties.First(p => p.EPC == prop.EPC),
+          validateValue: false, // Setした内容をそのまま格納するため、検証しない
+          newModificationState: false // 要求は受理されたため、値を未変更状態にする
         );
 
-        // 不可応答ながらも要求が受理された書き込みを反映
-        var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
-        var props = value.Message.GetProperties();
-
-        foreach (var prop in props.Where(static p => p.PDC == 0)) {
-          _ = respondingObject.StorePropertyValue(
-            esv: value.Message.ESV,
-            tid: value.TID,
-            value: properties.First(p => p.EPC == prop.EPC),
-            validateValue: false, // Setした内容をそのまま格納するため、検証しない
-            newModificationState: false // 要求は受理されたため、値を未変更状態にする
-          );
-
-          // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
-        }
-
-        responseTCS.SetResult();
-
-        // TODO 一斉通知の不可応答の扱いが…
+        // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
       }
-      finally {
-        Format1MessageReceived -= HandleSetISNA;
-      }
+
+      responseTCS.SetResult();
+
+      // TODO 一斉通知の不可応答の扱いが…
     }
   }
 
@@ -217,9 +215,9 @@ partial class EchonetClient
     );
     using var transaction = StartNewTransaction();
 
-    Format1MessageReceived += HandleSetResOrSetCSNA;
-
     try {
+      Format1MessageReceived += HandleSetResOrSetCSNA;
+
       await SendFrameAsync(
         destinationNodeAddress,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
@@ -236,65 +234,58 @@ partial class EchonetClient
       // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
-    catch {
+    finally {
       Format1MessageReceived -= HandleSetResOrSetCSNA;
-
-      throw;
     }
 
     void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      try {
-        if (cancellationToken.IsCancellationRequested) {
-          _ = responseTCS.TrySetCanceled(cancellationToken);
-          return;
-        }
+      if (cancellationToken.IsCancellationRequested) {
+        _ = responseTCS.TrySetCanceled(cancellationToken);
+        return;
+      }
 
-        if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
-          return;
-        if (transaction.ID != value.TID)
-          return;
-        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
-          return;
-        if (!(value.Message.ESV == ESV.SetResponse || value.Message.ESV == ESV.SetCServiceNotAvailable))
-          return;
+      if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
+        return;
+      if (transaction.ID != value.TID)
+        return;
+      if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
+        return;
+      if (!(value.Message.ESV == ESV.SetResponse || value.Message.ESV == ESV.SetCServiceNotAvailable))
+        return;
 
-        logger?.LogDebug(
-          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
-          value.Message.ESV.ToSymbolString(),
-          value.Address,
-          value.TID
+      logger?.LogDebug(
+        "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+        value.Message.ESV.ToSymbolString(),
+        value.Address,
+        value.TID
+      );
+
+      // 要求が受理された書き込みを反映
+      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
+      var props = value.Message.GetProperties();
+
+      foreach (var prop in props.Where(static p => p.PDC == 0)) {
+        _ = respondingObject.StorePropertyValue(
+          esv: value.Message.ESV,
+          tid: value.TID,
+          value: properties.First(p => p.EPC == prop.EPC),
+          validateValue: false, // Setした内容をそのまま格納するため、検証しない
+          newModificationState: false // 要求は受理されたため、値を未変更状態にする
         );
 
-        // 要求が受理された書き込みを反映
-        var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
-        var props = value.Message.GetProperties();
-
-        foreach (var prop in props.Where(static p => p.PDC == 0)) {
-          _ = respondingObject.StorePropertyValue(
-            esv: value.Message.ESV,
-            tid: value.TID,
-            value: properties.First(p => p.EPC == prop.EPC),
-            validateValue: false, // Setした内容をそのまま格納するため、検証しない
-            newModificationState: false // 要求は受理されたため、値を未変更状態にする
-          );
-
-          // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
-        }
-
-        responseTCS.SetResult(
-          new(
-            isSuccess: value.Message.ESV == ESV.SetResponse,
-            // TODO: 個々のプロパティの処理結果を設定する
-            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
-          )
-        );
-
-        // TODO 一斉通知の応答の扱いが…
+        // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
       }
-      finally {
-        Format1MessageReceived -= HandleSetResOrSetCSNA;
-      }
+
+      responseTCS.SetResult(
+        new(
+          isSuccess: value.Message.ESV == ESV.SetResponse,
+          // TODO: 個々のプロパティの処理結果を設定する
+          properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+        )
+      );
+
+      // TODO 一斉通知の応答の扱いが…
     }
   }
 
@@ -341,9 +332,9 @@ partial class EchonetClient
     );
     using var transaction = StartNewTransaction();
 
-    Format1MessageReceived += HandleGetResOrGetSNA;
-
     try {
+      Format1MessageReceived += HandleGetResOrGetSNA;
+
       await SendFrameAsync(
         destinationNodeAddress,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
@@ -360,63 +351,56 @@ partial class EchonetClient
       // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
-    catch {
+    finally {
       Format1MessageReceived -= HandleGetResOrGetSNA;
-
-      throw;
     }
 
     void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      try {
-        if (cancellationToken.IsCancellationRequested) {
-          _ = responseTCS.TrySetCanceled(cancellationToken);
-          return;
-        }
-
-        if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
-          return;
-        if (transaction.ID != value.TID)
-          return;
-        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
-          return;
-        if (!(value.Message.ESV == ESV.GetResponse || value.Message.ESV == ESV.GetServiceNotAvailable))
-          return;
-
-        logger?.LogDebug(
-          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
-          value.Message.ESV.ToSymbolString(),
-          value.Address,
-          value.TID
-        );
-
-        // 要求が受理された読み出しを反映
-        var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
-        var props = value.Message.GetProperties();
-
-        foreach (var prop in props.Where(static p => 0 < p.PDC)) {
-          _ = respondingObject.StorePropertyValue(
-            esv: value.Message.ESV,
-            tid: value.TID,
-            value: prop,
-            validateValue: false, // Getされた内容をそのまま格納するため、検証しない
-            newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
-          );
-        }
-
-        responseTCS.SetResult(
-          new(
-            isSuccess: value.Message.ESV == ESV.GetResponse,
-            // TODO: 個々のプロパティの処理結果を設定する
-            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
-          )
-        );
-
-        // TODO 一斉通知の応答の扱いが…
+      if (cancellationToken.IsCancellationRequested) {
+        _ = responseTCS.TrySetCanceled(cancellationToken);
+        return;
       }
-      finally {
-        Format1MessageReceived -= HandleGetResOrGetSNA;
+
+      if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
+        return;
+      if (transaction.ID != value.TID)
+        return;
+      if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
+        return;
+      if (!(value.Message.ESV == ESV.GetResponse || value.Message.ESV == ESV.GetServiceNotAvailable))
+        return;
+
+      logger?.LogDebug(
+        "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+        value.Message.ESV.ToSymbolString(),
+        value.Address,
+        value.TID
+      );
+
+      // 要求が受理された読み出しを反映
+      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
+      var props = value.Message.GetProperties();
+
+      foreach (var prop in props.Where(static p => 0 < p.PDC)) {
+        _ = respondingObject.StorePropertyValue(
+          esv: value.Message.ESV,
+          tid: value.TID,
+          value: prop,
+          validateValue: false, // Getされた内容をそのまま格納するため、検証しない
+          newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
+        );
       }
+
+      responseTCS.SetResult(
+        new(
+          isSuccess: value.Message.ESV == ESV.GetResponse,
+          // TODO: 個々のプロパティの処理結果を設定する
+          properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+        )
+      );
+
+      // TODO 一斉通知の応答の扱いが…
     }
   }
 
@@ -471,9 +455,9 @@ partial class EchonetClient
     );
     using var transaction = StartNewTransaction();
 
-    Format1MessageReceived += HandleSetGetResOrSetGetSNA;
-
     try {
+      Format1MessageReceived += HandleSetGetResOrSetGetSNA;
+
       await SendFrameAsync(
         destinationNodeAddress,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
@@ -491,85 +475,78 @@ partial class EchonetClient
       // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
-    catch {
+    finally {
       Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
-
-      throw;
     }
 
     void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      try {
-        if (cancellationToken.IsCancellationRequested) {
-          _ = responseTCS.TrySetCanceled(cancellationToken);
-          return;
-        }
+      if (cancellationToken.IsCancellationRequested) {
+        _ = responseTCS.TrySetCanceled(cancellationToken);
+        return;
+      }
 
-        if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
-          return;
-        if (transaction.ID != value.TID)
-          return;
-        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
-          return;
-        if (!(value.Message.ESV == ESV.SetGetResponse || value.Message.ESV == ESV.SetGetServiceNotAvailable))
-          return;
+      if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
+        return;
+      if (transaction.ID != value.TID)
+        return;
+      if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
+        return;
+      if (!(value.Message.ESV == ESV.SetGetResponse || value.Message.ESV == ESV.SetGetServiceNotAvailable))
+        return;
 
-        logger?.LogDebug(
-          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
-          value.Message.ESV.ToSymbolString(),
-          value.Address,
-          value.TID
+      logger?.LogDebug(
+        "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+        value.Message.ESV.ToSymbolString(),
+        value.Address,
+        value.TID
+      );
+
+      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
+      var (propsForSet, propsForGet) = value.Message.GetPropertiesForSetAndGet();
+
+      // 要求が受理された書き込みを反映
+      foreach (var prop in propsForSet.Where(static p => p.PDC == 0)) {
+        _ = respondingObject.StorePropertyValue(
+          esv: value.Message.ESV,
+          tid: value.TID,
+          value: propertiesToSet.First(p => p.EPC == prop.EPC),
+          validateValue: false, // Setした内容をそのまま格納するため、検証しない
+          newModificationState: false // 要求は受理されたため、値を未変更状態にする
         );
 
-        var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
-        var (propsForSet, propsForGet) = value.Message.GetPropertiesForSetAndGet();
+        // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
+      }
 
-        // 要求が受理された書き込みを反映
-        foreach (var prop in propsForSet.Where(static p => p.PDC == 0)) {
-          _ = respondingObject.StorePropertyValue(
-            esv: value.Message.ESV,
-            tid: value.TID,
-            value: propertiesToSet.First(p => p.EPC == prop.EPC),
-            validateValue: false, // Setした内容をそのまま格納するため、検証しない
-            newModificationState: false // 要求は受理されたため、値を未変更状態にする
-          );
+      // 要求が受理された読み出しを反映
+      foreach (var prop in propsForGet.Where(static p => 0 < p.PDC)) {
+        _ = respondingObject.StorePropertyValue(
+          esv: value.Message.ESV,
+          tid: value.TID,
+          value: prop,
+          validateValue: false, // Getされた内容をそのまま格納するため、検証しない
+          newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
+        );
+      }
 
-          // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
-        }
+      var isSuccess = value.Message.ESV == ESV.GetResponse;
 
-        // 要求が受理された読み出しを反映
-        foreach (var prop in propsForGet.Where(static p => 0 < p.PDC)) {
-          _ = respondingObject.StorePropertyValue(
-            esv: value.Message.ESV,
-            tid: value.TID,
-            value: prop,
-            validateValue: false, // Getされた内容をそのまま格納するため、検証しない
-            newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
-          );
-        }
-
-        var isSuccess = value.Message.ESV == ESV.GetResponse;
-
-        responseTCS.SetResult(
-          (
-            SetResponse: new(
-              isSuccess: isSuccess,
-              // TODO: 個々のプロパティの処理結果を設定する
-              properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
-            ),
-            GetResponse: new(
-              isSuccess: isSuccess,
-              // TODO: 個々のプロパティの処理結果を設定する
-              properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
-            )
+      responseTCS.SetResult(
+        (
+          SetResponse: new(
+            isSuccess: isSuccess,
+            // TODO: 個々のプロパティの処理結果を設定する
+            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          ),
+          GetResponse: new(
+            isSuccess: isSuccess,
+            // TODO: 個々のプロパティの処理結果を設定する
+            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
           )
-        );
+        )
+      );
 
-        // TODO 一斉通知の応答の扱いが…
-      }
-      finally {
-        Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
-      }
+      // TODO 一斉通知の応答の扱いが…
     }
   }
 
@@ -722,9 +699,9 @@ partial class EchonetClient
     );
     using var transaction = StartNewTransaction();
 
-    Format1MessageReceived += HandleINFCRes;
-
     try {
+      Format1MessageReceived += HandleINFCRes;
+
       await SendFrameAsync(
         destinationNodeAddress,
         buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
@@ -740,47 +717,40 @@ partial class EchonetClient
 
       return await responseTCS.Task.ConfigureAwait(false);
     }
-    catch {
+    finally {
       Format1MessageReceived -= HandleINFCRes;
-
-      throw;
     }
 
     void HandleINFCRes(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      try {
-        if (cancellationToken.IsCancellationRequested) {
-          _ = responseTCS.TrySetCanceled(cancellationToken);
-          return;
-        }
-
-        if (!destinationNodeAddress.Equals(value.Address))
-          return;
-        if (transaction.ID != value.TID)
-          return;
-        if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
-          return;
-        if (value.Message.ESV != ESV.InfCResponse)
-          return;
-
-        logger?.LogDebug(
-          "Handling {ESV} (From: {Address}, TID: {TID:X4})",
-          value.Message.ESV.ToSymbolString(),
-          value.Address,
-          value.TID
-        );
-
-        responseTCS.SetResult(
-          new(
-            isSuccess: true,
-            // TODO: 個々のプロパティの処理結果を設定する
-            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
-          )
-        );
+      if (cancellationToken.IsCancellationRequested) {
+        _ = responseTCS.TrySetCanceled(cancellationToken);
+        return;
       }
-      finally {
-        Format1MessageReceived -= HandleINFCRes;
-      }
+
+      if (!destinationNodeAddress.Equals(value.Address))
+        return;
+      if (transaction.ID != value.TID)
+        return;
+      if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
+        return;
+      if (value.Message.ESV != ESV.InfCResponse)
+        return;
+
+      logger?.LogDebug(
+        "Handling {ESV} (From: {Address}, TID: {TID:X4})",
+        value.Message.ESV.ToSymbolString(),
+        value.Address,
+        value.TID
+      );
+
+      responseTCS.SetResult(
+        new(
+          isSuccess: true,
+          // TODO: 個々のプロパティの処理結果を設定する
+          properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+        )
+      );
     }
   }
 }
