@@ -6,6 +6,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Polly;
+
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -37,10 +39,12 @@ public static class EchonetObjectExtensions {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public static async ValueTask WritePropertiesOneWayAsync(
     this EchonetObject destinationObject,
     IEnumerable<byte> writePropertyCodes,
     EchonetObject sourceObject,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -58,6 +62,7 @@ public static class EchonetObjectExtensions {
       destinationNodeAddress: destinationObject.Node.Address,
       destinationObject: destinationObject.EOJ,
       properties: EnumeratePropertyValues(destinationObject, writePropertyCodes),
+      resiliencePipeline: resiliencePipeline,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
   }
@@ -71,10 +76,12 @@ public static class EchonetObjectExtensions {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public static async ValueTask<EchonetServiceResponse> WritePropertiesAsync(
     this EchonetObject destinationObject,
     IEnumerable<byte> writePropertyCodes,
     EchonetObject sourceObject,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -92,6 +99,7 @@ public static class EchonetObjectExtensions {
       destinationNodeAddress: destinationObject.Node.Address,
       destinationObject: destinationObject.EOJ,
       properties: EnumeratePropertyValues(destinationObject, writePropertyCodes),
+      resiliencePipeline: resiliencePipeline,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
   }
@@ -105,11 +113,13 @@ public static class EchonetObjectExtensions {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public static async ValueTask<EchonetServiceResponse>
   ReadPropertiesAsync(
     this EchonetObject destinationObject,
     IEnumerable<byte> readPropertyCodes,
     EchonetObject sourceObject,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -127,6 +137,7 @@ public static class EchonetObjectExtensions {
       destinationNodeAddress: destinationObject.Node.Address,
       destinationObject: destinationObject.EOJ,
       propertyCodes: readPropertyCodes,
+      resiliencePipeline: resiliencePipeline,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
   }
@@ -140,12 +151,14 @@ public static class EchonetObjectExtensions {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public static async ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)>
   WriteReadPropertiesAsync(
     this EchonetObject destinationObject,
     IEnumerable<byte> writePropertyCodes,
     IEnumerable<byte> readPropertyCodes,
     EchonetObject sourceObject,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -166,6 +179,7 @@ public static class EchonetObjectExtensions {
       destinationObject: destinationObject.EOJ,
       propertiesToSet: EnumeratePropertyValues(destinationObject, writePropertyCodes),
       propertyCodesToGet: readPropertyCodes,
+      resiliencePipeline: resiliencePipeline,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
   }
@@ -183,11 +197,13 @@ public static class EchonetObjectExtensions {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public static ValueTask RequestNotifyPropertiesOneWayAsync(
     this EchonetObject sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<byte> requestNotifyPropertyCodes,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -203,6 +219,7 @@ public static class EchonetObjectExtensions {
       propertyCodes: requestNotifyPropertyCodes,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: destinationObject,
+      resiliencePipeline: resiliencePipeline,
       cancellationToken: cancellationToken
     );
   }
@@ -217,10 +234,12 @@ public static class EchonetObjectExtensions {
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.５ プロパティ値通知サービス［0x63,0x73,0x53］
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public static ValueTask NotifyPropertiesOneWayMulticastAsync(
     this EchonetObject sourceObject,
     IEnumerable<byte> notifyPropertyCodes,
     EOJ destinationObject,
+    ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -236,6 +255,7 @@ public static class EchonetObjectExtensions {
       properties: EnumeratePropertyValues(sourceObject, notifyPropertyCodes),
       destinationNodeAddress: null, // multicast
       destinationObject: destinationObject,
+      resiliencePipeline: resiliencePipeline,
       cancellationToken: cancellationToken
     );
   }

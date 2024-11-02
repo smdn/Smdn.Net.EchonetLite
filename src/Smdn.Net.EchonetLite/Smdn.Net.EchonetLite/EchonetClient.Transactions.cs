@@ -26,12 +26,32 @@ partial class EchonetClient
     capacity: 2 // TODO: best initial capacity
   );
 
-  private readonly struct Transaction(ushort tid, ConcurrentDictionary<ushort, Transaction> transactions) : IDisposable {
-    private readonly ConcurrentDictionary<ushort, Transaction> transactions = transactions;
-    public ushort ID { get; } = tid;
+  private struct Transaction(EchonetClient owner) : IDisposable {
+    private readonly EchonetClient owner = owner;
+    private ushort? id = null;
 
-    public void Dispose()
-      => transactions.TryRemove(ID, out _);
+    public readonly ushort ID => id ?? throw new InvalidOperationException("ID has not yet been assigned");
+
+    public ushort Increment()
+    {
+      if (id.HasValue)
+        // discard the transaction ID of previously started
+        _ = owner.transactionsInProgress.TryRemove(id.Value, out _);
+
+      id = unchecked((ushort)Interlocked.Increment(ref owner.tid));
+
+      // register the transaction ID for starting
+      _ = owner.transactionsInProgress.TryAdd(id.Value, this);
+
+      return id.Value;
+    }
+
+    public readonly void Dispose()
+    {
+      if (id.HasValue)
+        // discard the transaction ID for finishing
+        owner.transactionsInProgress.TryRemove(id.Value, out _);
+    }
   }
 
   /// <summary>
@@ -42,16 +62,7 @@ partial class EchonetClient
   /// トランザクションを終了するために、確実に<see cref="Transaction.Dispose"/>メソッドを呼び出してください。
   /// </returns>
   private Transaction StartNewTransaction()
-  {
-    var transaction = new Transaction(
-      tid: unchecked((ushort)Interlocked.Increment(ref tid)),
-      transactions: transactionsInProgress
-    );
-
-    _ = transactionsInProgress.TryAdd(transaction.ID, transaction);
-
-    return transaction;
-  }
+    => new(this);
 
   private bool TryFindTransaction(ushort tid, out Transaction transaction)
     => transactionsInProgress.TryGetValue(tid, out transaction);

@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Polly;
+
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -27,12 +29,17 @@ partial class EchonetClient
   /// インスタンスリスト通知を行います。
   /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)を設定し、ECHONET Lite サービス「INF:プロパティ値通知」(ESV <c>0x73</c>)を送信します。
   /// </summary>
+  /// <param name="resiliencePipelineForServiceRequest">
+  /// サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。
+  /// </param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．３．１ ECHONET Lite ノードスタート時の基本シーケンス
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public async ValueTask NotifyInstanceListAsync(
+    ResiliencePipeline? resiliencePipelineForServiceRequest = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -69,6 +76,7 @@ partial class EchonetClient
     await SelfNode.NodeProfile.NotifyPropertiesOneWayMulticastAsync(
       notifyPropertyCodes: Enumerable.Repeat(EPCInstanceListNotification, 1),
       destinationObject: EOJ.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
+      resiliencePipeline: resiliencePipelineForServiceRequest,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
   }
@@ -85,16 +93,21 @@ partial class EchonetClient
   /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
   /// </param>
   /// <param name="state">各コールバックに共通して渡される状態変数を指定します。</param>
+  /// <param name="resiliencePipelineForServiceRequest">
+  /// サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。
+  /// </param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <typeparam name="TState">各コールバックに共通して渡される状態変数<paramref name="state"/>の型を指定します。</typeparam>
   /// <returns>非同期の操作を表す<see cref="Task"/>。</returns>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public async Task RequestNotifyInstanceListAsync<TState>(
     IPAddress? destinationNodeAddress,
     Func<EchonetNode, TState, bool> onInstanceListUpdated,
     TState state,
+    ResiliencePipeline? resiliencePipelineForServiceRequest = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -121,6 +134,7 @@ partial class EchonetClient
 
       await RequestNotifyInstanceListAsync(
         destinationNodeAddress,
+        resiliencePipelineForServiceRequest,
         cancellationToken
       ).ConfigureAwait(false);
 
@@ -140,6 +154,9 @@ partial class EchonetClient
   /// <param name="destinationNodeAddress">
   /// 相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。
   /// </param>
+  /// <param name="resiliencePipelineForServiceRequest">
+  /// サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。
+  /// </param>
   /// <param name="cancellationToken">
   /// キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。
   /// </param>
@@ -147,8 +164,10 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public ValueTask RequestNotifyInstanceListAsync(
     IPAddress? destinationNodeAddress = null,
+    ResiliencePipeline? resiliencePipelineForServiceRequest = null,
     CancellationToken cancellationToken = default
   )
     // インスタンスリスト通知要求
@@ -158,6 +177,7 @@ partial class EchonetClient
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: EOJ.NodeProfile, // 具体的なDEOJがないので、代わりにノードプロファイルを指定する
       requestNotifyPropertyCodes: Enumerable.Repeat(EPCInstanceListNotification, 1),
+      resiliencePipeline: resiliencePipelineForServiceRequest,
       cancellationToken: cancellationToken
     );
 
@@ -175,6 +195,9 @@ partial class EchonetClient
   /// 読み出しを行う追加のECHONETプロパティを指定する<see cref="IEnumerable{Byte}"/>。
   /// <see langword="null"/>を指定した場合は、プロパティマップのみを読み出します。
   /// </param>
+  /// <param name="resiliencePipelineForServiceRequest">
+  /// サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。
+  /// </param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="device"/>が<see langword="null"/>です。
@@ -184,9 +207,11 @@ partial class EchonetClient
   /// このメソッドでは自ノードのECHONET Lite オブジェクトからプロパティマップを読み出すことはできません。
   /// または、受信したEDTは無効なプロパティマップです。
   /// </exception>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public async ValueTask<bool> AcquirePropertyMapsAsync(
     EchonetObject device,
     IEnumerable<byte>? extraPropertyCodes = null,
+    ResiliencePipeline? resiliencePipelineForServiceRequest = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -204,6 +229,7 @@ partial class EchonetClient
         ? EPCPropertyMaps
         : EPCPropertyMaps.Concat(extraPropertyCodes).Distinct(),
       sourceObject: SelfNode.NodeProfile,
+      resiliencePipeline: resiliencePipelineForServiceRequest,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
 
