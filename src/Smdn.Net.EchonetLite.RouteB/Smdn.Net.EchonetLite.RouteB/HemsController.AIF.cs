@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Polly;
+
 using Smdn.Net.EchonetLite.Specifications;
 
 namespace Smdn.Net.EchonetLite.RouteB;
@@ -161,6 +163,9 @@ partial class HemsController {
   /// <summary>
   /// スマートメーターとの通信を行うECHONET Liteノードを立ち上げ、スマートメーターとの接続を確立します。
   /// </summary>
+  /// <param name="resiliencePipelineForServiceRequest">
+  /// サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。
+  /// </param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
   /// <returns>非同期の操作を表す<see cref="ValueTask"/>。</returns>
   /// <exception cref="InvalidOperationException">すでにスマートメーターとの接続が確立しています。</exception>
@@ -169,7 +174,9 @@ partial class HemsController {
   /// 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
   /// ３．１ 立ち上げ動作
   /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
   public ValueTask ConnectAsync(
+    ResiliencePipeline? resiliencePipelineForServiceRequest = null,
     CancellationToken cancellationToken = default
   )
   {
@@ -180,6 +187,7 @@ partial class HemsController {
       throw new InvalidOperationException("already connected");
 
     return ConnectAsyncCore(
+      resiliencePipelineForServiceRequest ?? ResiliencePipeline.Empty,
       cancellationToken
     );
 #pragma warning restore IDE0046
@@ -229,6 +237,7 @@ partial class HemsController {
   }
 
   private async ValueTask ConnectAsyncCore(
+    ResiliencePipeline resiliencePipelineForServiceRequest,
     CancellationToken cancellationToken
   )
   {
@@ -280,6 +289,7 @@ partial class HemsController {
 
         smartMeterObject ??= await RequestRouteBSmartMeterNotifyInstanceListAsync(
           smartMeterNodeAddress: echonetLiteHandler.PeerAddress,
+          resiliencePipelineForServiceRequest: resiliencePipelineForServiceRequest,
           cancellationToken: cancellationToken
         ).ConfigureAwait(false);
 
@@ -297,10 +307,12 @@ partial class HemsController {
 
       using (var scope = Logger?.BeginScope("Acquiring information")) {
         await AcquireEchonetLiteAttributeInformationAsync(
+          resiliencePipelineForServiceRequest: resiliencePipelineForServiceRequest,
           cancellationToken: cancellationToken
         ).ConfigureAwait(false);
 
         await AcquireSmartMeterAttributeInformationAsync(
+          resiliencePipelineForServiceRequest: resiliencePipelineForServiceRequest,
           cancellationToken: cancellationToken
         ).ConfigureAwait(false);
 
@@ -569,6 +581,7 @@ partial class HemsController {
   /// </seealso>
   private ValueTask<LowVoltageSmartElectricEnergyMeter?> RequestRouteBSmartMeterNotifyInstanceListAsync(
     IPAddress smartMeterNodeAddress,
+    ResiliencePipeline resiliencePipelineForServiceRequest,
     CancellationToken cancellationToken
   )
   {
@@ -603,6 +616,7 @@ partial class HemsController {
 
             return false;
           },
+          resiliencePipelineForServiceRequest: resiliencePipelineForServiceRequest,
           cancellationToken: ct,
           state: instanceListState
         ).ConfigureAwait(false);
@@ -626,6 +640,7 @@ partial class HemsController {
   /// ３．１．２ ECHONET Lite 属性情報取得
   /// </seealso>
   private async ValueTask AcquireEchonetLiteAttributeInformationAsync(
+    ResiliencePipeline resiliencePipelineForServiceRequest,
     CancellationToken cancellationToken
   )
   {
@@ -650,6 +665,7 @@ partial class HemsController {
         var ret = await client.AcquirePropertyMapsAsync(
           device: smartMeterObject,
           extraPropertyCodes: [smartMeterObject.Protocol.PropertyCode],
+          resiliencePipelineForServiceRequest: resiliencePipelineForServiceRequest,
           cancellationToken: ct
         ).ConfigureAwait(false);
 #pragma warning restore CS8602, CS8604
@@ -684,6 +700,7 @@ partial class HemsController {
   /// ３．１．３ スマート電力量メータ属性情報等取得
   /// </seealso>
   private async ValueTask AcquireSmartMeterAttributeInformationAsync(
+    ResiliencePipeline resiliencePipelineForServiceRequest,
     CancellationToken cancellationToken
   )
   {
@@ -714,6 +731,7 @@ partial class HemsController {
             SmartMeter.ReverseDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode,
           ],
           sourceObject: controllerObject!,
+          resiliencePipeline: resiliencePipelineForServiceRequest,
           cancellationToken: ct
         ).ConfigureAwait(false);
 
