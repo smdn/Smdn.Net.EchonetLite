@@ -61,7 +61,7 @@ partial class EchonetClient
 
       property.SetValue(
         newValue: bufferMemory,
-        raiseValueChangedEvent: false,
+        raiseValueUpdatedEvent: false,
         setLastUpdatedTime: true
       );
     }

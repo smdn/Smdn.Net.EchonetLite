@@ -89,76 +89,76 @@ public class EchonetPropertyTests {
   public void SetValue(byte[] newValue)
   {
     var p = CreateProperty();
-    var countOfValueChanged = 0;
+    var countOfValueUpdated = 0;
     var resetValue = new byte[] { 0xCD, 0xCD };
 
-    p.ValueChanged += (sender, val) => countOfValueChanged++;
+    p.ValueUpdated += (sender, val) => countOfValueUpdated++;
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueChanged)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
-    p.SetValue(newValue, raiseValueChangedEvent: false, setLastUpdatedTime: false);
+    p.SetValue(newValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(countOfValueChanged, Is.Zero, $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueChanged)}");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(countOfValueUpdated, Is.Zero, $"{nameof(countOfValueUpdated)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
 
     // reset
-    p.SetValue(resetValue, raiseValueChangedEvent: false, setLastUpdatedTime: false);
-    Assert.That(countOfValueChanged, Is.Zero, $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #2");
+    p.SetValue(resetValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
+    Assert.That(countOfValueUpdated, Is.Zero, $"{nameof(countOfValueUpdated)} after {nameof(p.ValueUpdated)} #2");
 
     // set again
-    p.SetValue(newValue, raiseValueChangedEvent: false, setLastUpdatedTime: false);
+    p.SetValue(newValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueChanged)} #3");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueChanged)} #3");
-    Assert.That(countOfValueChanged, Is.Zero, $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #3");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #3");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #3");
+    Assert.That(countOfValueUpdated, Is.Zero, $"{nameof(countOfValueUpdated)} after {nameof(p.ValueUpdated)} #3");
   }
 
   [TestCaseSource(nameof(YieldTestCases_SetValue))]
-  public void SetValue_RaiseValueChangedEvent(byte[] newValue)
+  public void SetValue_RaiseValueUpdatedEvent(byte[] newValue)
   {
     var p = CreateProperty();
-    var countOfValueChanged = 0;
+    var countOfValueUpdated = 0;
     var resetValue = new byte[] { 0xCD, 0xCD };
 
 #pragma warning disable CS0618
-    p.ValueChanged += (sender, val) => {
+    p.ValueUpdated += (sender, val) => {
       Assert.That(p, Is.SameAs(sender), nameof(p));
-      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val.NewValue), $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}");
+      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val.NewValue), $"{nameof(p.ValueMemory)} on {nameof(p.ValueUpdated)} #{countOfValueUpdated}");
 
       Assert.That(
         val.NewValue,
         SequenceIs.EqualTo(
-          countOfValueChanged switch {
+          countOfValueUpdated switch {
             0 or 2 => newValue.AsMemory(),
             1 => resetValue.AsMemory(),
             _ => throw new InvalidOperationException("unexpected event")
           }
         ),
-        $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}"
+        $"{nameof(p.ValueMemory)} on {nameof(p.ValueUpdated)} #{countOfValueUpdated}"
       );
 
-      countOfValueChanged++;
+      countOfValueUpdated++;
     };
 #pragma warning restore CS0618
 
-    p.SetValue(newValue, raiseValueChangedEvent: true, setLastUpdatedTime: false);
+    p.SetValue(newValue, raiseValueUpdatedEvent: true, setLastUpdatedTime: false);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #1");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} after {nameof(p.ValueUpdated)} #1");
 
     // reset
-    p.SetValue(resetValue, raiseValueChangedEvent: true, setLastUpdatedTime: false);
-    Assert.That(countOfValueChanged, Is.EqualTo(2), $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #2");
+    p.SetValue(resetValue, raiseValueUpdatedEvent: true, setLastUpdatedTime: false);
+    Assert.That(countOfValueUpdated, Is.EqualTo(2), $"{nameof(countOfValueUpdated)} after {nameof(p.ValueUpdated)} #2");
 
     // set again
-    p.SetValue(newValue, raiseValueChangedEvent: true, setLastUpdatedTime: false);
+    p.SetValue(newValue, raiseValueUpdatedEvent: true, setLastUpdatedTime: false);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueChanged)} #3");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueChanged)} #3");
-    Assert.That(countOfValueChanged, Is.EqualTo(3), $"{nameof(countOfValueChanged)} after {nameof(p.ValueChanged)} #3");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #3");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #3");
+    Assert.That(countOfValueUpdated, Is.EqualTo(3), $"{nameof(countOfValueUpdated)} after {nameof(p.ValueUpdated)} #3");
   }
 
 #if SYSTEM_TIMEPROVIDER
@@ -168,13 +168,13 @@ public class EchonetPropertyTests {
     var setLastUpdatedTime = new DateTimeOffset(2024, 10, 3, 19, 40, 16, TimeSpan.FromHours(9.0));
     var p = CreateProperty(new PseudoConstantTimeProvider(setLastUpdatedTime));
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueChanged)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
-    p.SetValue(newValue, raiseValueChangedEvent: false, setLastUpdatedTime: true);
+    p.SetValue(newValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: true);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(setLastUpdatedTime), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueChanged)}");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(setLastUpdatedTime), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
   }
 #endif
 
@@ -198,76 +198,76 @@ public class EchonetPropertyTests {
   public void WriteValue(byte[] newValue)
   {
     var p = CreateProperty();
-    var countOfValueChanged = 0;
+    var countOfValueUpdated = 0;
     var resetValue = new byte[] { 0xCD, 0xCD };
 
-    p.ValueChanged += (sender, val) => countOfValueChanged++;
+    p.ValueUpdated += (sender, val) => countOfValueUpdated++;
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueChanged)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
-    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueChangedEvent: false, setLastUpdatedTime: false);
+    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #1");
-    Assert.That(countOfValueChanged, Is.Zero, $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #1");
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueChanged)}");
+    Assert.That(countOfValueUpdated, Is.Zero, $"{nameof(countOfValueUpdated)} after {nameof(p.WriteValue)} #1");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
 
     // reset
-    p.SetValue(resetValue, raiseValueChangedEvent: false, setLastUpdatedTime: false);
-    Assert.That(countOfValueChanged, Is.Zero, $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #2");
+    p.SetValue(resetValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
+    Assert.That(countOfValueUpdated, Is.Zero, $"{nameof(countOfValueUpdated)} after {nameof(p.WriteValue)} #2");
 
     // write again
-    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueChangedEvent: false, setLastUpdatedTime: false);
+    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #3");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #3");
-    Assert.That(countOfValueChanged, Is.Zero, $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #3");
+    Assert.That(countOfValueUpdated, Is.Zero, $"{nameof(countOfValueUpdated)} after {nameof(p.WriteValue)} #3");
   }
 
   [TestCaseSource(nameof(YieldTestCases_WriteValue))]
-  public void WriteValue_RaiseValueChangedEvent(byte[] newValue)
+  public void WriteValue_RaiseValueUpdatedEvent(byte[] newValue)
   {
     var p = CreateProperty();
-    var countOfValueChanged = 0;
+    var countOfValueUpdated = 0;
     var resetValue = new byte[] { 0xCD, 0xCD };
 
 #pragma warning disable CS0618
-    p.ValueChanged += (sender, val) => {
+    p.ValueUpdated += (sender, val) => {
       Assert.That(p, Is.SameAs(sender), nameof(p));
-      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val.NewValue), $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}");
+      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val.NewValue), $"{nameof(p.ValueMemory)} on {nameof(p.ValueUpdated)} #{countOfValueUpdated}");
 
       Assert.That(
         val.NewValue,
         SequenceIs.EqualTo(
-          countOfValueChanged switch {
+          countOfValueUpdated switch {
             0 or 2 => newValue.AsMemory(),
             1 => resetValue.AsMemory(),
             _ => throw new InvalidOperationException("unexpected event")
           }
         ),
-        $"{nameof(p.ValueMemory)} on {nameof(p.ValueChanged)} #{countOfValueChanged}"
+        $"{nameof(p.ValueMemory)} on {nameof(p.ValueUpdated)} #{countOfValueUpdated}"
       );
 
-      countOfValueChanged++;
+      countOfValueUpdated++;
     };
 #pragma warning restore CS0618
 
-    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueChangedEvent: true, setLastUpdatedTime: false);
+    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueUpdatedEvent: true, setLastUpdatedTime: false);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #1");
-    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #1");
+    Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} after {nameof(p.WriteValue)} #1");
 
     // reset
-    p.SetValue(resetValue, raiseValueChangedEvent: true, setLastUpdatedTime: false);
-    Assert.That(countOfValueChanged, Is.EqualTo(2), $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #2");
+    p.SetValue(resetValue, raiseValueUpdatedEvent: true, setLastUpdatedTime: false);
+    Assert.That(countOfValueUpdated, Is.EqualTo(2), $"{nameof(countOfValueUpdated)} after {nameof(p.WriteValue)} #2");
 
     // write again
-    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueChangedEvent: true, setLastUpdatedTime: false);
+    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueUpdatedEvent: true, setLastUpdatedTime: false);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #3");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #3");
-    Assert.That(countOfValueChanged, Is.EqualTo(3), $"{nameof(countOfValueChanged)} after {nameof(p.WriteValue)} #3");
+    Assert.That(countOfValueUpdated, Is.EqualTo(3), $"{nameof(countOfValueUpdated)} after {nameof(p.WriteValue)} #3");
   }
 
 #if SYSTEM_TIMEPROVIDER
@@ -277,17 +277,17 @@ public class EchonetPropertyTests {
     var setLastUpdatedTime = new DateTimeOffset(2024, 10, 3, 19, 40, 16, TimeSpan.FromHours(9.0));
     var p = CreateProperty(new PseudoConstantTimeProvider(setLastUpdatedTime));
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueChanged)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
-    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueChangedEvent: false, setLastUpdatedTime: true);
+    p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueUpdatedEvent: false, setLastUpdatedTime: true);
 
-    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueChanged)} #1");
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(setLastUpdatedTime), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueChanged)}");
+    Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #1");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(setLastUpdatedTime), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
   }
 #endif
 
-  private static System.Collections.IEnumerable YieldTestCases_ValueChanged_InitialSet()
+  private static System.Collections.IEnumerable YieldTestCases_ValueUpdated_InitialSet()
   {
     yield return new object?[] { new byte[0] };
     yield return new object?[] { new byte[] { 0xFF } };
@@ -295,33 +295,33 @@ public class EchonetPropertyTests {
     yield return new object?[] { Enumerable.Range(0x00, 0x100).Select(static i => (byte)i).ToArray() };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_ValueChanged_InitialSet))]
-  public void ValueChanged_InitialSet(byte[] newValue)
+  [TestCaseSource(nameof(YieldTestCases_ValueUpdated_InitialSet))]
+  public void ValueUpdated_InitialSet(byte[] newValue)
   {
     var p = CreateProperty();
 
-    var countOfValueChanged = 0;
+    var countOfValueUpdated = 0;
 
-    p.ValueChanged += (sender, e) => {
+    p.ValueUpdated += (sender, e) => {
       Assert.That(p, Is.SameAs(sender), nameof(p));
 
       Assert.That(e.OldValue, SequenceIs.EqualTo(ReadOnlyMemory<byte>.Empty), nameof(e.OldValue));
       Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
 
-      countOfValueChanged++;
+      countOfValueUpdated++;
     };
 
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueChangedEvent: true));
+    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true));
 
-    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #1");
+    Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #1");
 
     // set same value again
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
 
-    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #2");
+    Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #2");
   }
 
-  private static System.Collections.IEnumerable YieldTestCases_ValueChanged_DifferentValue()
+  private static System.Collections.IEnumerable YieldTestCases_ValueUpdated_DifferentValue()
   {
     yield return new object?[] { new byte[] { 0x00 } };
     yield return new object?[] { new byte[] { 0xFF } };
@@ -329,32 +329,45 @@ public class EchonetPropertyTests {
     yield return new object?[] { Enumerable.Range(0x00, 0x100).Select(static i => (byte)i).ToArray() };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_ValueChanged_DifferentValue))]
-  public void ValueChanged_DifferentValue(byte[] newValue)
+  [TestCaseSource(nameof(YieldTestCases_ValueUpdated_DifferentValue))]
+  public void ValueUpdated_DifferentValue(byte[] newValue)
   {
     var initialValue = new byte[] { 0xDE, 0xAD, 0xBE, 0xAF };
     var p = CreateProperty();
 
-    p.SetValue(initialValue.AsMemory(), raiseValueChangedEvent: true);
+    p.SetValue(initialValue.AsMemory(), raiseValueUpdatedEvent: true);
 
-    var countOfValueChanged = 0;
+    var countOfValueUpdated = 0;
 
-    p.ValueChanged += (sender, e) => {
+    p.ValueUpdated += (sender, e) => {
       Assert.That(p, Is.SameAs(sender), nameof(p));
 
-      Assert.That(e.OldValue, SequenceIs.EqualTo(initialValue), nameof(e.OldValue));
+      switch (countOfValueUpdated) {
+        case 0:
+          Assert.That(e.OldValue, SequenceIs.EqualTo(initialValue), nameof(e.OldValue));
+          break;
+
+        case 1:
+          Assert.That(e.OldValue, SequenceIs.EqualTo(newValue), nameof(e.OldValue));
+          break;
+
+        default:
+          Assert.Fail("extra ValueUpdated event raised");
+          break;
+      }
+
       Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
 
-      countOfValueChanged++;
+      countOfValueUpdated++;
     };
 
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueChangedEvent: true));
+    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true));
 
-    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #1");
+    Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #1");
 
     // set same value again
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueChangedEvent: true));
+    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true));
 
-    Assert.That(countOfValueChanged, Is.EqualTo(1), $"{nameof(countOfValueChanged)} #2");
+    Assert.That(countOfValueUpdated, Is.EqualTo(2), $"{nameof(countOfValueUpdated)} #2");
   }
 }

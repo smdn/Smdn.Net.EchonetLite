@@ -27,7 +27,7 @@ internal sealed class EchonetPropertySetGetAccessor<TValue> :
 
       BaseProperty.WriteValue(
         writer => formatValue(writer, value),
-        raiseValueChangedEvent: false,
+        raiseValueUpdatedEvent: false,
         setLastUpdatedTime: false
       );
     }
