@@ -7,6 +7,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Polly;
 
 using Smdn.Net.SkStackIP;
@@ -18,12 +20,14 @@ public sealed class SkStackRouteBTcpEchonetLiteHandler : SkStackRouteBEchonetLit
     SkStackClient client,
     SkStackRouteBSessionConfiguration sessionConfiguration,
     bool shouldDisposeClient = false,
+    ILogger? logger = null,
     IServiceProvider? serviceProvider = null
   )
     : base(
       client: client,
       sessionConfiguration: sessionConfiguration,
       shouldDisposeClient: shouldDisposeClient,
+      logger: logger,
       serviceProvider: serviceProvider
     )
   {

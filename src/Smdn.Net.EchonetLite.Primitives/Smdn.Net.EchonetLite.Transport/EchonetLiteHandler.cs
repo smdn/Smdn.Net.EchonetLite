@@ -7,6 +7,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 namespace Smdn.Net.EchonetLite.Transport;
 
 /// <summary>
@@ -45,6 +47,18 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
   /// Gets a value indicating whether the object is disposed or not.
   /// </summary>
   protected bool IsDisposed { get; private set; }
+
+  protected ILogger? Logger { get; }
+
+#pragma warning disable IDE0060
+  protected EchonetLiteHandler(
+    ILogger? logger,
+    IServiceProvider? serviceProvider // for future extension
+  )
+#pragma warning restore IDE0060
+  {
+    Logger = logger;
+  }
 
   protected void ThrowIfReceiving()
   {

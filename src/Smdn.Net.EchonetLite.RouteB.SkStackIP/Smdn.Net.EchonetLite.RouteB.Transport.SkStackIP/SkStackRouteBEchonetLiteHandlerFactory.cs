@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Smdn.Net.SkStackIP;
 
@@ -26,6 +27,12 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
     CancellationToken cancellationToken
   );
 
+  protected virtual ValueTask<ILogger?> CreateLoggerAsync(
+    IServiceProvider serviceProvider,
+    CancellationToken cancellationToken
+  )
+    => new((ILogger?)null);
+
   public virtual async ValueTask<RouteBEchonetLiteHandler> CreateAsync(
     CancellationToken cancellationToken
   )
@@ -41,6 +48,11 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
 
+    var logger = await CreateLoggerAsync(
+      serviceProvider: serviceProvider,
+      cancellationToken: cancellationToken
+    ).ConfigureAwait(false);
+
     ConfigureSkStackClient?.Invoke(client);
 
     return TransportProtocol switch {
@@ -48,6 +60,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
         client: client,
         sessionConfiguration: sessionConfiguration,
         shouldDisposeClient: true,
+        logger: logger,
         serviceProvider: serviceProvider
       ),
 
@@ -55,6 +68,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
         client: client,
         sessionConfiguration: sessionConfiguration,
         shouldDisposeClient: true,
+        logger: logger,
         serviceProvider: serviceProvider
       ),
 

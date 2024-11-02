@@ -21,7 +21,6 @@ namespace Smdn.Net.EchonetLite.Transport;
 public class UdpEchonetLiteHandler : EchonetLiteHandler {
   private UdpClient? receiveUdpClient;
   private readonly IReadOnlyList<IPAddress> selfAddresses;
-  private readonly ILogger logger;
   private const int DefaultUdpPort = 3610;
 
   /// <inheritdoc/>
@@ -30,11 +29,16 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
   /// <inheritdoc/>
   public override ISynchronizeInvoke? SynchronizingObject { get; set; }
 
-  public UdpEchonetLiteHandler(ILogger<UdpEchonetLiteHandler> logger)
+  public UdpEchonetLiteHandler(
+    ILogger? logger,
+    IServiceProvider? serviceProvider
+  )
+    : base(
+      logger,
+      serviceProvider
+    )
   {
     selfAddresses = NetworkInterface.GetAllNetworkInterfaces().SelectMany(ni => ni.GetIPProperties().UnicastAddresses.Select(ua => ua.Address)).ToArray();
-
-    this.logger = logger;
 
     try {
       receiveUdpClient = new UdpClient(DefaultUdpPort) {
@@ -42,7 +46,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
       };
     }
     catch (Exception ex) {
-      this.logger.LogError(ex, $"unexpected exception occured while initialization");
+      logger?.LogError(ex, $"unexpected exception occured while initialization");
       throw;
     }
   }
@@ -57,7 +61,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
       }
 #pragma warning disable CA1031
       catch (Exception ex) {
-        logger.LogWarning(ex, $"unexpected exception occured while disposing {nameof(UdpClient)} for receiving");
+        Logger?.LogWarning(ex, $"unexpected exception occured while disposing {nameof(UdpClient)} for receiving");
 
         // swallow all exceptions
       }
@@ -76,7 +80,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
     }
 #pragma warning disable CA1031
     catch (Exception ex) {
-      logger.LogWarning(ex, $"unexpected exception occured while disposing {nameof(UdpClient)} for receiving");
+      Logger?.LogWarning(ex, $"unexpected exception occured while disposing {nameof(UdpClient)} for receiving");
 
       // swallow all exceptions
     }
@@ -109,7 +113,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
         // ブロードキャストを自分で受信した(無視)
         continue;
 
-      logger.LogTrace(
+      Logger?.LogTrace(
         "UDP receive from {Address}: {Buffer}",
         receivedResults.RemoteEndPoint.Address,
         ((ReadOnlyMemory<byte>)receivedResults.Buffer).ToHexString()
@@ -122,7 +126,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
   }
 
   private void LogSend(IPEndPoint remoteEndPoint, ReadOnlyMemory<byte> buffer)
-    => logger.LogTrace(
+    => Logger?.LogTrace(
       "UDP send to {Address}: {Buffer}",
       remoteEndPoint.Address,
       buffer.ToHexString()

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Smdn.Devices.BP35XX;
 using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
@@ -47,4 +48,10 @@ public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonet
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
   }
+
+  protected override ValueTask<ILogger?> CreateLoggerAsync(
+    IServiceProvider serviceProvider,
+    CancellationToken cancellationToken
+  )
+    => new(serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<BP35A1RouteBEchonetLiteHandlerFactory>());
 }

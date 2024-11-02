@@ -68,15 +68,18 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
   private protected SkStackRouteBEchonetLiteHandler(
     SkStackClient client,
     SkStackRouteBSessionConfiguration sessionConfiguration,
-    bool shouldDisposeClient = false,
-    IServiceProvider? serviceProvider = null // TODO: logger
+    bool shouldDisposeClient,
+    ILogger? logger,
+    IServiceProvider? serviceProvider
   )
+    : base(
+      logger,
+      serviceProvider
+    )
   {
     this.client = client ?? throw new ArgumentNullException(nameof(client));
     this.sessionConfiguration = (sessionConfiguration ?? throw new ArgumentNullException(nameof(sessionConfiguration))).Clone(); // holds the clone to avoid being affected from the changes to the original
     this.shouldDisposeClient = shouldDisposeClient;
-
-    _ = serviceProvider?.GetService<ILoggerFactory>(); // TODO
 
     var resiliencePipelineProvider = serviceProvider?.GetService<ResiliencePipelineProvider<string>>();
 

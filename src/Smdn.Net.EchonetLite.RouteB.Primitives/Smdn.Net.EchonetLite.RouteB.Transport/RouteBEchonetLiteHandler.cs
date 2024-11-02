@@ -5,6 +5,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Smdn.Net.EchonetLite.RouteB.Credentials;
 using Smdn.Net.EchonetLite.Transport;
 
@@ -15,6 +17,17 @@ public abstract class RouteBEchonetLiteHandler : EchonetLiteHandler {
   /// Gets the <see cref="IPAddress"/> represents the IP address of the peer device (i.e., smart electricity meter) to which this handler is currently connected.
   /// </summary>
   public abstract IPAddress? PeerAddress { get; }
+
+  protected RouteBEchonetLiteHandler(
+    ILogger? logger,
+    IServiceProvider? serviceProvider
+  )
+    : base(
+      logger,
+      serviceProvider
+    )
+  {
+  }
 
   public ValueTask ConnectAsync(
     IRouteBCredential credential,
