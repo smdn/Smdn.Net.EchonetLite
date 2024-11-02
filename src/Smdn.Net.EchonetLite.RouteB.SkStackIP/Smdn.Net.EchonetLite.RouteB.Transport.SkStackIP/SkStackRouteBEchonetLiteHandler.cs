@@ -29,6 +29,9 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<SkStackClient?> ResiliencePropertyKeyForClient = new(nameof(ResiliencePropertyKeyForClient));
 
+  [CLSCompliant(false)]
+  public static readonly ResiliencePropertyKey<ILogger?> ResiliencePropertyKeyForLogger = new(nameof(ResiliencePropertyKeyForLogger));
+
   private SkStackClient? client;
   private readonly bool shouldDisposeClient;
   private readonly SkStackRouteBSessionConfiguration sessionConfiguration;
@@ -151,6 +154,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 
       try {
         resilienceContext.Properties.Set(ResiliencePropertyKeyForClient, client);
+        resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
 
         panaSessionInfo = await resiliencePipeline.ExecuteAsync(
           callback: async ctx => {
