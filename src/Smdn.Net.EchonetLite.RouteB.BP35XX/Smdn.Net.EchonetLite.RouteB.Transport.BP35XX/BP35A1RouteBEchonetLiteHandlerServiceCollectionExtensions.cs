@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Polly;
+using Polly.DependencyInjection;
 using Polly.Retry;
 
 using Smdn.Devices.BP35XX;
@@ -21,6 +22,20 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
 public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
+  /// <inheritdoc cref="AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(IServiceCollection, RetryStrategyOptions, SkStackRouteBSessionConfiguration, Action{ResiliencePipelineBuilder, AddResiliencePipelineContext{string}})"/>
+  [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
+  public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+    this IServiceCollection services,
+    RetryStrategyOptions retryOptions,
+    SkStackRouteBSessionConfiguration routeBSessionConfiguration
+  )
+    => AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+      services: services,
+      retryOptions: retryOptions,
+      routeBSessionConfiguration: routeBSessionConfiguration,
+      configure: static (builder, context) => { /* do nothing */ }
+    );
+
   /// <summary>
   /// <see cref="IServiceCollection"/>に対して、BP35A1でのPANA認証失敗時のリトライと回避策の適用を行う<see cref="ResiliencePipeline"/>を追加します。
   /// </summary>
@@ -47,17 +62,22 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   /// アクティブスキャンの実行で発見を期待するPANA認証エージェント(PAA)、および
   /// アクティブスキャンのオプションを指定する<see cref="SkStackActiveScanOptions"/>が設定された<see cref="SkStackRouteBSessionConfiguration"/>。
   /// </param>
+  /// <param name="configure">
+  /// 追加する<see cref="ResiliencePipeline"/>を設定する<see cref="ResiliencePipelineBuilder"/>を処理するデリゲートを指定します。
+  /// </param>
   /// <returns>サービスを追加した<see cref="IServiceCollection"/>。</returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="services"/>が<see langword="null"/>です。
   /// または、<paramref name="retryOptions"/>が<see langword="null"/>です。
   /// または、<paramref name="routeBSessionConfiguration"/>が<see langword="null"/>です。
+  /// または、<paramref name="configure"/>が<see langword="null"/>です。
   /// </exception>
   [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
   public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
     this IServiceCollection services,
     RetryStrategyOptions retryOptions,
-    SkStackRouteBSessionConfiguration routeBSessionConfiguration
+    SkStackRouteBSessionConfiguration routeBSessionConfiguration,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
   {
 #pragma warning disable CA1510
@@ -67,25 +87,31 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
       throw new ArgumentNullException(nameof(retryOptions));
     if (routeBSessionConfiguration is null)
       throw new ArgumentNullException(nameof(routeBSessionConfiguration));
+    if (configure is null)
+      throw new ArgumentNullException(nameof(configure));
 #pragma warning restore CA1510
 
     return services.AddResiliencePipeline(
       key: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate,
-      configure: builder => builder.AddRetry(
-        new RetryStrategyOptions {
-          ShouldHandle = new PredicateBuilder().Handle<SkStackPanaSessionEstablishmentException>(),
-          OnRetry = new BP35A1RetryPanaAuthentication(
-            retryOptions.MaxRetryAttempts,
-            routeBSessionConfiguration
-          ).OnRetry,
-          MaxRetryAttempts = retryOptions.MaxRetryAttempts,
-          BackoffType = retryOptions.BackoffType,
-          UseJitter = retryOptions.UseJitter,
-          MaxDelay = retryOptions.MaxDelay,
-          DelayGenerator = retryOptions.DelayGenerator,
-          Randomizer = retryOptions.Randomizer,
-        }
-      )
+      configure: (builder, context) => {
+        builder.AddRetry(
+          new RetryStrategyOptions {
+            ShouldHandle = new PredicateBuilder().Handle<SkStackPanaSessionEstablishmentException>(),
+            OnRetry = new BP35A1RetryPanaAuthentication(
+              retryOptions.MaxRetryAttempts,
+              routeBSessionConfiguration
+            ).OnRetry,
+            MaxRetryAttempts = retryOptions.MaxRetryAttempts,
+            BackoffType = retryOptions.BackoffType,
+            UseJitter = retryOptions.UseJitter,
+            MaxDelay = retryOptions.MaxDelay,
+            DelayGenerator = retryOptions.DelayGenerator,
+            Randomizer = retryOptions.Randomizer,
+          }
+        );
+
+        configure(builder, context);
+      }
     );
   }
 
