@@ -27,10 +27,7 @@ public static class IRouteBEchonetLiteHandlerBuilderExtensions {
     var factory = new BP35A1RouteBEchonetLiteHandlerFactory(builder.Services, configure);
 
     builder.Services.TryAdd(
-      ServiceDescriptor.Singleton(
-        typeof(IRouteBEchonetLiteHandlerFactory),
-        factory
-      )
+      ServiceDescriptor.Singleton<IRouteBEchonetLiteHandlerFactory>(factory)
     );
 
     return factory;

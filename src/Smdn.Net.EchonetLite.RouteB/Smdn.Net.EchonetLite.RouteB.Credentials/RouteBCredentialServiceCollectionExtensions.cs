@@ -70,7 +70,7 @@ public static class RouteBCredentialServiceCollectionExtensions {
 #pragma warning restore CA1510
 
     services.TryAdd(
-      ServiceDescriptor.Singleton(typeof(IRouteBCredentialProvider), credentialProvider)
+      ServiceDescriptor.Singleton<IRouteBCredentialProvider>(credentialProvider)
     );
 
     return services;
