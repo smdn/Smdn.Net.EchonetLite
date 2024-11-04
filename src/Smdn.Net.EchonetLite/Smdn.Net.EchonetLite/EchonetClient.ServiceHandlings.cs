@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -60,25 +59,6 @@ partial class EchonetClient
   public TaskFactory? ServiceHandlerTaskFactory { get; set; }
 
   private readonly ResiliencePipeline resiliencePipelineForSendingResponseFrame;
-
-  /// <summary>
-  /// 指定された時間でタイムアウトする<see cref="CancellationTokenSource"/>を作成します。
-  /// </summary>
-  /// <param name="timeoutMilliseconds">
-  /// ミリ秒単位でのタイムアウト時間。
-  /// 値が<see cref="Timeout.Infinite"/>に等しい場合は、タイムアウトしない<see cref="CancellationTokenSource"/>を返します。
-  /// </param>
-  /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeoutMilliseconds"/>に負の値を指定することはできません。</exception>
-  private static CancellationTokenSource CreateTimeoutCancellationTokenSource(int timeoutMilliseconds)
-  {
-    if (0 > timeoutMilliseconds)
-      throw new ArgumentOutOfRangeException(message: "タイムアウト時間に負の値を指定することはできません。", actualValue: timeoutMilliseconds, paramName: nameof(timeoutMilliseconds));
-
-    if (timeoutMilliseconds == Timeout.Infinite)
-      return new CancellationTokenSource();
-
-    return new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
-  }
 
   /// <summary>
   /// イベント<see cref="Format1MessageReceived"/>をハンドルするメソッドを実装します。
