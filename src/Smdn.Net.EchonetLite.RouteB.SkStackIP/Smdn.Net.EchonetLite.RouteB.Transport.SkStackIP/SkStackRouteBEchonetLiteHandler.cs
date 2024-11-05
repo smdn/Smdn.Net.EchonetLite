@@ -35,8 +35,8 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
   private SkStackClient? client;
   private readonly bool shouldDisposeClient;
   private readonly SkStackRouteBSessionConfiguration sessionConfiguration;
-  private readonly ResiliencePipeline? resiliencePipelineAuthenticate;
-  private readonly ResiliencePipeline? resiliencePipelineSend;
+  private readonly ResiliencePipeline resiliencePipelineAuthenticate;
+  private readonly ResiliencePipeline resiliencePipelineSend;
   private SkStackPanaSessionInfo? panaSessionInfo;
   private SemaphoreSlim semaphore = new(initialCount: 1, maxCount: 1);
 
@@ -86,8 +86,14 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 
     var resiliencePipelineProvider = serviceProvider?.GetService<ResiliencePipelineProvider<string>>();
 
+    ResiliencePipeline? resiliencePipelineAuthenticate = null;
+    ResiliencePipeline? resiliencePipelineSend = null;
+
     _ = resiliencePipelineProvider?.TryGetPipeline(ResiliencePipelineKeyForAuthenticate, out resiliencePipelineAuthenticate);
     _ = resiliencePipelineProvider?.TryGetPipeline(ResiliencePipelineKeyForSend, out resiliencePipelineSend);
+
+    this.resiliencePipelineAuthenticate = resiliencePipelineAuthenticate ?? ResiliencePipeline.Empty;
+    this.resiliencePipelineSend = resiliencePipelineSend ?? ResiliencePipeline.Empty;
   }
 
   /// <inheritdoc/>
@@ -149,14 +155,13 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 
     async ValueTask CoreAsync()
     {
-      var resiliencePipeline = resiliencePipelineAuthenticate ?? ResiliencePipeline.Empty;
       var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
       try {
         resilienceContext.Properties.Set(ResiliencePropertyKeyForClient, client);
         resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
 
-        panaSessionInfo = await resiliencePipeline.ExecuteAsync(
+        panaSessionInfo = await resiliencePipelineAuthenticate.ExecuteAsync(
           callback: async ctx => {
             await PrepareSessionAsync(ctx.CancellationToken).ConfigureAwait(false);
 
