@@ -232,8 +232,8 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     CancellationToken cancellationToken
   )
   {
-    if (client is null)
-      return;
+    ThrowIfDisposed();
+
     if (!client.IsPanaSessionAlive)
       return;
 
