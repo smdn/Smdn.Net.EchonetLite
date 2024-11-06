@@ -73,7 +73,8 @@ public abstract class RouteBEchonetLiteHandler : EchonetLiteHandler {
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
-      await StopReceivingAsync().ConfigureAwait(false);
+      if (IsReceiving)
+        await StopReceivingAsync().ConfigureAwait(false);
     }
   }
 
