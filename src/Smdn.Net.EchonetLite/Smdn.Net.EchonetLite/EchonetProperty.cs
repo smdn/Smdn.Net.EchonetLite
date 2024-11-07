@@ -398,6 +398,7 @@ public abstract class EchonetProperty {
       setLastUpdatedTime: false
     );
 
+    ValueUpdated = other.ValueUpdated; // shallow copy
     LastUpdatedTime = other.LastUpdatedTime;
     HasModified = other.HasModified;
   }
