@@ -14,7 +14,7 @@ namespace Smdn.Net.EchonetLite;
 
 public static class EchonetObjectExtensions {
   private static IEchonetClientService GetClientServiceOrThrow(EchonetObject obj)
-    => obj.OwnerNode?.Owner ?? throw new InvalidOperationException("could not get client");
+    => obj.OwnerNode.GetOwnerOrThrow();
 
   private static InvalidOperationException CreateCanNotSpecifySelfNodeAsDestination()
     => new("Can not specify the self node as the destination.");

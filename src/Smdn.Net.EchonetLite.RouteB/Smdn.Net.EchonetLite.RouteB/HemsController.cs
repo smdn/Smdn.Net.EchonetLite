@@ -33,6 +33,7 @@ namespace Smdn.Net.EchonetLite.RouteB;
 /// APPENDIX ECHONET 機器オブジェクト詳細規定 Release R
 /// </seealso>
 public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IAsyncDisposable {
+  private readonly EchonetNodeRegistry nodeRegistry;
   private readonly IRouteBEchonetLiteHandlerFactory echonetLiteHandlerFactory;
   private readonly IRouteBCredentialProvider credentialProvider;
   private readonly ILoggerFactory? loggerFactoryForEchonetClient;
@@ -120,6 +121,7 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
       throw new ArgumentNullException(nameof(routeBCredentialProvider));
 #pragma warning restore CA1510
 
+    nodeRegistry = new();
     this.echonetLiteHandlerFactory = echonetLiteHandlerFactory;
     credentialProvider = routeBCredentialProvider;
     Logger = logger;

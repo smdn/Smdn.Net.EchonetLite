@@ -44,14 +44,13 @@ public abstract class EchonetNode {
   /// <summary>
   /// 現在このインスタンスを管理している<see cref="IEchonetClientService"/>を取得します。
   /// </summary>
-  internal IEchonetClientService? Owner { get; set; }
+  internal IEchonetClientService? Owner { get; private set; }
 
   /// <summary>
   /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
   /// </summary>
   /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
-  internal IEventInvoker EventInvoker
-    => Owner ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
+  internal IEventInvoker EventInvoker => GetOwnerOrThrow();
 
   /// <summary>
   /// 下位スタックのアドレスを表す<see cref="IPAddress"/>を取得します。
@@ -83,6 +82,15 @@ public abstract class EchonetNode {
     NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
     NodeProfile.OwnerNode = this;
   }
+
+  internal void SetOwner(IEchonetClientService newOwner)
+    => Owner = newOwner ?? throw new ArgumentNullException(nameof(newOwner));
+
+  internal void UnsetOwner()
+    => Owner = null;
+
+  internal IEchonetClientService GetOwnerOrThrow()
+    => Owner ?? throw new InvalidOperationException($"The {nameof(IEchonetClientService)} currently associated with this instance has been disposed or is not yet associated.");
 
   internal abstract EchonetObject? FindDevice(EOJ eoj);
 
