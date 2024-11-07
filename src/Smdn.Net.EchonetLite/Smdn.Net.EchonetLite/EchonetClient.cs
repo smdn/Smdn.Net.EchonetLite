@@ -5,9 +5,6 @@
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -33,16 +30,17 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   public EchonetNode SelfNode { get; }
 
   /// <summary>
-  /// 既知のECHONET Lite ノード(他ノード)のコレクションを表す<see cref="IReadOnlyCollection{EchonetNode}"/>を取得します。
+  /// 現在のインスタンスと関連付けられている、既知のECHONET Lite ノード(他ノード)を管理する<see cref="EchonetNodeRegistry"/>を取得します。
   /// </summary>
-  /// <remarks>
-  /// 新しいECHONET Lite ノードが追加された場合は、イベント<see cref="NodeJoined"/>が発生します。
-  /// </remarks>
-  /// <seealso cref="NodeJoined"/>
-  public IReadOnlyCollection<EchonetNode> OtherNodes => readOnlyOtherNodesView.Values;
+  public EchonetNodeRegistry NodeRegistry {
+    get {
+      ThrowIfDisposed();
 
-  private readonly ConcurrentDictionary<IPAddress, EchonetOtherNode> otherNodes;
-  private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyOtherNodesView;
+      return nodeRegistry;
+    }
+  }
+
+  private EchonetNodeRegistry nodeRegistry;
 
   ILogger? IEchonetClientService.Logger => Logger;
 
@@ -50,7 +48,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   TimeProvider? IEchonetClientService.TimeProvider => null; // TODO: make configurable, retrieve via IServiceProvider
 #endif
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, EchonetNodeRegistry, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
   public EchonetClient(
     IEchonetLiteHandler echonetLiteHandler,
     ILogger? logger = null
@@ -63,7 +61,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   {
   }
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, EchonetNodeRegistry, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
   /// </exception>
@@ -76,6 +74,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
       selfNode: EchonetNode.CreateSelfNode(devices: Array.Empty<EchonetObject>()),
       echonetLiteHandler: echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler)),
       shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler,
+      nodeRegistry: null,
       deviceFactory: null,
       resiliencePipelineForSendingResponseFrame: null,
       logger: logger
@@ -89,6 +88,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// <param name="selfNode">自ノードを表す<see cref="EchonetNode"/>。</param>
   /// <param name="echonetLiteHandler">このインスタンスがECHONET Lite フレームを送受信するために使用する<see cref="IEchonetLiteHandler"/>。</param>
   /// <param name="shouldDisposeEchonetLiteHandler">オブジェクトが破棄される際に、<paramref name="echonetLiteHandler"/>も破棄するかどうかを表す値。</param>
+  /// <param name="nodeRegistry">既知のECHONET Lite ノード(他ノード)を管理する<see cref="EchonetNodeRegistry"/>。</param>
   /// <param name="deviceFactory">機器オブジェクトのファクトリとして使用される<see cref="IEchonetDeviceFactory"/>。</param>
   /// <param name="resiliencePipelineForSendingResponseFrame">サービス要求に対する応答のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="logger">このインスタンスの動作を記録する<see cref="ILogger"/>。</param>
@@ -101,6 +101,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     EchonetNode selfNode,
     IEchonetLiteHandler echonetLiteHandler,
     bool shouldDisposeEchonetLiteHandler,
+    EchonetNodeRegistry? nodeRegistry,
     IEchonetDeviceFactory? deviceFactory,
     ResiliencePipeline? resiliencePipelineForSendingResponseFrame,
     ILogger? logger
@@ -114,10 +115,10 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     Logger = logger;
 
     SelfNode = selfNode ?? throw new ArgumentNullException(nameof(selfNode));
-    SelfNode.Owner = this;
+    SelfNode.SetOwner(this);
 
-    otherNodes = new();
-    readOnlyOtherNodesView = new(otherNodes);
+    this.nodeRegistry = nodeRegistry ?? new EchonetNodeRegistry();
+    this.nodeRegistry.SetOwner(this);
 
     // 自己消費用
     Format1MessageReceived += HandleFormat1Message;
@@ -158,6 +159,9 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     if (disposing) {
       Format1MessageReceived = null; // unsubscribe
 
+      nodeRegistry?.UnsetOwner();
+      nodeRegistry = null!;
+
       requestSemaphore?.Dispose();
       requestSemaphore = null!;
 
@@ -179,6 +183,9 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   protected virtual async ValueTask DisposeAsyncCore()
   {
     Format1MessageReceived = null; // unsubscribe
+
+    nodeRegistry?.UnsetOwner();
+    nodeRegistry = null!;
 
     requestSemaphore?.Dispose();
     requestSemaphore = null!;
@@ -234,27 +241,22 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// </returns>
   private EchonetOtherNode GetOrAddOtherNode(IPAddress address, ESV esv)
   {
-    if (otherNodes.TryGetValue(address, out var otherNode))
+    if (NodeRegistry.TryResolve(address, out var otherNode))
       return otherNode;
 
     // 未知の他ノードの場合、ノードを生成
     // (ノードプロファイルのインスタンスコードは仮で0x00を指定しておき、後続のプロパティ値通知等で実際の値に更新されることを期待する)
     var newNode = new EchonetOtherNode(
-      owner: this,
       address: address,
       nodeProfile: EchonetObject.CreateNodeProfile(instanceCode: 0x00)
     );
 
-    otherNode = otherNodes.GetOrAdd(address, newNode);
-
-    if (ReferenceEquals(otherNode, newNode)) {
+    if (NodeRegistry.TryAdd(address, newNode, out otherNode)) {
       Logger?.LogInformation(
         "New node added (Address: {Address}, ESV: {ESV})",
         otherNode.Address,
         esv.ToSymbolString()
       );
-
-      OnNodeJoined(otherNode);
     }
 
     return otherNode;

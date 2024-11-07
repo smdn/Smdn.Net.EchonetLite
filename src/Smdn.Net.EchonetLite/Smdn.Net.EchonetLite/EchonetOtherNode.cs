@@ -22,10 +22,9 @@ internal sealed class EchonetOtherNode : EchonetNode {
   private readonly ConcurrentDictionary<EOJ, EchonetObject> devices;
   private readonly ReadOnlyDictionary<EOJ, EchonetObject> readOnlyDevicesView;
 
-  internal EchonetOtherNode(IEchonetClientService owner, IPAddress address, EchonetObject nodeProfile)
+  internal EchonetOtherNode(IPAddress address, EchonetObject nodeProfile)
     : base(nodeProfile)
   {
-    Owner = owner ?? throw new ArgumentNullException(nameof(owner));
     Address = address ?? throw new ArgumentNullException(nameof(address));
 
     devices = new();

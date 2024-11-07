@@ -202,6 +202,7 @@ partial class HemsController {
     EchonetObject ControllerObject
   )
   CreateEchonetObject(
+    EchonetNodeRegistry nodeRegistry,
     IEchonetLiteHandler echonetLiteHandler,
     ILoggerFactory? loggerFactoryForEchonetClient
   )
@@ -228,6 +229,7 @@ partial class HemsController {
       selfNode: controllerNode,
       echonetLiteHandler: echonetLiteHandler,
       shouldDisposeEchonetLiteHandler: ShouldDisposeEchonetLiteHandlerByClient,
+      nodeRegistry: nodeRegistry,
       deviceFactory: RouteBDeviceFactory.Instance,
       resiliencePipelineForSendingResponseFrame: null, // TODO: make configurable
       logger: loggerFactoryForEchonetClient?.CreateLogger<EchonetClient>()
@@ -272,6 +274,7 @@ partial class HemsController {
       Logger?.LogInformation("Route-B connection established.");
 
       (client, controllerObject) = CreateEchonetObject(
+        nodeRegistry,
         echonetLiteHandler,
         loggerFactoryForEchonetClient
       );
@@ -520,7 +523,8 @@ partial class HemsController {
 #pragma warning disable CS8602
 #endif
     var lvsm = client
-      .OtherNodes
+      .NodeRegistry
+      .Nodes
       .FirstOrDefault(n => n.Address.Equals(smartMeterNodeAddress))
       ?.Devices
       ?.OfType<LowVoltageSmartElectricEnergyMeter>()
