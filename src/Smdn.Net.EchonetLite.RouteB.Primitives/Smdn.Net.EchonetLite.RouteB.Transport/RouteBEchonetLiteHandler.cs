@@ -69,12 +69,12 @@ public abstract class RouteBEchonetLiteHandler : EchonetLiteHandler {
 
     async ValueTask Core()
     {
+      if (IsReceiving)
+        await StopReceivingAsync().ConfigureAwait(false);
+
       await DisconnectAsyncCore(
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
-
-      if (IsReceiving)
-        await StopReceivingAsync().ConfigureAwait(false);
     }
   }
 
