@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 using Smdn.Net.EchonetLite.ComponentModel;
@@ -91,6 +92,12 @@ public abstract class EchonetNode {
 
   internal IEchonetClientService GetOwnerOrThrow()
     => Owner ?? throw new InvalidOperationException($"The {nameof(IEchonetClientService)} currently associated with this instance has been disposed or is not yet associated.");
+
+  public bool TryFindDevice(
+    EOJ eoj,
+    [NotNullWhen(true)] out EchonetObject? device
+  )
+    => (device = FindDevice(eoj)) is not null;
 
   internal abstract EchonetObject? FindDevice(EOJ eoj);
 
