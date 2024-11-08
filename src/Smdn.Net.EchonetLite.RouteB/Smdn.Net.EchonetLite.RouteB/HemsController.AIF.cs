@@ -16,8 +16,6 @@ using Microsoft.Extensions.Logging;
 
 using Polly;
 
-using Smdn.Net.EchonetLite.Specifications;
-
 namespace Smdn.Net.EchonetLite.RouteB;
 
 #pragma warning disable IDE0040
@@ -25,7 +23,6 @@ partial class HemsController {
 #pragma warning restore IDE0040
   private EchonetClient? client;
   private LowVoltageSmartElectricEnergyMeter? smartMeterObject;
-  private EchonetObject? controllerObject;
 
   protected EchonetClient Client {
     get {
@@ -57,27 +54,6 @@ partial class HemsController {
 #pragma warning disable CS8603
 #endif
       return smartMeterObject;
-#pragma warning restore CS8603
-    }
-  }
-
-  /// <summary>
-  /// 現在スマートメーターと接続しているコントローラーに対応するECHONETオブジェクトを取得します。
-  /// </summary>
-  /// <exception cref="InvalidOperationException">
-  /// まだ<see cref="ConnectAsync"/>による接続の確立が行われていないか、
-  /// または<see cref="DisconnectAsync"/>によって切断されています。
-  /// </exception>
-  /// <exception cref="ObjectDisposedException">オブジェクトはすでに破棄されています。</exception>
-  public EchonetObject Controller {
-    get {
-      ThrowIfDisposed();
-      ThrowIfDisconnected();
-
-#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-#pragma warning disable CS8603
-#endif
-      return controllerObject;
 #pragma warning restore CS8603
     }
   }
@@ -150,12 +126,11 @@ partial class HemsController {
   [MemberNotNull(nameof(client))]
   [MemberNotNull(nameof(Client))]
   [MemberNotNull(nameof(smartMeterObject))]
-  [MemberNotNull(nameof(controllerObject))]
 #pragma warning disable CS8774
 #endif
   protected void ThrowIfDisconnected()
   {
-    if (client is null || smartMeterObject is null || controllerObject is null)
+    if (client is null || smartMeterObject is null)
       throw new InvalidOperationException("The instance is not connected to smart meter yet or has disconnected from the smart meter.");
   }
 #pragma warning restore CS8774
@@ -193,51 +168,6 @@ partial class HemsController {
 #pragma warning restore IDE0046
   }
 
-  /// <seealso href="https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf">
-  /// 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
-  /// ２．１ ECHONET オブジェクト（EOJ）
-  /// </seealso>
-  private static (
-    EchonetClient Client,
-    EchonetObject ControllerObject
-  )
-  CreateEchonetObject(
-    EchonetNodeRegistry nodeRegistry,
-    IEchonetLiteHandler echonetLiteHandler,
-    ILoggerFactory? loggerFactoryForEchonetClient
-  )
-  {
-    // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
-    // > ※インスタンスコードは 0x01 固定とする。
-    const byte InstanceCodeForController = 0x01;
-
-    var controllerObject = EchonetObject.Create(
-      objectDetail: EchonetDeviceObjectDetail.Controller, // コントローラ (0x05 0xFF)
-      instanceCode: InstanceCodeForController
-    );
-
-    var controllerNode = EchonetNode.CreateSelfNode(
-      nodeProfile: EchonetObject.CreateNodeProfile(transmissionOnly: false),
-      devices: [controllerObject]
-    );
-
-    // EchonetClient and IEchonetLiteHandler are managed its lifetimes separately,
-    // so EchonetClient must not dispose IEchonetLiteHandler
-    const bool ShouldDisposeEchonetLiteHandlerByClient = false;
-
-    var client = new EchonetClient(
-      selfNode: controllerNode,
-      echonetLiteHandler: echonetLiteHandler,
-      shouldDisposeEchonetLiteHandler: ShouldDisposeEchonetLiteHandlerByClient,
-      nodeRegistry: nodeRegistry,
-      deviceFactory: RouteBDeviceFactory.Instance,
-      resiliencePipelineForSendingResponseFrame: null, // TODO: make configurable
-      logger: loggerFactoryForEchonetClient?.CreateLogger<EchonetClient>()
-    );
-
-    return (client, controllerObject);
-  }
-
   private async ValueTask ConnectAsyncCore(
     ResiliencePipeline resiliencePipelineForServiceRequest,
     CancellationToken cancellationToken
@@ -273,14 +203,22 @@ partial class HemsController {
 
       Logger?.LogInformation("Route-B connection established.");
 
-      (client, controllerObject) = CreateEchonetObject(
-        nodeRegistry,
-        echonetLiteHandler,
-        loggerFactoryForEchonetClient
-      );
+      // EchonetClient and IEchonetLiteHandler are managed its lifetimes separately,
+      // so EchonetClient must not dispose IEchonetLiteHandler
+      const bool ShouldDisposeEchonetLiteHandlerByClient = false;
 
-      // share same ISynchronizeInvoke
-      client.SynchronizingObject = synchronizingObject;
+      client = new EchonetClient(
+        selfNode: controllerNode,
+        echonetLiteHandler: echonetLiteHandler,
+        shouldDisposeEchonetLiteHandler: ShouldDisposeEchonetLiteHandlerByClient,
+        nodeRegistry: nodeRegistry,
+        deviceFactory: RouteBDeviceFactory.Instance,
+        resiliencePipelineForSendingResponseFrame: null, // TODO: make configurable
+        logger: loggerFactoryForEchonetClient?.CreateLogger<EchonetClient>()
+      ) {
+        // share same ISynchronizeInvoke
+        SynchronizingObject = synchronizingObject,
+      };
 
       Logger?.LogInformation("Finding smart meter node and device object (this may take a few seconds) ...");
 
@@ -338,7 +276,6 @@ partial class HemsController {
 
       echonetLiteHandler = null;
 
-      controllerObject = null;
       smartMeterObject = null;
 
       throw;
@@ -378,7 +315,6 @@ partial class HemsController {
       }
     }
     finally {
-      controllerObject = null;
       smartMeterObject = null;
 
       client = null;

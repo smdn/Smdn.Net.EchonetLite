@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 
 using Smdn.Net.EchonetLite.RouteB.Credentials;
 using Smdn.Net.EchonetLite.RouteB.Transport;
+using Smdn.Net.EchonetLite.Specifications;
 
 namespace Smdn.Net.EchonetLite.RouteB;
 
@@ -62,6 +63,21 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
   }
 
   protected ILogger? Logger { get; }
+
+  /// <summary>
+  /// 現在スマートメーターと接続しているコントローラーに対応するECHONETオブジェクトを取得します。
+  /// </summary>
+  /// <exception cref="ObjectDisposedException">オブジェクトはすでに破棄されています。</exception>
+  public EchonetObject Controller {
+    get {
+      ThrowIfDisposed();
+
+      return controllerObject;
+    }
+  }
+
+  private readonly EchonetObject controllerObject;
+  private readonly EchonetNode controllerNode;
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(false, nameof(echonetLiteHandler))]
@@ -126,6 +142,22 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
     credentialProvider = routeBCredentialProvider;
     Logger = logger;
     this.loggerFactoryForEchonetClient = loggerFactoryForEchonetClient;
+
+    // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
+    // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
+    // > ２．１ ECHONET オブジェクト（EOJ）
+    // > ※インスタンスコードは 0x01 固定とする。
+    const byte InstanceCodeForController = 0x01;
+
+    controllerObject = EchonetObject.Create(
+      objectDetail: EchonetDeviceObjectDetail.Controller, // コントローラ (0x05 0xFF)
+      instanceCode: InstanceCodeForController
+    );
+
+    controllerNode = EchonetNode.CreateSelfNode(
+      nodeProfile: EchonetObject.CreateNodeProfile(transmissionOnly: false),
+      devices: [controllerObject]
+    );
   }
 
   public void Dispose()
