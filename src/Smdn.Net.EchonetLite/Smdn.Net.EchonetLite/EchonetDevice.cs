@@ -70,7 +70,7 @@ public class EchonetDevice : EchonetObject {
     );
 
   /// <summary>
-  /// 指定されたプロパティコードおよびアクセシビリティを持つ<see cref="EchonetProperty"/>インスタンスを作成する。
+  /// 指定されたプロパティコードおよびアクセスルールを持つ<see cref="EchonetProperty"/>インスタンスを作成します。
   /// </summary>
   /// <param name="propertyCode">作成するプロパティのコード。</param>
   /// <param name="canSet">作成するプロパティのSetアクセス可否を表す<see cref="bool"/>。</param>
@@ -105,7 +105,20 @@ public class EchonetDevice : EchonetObject {
     properties.Clear();
 
     foreach (var (code, canSet, canGet, canAnnounceStatusChange) in propertyMap) {
-      var added = properties.TryAdd(code, CreateProperty(code, canSet, canGet, canAnnounceStatusChange));
+      if (prevProperties.TryGetValue(code, out var property)) {
+        // update and reuse existing property instance
+        property.UpdateAccessRule(
+          canSet: canSet,
+          canGet: canGet,
+          canAnnounceStatusChange: canAnnounceStatusChange
+        );
+      }
+      else {
+        // create new property instance
+        property = CreateProperty(code, canSet, canGet, canAnnounceStatusChange);
+      }
+
+      var added = properties.TryAdd(code, property);
 
       if (added) {
         Node.Owner?.Logger?.LogDebug(
@@ -114,10 +127,6 @@ public class EchonetDevice : EchonetObject {
           EOJ,
           code
         );
-
-        if (prevProperties.TryGetValue(code, out var prevProperty))
-          // 以前の状態を新しく作成したEchonetPropertyに複写する
-          properties[code].CopyFrom(prevProperty);
       }
     }
 

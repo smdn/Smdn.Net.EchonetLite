@@ -29,6 +29,16 @@ internal sealed class DetailedEchonetProperty : EchonetProperty {
     Detail = propertyDetail ?? throw new ArgumentNullException(nameof(propertyDetail));
   }
 
+  protected internal override void UpdateAccessRule(
+    bool canSet,
+    bool canGet,
+    bool canAnnounceStatusChange
+  )
+  {
+    // 詳細仕様で定められたアクセスルールを参照するため、読み取られたプロパティマップのアクセスルールは無視する
+    // (Device.HasPropertyMapAcquiredは常にtrueであるため、そもそもプロパティマップの読み取りは行われない)
+  }
+
   protected internal override bool IsAcceptableValue(ReadOnlySpan<byte> edt)
     => Detail.IsAcceptableValue(edt);
 }

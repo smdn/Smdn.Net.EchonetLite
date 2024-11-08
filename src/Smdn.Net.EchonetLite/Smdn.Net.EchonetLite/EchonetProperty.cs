@@ -164,6 +164,19 @@ public abstract class EchonetProperty {
   }
 
   /// <summary>
+  /// プロパティのアクセスルールを設定します。
+  /// このメソッドはECHONET Lite サービスによって取得・通知されたプロパティマップを反映するために使用します。
+  /// </summary>
+  /// <param name="canSet"><c>Set</c>アクセス可能であるかどうかを設定する値を指定します。</param>
+  /// <param name="canGet"><c>Get</c>アクセス可能であるかどうかを設定する値を指定します。</param>
+  /// <param name="canAnnounceStatusChange"><c>Anno</c>アクセス可能であるかどうかを設定する値を指定します。</param>
+  protected internal abstract void UpdateAccessRule(
+    bool canSet,
+    bool canGet,
+    bool canAnnounceStatusChange
+  );
+
+  /// <summary>
   /// プロパティ値を設定します。
   /// </summary>
   /// <param name="newValue">プロパティ値として設定する値を表す<see cref="ReadOnlyMemory{Byte}"/>。</param>
@@ -389,19 +402,6 @@ public abstract class EchonetProperty {
   /// <paramref name="edt"/>が詳細仕様で定められているサイズ・値域などに適合すると判断される場合は<see langword="true"/>、そうでなければ<see langword="false"/>。
   /// </returns>
   protected internal virtual bool IsAcceptableValue(ReadOnlySpan<byte> edt) => true;
-
-  internal void CopyFrom(EchonetProperty other)
-  {
-    SetValue(
-      other.ValueMemory,
-      raiseValueUpdatedEvent: false,
-      setLastUpdatedTime: false
-    );
-
-    ValueUpdated = other.ValueUpdated; // shallow copy
-    LastUpdatedTime = other.LastUpdatedTime;
-    HasModified = other.HasModified;
-  }
 
   public override string ToString()
     => $"{GetType().FullName} (Code: 0x{Code:X2}, Value: {ValueMemory.ToHexString()})";

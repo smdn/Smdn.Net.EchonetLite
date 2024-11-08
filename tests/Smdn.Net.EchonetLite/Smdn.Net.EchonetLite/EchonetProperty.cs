@@ -51,6 +51,9 @@ public class EchonetPropertyTests {
     public override bool CanSet => true;
     public override bool CanGet => true;
     public override bool CanAnnounceStatusChange => true;
+
+    protected override void UpdateAccessRule(bool canSet, bool canGet, bool canAnnounceStatusChange)
+      => throw new NotImplementedException();
   }
 
   private static EchonetProperty CreateProperty()

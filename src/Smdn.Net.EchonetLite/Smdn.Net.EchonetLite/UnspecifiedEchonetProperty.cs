@@ -11,9 +11,15 @@ namespace Smdn.Net.EchonetLite;
 internal sealed class UnspecifiedEchonetProperty : EchonetProperty {
   public override EchonetObject Device { get; }
   public override byte Code { get; }
-  public override bool CanSet { get; }
-  public override bool CanGet { get; }
-  public override bool CanAnnounceStatusChange { get; }
+
+  public override bool CanSet => canSet;
+  private bool canSet;
+
+  public override bool CanGet => canGet;
+  private bool canGet;
+
+  public override bool CanAnnounceStatusChange => canAnnounceStatusChange;
+  private bool canAnnounceStatusChange;
 
   internal UnspecifiedEchonetProperty(
     EchonetObject device,
@@ -25,8 +31,19 @@ internal sealed class UnspecifiedEchonetProperty : EchonetProperty {
   {
     Device = device ?? throw new ArgumentNullException(nameof(device));
     Code = code;
-    CanSet = canSet;
-    CanGet = canGet;
-    CanAnnounceStatusChange = canAnnounceStatusChange;
+    this.canSet = canSet;
+    this.canGet = canGet;
+    this.canAnnounceStatusChange = canAnnounceStatusChange;
+  }
+
+  protected internal override void UpdateAccessRule(
+    bool canSet,
+    bool canGet,
+    bool canAnnounceStatusChange
+  )
+  {
+    this.canSet = canSet;
+    this.canGet = canGet;
+    this.canAnnounceStatusChange = canAnnounceStatusChange;
   }
 }
