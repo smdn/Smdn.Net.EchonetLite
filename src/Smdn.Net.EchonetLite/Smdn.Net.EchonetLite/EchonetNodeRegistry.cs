@@ -49,7 +49,22 @@ public sealed class EchonetNodeRegistry {
     readOnlyNodesView = new(nodes);
   }
 
-  internal bool TryResolve(
+  public bool TryFind(
+    IPAddress address,
+    [NotNullWhen(true)] out EchonetNode? node
+  )
+  {
+    node = default;
+
+    if (nodes.TryGetValue(address, out var otherNode)) {
+      node = otherNode;
+      return true;
+    }
+
+    return false;
+  }
+
+  internal bool TryFind(
     IPAddress address,
     [NotNullWhen(true)] out EchonetOtherNode? node
   )

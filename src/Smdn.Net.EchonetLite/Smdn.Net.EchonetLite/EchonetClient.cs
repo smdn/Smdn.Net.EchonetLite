@@ -241,7 +241,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// </returns>
   private EchonetOtherNode GetOrAddOtherNode(IPAddress address, ESV esv)
   {
-    if (NodeRegistry.TryResolve(address, out var otherNode))
+    if (NodeRegistry.TryFind(address, out EchonetOtherNode? otherNode))
       return otherNode;
 
     // 未知の他ノードの場合、ノードを生成
