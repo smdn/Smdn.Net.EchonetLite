@@ -19,14 +19,14 @@ public readonly struct EchonetServiceResponse {
   /// <summary>
   /// 応答における個々のプロパティ値の処理結果を表す<see cref="EchonetServicePropertyResult"/>を参照するためのディクショナリを取得します。
   /// </summary>
-  public IReadOnlyDictionary<EchonetProperty, EchonetServicePropertyResult> Properties { get; init; }
+  public IReadOnlyDictionary<byte, EchonetServicePropertyResult> Results { get; init; }
 
   internal EchonetServiceResponse(
     bool isSuccess,
-    IReadOnlyDictionary<EchonetProperty, EchonetServicePropertyResult> properties
+    IReadOnlyDictionary<byte, EchonetServicePropertyResult> results
   )
   {
     IsSuccess = isSuccess;
-    Properties = properties;
+    Results = results;
   }
 }

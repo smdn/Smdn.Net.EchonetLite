@@ -26,7 +26,7 @@ using ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary =
 #else
   Smdn.Net.EchonetLite.EchonetClient.ReadOnlyDictionaryShim<
 #endif
-    Smdn.Net.EchonetLite.EchonetProperty,
+    byte,
     Smdn.Net.EchonetLite.EchonetServicePropertyResult
   >;
 
@@ -305,7 +305,7 @@ partial class EchonetClient
         new(
           isSuccess: value.Message.ESV == ESV.SetResponse,
           // TODO: 個々のプロパティの処理結果を設定する
-          properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
         )
       );
 
@@ -429,7 +429,7 @@ partial class EchonetClient
         new(
           isSuccess: value.Message.ESV == ESV.GetResponse,
           // TODO: 個々のプロパティの処理結果を設定する
-          properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
         )
       );
 
@@ -579,12 +579,12 @@ partial class EchonetClient
           SetResponse: new(
             isSuccess: isSuccess,
             // TODO: 個々のプロパティの処理結果を設定する
-            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+            results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
           ),
           GetResponse: new(
             isSuccess: isSuccess,
             // TODO: 個々のプロパティの処理結果を設定する
-            properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+            results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
           )
         )
       );
@@ -836,7 +836,7 @@ partial class EchonetClient
         new(
           isSuccess: true,
           // TODO: 個々のプロパティの処理結果を設定する
-          properties: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
         )
       );
     }
