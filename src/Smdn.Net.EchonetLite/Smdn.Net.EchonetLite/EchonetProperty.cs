@@ -8,7 +8,6 @@ using System.Buffers;
 
 using Microsoft.Extensions.Logging;
 
-using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -39,19 +38,13 @@ public abstract class EchonetProperty {
   /// </remarks>
   /// <seealso cref="ValueMemory"/>
   /// <seealso cref="ValueSpan"/>
-  public event EventHandler<(ReadOnlyMemory<byte> OldValue, ReadOnlyMemory<byte> NewValue)>? ValueUpdated;
+  /// <seealso cref="EchonetPropertyValueUpdatedEventArgs"/>
+  public event EventHandler<EchonetPropertyValueUpdatedEventArgs>? ValueUpdated;
 
   /// <summary>
   /// このインスタンスが属するECHONETオブジェクトを表す<see cref="EchonetObject"/>を取得します。
   /// </summary>
   public abstract EchonetObject Device { get; }
-
-  /// <summary>
-  /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
-  /// </summary>
-  /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
-  protected virtual IEventInvoker EventInvoker
-    => Device.OwnerNode?.EventInvoker ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
 
 #if SYSTEM_TIMEPROVIDER
   /// <summary>
@@ -126,17 +119,17 @@ public abstract class EchonetProperty {
   public ReadOnlySpan<byte> ValueSpan => value is null ? ReadOnlySpan<byte>.Empty : value.WrittenSpan;
 
   /// <summary>
-  /// プロパティ値データ(EDT)を更新した時刻を表す<see cref="DateTimeOffset"/>を取得します。
+  /// プロパティ値データ(EDT)を更新した時刻を表す<see cref="DateTime"/>を取得します。
   /// </summary>
   /// <remarks>
-  /// このプロパティは、他ノードに属するECHONETオブジェクトのプロパティ値を更新した時刻を保持します。
+  /// このプロパティは、他ノードに属するECHONETオブジェクトのプロパティ値を更新した時刻(ローカル時刻)を保持します。
   /// 具体的には、次の状況でプロパティ値を取得した時刻・通知された時刻を保持します。
   /// <list type="bullet">
   ///   <item>他ノードに属するECHONETオブジェクトに対するプロパティ値の読み出し・通知要求に対する応答</item>
   ///   <item>他ノードに属するECHONETオブジェクトからのプロパティ値通知</item>
   /// </list>
   /// </remarks>
-  public DateTimeOffset LastUpdatedTime { get; private set; }
+  public DateTime LastUpdatedTime { get; private set; }
 
   /// <summary>
   /// プロパティ値データ(EDT)が変更されているかどうかを表す<see cref="bool"/>型の値を返します。
@@ -307,7 +300,6 @@ public abstract class EchonetProperty {
     bool? newModificationState
   )
   {
-    var valueUpdatedHandlers = ValueUpdated;
     byte[]? oldValue = null;
 
     try {
@@ -352,12 +344,14 @@ public abstract class EchonetProperty {
       if (newModificationState.HasValue)
         HasModified = newModificationState.Value;
 
+      var previousUpdatedTime = LastUpdatedTime;
+
       if (setLastUpdatedTime) {
         LastUpdatedTime =
 #if SYSTEM_TIMEPROVIDER
-          TimeProvider.GetLocalNow();
+          TimeProvider.GetLocalNow().LocalDateTime;
 #else
-          DateTimeOffset.Now;
+          DateTime.Now;
 #endif
       }
 
@@ -375,13 +369,12 @@ public abstract class EchonetProperty {
       if (!raiseValueUpdatedEvent)
         return;
 
-      if (valueUpdatedHandlers is null)
-        return;
-
-      var oldValueCopy = oldValue is null ? Array.Empty<byte>() : oldValue.AsSpan(0, oldValueLength).ToArray();
-      var newValueMemory = value.WrittenMemory;
-
-      EventInvoker.InvokeEvent(this, valueUpdatedHandlers, e: (oldValueCopy, newValueMemory));
+      Device.RaisePropertyValueUpdated(
+        property: this,
+        valueUpdatedEventHander: ValueUpdated,
+        oldValue: oldValue.AsSpan(0, oldValueLength),
+        previousUpdatedTime: previousUpdatedTime
+      );
     }
     finally {
       if (oldValue is not null)
