@@ -39,15 +39,15 @@ public abstract partial class EchonetObject {
   /// <summary>
   /// このオブジェクトが属するECHONET Liteノードを表す<see cref="EchonetNode"/>を取得します。
   /// </summary>
-  public EchonetNode Node => OwnerNode;
+  public EchonetNode Node => OwnerNode ?? throw new InvalidOperationException($"{nameof(OwnerNode)} is not set to a valid value.");
 
-  internal EchonetNode OwnerNode {
+  internal EchonetNode? OwnerNode {
 #if false // requires semi-auto properties
-    get => field ?? throw new InvalidOperationException($"{nameof(OwnerNode)} is not set to a valid value.");
+    get => field;
     set => field = value ?? throw new InvalidOperationException($"{nameof(OwnerNode)} can not be null");
   }
 #else
-    get => ownerNode ?? throw new InvalidOperationException($"{nameof(OwnerNode)} is not set to a valid value.");
+    get => ownerNode;
     set => ownerNode = value ?? throw new InvalidOperationException($"{nameof(OwnerNode)} can not be null.");
   }
 
