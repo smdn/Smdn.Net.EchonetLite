@@ -8,7 +8,6 @@ using System.Buffers;
 
 using Microsoft.Extensions.Logging;
 
-using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -46,13 +45,6 @@ public abstract class EchonetProperty {
   /// このインスタンスが属するECHONETオブジェクトを表す<see cref="EchonetObject"/>を取得します。
   /// </summary>
   public abstract EchonetObject Device { get; }
-
-  /// <summary>
-  /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
-  /// </summary>
-  /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
-  protected virtual IEventInvoker EventInvoker
-    => Device.OwnerNode?.EventInvoker ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
 
 #if SYSTEM_TIMEPROVIDER
   /// <summary>
@@ -308,7 +300,6 @@ public abstract class EchonetProperty {
     bool? newModificationState
   )
   {
-    var valueUpdatedHandlers = ValueUpdated;
     byte[]? oldValue = null;
 
     try {
@@ -378,19 +369,12 @@ public abstract class EchonetProperty {
       if (!raiseValueUpdatedEvent)
         return;
 
-      if (valueUpdatedHandlers is null)
-        return;
-
-      var oldValueCopy = oldValue is null ? Array.Empty<byte>() : oldValue.AsSpan(0, oldValueLength).ToArray();
-      var e = new EchonetPropertyValueUpdatedEventArgs(
+      Device.RaisePropertyValueUpdated(
         property: this,
-        oldValue: oldValueCopy,
-        newValue: value.WrittenMemory,
-        previousUpdatedTime: previousUpdatedTime,
-        updatedTime: LastUpdatedTime
+        valueUpdatedEventHander: ValueUpdated,
+        oldValue: oldValue.AsSpan(0, oldValueLength),
+        previousUpdatedTime: previousUpdatedTime
       );
-
-      EventInvoker.InvokeEvent(this, valueUpdatedHandlers, e);
     }
     finally {
       if (oldValue is not null)

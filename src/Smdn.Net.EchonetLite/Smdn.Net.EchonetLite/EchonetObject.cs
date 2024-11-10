@@ -37,6 +37,14 @@ public abstract partial class EchonetObject {
   public event EventHandler<NotifyCollectionChangedEventArgs>? PropertiesChanged;
 
   /// <summary>
+  /// 現在のオブジェクトの、いずれかのプロパティの値が更新されたときに発生するイベント。
+  /// このイベントは、<see cref="EchonetProperty.ValueUpdated"/>と同じ契機で発生します。
+  /// </summary>
+  /// <seealso cref="EchonetPropertyValueUpdatedEventArgs"/>
+  /// <seealso cref="EchonetProperty.ValueUpdated"/>
+  public event EventHandler<EchonetPropertyValueUpdatedEventArgs>? PropertyValueUpdated;
+
+  /// <summary>
   /// このオブジェクトが属するECHONET Liteノードを表す<see cref="EchonetNode"/>を取得します。
   /// </summary>
   public EchonetNode Node => OwnerNode ?? throw new InvalidOperationException($"{nameof(OwnerNode)} is not set to a valid value.");
@@ -126,6 +134,34 @@ public abstract partial class EchonetObject {
 
   private protected void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
     => EventInvoker.InvokeEvent(this, PropertiesChanged, e);
+
+  protected internal void OnPropertyValueUpdated(EchonetPropertyValueUpdatedEventArgs e)
+    => EventInvoker.InvokeEvent(this, PropertyValueUpdated, e);
+
+  internal void RaisePropertyValueUpdated(
+    EchonetProperty property,
+    EventHandler<EchonetPropertyValueUpdatedEventArgs>? valueUpdatedEventHander,
+    ReadOnlySpan<byte> oldValue,
+    DateTime previousUpdatedTime
+  )
+  {
+    var propertyValueUpdatedEventHandler = PropertyValueUpdated;
+
+    if (propertyValueUpdatedEventHandler is null && valueUpdatedEventHander is null)
+      return; // nothing to do
+
+    var e = new EchonetPropertyValueUpdatedEventArgs(
+      property,
+      oldValue: oldValue.ToArray(), // TODO: reduce allocation
+      newValue: property.ValueMemory,
+      previousUpdatedTime: previousUpdatedTime,
+      updatedTime: property.LastUpdatedTime
+    );
+
+    EventInvoker.InvokeEvent(property, valueUpdatedEventHander, e);
+
+    OnPropertyValueUpdated(e);
+  }
 
   /// <summary>
   /// ECHONET サービスによって確定したECHONET プロパティの値を<see cref="EchonetProperty"/>に格納します。

@@ -31,9 +31,21 @@ public class EchonetPropertyTests {
       => eventHandler?.Invoke(sender, e);
   }
 
-  private class PseudoProperty : EchonetProperty {
-    public override EchonetObject Device => throw new NotImplementedException();
+  private class PseudoDevice : EchonetDevice {
     protected override IEventInvoker EventInvoker { get; } = new PseudoEventInvoker();
+
+    public PseudoDevice()
+      : base(
+        classGroupCode: 0x00,
+        classCode: 0x00,
+        instanceCode: 0x00
+      )
+    {
+    }
+  }
+
+  private class PseudoProperty : EchonetProperty {
+    public override EchonetObject Device { get; } = new PseudoDevice();
 
 #if SYSTEM_TIMEPROVIDER
     protected override TimeProvider TimeProvider { get; }
