@@ -126,17 +126,17 @@ public abstract class EchonetProperty {
   public ReadOnlySpan<byte> ValueSpan => value is null ? ReadOnlySpan<byte>.Empty : value.WrittenSpan;
 
   /// <summary>
-  /// プロパティ値データ(EDT)を更新した時刻を表す<see cref="DateTimeOffset"/>を取得します。
+  /// プロパティ値データ(EDT)を更新した時刻を表す<see cref="DateTime"/>を取得します。
   /// </summary>
   /// <remarks>
-  /// このプロパティは、他ノードに属するECHONETオブジェクトのプロパティ値を更新した時刻を保持します。
+  /// このプロパティは、他ノードに属するECHONETオブジェクトのプロパティ値を更新した時刻(ローカル時刻)を保持します。
   /// 具体的には、次の状況でプロパティ値を取得した時刻・通知された時刻を保持します。
   /// <list type="bullet">
   ///   <item>他ノードに属するECHONETオブジェクトに対するプロパティ値の読み出し・通知要求に対する応答</item>
   ///   <item>他ノードに属するECHONETオブジェクトからのプロパティ値通知</item>
   /// </list>
   /// </remarks>
-  public DateTimeOffset LastUpdatedTime { get; private set; }
+  public DateTime LastUpdatedTime { get; private set; }
 
   /// <summary>
   /// プロパティ値データ(EDT)が変更されているかどうかを表す<see cref="bool"/>型の値を返します。
@@ -355,9 +355,9 @@ public abstract class EchonetProperty {
       if (setLastUpdatedTime) {
         LastUpdatedTime =
 #if SYSTEM_TIMEPROVIDER
-          TimeProvider.GetLocalNow();
+          TimeProvider.GetLocalNow().LocalDateTime;
 #else
-          DateTimeOffset.Now;
+          DateTime.Now;
 #endif
       }
 

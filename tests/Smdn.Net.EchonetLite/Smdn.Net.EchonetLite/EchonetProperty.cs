@@ -17,8 +17,10 @@ namespace Smdn.Net.EchonetLite;
 [TestFixture]
 public class EchonetPropertyTests {
 #if SYSTEM_TIMEPROVIDER
-  private class PseudoConstantTimeProvider(DateTimeOffset localNow) : TimeProvider {
-    public override DateTimeOffset GetUtcNow() => localNow.ToUniversalTime();
+  private class PseudoConstantTimeProvider(DateTime localNow) : TimeProvider {
+    private readonly DateTimeOffset LocalNow = new DateTimeOffset(localNow, TimeZoneInfo.Local.BaseUtcOffset);
+
+    public override DateTimeOffset GetUtcNow() => LocalNow.ToUniversalTime();
   }
 #endif
 
@@ -97,14 +99,14 @@ public class EchonetPropertyTests {
 
     p.ValueUpdated += (sender, val) => countOfValueUpdated++;
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
     p.SetValue(newValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #1");
     Assert.That(countOfValueUpdated, Is.Zero, $"{nameof(countOfValueUpdated)} after {nameof(p.ValueUpdated)} #1");
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
 
     // reset
     p.SetValue(resetValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
@@ -168,16 +170,17 @@ public class EchonetPropertyTests {
   [TestCaseSource(nameof(YieldTestCases_SetValue))]
   public void SetValue_SetLastUpdatedTime(byte[] newValue)
   {
-    var setLastUpdatedTime = new DateTimeOffset(2024, 10, 3, 19, 40, 16, TimeSpan.FromHours(9.0));
+    var setLastUpdatedTime = new DateTime(2024, 10, 3, 19, 40, 16, DateTimeKind.Local);
     var p = CreateProperty(new PseudoConstantTimeProvider(setLastUpdatedTime));
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
     p.SetValue(newValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: true);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #1");
     Assert.That(p.LastUpdatedTime, Is.EqualTo(setLastUpdatedTime), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
+    Assert.That(p.LastUpdatedTime.Kind, Is.EqualTo(DateTimeKind.Local));
   }
 #endif
 
@@ -206,14 +209,14 @@ public class EchonetPropertyTests {
 
     p.ValueUpdated += (sender, val) => countOfValueUpdated++;
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
     p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.WriteValue)} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.WriteValue)} #1");
     Assert.That(countOfValueUpdated, Is.Zero, $"{nameof(countOfValueUpdated)} after {nameof(p.WriteValue)} #1");
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
 
     // reset
     p.SetValue(resetValue, raiseValueUpdatedEvent: false, setLastUpdatedTime: false);
@@ -277,16 +280,17 @@ public class EchonetPropertyTests {
   [TestCaseSource(nameof(YieldTestCases_WriteValue))]
   public void WriteValue_SetLastUpdatedTime(byte[] newValue)
   {
-    var setLastUpdatedTime = new DateTimeOffset(2024, 10, 3, 19, 40, 16, TimeSpan.FromHours(9.0));
+    var setLastUpdatedTime = new DateTime(2024, 10, 3, 19, 40, 16, DateTimeKind.Local);
     var p = CreateProperty(new PseudoConstantTimeProvider(setLastUpdatedTime));
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTimeOffset)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
+    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
     p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueUpdatedEvent: false, setLastUpdatedTime: true);
 
     Assert.That(p.ValueMemory, SequenceIs.EqualTo(newValue), $"{nameof(p.ValueMemory)} after {nameof(p.ValueUpdated)} #1");
     Assert.That(p.ValueSpan.ToArray(), SequenceIs.EqualTo(newValue), $"{nameof(p.ValueSpan)} after {nameof(p.ValueUpdated)} #1");
     Assert.That(p.LastUpdatedTime, Is.EqualTo(setLastUpdatedTime), $"{nameof(p.LastUpdatedTime)} after {nameof(p.ValueUpdated)}");
+    Assert.That(p.LastUpdatedTime.Kind, Is.EqualTo(DateTimeKind.Local));
   }
 #endif
 
