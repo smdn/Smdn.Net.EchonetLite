@@ -72,7 +72,7 @@ Console.CancelKeyPress += (sender, e) => {
 using var hemsController = new HemsController(services.BuildServiceProvider());
 
 // 上記の設定でスマートメーターへ接続します (接続確立まで数秒〜数十秒程度かかります)
-await hemsController.ConnectAsync(cts.Token);
+await hemsController.ConnectAsync(null, cts.Token);
 
 // スマートメーターを操作するオブジェクトを参照します
 var smartMeter = hemsController.SmartMeter;
@@ -85,6 +85,7 @@ await smartMeter.ReadPropertiesAsync(
     smartMeter.NormalDirectionCumulativeElectricEnergy.PropertyCode,
   ],
   hemsController.Controller,
+  null,
   cts.Token
 );
 
