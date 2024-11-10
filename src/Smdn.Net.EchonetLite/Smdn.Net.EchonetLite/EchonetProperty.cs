@@ -39,7 +39,8 @@ public abstract class EchonetProperty {
   /// </remarks>
   /// <seealso cref="ValueMemory"/>
   /// <seealso cref="ValueSpan"/>
-  public event EventHandler<(ReadOnlyMemory<byte> OldValue, ReadOnlyMemory<byte> NewValue)>? ValueUpdated;
+  /// <seealso cref="EchonetPropertyValueUpdatedEventArgs"/>
+  public event EventHandler<EchonetPropertyValueUpdatedEventArgs>? ValueUpdated;
 
   /// <summary>
   /// このインスタンスが属するECHONETオブジェクトを表す<see cref="EchonetObject"/>を取得します。
@@ -352,6 +353,8 @@ public abstract class EchonetProperty {
       if (newModificationState.HasValue)
         HasModified = newModificationState.Value;
 
+      var previousUpdatedTime = LastUpdatedTime;
+
       if (setLastUpdatedTime) {
         LastUpdatedTime =
 #if SYSTEM_TIMEPROVIDER
@@ -379,9 +382,15 @@ public abstract class EchonetProperty {
         return;
 
       var oldValueCopy = oldValue is null ? Array.Empty<byte>() : oldValue.AsSpan(0, oldValueLength).ToArray();
-      var newValueMemory = value.WrittenMemory;
+      var e = new EchonetPropertyValueUpdatedEventArgs(
+        property: this,
+        oldValue: oldValueCopy,
+        newValue: value.WrittenMemory,
+        previousUpdatedTime: previousUpdatedTime,
+        updatedTime: LastUpdatedTime
+      );
 
-      EventInvoker.InvokeEvent(this, valueUpdatedHandlers, e: (oldValueCopy, newValueMemory));
+      EventInvoker.InvokeEvent(this, valueUpdatedHandlers, e);
     }
     finally {
       if (oldValue is not null)

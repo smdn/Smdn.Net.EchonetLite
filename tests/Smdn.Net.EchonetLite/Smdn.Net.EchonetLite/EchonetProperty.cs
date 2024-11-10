@@ -97,7 +97,7 @@ public class EchonetPropertyTests {
     var countOfValueUpdated = 0;
     var resetValue = new byte[] { 0xCD, 0xCD };
 
-    p.ValueUpdated += (sender, val) => countOfValueUpdated++;
+    p.ValueUpdated += (sender, e) => countOfValueUpdated++;
 
     Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
@@ -127,26 +127,7 @@ public class EchonetPropertyTests {
     var countOfValueUpdated = 0;
     var resetValue = new byte[] { 0xCD, 0xCD };
 
-#pragma warning disable CS0618
-    p.ValueUpdated += (sender, val) => {
-      Assert.That(p, Is.SameAs(sender), nameof(p));
-      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val.NewValue), $"{nameof(p.ValueMemory)} on {nameof(p.ValueUpdated)} #{countOfValueUpdated}");
-
-      Assert.That(
-        val.NewValue,
-        SequenceIs.EqualTo(
-          countOfValueUpdated switch {
-            0 or 2 => newValue.AsMemory(),
-            1 => resetValue.AsMemory(),
-            _ => throw new InvalidOperationException("unexpected event")
-          }
-        ),
-        $"{nameof(p.ValueMemory)} on {nameof(p.ValueUpdated)} #{countOfValueUpdated}"
-      );
-
-      countOfValueUpdated++;
-    };
-#pragma warning restore CS0618
+    p.ValueUpdated += (sender, e) => countOfValueUpdated++;
 
     p.SetValue(newValue, raiseValueUpdatedEvent: true, setLastUpdatedTime: false);
 
@@ -207,7 +188,7 @@ public class EchonetPropertyTests {
     var countOfValueUpdated = 0;
     var resetValue = new byte[] { 0xCD, 0xCD };
 
-    p.ValueUpdated += (sender, val) => countOfValueUpdated++;
+    p.ValueUpdated += (sender, e) => countOfValueUpdated++;
 
     Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.ValueUpdated)}");
 
@@ -237,26 +218,7 @@ public class EchonetPropertyTests {
     var countOfValueUpdated = 0;
     var resetValue = new byte[] { 0xCD, 0xCD };
 
-#pragma warning disable CS0618
-    p.ValueUpdated += (sender, val) => {
-      Assert.That(p, Is.SameAs(sender), nameof(p));
-      Assert.That(p.ValueMemory, SequenceIs.EqualTo(val.NewValue), $"{nameof(p.ValueMemory)} on {nameof(p.ValueUpdated)} #{countOfValueUpdated}");
-
-      Assert.That(
-        val.NewValue,
-        SequenceIs.EqualTo(
-          countOfValueUpdated switch {
-            0 or 2 => newValue.AsMemory(),
-            1 => resetValue.AsMemory(),
-            _ => throw new InvalidOperationException("unexpected event")
-          }
-        ),
-        $"{nameof(p.ValueMemory)} on {nameof(p.ValueUpdated)} #{countOfValueUpdated}"
-      );
-
-      countOfValueUpdated++;
-    };
-#pragma warning restore CS0618
+    p.ValueUpdated += (sender, e) => countOfValueUpdated++;
 
     p.WriteValue(writer => writer.Write(newValue.AsSpan()), raiseValueUpdatedEvent: true, setLastUpdatedTime: false);
 
@@ -310,20 +272,22 @@ public class EchonetPropertyTests {
     var countOfValueUpdated = 0;
 
     p.ValueUpdated += (sender, e) => {
-      Assert.That(p, Is.SameAs(sender), nameof(p));
+      Assert.That(sender, Is.SameAs(p), nameof(sender));
 
+      Assert.That(e.Property, Is.SameAs(p), nameof(e.Property));
       Assert.That(e.OldValue, SequenceIs.EqualTo(ReadOnlyMemory<byte>.Empty), nameof(e.OldValue));
       Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
+      Assert.That(e.PreviousUpdatedTime, Is.EqualTo(default(DateTime)), nameof(e.PreviousUpdatedTime));
+      Assert.That(e.UpdatedTime, Is.GreaterThan(e.PreviousUpdatedTime), nameof(e.UpdatedTime));
 
       countOfValueUpdated++;
     };
 
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true));
+    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true));
 
     Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #1");
 
-    // set same value again
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory()));
+    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: false, setLastUpdatedTime: true));
 
     Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #2");
   }
@@ -345,17 +309,28 @@ public class EchonetPropertyTests {
     p.SetValue(initialValue.AsMemory(), raiseValueUpdatedEvent: true);
 
     var countOfValueUpdated = 0;
+    var expectedPreviousUpdatedTime = default(DateTime);
 
     p.ValueUpdated += (sender, e) => {
-      Assert.That(p, Is.SameAs(sender), nameof(p));
+      Assert.That(sender, Is.SameAs(p), nameof(sender));
+      Assert.That(e.Property, Is.SameAs(p), nameof(e.Property));
 
       switch (countOfValueUpdated) {
         case 0:
           Assert.That(e.OldValue, SequenceIs.EqualTo(initialValue), nameof(e.OldValue));
+          Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
+          Assert.That(e.PreviousUpdatedTime, Is.EqualTo(expectedPreviousUpdatedTime), nameof(e.PreviousUpdatedTime));
+          Assert.That(e.UpdatedTime, Is.GreaterThan(e.PreviousUpdatedTime), nameof(e.UpdatedTime));
+
+          expectedPreviousUpdatedTime = e.UpdatedTime;
+
           break;
 
         case 1:
           Assert.That(e.OldValue, SequenceIs.EqualTo(newValue), nameof(e.OldValue));
+          Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
+          Assert.That(e.PreviousUpdatedTime, Is.EqualTo(expectedPreviousUpdatedTime), nameof(e.PreviousUpdatedTime));
+          Assert.That(e.UpdatedTime, Is.GreaterThan(e.PreviousUpdatedTime), nameof(e.UpdatedTime));
           break;
 
         default:
@@ -363,17 +338,15 @@ public class EchonetPropertyTests {
           break;
       }
 
-      Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
-
       countOfValueUpdated++;
     };
 
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true));
+    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true));
 
     Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #1");
 
     // set same value again
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true));
+    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true));
 
     Assert.That(countOfValueUpdated, Is.EqualTo(2), $"{nameof(countOfValueUpdated)} #2");
   }
