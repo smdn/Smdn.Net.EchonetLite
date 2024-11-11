@@ -101,15 +101,17 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
   }
 
   /// <summary>
-  /// <see cref="NormalDirectionValueInKiloWattHours"/>の値に変化があったことを通知するイベントを発生させます。
+  /// <see cref="NormalDirectionValueInKiloWattHours"/>の値が更新された場合に呼び出されるコールバックメソッドです。
+  /// このメソッドは、最新の計測値が最初に取得された時点、および一定時間おきの取得要求により更新された場合に呼び出されます。
   /// </summary>
-  private void RaiseNormalDirectionValueInKiloWattHoursChanged()
+  protected virtual void OnNormalDirectionValueChanged()
     => OnPropertyChanged(propertyName: nameof(NormalDirectionValueInKiloWattHours));
 
   /// <summary>
-  /// <see cref="ReverseDirectionValueInKiloWattHours"/>の値に変化があったことを通知するイベントを発生させます。
+  /// <see cref="ReverseDirectionValueInKiloWattHours"/>の値が更新された場合に呼び出されるコールバックメソッドです。
+  /// このメソッドは、最新の計測値が最初に取得された時点、および一定時間おきの取得要求により更新された場合に呼び出されます。
   /// </summary>
-  private void RaiseReverseDirectionValueInKiloWattHoursChanged()
+  protected virtual void OnReverseDirectionValueChanged()
     => OnPropertyChanged(propertyName: nameof(ReverseDirectionValueInKiloWattHours));
 
   /// <summary>
@@ -117,28 +119,28 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
   /// このメソッドは、最新の計測値が最初に取得された時点、および一定時間おきの取得要求により更新された場合に呼び出されます。
   /// </summary>
   protected internal virtual void OnNormalDirectionLatestValueUpdated()
-    => RaiseNormalDirectionValueInKiloWattHoursChanged();
+    => OnNormalDirectionValueChanged();
 
   /// <summary>
   /// 最新の計測値（逆方向）が更新された場合に呼び出されるコールバックメソッドです。
   /// このメソッドは、最新の計測値が最初に取得された時点、および一定時間おきの取得要求により更新された場合に呼び出されます。
   /// </summary>
   protected internal virtual void OnReverseDirectionLatestValueUpdated()
-    => RaiseReverseDirectionValueInKiloWattHoursChanged();
+    => OnReverseDirectionValueChanged();
 
   /// <summary>
   /// 計測期間内の基準値（正方向）が更新された場合に呼び出されるコールバックメソッドです。
   /// このメソッドは、基準値が最初に取得された時点、および以前の基準値が計測期間外となり再取得された場合に呼び出されます。
   /// </summary>
   protected virtual void OnNormalDirectionBaselineValueUpdated()
-    => RaiseNormalDirectionValueInKiloWattHoursChanged();
+    => OnNormalDirectionValueChanged();
 
   /// <summary>
   /// 計測期間内の基準値（逆方向）が更新された場合に呼び出されるコールバックメソッドです。
   /// このメソッドは、基準値が最初に取得された時点、および以前の基準値が計測期間外となり再取得された場合に呼び出されます。
   /// </summary>
   protected virtual void OnReverseDirectionBaselineValueUpdated()
-    => RaiseReverseDirectionValueInKiloWattHoursChanged();
+    => OnReverseDirectionValueChanged();
 
   private bool IsBaselineValueUpToDate(bool normalOrReverseDirection)
   {
