@@ -32,9 +32,18 @@ public abstract class MeasurementValueAggregation<TMeasurementValue> : SmartMete
   public TMeasurementValue LatestValue {
     get {
       if (!PropertyAccessor.TryGetValue(out var value))
-        throw new InvalidOperationException("latest value is not yet aggregated");
+        throw new InvalidOperationException("latest value is not yet aggregated or property is not available");
 
       return value;
+    }
+  }
+
+  public DateTime LatestMeasurementTime {
+    get {
+      if (!PropertyAccessor.IsAvailable)
+        throw new InvalidOperationException("property is not available");
+
+      return PropertyAccessor.BaseProperty.LastUpdatedTime;
     }
   }
 
