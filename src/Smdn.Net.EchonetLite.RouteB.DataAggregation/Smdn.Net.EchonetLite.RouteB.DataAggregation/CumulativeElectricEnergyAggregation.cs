@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
 
@@ -38,34 +34,13 @@ public sealed class CumulativeElectricEnergyAggregation : PeriodicCumulativeElec
   {
   }
 
-  internal override ValueTask<bool> UpdateBaselineValueAsync(
-    ILogger? logger,
-    CancellationToken cancellationToken
-  )
-    => new(true); // nothing to do
-
-  public override bool TryGetCumulativeValue(
+  protected override bool TryGetBaselineValue(
     bool normalOrReverseDirection,
-    out decimal valueInKiloWattHours,
-    out DateTime measuredAt
+    out MeasurementValue<ElectricEnergyValue> value
   )
   {
-    var smartMeter = GetAggregatorOrThrow().SmartMeter;
+    value = default; // has no baseline value, so return 0 always
 
-    valueInKiloWattHours = default;
-    measuredAt = default;
-
-    var latestMeasurementValue = normalOrReverseDirection
-      ? smartMeter.NormalDirectionCumulativeElectricEnergyAtEvery30Min.Value
-      : smartMeter.ReverseDirectionCumulativeElectricEnergyAtEvery30Min.Value;
-
-    if (latestMeasurementValue.Value.TryGetValueAsKiloWattHours(out var kwhLatest)) {
-      valueInKiloWattHours = kwhLatest;
-      measuredAt = latestMeasurementValue.MeasuredAt;
-
-      return true;
-    }
-
-    return false;
+    return true; // has no baseline value, so always claims to be up-to-date always
   }
 }

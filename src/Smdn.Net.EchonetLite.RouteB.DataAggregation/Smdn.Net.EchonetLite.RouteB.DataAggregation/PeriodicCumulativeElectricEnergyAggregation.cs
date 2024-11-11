@@ -142,8 +142,25 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
   protected virtual void OnReverseDirectionBaselineValueUpdated()
     => OnReverseDirectionValueChanged();
 
-  private bool IsBaselineValueUpToDate(bool normalOrReverseDirection)
+  /// <summary>
+  /// 計測期間内の基準値の取得を試みます
+  /// </summary>
+  /// <param name="normalOrReverseDirection">
+  /// <see langword="true"/>の場合は、正方向の積算電力基準値を取得します。
+  /// <see langword="false"/>の場合は、逆方向の積算電力基準値を取得します。
+  /// </param>
+  /// <param name="value">計測期間内の積算電力基準値。</param>
+  /// <returns>
+  /// 取得できた場合は、<see langword="true"/>。
+  /// 基準値がまだ取得されていない、あるいは基準値の取得日時が計測期間外となっていて無効な場合は<see langword="false"/>。
+  /// </returns>
+  protected virtual bool TryGetBaselineValue(
+    bool normalOrReverseDirection,
+    out MeasurementValue<ElectricEnergyValue> value
+  )
   {
+    value = default;
+
     var baselineMeasurementValueMayBeNull = normalOrReverseDirection
       ? baselineElectricEnergyNormalDirection
       : baselineElectricEnergyReverseDirection;
@@ -158,10 +175,12 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
       return false; // baseline value is outdated
     }
 
+    value = baselineMeasurementValue;
+
     return true; // baseline value is valid and up-to-date.
   }
 
-  internal virtual ValueTask<bool> UpdateBaselineValueAsync(
+  internal ValueTask<bool> UpdateBaselineValueAsync(
     ILogger? logger,
     CancellationToken cancellationToken
   )
@@ -268,8 +287,8 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
     }
 #endif
 
-    var shouldUpdateNormalDirection = AggregateNormalDirection && !IsBaselineValueUpToDate(normalOrReverseDirection: true);
-    var shouldUpdateReverseDirection = AggregateReverseDirection && !IsBaselineValueUpToDate(normalOrReverseDirection: false);
+    var shouldUpdateNormalDirection = AggregateNormalDirection && !TryGetBaselineValue(normalOrReverseDirection: true, out _);
+    var shouldUpdateReverseDirection = AggregateReverseDirection && !TryGetBaselineValue(normalOrReverseDirection: false, out _);
 
     if (!(shouldUpdateNormalDirection || shouldUpdateReverseDirection))
       return new(false); // nothing to do
@@ -504,12 +523,8 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
     valueInKiloWattHours = default;
     measuredAt = default;
 
-    if (!IsBaselineValueUpToDate(normalOrReverseDirection))
+    if (!TryGetBaselineValue(normalOrReverseDirection, out var baselineMeasurementValue))
       return false; // baseline value is not aggregated yet or is outdated already
-
-    var baselineMeasurementValue = normalOrReverseDirection
-      ? baselineElectricEnergyNormalDirection!.Value
-      : baselineElectricEnergyReverseDirection!.Value;
 
     var latestMeasurementValue = normalOrReverseDirection
       ? smartMeter.NormalDirectionCumulativeElectricEnergyAtEvery30Min.Value
