@@ -14,7 +14,7 @@ namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
 /// 瞬時電力計測値を<see cref="int"/>で表します。　単位は「W」です。
 /// </remarks>
 /// <seealso cref="Smdn.Net.EchonetLite.RouteB.LowVoltageSmartElectricEnergyMeter.InstantaneousElectricPower"/>
-public sealed class InstantaneousElectricPowerAggregation : MeasurementValueAggregation<int> {
+public class InstantaneousElectricPowerAggregation : MeasurementValueAggregation<int> {
   public static readonly TimeSpan DefaultAggregationInterval = TimeSpan.FromMinutes(1);
 
   internal override IEchonetPropertyGetAccessor<int> PropertyAccessor

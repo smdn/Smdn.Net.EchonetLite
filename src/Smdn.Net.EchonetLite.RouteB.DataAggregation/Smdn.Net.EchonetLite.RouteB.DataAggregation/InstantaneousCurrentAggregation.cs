@@ -14,7 +14,7 @@ namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
 /// 瞬時電流計測値をR相・T相の順で<see cref="ValueTuple{ElectricCurrentValue,ElectricCurrentValue}"/>で表します。
 /// </remarks>
 /// <seealso cref="Smdn.Net.EchonetLite.RouteB.LowVoltageSmartElectricEnergyMeter.InstantaneousCurrent"/>
-public sealed class InstantaneousCurrentAggregation : MeasurementValueAggregation<(ElectricCurrentValue RPhase, ElectricCurrentValue TPhase)> {
+public class InstantaneousCurrentAggregation : MeasurementValueAggregation<(ElectricCurrentValue RPhase, ElectricCurrentValue TPhase)> {
   public static readonly TimeSpan DefaultAggregationInterval = TimeSpan.FromMinutes(1);
 
   internal override IEchonetPropertyGetAccessor<(ElectricCurrentValue RPhase, ElectricCurrentValue TPhase)> PropertyAccessor
