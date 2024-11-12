@@ -140,14 +140,14 @@ public abstract partial class EchonetObject {
 
   internal void RaisePropertyValueUpdated(
     EchonetProperty property,
-    EventHandler<EchonetPropertyValueUpdatedEventArgs>? valueUpdatedEventHander,
+    EventHandler<EchonetPropertyValueUpdatedEventArgs>? valueUpdatedEventHandler,
     ReadOnlySpan<byte> oldValue,
     DateTime previousUpdatedTime
   )
   {
     var propertyValueUpdatedEventHandler = PropertyValueUpdated;
 
-    if (propertyValueUpdatedEventHandler is null && valueUpdatedEventHander is null)
+    if (propertyValueUpdatedEventHandler is null && valueUpdatedEventHandler is null)
       return; // nothing to do
 
     var e = new EchonetPropertyValueUpdatedEventArgs(
@@ -158,7 +158,7 @@ public abstract partial class EchonetObject {
       updatedTime: property.LastUpdatedTime
     );
 
-    EventInvoker.InvokeEvent(property, valueUpdatedEventHander, e);
+    EventInvoker.InvokeEvent(property, valueUpdatedEventHandler, e);
 
     OnPropertyValueUpdated(e);
   }

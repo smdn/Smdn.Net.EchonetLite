@@ -371,7 +371,7 @@ public abstract class EchonetProperty {
 
       Device.RaisePropertyValueUpdated(
         property: this,
-        valueUpdatedEventHander: ValueUpdated,
+        valueUpdatedEventHandler: ValueUpdated,
         oldValue: oldValue.AsSpan(0, oldValueLength),
         previousUpdatedTime: previousUpdatedTime
       );
