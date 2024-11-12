@@ -477,10 +477,10 @@ partial class HemsController {
       asyncAction: async ct => {
         var tcs = new TaskCompletionSource<LowVoltageSmartElectricEnergyMeter>();
 
-        void HandleInstanceListUpdated(object? sender, EchonetNode node)
+        void HandleInstanceListUpdated(object? sender, EchonetNodeEventArgs e)
         {
-          if (node.Address.Equals(smartMeterNodeAddress)) {
-            var lvsm = node.Devices.OfType<LowVoltageSmartElectricEnergyMeter>().FirstOrDefault();
+          if (e.Node.Address.Equals(smartMeterNodeAddress)) {
+            var lvsm = e.Node.Devices.OfType<LowVoltageSmartElectricEnergyMeter>().FirstOrDefault();
 
             if (lvsm is not null)
               tcs.SetResult(lvsm);

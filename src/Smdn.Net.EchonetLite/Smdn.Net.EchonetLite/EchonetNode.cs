@@ -54,6 +54,11 @@ public abstract class EchonetNode {
   internal IEventInvoker EventInvoker => GetOwnerOrThrow();
 
   /// <summary>
+  /// このインスタンスを対象とする<see cref="EchonetNodeEventArgs"/>の、作成済みインスタンスを取得します。
+  /// </summary>
+  internal EchonetNodeEventArgs EventArgs { get; }
+
+  /// <summary>
   /// 下位スタックのアドレスを表す<see cref="IPAddress"/>を取得します。
   /// </summary>
   /// <exception cref="NotSupportedException">このインスタンスが自ノードを表す場合、かつ自ノードのアドレスを取得できないにスローします。</exception>
@@ -82,6 +87,8 @@ public abstract class EchonetNode {
   {
     NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
     NodeProfile.OwnerNode = this;
+
+    EventArgs = new(this);
   }
 
   internal void SetOwner(IEchonetClientService newOwner)

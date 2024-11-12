@@ -70,6 +70,11 @@ public abstract partial class EchonetObject {
     => OwnerNode?.EventInvoker ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
 
   /// <summary>
+  /// このインスタンスを対象とする<see cref="EchonetObjectEventArgs"/>の、作成済みインスタンスを取得します。
+  /// </summary>
+  internal EchonetObjectEventArgs EventArgs { get; }
+
+  /// <summary>
   /// プロパティマップが取得済みであるかどうかを表す<see langword="bool"/>型の値を取得します。
   /// </summary>
   /// <value>
@@ -119,6 +124,7 @@ public abstract partial class EchonetObject {
   /// </remarks>
   private protected EchonetObject()
   {
+    EventArgs = new(this);
   }
 
   /// <summary>

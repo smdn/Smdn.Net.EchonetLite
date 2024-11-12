@@ -839,7 +839,7 @@ partial class EchonetClient
 
     Logger?.LogDebug("Updating");
 
-    OnInstanceListUpdating(sourceNode);
+    OnInstanceListUpdating(sourceNode.EventArgs);
 
     foreach (var eoj in instanceList) {
       _ = sourceNode.GetOrAddDevice(deviceFactory, eoj, out var added);
@@ -853,7 +853,7 @@ partial class EchonetClient
       }
     }
 
-    OnInstanceListUpdated(sourceNode);
+    OnInstanceListUpdated(sourceNode.EventArgs);
 
     Logger?.LogDebug("Updated");
 
