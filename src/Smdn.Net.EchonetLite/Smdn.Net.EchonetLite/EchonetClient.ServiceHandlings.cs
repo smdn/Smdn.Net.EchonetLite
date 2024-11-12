@@ -64,15 +64,13 @@ partial class EchonetClient
   /// イベント<see cref="Format1MessageReceived"/>をハンドルするメソッドを実装します。
   /// 受信した電文形式 1（規定電文形式）の電文を処理し、必要に応じて要求に対する応答を返します。
   /// </summary>
-  /// <param name="sender">イベントのソース。</param>
-  /// <param name="value">
-  /// イベントデータを格納している<see cref="ValueTuple{IPAddress,UInt16,Format1Message}"/>。
-  /// ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>と、受信したECHONET Lite フレームのTIDを表す<see langword="ushort"/>、規定電文形式の電文を表す<see cref="Format1Message"/>を保持します。
-  /// </param>
+  /// <param name="address">ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>。</param>
+  /// <param name="id">受信したECHONET Lite フレームのTID。　TIDの値域は<see langword="ushort"/>です。</param>
+  /// <param name="message">受信した規定電文形式の電文を表す<see cref="Format1Message"/>。</param>
 #pragma warning disable CA1502 // TODO: reduce complexity
-  private void HandleFormat1Message(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
+  protected virtual void OnFormat1MessageReceived(IPAddress address, int id, Format1Message message)
   {
-    var (address, tid, message) = value;
+    var tid = unchecked((ushort)id); // ushort is not CLS compliant
 
     if (TryFindTransaction(tid, out _))
       // 自発の要求に対する応答は個別のハンドラで処理するため、ここでは処理せず無視する

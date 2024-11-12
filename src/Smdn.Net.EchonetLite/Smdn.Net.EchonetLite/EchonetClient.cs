@@ -119,9 +119,6 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
 
     this.nodeRegistry = nodeRegistry ?? new EchonetNodeRegistry();
     this.nodeRegistry.SetOwner(this);
-
-    // 自己消費用
-    Format1MessageReceived += HandleFormat1Message;
   }
 
   /// <summary>
@@ -157,8 +154,6 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   protected virtual void Dispose(bool disposing)
   {
     if (disposing) {
-      Format1MessageReceived = null; // unsubscribe
-
       nodeRegistry?.UnsetOwner();
       nodeRegistry = null!;
 
@@ -182,8 +177,6 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// <returns>非同期の破棄操作を表す<see cref="ValueTask"/>。</returns>
   protected virtual async ValueTask DisposeAsyncCore()
   {
-    Format1MessageReceived = null; // unsubscribe
-
     nodeRegistry?.UnsetOwner();
     nodeRegistry = null!;
 

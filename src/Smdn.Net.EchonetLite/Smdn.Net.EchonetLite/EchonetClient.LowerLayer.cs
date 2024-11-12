@@ -41,7 +41,8 @@ partial class EchonetClient
   /// イベント<see cref="IEchonetLiteHandler.Received"/>をハンドルするメソッドを実装します。
   /// </summary>
   /// <remarks>
-  /// 受信したデータが電文形式 1（規定電文形式）の電文を含むECHONET Lite フレームの場合は、イベント<see cref="Format1MessageReceived"/>をトリガします。
+  /// 受信したデータが電文形式 1（規定電文形式）の電文を含むECHONET Lite フレームの場合は、<see cref="OnFormat1MessageReceived"/>の呼び出し、
+  /// およびイベント<see cref="Format1MessageReceived"/>のトリガを行います。
   /// それ以外の場合は、無視して処理を中断します。
   /// </remarks>
   /// <param name="sender">イベントのソース。</param>
@@ -87,6 +88,8 @@ partial class EchonetClient
         scope?.Dispose(); // exit from the logger scope
 
         try {
+          OnFormat1MessageReceived(value.Address, tid, format1Message);
+
           Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
         }
         catch (Exception ex) {
