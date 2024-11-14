@@ -109,7 +109,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   {
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
     this.echonetLiteHandler = echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler));
-    this.echonetLiteHandler.Received += EchonetDataReceived;
+    this.echonetLiteHandler.ReceiveCallback = HandleReceivedDataAsync;
     this.resiliencePipelineForSendingResponseFrame = resiliencePipelineForSendingResponseFrame ?? ResiliencePipeline.Empty;
     this.deviceFactory = deviceFactory;
     Logger = logger;
@@ -161,7 +161,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
       requestSemaphore = null!;
 
       if (echonetLiteHandler is not null) {
-        echonetLiteHandler.Received -= EchonetDataReceived;
+        echonetLiteHandler.ReceiveCallback = null;
 
         if (shouldDisposeEchonetLiteHandler && echonetLiteHandler is IDisposable disposableEchonetLiteHandler)
           disposableEchonetLiteHandler.Dispose();
@@ -184,7 +184,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     requestSemaphore = null!;
 
     if (echonetLiteHandler is not null) {
-      echonetLiteHandler.Received -= EchonetDataReceived;
+      echonetLiteHandler.ReceiveCallback = null;
 
       if (shouldDisposeEchonetLiteHandler && echonetLiteHandler is IAsyncDisposable disposableEchonetLiteHandler)
         await disposableEchonetLiteHandler.DisposeAsync().ConfigureAwait(false);

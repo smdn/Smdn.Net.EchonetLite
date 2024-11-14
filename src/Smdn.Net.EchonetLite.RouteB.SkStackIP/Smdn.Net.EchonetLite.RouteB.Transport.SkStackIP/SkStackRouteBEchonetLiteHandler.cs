@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.ComponentModel;
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -39,16 +38,6 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
   private readonly ResiliencePipeline resiliencePipelineSend;
   private SkStackPanaSessionInfo? panaSessionInfo;
   private SemaphoreSlim semaphore = new(initialCount: 1, maxCount: 1);
-
-  /// <inheritdoc/>
-  public override ISynchronizeInvoke? SynchronizingObject {
-#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
-#pragma warning disable CS8602
-#endif
-    get { ThrowIfDisposed(); return client.SynchronizingObject; }
-    set { ThrowIfDisposed(); client.SynchronizingObject = value; }
-#pragma warning restore CS8602
-  }
 
   /// <inheritdoc/>
   public override IPAddress? LocalAddress => panaSessionInfo?.LocalAddress;
@@ -234,8 +223,12 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
   {
     ThrowIfDisposed();
 
+#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
+#pragma warning disable CS8602
+#endif
     if (!client.IsPanaSessionAlive)
       return;
+#pragma warning restore CS8602
 
     _ = await client.TerminatePanaSessionAsync(cancellationToken: default).ConfigureAwait(false);
   }

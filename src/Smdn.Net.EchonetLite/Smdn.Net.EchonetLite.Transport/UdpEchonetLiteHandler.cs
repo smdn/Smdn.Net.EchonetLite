@@ -6,7 +6,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -25,9 +24,6 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
 
   /// <inheritdoc/>
   public override IPAddress? LocalAddress => throw new NotSupportedException(); // TODO
-
-  /// <inheritdoc/>
-  public override ISynchronizeInvoke? SynchronizingObject { get; set; }
 
   public UdpEchonetLiteHandler(
     ILogger? logger,

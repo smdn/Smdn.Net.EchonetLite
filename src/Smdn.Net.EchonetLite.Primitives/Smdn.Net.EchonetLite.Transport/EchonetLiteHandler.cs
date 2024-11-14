@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Buffers;
-using System.ComponentModel;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,20 +22,11 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
 
   protected bool IsReceiving => taskReceiveEchonetLite is not null;
 
-  private event EventHandler<(IPAddress, ReadOnlyMemory<byte>)>? EchonetLiteReceived;
-
   /// <summary>
-  /// An event that implements <see cref="IEchonetLiteHandler.Received"/>.
+  /// Gets or sets the callback method called when a ECHONET Lite frame is received.
   /// </summary>
-  public event EventHandler<(IPAddress, ReadOnlyMemory<byte>)> Received {
-    add => EchonetLiteReceived += value;
-    remove => EchonetLiteReceived -= value;
-  }
-
-  /// <summary>
-  /// Gets or sets the object used to marshal the event handler calls that are issued when an event received.
-  /// </summary>
-  public abstract ISynchronizeInvoke? SynchronizingObject { get; set; }
+  /// <seealso cref="IEchonetLiteHandler.ReceiveCallback"/>
+  public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
 
   /// <summary>
   /// Gets the <see cref="IPAddress"/> represents the local IP address used by this handler.
@@ -199,11 +189,15 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
       if (cancellationToken.IsCancellationRequested)
         return;
 
-      RaiseEchonetLiteReceived(
-        eventHandler: EchonetLiteReceived,
-        remoteAddress: echonetLiteRemoteAddress,
-        buffer: bufferEchonetLite.WrittenMemory
-      );
+      var handleReceivedDataAsync = ReceiveCallback;
+
+      if (handleReceivedDataAsync is not null) {
+        await handleReceivedDataAsync(
+          /*remoteAddress:*/ echonetLiteRemoteAddress,
+          /*data:*/ bufferEchonetLite.WrittenMemory,
+          /*cancellationToken:*/ cancellationToken
+        ).ConfigureAwait(false);
+      }
     }
   }
 
@@ -220,41 +214,10 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
     CancellationToken cancellationToken
   );
 
-  private void RaiseEchonetLiteReceived(
-    EventHandler<(IPAddress, ReadOnlyMemory<byte>)>? eventHandler,
-    IPAddress remoteAddress,
-    ReadOnlyMemory<byte> buffer
-  )
-  {
-    if (eventHandler is null)
-      return;
-
-    if (SynchronizingObject is null || !SynchronizingObject.InvokeRequired) {
-      try {
-        eventHandler(sender: this, e: (remoteAddress, buffer));
-      }
-#pragma warning disable CA1031
-      catch {
-        // ignore exceptions from event handler
-      }
-#pragma warning restore CA1031
-    }
-    else {
-      _ = SynchronizingObject.BeginInvoke(
-        method: eventHandler,
-        args: [
-          this,
-          // For asynchronous event invokation, make a copy and pass it since the contents of
-          // buffer may be cleared during the event handling.
-          (remoteAddress, buffer.ToArray())
-        ]
-      );
-    }
-  }
-
   /// <summary>
   /// A method that implements <see cref="IEchonetLiteHandler.SendAsync"/>.
   /// </summary>
+  /// <seealso cref="IEchonetLiteHandler.SendAsync"/>
   public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
   {
     if (address is null) {

@@ -32,35 +32,37 @@ partial class EchonetClient
   private SemaphoreSlim requestSemaphore = new(initialCount: 1, maxCount: 1);
 
   /// <summary>
-  /// <see cref="IEchonetLiteHandler.Received"/>イベントにて電文形式 1（規定電文形式）の電文を受信した場合に発生するイベント。
+  /// <see cref="HandleReceivedDataAsync"/>にて電文形式 1（規定電文形式）の電文を受信・処理する際に発生するイベント。
   /// ECHONET Lite ノードに対して送信されてくる要求を処理するほか、他ノードに対する要求への応答を待機する場合にも使用する。
   /// </summary>
   private event EventHandler<(IPAddress Address, ushort TID, Format1Message Message)>? Format1MessageReceived;
 
   /// <summary>
-  /// イベント<see cref="IEchonetLiteHandler.Received"/>をハンドルするメソッドを実装します。
+  /// <see cref="IEchonetLiteHandler.ReceiveCallback"/>に設定されるコールバックメソッドを実装します。
   /// </summary>
   /// <remarks>
   /// 受信したデータが電文形式 1（規定電文形式）の電文を含むECHONET Lite フレームの場合は、<see cref="OnFormat1MessageReceived"/>の呼び出し、
   /// およびイベント<see cref="Format1MessageReceived"/>のトリガを行います。
   /// それ以外の場合は、無視して処理を中断します。
   /// </remarks>
-  /// <param name="sender">イベントのソース。</param>
-  /// <param name="value">
-  /// イベントデータを格納している<see cref="ValueTuple{T1,T2}"/>。
-  /// データの送信元を表す<see cref="IPAddress"/>と、受信したデータを表す<see cref="ReadOnlyMemory{Byte}"/>を保持します。
-  /// </param>
-  private void EchonetDataReceived(object? sender, (IPAddress Address, ReadOnlyMemory<byte> Data) value)
+  /// <param name="remoteAddress">データの送信元を表す<see cref="IPAddress"/>。</param>
+  /// <param name="receivedData">受信したデータを表す<see cref="ReadOnlyMemory{Byte}"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
+  private ValueTask HandleReceivedDataAsync(
+    IPAddress remoteAddress,
+    ReadOnlyMemory<byte> receivedData,
+    CancellationToken cancellationToken
+  )
   {
-    if (!FrameSerializer.TryDeserialize(value.Data, out var ehd1, out var ehd2, out var tid, out var edata))
+    if (!FrameSerializer.TryDeserialize(receivedData, out var ehd1, out var ehd2, out var tid, out var edata))
       // ECHONETLiteフレームではないため無視
-      return;
+      return default;
 
-    using var scope = Logger?.BeginScope($"Receive ({value.Address}, TID={tid:X4})");
+    using var scope = Logger?.BeginScope($"Receive ({remoteAddress}, TID={tid:X4})");
 
     Logger?.LogTrace(
       "ECHONET Lite frame (From: {Address}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
-      value.Address,
+      remoteAddress,
       (byte)ehd1,
       (byte)ehd2,
       (byte)tid,
@@ -72,15 +74,15 @@ partial class EchonetClient
         if (!FrameSerializer.TryParseEDataAsFormat1Message(edata.Span, out var format1Message)) {
           Logger?.LogWarning(
             "Invalid Format 1 message (From: {Address}, TID: {TID:X4})",
-            value.Address,
+            remoteAddress,
             tid
           );
-          return;
+          return default;
         }
 
         Logger?.LogDebug(
           "Format 1 message (From: {Address}, TID: {TID:X4}, Message: {Message})",
-          value.Address,
+          remoteAddress,
           tid,
           format1Message
         );
@@ -88,9 +90,16 @@ partial class EchonetClient
         scope?.Dispose(); // exit from the logger scope
 
         try {
-          OnFormat1MessageReceived(value.Address, tid, format1Message);
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+          if (cancellationToken.IsCancellationRequested)
+            return ValueTask.FromCanceled(cancellationToken);
+#else
+          cancellationToken.ThrowIfCancellationRequested();
+#endif
 
-          Format1MessageReceived?.Invoke(this, (value.Address, unchecked((ushort)tid), format1Message));
+          OnFormat1MessageReceived(remoteAddress, tid, format1Message);
+
+          Format1MessageReceived?.Invoke(this, (remoteAddress, unchecked((ushort)tid), format1Message));
         }
         catch (Exception ex) {
           Logger?.LogError(
@@ -108,7 +117,7 @@ partial class EchonetClient
         // TODO: process format 2 messages
         Logger?.LogDebug(
           "Format 2 message (From: {Address}, TID: {TID:X4}, Message: {Message})",
-          value.Address,
+          remoteAddress,
           tid,
           edata.ToHexString()
         );
@@ -118,12 +127,14 @@ partial class EchonetClient
         // undefined message format, do nothing
         Logger?.LogDebug(
           "Undefined format message (From: {Address}, TID: {TID:X4}, Message: {Message})",
-          value.Address,
+          remoteAddress,
           tid,
           edata.ToHexString()
         );
         break;
     }
+
+    return default;
   }
 
   /// <summary>

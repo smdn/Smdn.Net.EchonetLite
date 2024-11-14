@@ -17,13 +17,15 @@ partial class EchonetClient
   public ISynchronizeInvoke? SynchronizingObject {
     get {
       ThrowIfDisposed();
-      return echonetLiteHandler.SynchronizingObject;
+      return synchronizingObject;
     }
     set {
       ThrowIfDisposed();
-      echonetLiteHandler.SynchronizingObject = value;
+      synchronizingObject = value;
     }
   }
+
+  private ISynchronizeInvoke? synchronizingObject;
 
   /// <summary>
   /// インスタンスリスト通知の受信による更新を開始するときに発生するイベント。
@@ -102,8 +104,6 @@ partial class EchonetClient
   {
     if (eventHandler is null)
       return;
-
-    var synchronizingObject = SynchronizingObject;
 
     if (synchronizingObject is null || !synchronizingObject.InvokeRequired) {
       try {
