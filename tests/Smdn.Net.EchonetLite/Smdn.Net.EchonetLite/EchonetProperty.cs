@@ -24,15 +24,8 @@ public class EchonetPropertyTests {
   }
 #endif
 
-  private class PseudoEventInvoker : IEventInvoker {
-    public ISynchronizeInvoke? SynchronizingObject { get; set; }
-
-    public void InvokeEvent<TEventArgs>(object? sender, EventHandler<TEventArgs>? eventHandler, TEventArgs e)
-      => eventHandler?.Invoke(sender, e);
-  }
-
   private class PseudoDevice : EchonetDevice {
-    protected override IEventInvoker EventInvoker { get; } = new PseudoEventInvoker();
+    protected override ISynchronizeInvoke? SynchronizingObject => null;
 
     public PseudoDevice()
       : base(

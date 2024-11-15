@@ -17,21 +17,20 @@ partial class EchonetClient
   public ISynchronizeInvoke? SynchronizingObject {
     get {
       ThrowIfDisposed();
-      return echonetLiteHandler.SynchronizingObject;
+      return synchronizingObject;
     }
     set {
       ThrowIfDisposed();
-      echonetLiteHandler.SynchronizingObject = value;
+      synchronizingObject = value;
     }
   }
+
+  private ISynchronizeInvoke? synchronizingObject;
 
   /// <summary>
   /// インスタンスリスト通知の受信による更新を開始するときに発生するイベント。
   /// </summary>
   /// <remarks>
-  ///   <para>
-  ///   イベント引数には、インスタンスリスト通知の送信元のECHONET Lite ノードを表す<see cref="EchonetNode"/>が設定されます。
-  ///   </para>
   ///   <para>
   ///   インスタンスリスト通知を受信した場合、以下の順でイベントが発生します。
   ///   <list type="number">
@@ -41,15 +40,12 @@ partial class EchonetClient
   ///   </para>
   /// </remarks>
   /// <seealso cref="InstanceListUpdated"/>
-  public event EventHandler<EchonetNode>? InstanceListUpdating;
+  public event EventHandler<EchonetNodeEventArgs>? InstanceListUpdating;
 
   /// <summary>
   /// インスタンスリスト通知の受信による更新が完了したときに発生するイベント。
   /// </summary>
   /// <remarks>
-  ///   <para>
-  ///   イベント引数には、インスタンスリスト通知の送信元のECHONET Lite ノードを表す<see cref="EchonetNode"/>が設定されます。
-  ///   </para>
   ///   <para>
   ///   インスタンスリスト通知を受信した場合、以下の順でイベントが発生します。
   ///   <list type="number">
@@ -59,79 +55,37 @@ partial class EchonetClient
   ///   </para>
   /// </remarks>
   /// <seealso cref="InstanceListUpdating"/>
-  public event EventHandler<EchonetNode>? InstanceListUpdated;
+  public event EventHandler<EchonetNodeEventArgs>? InstanceListUpdated;
 
-  protected virtual void OnInstanceListUpdating(EchonetNode node)
-    => RaiseEvent(InstanceListUpdating, node);
+  protected virtual void OnInstanceListUpdating(EchonetNodeEventArgs e)
+    => InvokeEvent(InstanceListUpdating, e);
 
-  protected virtual void OnInstanceListUpdated(EchonetNode node)
-    => RaiseEvent(InstanceListUpdated, node);
+  protected virtual void OnInstanceListUpdated(EchonetNodeEventArgs e)
+    => InvokeEvent(InstanceListUpdated, e);
 
   /// <summary>
   /// プロパティマップの取得を開始するときに発生するイベント。
   /// </summary>
-  /// <remarks>
-  /// イベント引数には、プロパティマップ取得対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>が設定されます。
-  /// </remarks>
   /// <seealso cref="PropertyMapAcquired"/>
   /// <seealso cref="EchonetObject.HasPropertyMapAcquired"/>
-  public event EventHandler<EchonetObject>? PropertyMapAcquiring;
+  public event EventHandler<EchonetObjectEventArgs>? PropertyMapAcquiring;
 
   /// <summary>
   /// プロパティマップの取得を完了したときに発生するイベント。
   /// </summary>
-  /// <remarks>
-  /// イベント引数には、プロパティマップ取得対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>が設定されます。
-  /// </remarks>
   /// <seealso cref="PropertyMapAcquiring"/>
   /// <seealso cref="EchonetObject.HasPropertyMapAcquired"/>
-  public event EventHandler<EchonetObject>? PropertyMapAcquired;
+  public event EventHandler<EchonetObjectEventArgs>? PropertyMapAcquired;
 
-  protected virtual void OnPropertyMapAcquiring(EchonetObject device)
-    => RaiseEvent(PropertyMapAcquiring, device);
+  protected virtual void OnPropertyMapAcquiring(EchonetObjectEventArgs e)
+    => InvokeEvent(PropertyMapAcquiring, e);
 
-  protected virtual void OnPropertyMapAcquired(EchonetObject device)
-    => RaiseEvent(PropertyMapAcquired, device);
-
-  private void RaiseEvent<TEventArgs>(
-    EventHandler<TEventArgs>? eventHandler,
-    TEventArgs e
-  )
-    => InvokeEvent(this, eventHandler, e);
-
-  void IEventInvoker.InvokeEvent<TEventArgs>(
-    object? sender,
-    EventHandler<TEventArgs>? eventHandler,
-    TEventArgs e
-  )
-    => InvokeEvent(sender, eventHandler, e);
+  protected virtual void OnPropertyMapAcquired(EchonetObjectEventArgs e)
+    => InvokeEvent(PropertyMapAcquired, e);
 
   protected void InvokeEvent<TEventArgs>(
-    object? sender,
     EventHandler<TEventArgs>? eventHandler,
     TEventArgs e
-  )
-  {
-    if (eventHandler is null)
-      return;
-
-    var synchronizingObject = SynchronizingObject;
-
-    if (synchronizingObject is null || !synchronizingObject.InvokeRequired) {
-      try {
-        eventHandler(sender, e);
-      }
-#pragma warning disable CA1031
-      catch {
-        // ignore exceptions from event handler
-      }
-#pragma warning restore CA1031
-    }
-    else {
-      _ = synchronizingObject.BeginInvoke(
-        method: eventHandler,
-        args: [sender, e]
-      );
-    }
-  }
+  ) where TEventArgs : EventArgs
+    => EventInvoker.Invoke(synchronizingObject, this, eventHandler, e);
 }

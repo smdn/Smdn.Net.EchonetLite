@@ -7,6 +7,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
+using Smdn.Net.EchonetLite.ComponentModel;
+
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
@@ -22,10 +24,7 @@ public sealed class EchonetNodeRegistry {
   /// <summary>
   /// 新しいECHONET Lite ノードが追加されたときに発生するイベント。
   /// </summary>
-  /// <remarks>
-  /// イベント引数には、発見されたノードを表す<see cref="EchonetNode"/>が設定されます。
-  /// </remarks>
-  public event EventHandler<EchonetNode>? NodeAdded;
+  public event EventHandler<EchonetNodeEventArgs>? NodeAdded;
 
   /// <summary>
   /// 既知のECHONET Lite ノード(他ノード)のコレクションを表す<see cref="IReadOnlyCollection{EchonetNode}"/>を取得します。
@@ -91,7 +90,7 @@ public sealed class EchonetNodeRegistry {
 #endif
       );
 
-      OnNodeAdded(addedNode);
+      OnNodeAdded(addedNode.EventArgs);
 
       return true;
     }
@@ -99,8 +98,8 @@ public sealed class EchonetNodeRegistry {
     return false;
   }
 
-  private void OnNodeAdded(EchonetNode node)
-    => GetOwnerOrThrow().InvokeEvent(this, NodeAdded, node);
+  private void OnNodeAdded(EchonetNodeEventArgs e)
+    => EventInvoker.Invoke(GetOwnerOrThrow().SynchronizingObject, this, NodeAdded, e);
 
   internal void SetOwner(IEchonetClientService newOwner)
   {

@@ -4,6 +4,8 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
+using Smdn.Net.EchonetLite.ComponentModel;
+
 namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
 
 /// <summary>
@@ -25,5 +27,10 @@ public abstract class SmartMeterDataAggregation : INotifyPropertyChanged {
     => Aggregator ?? throw new InvalidOperationException($"Not associated with the appropriate {nameof(SmartMeterDataAggregator)}.");
 
   protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    => GetAggregatorOrThrow().InvokeEvent(this, PropertyChanged, new PropertyChangedEventArgs(propertyName));
+    => EventInvoker.Invoke(
+      GetAggregatorOrThrow().SynchronizingObject,
+      this,
+      PropertyChanged,
+      new PropertyChangedEventArgs(propertyName)
+    );
 }

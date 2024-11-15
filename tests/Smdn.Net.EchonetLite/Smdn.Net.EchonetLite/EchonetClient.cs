@@ -15,30 +15,24 @@ namespace Smdn.Net.EchonetLite;
 [TestFixture]
 public class EchonetClientTests {
   private class ReceiveEDATA2EchonetLiteHandler : IEchonetLiteHandler {
-    public ISynchronizeInvoke? SynchronizingObject { get; set; }
-
     public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-#pragma warning disable CS0067
-    public event EventHandler<(IPAddress Address, ReadOnlyMemory<byte> Data)>? Received;
-#pragma warning restore CS0067
+    public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
 
-    public void RaiseEDATA2Received()
+    public ValueTask RaiseEDATA2ReceivedAsync(CancellationToken cancellationToken = default)
     {
-      Received?.Invoke(
-        this,
-        (
-          IPAddress.Loopback,
-          new byte[] {
-            (byte)EHD1.EchonetLite, // EHD1
-            (byte)EHD2.Format2, // EHD2
-            (byte)0x00, // TID
-            (byte)0x00, // TID
-            0x00, 0x00, 0x00 // EDATA2
-          }.AsMemory()
-        )
-      );
+      return ReceiveCallback?.Invoke(
+        IPAddress.Loopback,
+        new byte[] {
+          (byte)EHD1.EchonetLite, // EHD1
+          (byte)EHD2.Format2, // EHD2
+          (byte)0x00, // TID
+          (byte)0x00, // TID
+          0x00, 0x00, 0x00 // EDATA2
+        }.AsMemory(),
+        cancellationToken
+      ) ?? default;
     }
   }
 
@@ -55,14 +49,10 @@ public class EchonetClientTests {
     public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-#pragma warning disable CS0067
-    public event EventHandler<(IPAddress Address, ReadOnlyMemory<byte> Data)>? Received;
-#pragma warning restore CS0067
+    public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
   }
 
   private class AsyncDisposableEchonetLiteHandler : IEchonetLiteHandler, IAsyncDisposable {
-    public ISynchronizeInvoke? SynchronizingObject { get; set; }
-
     public bool IsDisposed { get; private set; }
 
     public ValueTask DisposeAsync()
@@ -75,9 +65,7 @@ public class EchonetClientTests {
     public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-#pragma warning disable CS0067
-    public event EventHandler<(IPAddress Address, ReadOnlyMemory<byte> Data)>? Received;
-#pragma warning restore CS0067
+    public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
   }
 
   [TestCase(true)]
@@ -90,7 +78,7 @@ public class EchonetClientTests {
 
     Assert.DoesNotThrow(() => client.Dispose(), "Dispose #1");
 
-    Assert.DoesNotThrow(() => handler.RaiseEDATA2Received(), "frame received after dispose");
+    Assert.DoesNotThrowAsync(async () => await handler.RaiseEDATA2ReceivedAsync(), "frame received after dispose");
 
     Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.NotifyInstanceListAsync(), "send request after dispose");
 
@@ -108,7 +96,7 @@ public class EchonetClientTests {
 
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync #1");
 
-    Assert.DoesNotThrow(() => handler.RaiseEDATA2Received(), "frame received after dispose");
+    Assert.DoesNotThrowAsync(async () => await handler.RaiseEDATA2ReceivedAsync(), "frame received after dispose");
 
     Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.NotifyInstanceListAsync(), "send request after dispose");
 

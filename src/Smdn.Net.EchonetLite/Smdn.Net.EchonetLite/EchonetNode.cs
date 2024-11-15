@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
@@ -48,10 +49,14 @@ public abstract class EchonetNode {
   internal IEchonetClientService? Owner { get; private set; }
 
   /// <summary>
-  /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
+  /// イベントの結果として発行されるイベントハンドラー呼び出しをマーシャリングするために使用する<see cref="ISynchronizeInvoke"/>オブジェクトを取得します。
   /// </summary>
-  /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
-  internal IEventInvoker EventInvoker => GetOwnerOrThrow();
+  internal ISynchronizeInvoke? SynchronizingObject => GetOwnerOrThrow().SynchronizingObject;
+
+  /// <summary>
+  /// このインスタンスを対象とする<see cref="EchonetNodeEventArgs"/>の、作成済みインスタンスを取得します。
+  /// </summary>
+  internal EchonetNodeEventArgs EventArgs { get; }
 
   /// <summary>
   /// 下位スタックのアドレスを表す<see cref="IPAddress"/>を取得します。
@@ -82,6 +87,8 @@ public abstract class EchonetNode {
   {
     NodeProfile = nodeProfile ?? throw new ArgumentNullException(nameof(nodeProfile));
     NodeProfile.OwnerNode = this;
+
+    EventArgs = new(this);
   }
 
   internal void SetOwner(IEchonetClientService newOwner)
@@ -102,5 +109,5 @@ public abstract class EchonetNode {
   internal abstract EchonetObject? FindDevice(EOJ eoj);
 
   private protected void OnDevicesChanged(NotifyCollectionChangedEventArgs e)
-    => EventInvoker.InvokeEvent(this, DevicesChanged, e);
+    => EventInvoker.Invoke(SynchronizingObject, this, DevicesChanged, e);
 }

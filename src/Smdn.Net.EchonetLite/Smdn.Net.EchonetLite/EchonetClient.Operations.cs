@@ -117,12 +117,12 @@ partial class EchonetClient
     var tcs = new TaskCompletionSource();
 
     // インスタンスリスト受信後に発生するイベントをハンドリングする
-    void HandleInstanceListUpdated(object? sender, EchonetNode node)
+    void HandleInstanceListUpdated(object? sender, EchonetNodeEventArgs e)
     {
       Logger?.LogDebug("HandleInstanceListUpdated");
 
       // この時点で条件がtrueとなったら、結果を確定する
-      if (onInstanceListUpdated(node, state))
+      if (onInstanceListUpdated(e.Node, state))
         _ = tcs.TrySetResult();
     }
 
@@ -222,7 +222,7 @@ partial class EchonetClient
 
     using var scope = Logger?.BeginScope("Acquiring property maps");
 
-    OnPropertyMapAcquiring(device);
+    OnPropertyMapAcquiring(device.EventArgs);
 
     var result = await device.ReadPropertiesAsync(
       readPropertyCodes: extraPropertyCodes is null
@@ -308,7 +308,7 @@ partial class EchonetClient
 
     device.HasPropertyMapAcquired = true;
 
-    OnPropertyMapAcquired(device);
+    OnPropertyMapAcquired(device.EventArgs);
 
     return true;
   }

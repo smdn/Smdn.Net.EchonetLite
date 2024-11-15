@@ -4,6 +4,7 @@
 using System;
 #endif
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.Logging;
 
 using Polly;
 
-using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
@@ -21,7 +21,12 @@ namespace Smdn.Net.EchonetLite;
 /// ECHONET Lite 通信ミドルウェアを実装する<see cref="EchonetClient"/>クラスと、ECHONET ノードを実装する<see cref="EchonetNode"/>および
 /// ECHONET オブジェクトを実装する<see cref="EchonetObject"/>との間で協調動作するための機能へのインターフェイスを提供します。
 /// </summary>
-internal interface IEchonetClientService : IEventInvoker {
+internal interface IEchonetClientService {
+  /// <summary>
+  /// イベントの結果として発行されるイベントハンドラー呼び出しをマーシャリングするために使用する<see cref="ISynchronizeInvoke"/>オブジェクトを取得または設定します。
+  /// </summary>
+  ISynchronizeInvoke? SynchronizingObject { get; set; }
+
 #if SYSTEM_TIMEPROVIDER
   /// <summary>
   /// <see cref="EchonetProperty.LastUpdatedTime"/>に設定する時刻の取得元となる<see cref="TimeProvider"/>を取得します。
