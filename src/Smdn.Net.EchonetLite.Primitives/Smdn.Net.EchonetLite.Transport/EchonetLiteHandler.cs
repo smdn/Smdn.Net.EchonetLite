@@ -16,6 +16,13 @@ namespace Smdn.Net.EchonetLite.Transport;
 /// </summary>
 /// <see cref="IEchonetLiteHandler"/>
 public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAsyncDisposable {
+  private static readonly TaskFactory DefaultReceivingTaskFactory = new(
+    cancellationToken: default,
+    creationOptions: TaskCreationOptions.LongRunning,
+    continuationOptions: TaskContinuationOptions.None,
+    scheduler: null
+  );
+
   private Task? taskReceiveEchonetLite;
   private CancellationTokenSource? cancellationTokenSourceReceiveEchonetLite;
   private readonly ArrayBufferWriter<byte> bufferEchonetLite = new(initialCapacity: 512); // TODO: define best initial capacity for echonet lite stream
@@ -56,18 +63,30 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
       throw new InvalidOperationException("already started receiving");
   }
 
+  /// <summary>
+  /// Creates and starts the receiving task using <see cref="TaskFactory"/> with default configuration.
+  /// </summary>
   protected void StartReceiving()
+    => StartReceiving(taskFactoryForReceiving: DefaultReceivingTaskFactory);
+
+  /// <summary>
+  /// Creates and starts the receiving task using the specified <see cref="TaskFactory"/>.
+  /// </summary>
+  protected void StartReceiving(
+    TaskFactory? taskFactoryForReceiving
+  )
   {
     ThrowIfDisposed();
     ThrowIfReceiving();
 
     cancellationTokenSourceReceiveEchonetLite = new CancellationTokenSource();
 
-    taskReceiveEchonetLite = Task.Factory.StartNew(
-      function: async () => await ReceiveEchonetLiteAsync(
-        cancellationToken: cancellationTokenSourceReceiveEchonetLite.Token
+    taskReceiveEchonetLite = (taskFactoryForReceiving ?? Task.Factory).StartNew(
+      function: async state => await ReceiveEchonetLiteAsync(
+        cancellationToken: (CancellationToken)state!
       ).ConfigureAwait(false),
-      creationOptions: TaskCreationOptions.LongRunning
+      state: cancellationTokenSourceReceiveEchonetLite.Token,
+      cancellationToken: cancellationTokenSourceReceiveEchonetLite.Token
     );
   }
 
