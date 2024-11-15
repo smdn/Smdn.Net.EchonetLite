@@ -173,42 +173,6 @@ public class SmartMeterDataAggregator : HemsController {
     base.Dispose(disposing);
   }
 
-  internal void InvokeEvent<TEventHandler, TEventArgs>(
-    object? sender,
-    TEventHandler? eventHandler,
-    TEventArgs e
-  ) where TEventHandler : Delegate
-  {
-    if (eventHandler is null)
-      return;
-
-    var synchronizingObject = SynchronizingObject;
-
-    if (synchronizingObject is null || !synchronizingObject.InvokeRequired) {
-      var eventHandlerAction = (Action<object?, TEventArgs>)Delegate.CreateDelegate(
-        type: typeof(Action<object?, TEventArgs>),
-        firstArgument: eventHandler.Target,
-        method: eventHandler.Method,
-        throwOnBindFailure: true
-      )!;
-
-      try {
-        eventHandlerAction.Invoke(sender, e);
-      }
-#pragma warning disable CA1031
-      catch {
-        // ignore exceptions from event handler
-      }
-#pragma warning restore CA1031
-    }
-    else {
-      _ = synchronizingObject.BeginInvoke(
-        method: eventHandler,
-        args: [sender, e]
-      );
-    }
-  }
-
   private static readonly TaskFactory DefaultAggregationTaskFactory = new(
     cancellationToken: default,
     creationOptions: TaskCreationOptions.LongRunning,

@@ -58,10 +58,10 @@ partial class EchonetClient
   public event EventHandler<EchonetNodeEventArgs>? InstanceListUpdated;
 
   protected virtual void OnInstanceListUpdating(EchonetNodeEventArgs e)
-    => RaiseEvent(InstanceListUpdating, e);
+    => InvokeEvent(InstanceListUpdating, e);
 
   protected virtual void OnInstanceListUpdated(EchonetNodeEventArgs e)
-    => RaiseEvent(InstanceListUpdated, e);
+    => InvokeEvent(InstanceListUpdated, e);
 
   /// <summary>
   /// プロパティマップの取得を開始するときに発生するイベント。
@@ -78,48 +78,14 @@ partial class EchonetClient
   public event EventHandler<EchonetObjectEventArgs>? PropertyMapAcquired;
 
   protected virtual void OnPropertyMapAcquiring(EchonetObjectEventArgs e)
-    => RaiseEvent(PropertyMapAcquiring, e);
+    => InvokeEvent(PropertyMapAcquiring, e);
 
   protected virtual void OnPropertyMapAcquired(EchonetObjectEventArgs e)
-    => RaiseEvent(PropertyMapAcquired, e);
+    => InvokeEvent(PropertyMapAcquired, e);
 
-  private void RaiseEvent<TEventArgs>(
+  protected void InvokeEvent<TEventArgs>(
     EventHandler<TEventArgs>? eventHandler,
     TEventArgs e
   ) where TEventArgs : EventArgs
-    => InvokeEvent(this, eventHandler, e);
-
-  void IEventInvoker.InvokeEvent<TEventArgs>(
-    object? sender,
-    EventHandler<TEventArgs>? eventHandler,
-    TEventArgs e
-  )
-    => InvokeEvent(sender, eventHandler, e);
-
-  protected void InvokeEvent<TEventArgs>(
-    object? sender,
-    EventHandler<TEventArgs>? eventHandler,
-    TEventArgs e
-  )
-  {
-    if (eventHandler is null)
-      return;
-
-    if (synchronizingObject is null || !synchronizingObject.InvokeRequired) {
-      try {
-        eventHandler(sender, e);
-      }
-#pragma warning disable CA1031
-      catch {
-        // ignore exceptions from event handler
-      }
-#pragma warning restore CA1031
-    }
-    else {
-      _ = synchronizingObject.BeginInvoke(
-        method: eventHandler,
-        args: [sender, e]
-      );
-    }
-  }
+    => EventInvoker.Invoke(synchronizingObject, this, eventHandler, e);
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
@@ -63,11 +64,9 @@ public abstract partial class EchonetObject {
 #endif
 
   /// <summary>
-  /// このインスタンスでイベントを発生させるために使用される<see cref="IEventInvoker"/>を取得します。
+  /// イベントの結果として発行されるイベントハンドラー呼び出しをマーシャリングするために使用する<see cref="ISynchronizeInvoke"/>オブジェクトを取得します。
   /// </summary>
-  /// <exception cref="InvalidOperationException"><see cref="IEventInvoker"/>を取得することができません。</exception>
-  protected virtual IEventInvoker EventInvoker
-    => OwnerNode?.EventInvoker ?? throw new InvalidOperationException($"{nameof(EventInvoker)} can not be null.");
+  protected internal virtual ISynchronizeInvoke? SynchronizingObject => Node.SynchronizingObject;
 
   /// <summary>
   /// このインスタンスを対象とする<see cref="EchonetObjectEventArgs"/>の、作成済みインスタンスを取得します。
@@ -139,10 +138,10 @@ public abstract partial class EchonetObject {
   );
 
   private protected void OnPropertiesChanged(NotifyCollectionChangedEventArgs e)
-    => EventInvoker.InvokeEvent(this, PropertiesChanged, e);
+    => EventInvoker.Invoke(SynchronizingObject, this, PropertiesChanged, e);
 
   protected internal void OnPropertyValueUpdated(EchonetPropertyValueUpdatedEventArgs e)
-    => EventInvoker.InvokeEvent(this, PropertyValueUpdated, e);
+    => EventInvoker.Invoke(SynchronizingObject, this, PropertyValueUpdated, e);
 
   internal void RaisePropertyValueUpdated(
     EchonetProperty property,
@@ -164,7 +163,7 @@ public abstract partial class EchonetObject {
       updatedTime: property.LastUpdatedTime
     );
 
-    EventInvoker.InvokeEvent(property, valueUpdatedEventHandler, e);
+    EventInvoker.Invoke(SynchronizingObject, property, valueUpdatedEventHandler, e);
 
     OnPropertyValueUpdated(e);
   }

@@ -7,6 +7,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
+using Smdn.Net.EchonetLite.ComponentModel;
+
 namespace Smdn.Net.EchonetLite;
 
 /// <summary>
@@ -97,7 +99,7 @@ public sealed class EchonetNodeRegistry {
   }
 
   private void OnNodeAdded(EchonetNodeEventArgs e)
-    => GetOwnerOrThrow().InvokeEvent(this, NodeAdded, e);
+    => EventInvoker.Invoke(GetOwnerOrThrow().SynchronizingObject, this, NodeAdded, e);
 
   internal void SetOwner(IEchonetClientService newOwner)
   {
