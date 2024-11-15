@@ -32,16 +32,10 @@ partial class EchonetClient
   private SemaphoreSlim requestSemaphore = new(initialCount: 1, maxCount: 1);
 
   /// <summary>
-  /// <see cref="HandleReceivedDataAsync"/>にて電文形式 1（規定電文形式）の電文を受信・処理する際に発生するイベント。
-  /// ECHONET Lite ノードに対して送信されてくる要求を処理するほか、他ノードに対する要求への応答を待機する場合にも使用する。
-  /// </summary>
-  private event EventHandler<(IPAddress Address, ushort TID, Format1Message Message)>? Format1MessageReceived;
-
-  /// <summary>
   /// <see cref="IEchonetLiteHandler.ReceiveCallback"/>に設定されるコールバックメソッドを実装します。
   /// </summary>
   /// <remarks>
-  /// 受信したデータが電文形式 1（規定電文形式）の電文を含むECHONET Lite フレームの場合は、<see cref="OnFormat1MessageReceived"/>の呼び出し、
+  /// 受信したデータが電文形式 1（規定電文形式）の電文を含むECHONET Lite フレームの場合は、<see cref="HandleFormat1MessageAsync"/>の呼び出し、
   /// およびイベント<see cref="Format1MessageReceived"/>のトリガを行います。
   /// それ以外の場合は、無視して処理を中断します。
   /// </remarks>
@@ -97,9 +91,7 @@ partial class EchonetClient
           cancellationToken.ThrowIfCancellationRequested();
 #endif
 
-          OnFormat1MessageReceived(remoteAddress, tid, format1Message);
-
-          Format1MessageReceived?.Invoke(this, (remoteAddress, unchecked((ushort)tid), format1Message));
+          return HandleFormat1MessageAsync(remoteAddress, tid, format1Message, cancellationToken);
         }
         catch (Exception ex) {
           Logger?.LogError(
@@ -110,8 +102,6 @@ partial class EchonetClient
           // this exception might be swallow by IEchonetLiteHandler
           throw;
         }
-
-        break;
 
       case EHD2.Format2:
         // TODO: process format 2 messages

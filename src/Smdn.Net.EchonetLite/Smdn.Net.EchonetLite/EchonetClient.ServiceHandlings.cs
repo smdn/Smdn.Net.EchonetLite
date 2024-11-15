@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -51,12 +52,10 @@ partial class EchonetClient
 #pragma warning restore CS0618
 
   /// <summary>
-  /// 受信したECHONET Lite サービス要求を処理するためのタスクを作成し、スケジューリングするための<see cref="TaskFactory"/>を取得・設定します。
+  /// <see cref="HandleFormat1MessageAsync"/>にて電文形式 1（規定電文形式）の電文を受信・処理する際に発生するイベント。
+  /// ECHONET Lite ノードに対して送信されてくる要求を処理するほか、他ノードに対する要求への応答を待機する場合にも使用する。
   /// </summary>
-  /// <remarks>
-  /// <see langword="null"/>を設定した場合、<see cref="Task.Factory"/>を使用します。
-  /// </remarks>
-  public TaskFactory? ServiceHandlerTaskFactory { get; set; }
+  private event EventHandler<(IPAddress Address, ushort TID, Format1Message Message)>? Format1MessageReceived;
 
   private readonly ResiliencePipeline resiliencePipelineForSendingResponseFrame;
 
@@ -67,69 +66,97 @@ partial class EchonetClient
   /// <param name="address">ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>。</param>
   /// <param name="id">受信したECHONET Lite フレームのTID。　TIDの値域は<see langword="ushort"/>です。</param>
   /// <param name="message">受信した規定電文形式の電文を表す<see cref="Format1Message"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
 #pragma warning disable CA1502 // TODO: reduce complexity
-  protected virtual void OnFormat1MessageReceived(IPAddress address, int id, Format1Message message)
+  protected virtual async ValueTask HandleFormat1MessageAsync(
+    IPAddress address,
+    int id,
+    Format1Message message,
+    CancellationToken cancellationToken
+  )
   {
     var tid = unchecked((ushort)id); // ushort is not CLS compliant
 
-    if (TryFindTransaction(tid, out _))
-      // 自発の要求に対する応答は個別のハンドラで処理するため、ここでは処理せず無視する
+    cancellationToken.ThrowIfCancellationRequested();
+
+    if (TryFindTransaction(tid, out _)) {
+      // 進行中のトランザクション(自発の要求)がある場合は、応答を個別のハンドラで処理する
+      Format1MessageReceived?.Invoke(
+        sender: this,
+        e: (address, tid, message)
+      );
+
       return;
+    }
 
     var sourceNode = GetOrAddOtherNode(address, message.ESV);
     var destObject = message.DEOJ.IsNodeProfile
       ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
       : SelfNode.FindDevice(message.DEOJ);
-    var handlerTaskFactory = ServiceHandlerTaskFactory ?? Task.Factory;
-    Task? handlerTask = null;
+    bool? result = null;
 
     switch (message.ESV) {
       case ESV.SetI: // プロパティ値書き込み要求（応答不要）
         // あれば、書き込んでおわり
         // なければ、プロパティ値書き込み要求不可応答 SetI_SNA
-        handlerTask = handlerTaskFactory.StartNew(async () => {
-          try {
-            _ = await HandleWriteOneWayAsync(address, tid, message, destObject).ConfigureAwait(false);
-          }
-          catch (Exception ex) {
-            if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
+        try {
+          result = await HandleWriteOneWayAsync(
+            address: address,
+            tid: tid,
+            message: message,
+            destObject: destObject,
+            cancellationToken: cancellationToken
+          ).ConfigureAwait(false);
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-            throw;
-          }
-        });
+          throw;
+        }
+
         break;
 
       case ESV.SetC: // プロパティ値書き込み要求（応答要）
         // あれば、書き込んで プロパティ値書き込み応答 Set_Res
         // なければ、プロパティ値書き込み要求不可応答 SetC_SNA
-        handlerTask = handlerTaskFactory.StartNew(async () => {
-          try {
-            _ = await HandleWriteAsync(address, tid, message, destObject).ConfigureAwait(false);
-          }
-          catch (Exception ex) {
-            if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
+        try {
+          result = await HandleWriteAsync(
+            address: address,
+            tid: tid,
+            message: message,
+            destObject: destObject,
+            cancellationToken: cancellationToken
+          ).ConfigureAwait(false);
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-            throw;
-          }
-        });
+          throw;
+        }
+
         break;
 
       case ESV.Get: // プロパティ値読み出し要求
         // あれば、プロパティ値読み出し応答 Get_Res
         // なければ、プロパティ値読み出し不可応答 Get_SNA
-        handlerTask = handlerTaskFactory.StartNew(async () => {
-          try {
-            _ = await HandleReadAsync(address, tid, message, destObject).ConfigureAwait(false);
-          }
-          catch (Exception ex) {
-            if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
+        try {
+          result = await HandleReadAsync(
+            address: address,
+            tid: tid,
+            message: message,
+            destObject: destObject,
+            cancellationToken: cancellationToken
+          ).ConfigureAwait(false);
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-            throw;
-          }
-        });
+          throw;
+        }
+
         break;
 
       case ESV.InfRequest: // プロパティ値通知要求
@@ -140,49 +167,64 @@ partial class EchonetClient
       case ESV.SetGet: // プロパティ値書き込み・読み出し要求
         // あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
         // なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
-        handlerTask = handlerTaskFactory.StartNew(async () => {
-          try {
-            _ = await HandleWriteReadAsync(address, tid, message, destObject).ConfigureAwait(false);
-          }
-          catch (Exception ex) {
-            if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
+        try {
+          result = await HandleWriteReadAsync(
+            address: address,
+            tid: tid,
+            message: message,
+            destObject: destObject,
+            cancellationToken: cancellationToken
+          ).ConfigureAwait(false);
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-            throw;
-          }
-        });
+          throw;
+        }
+
         break;
 
       case ESV.Inf: // プロパティ値通知
         // プロパティ値通知要求 INF_REQのレスポンス
         // または、自発的な通知のケースがある。
         // なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
-        handlerTask = handlerTaskFactory.StartNew(() => {
-          try {
-            _ = HandleNotifyOneWay(address, tid, message, sourceNode);
-          }
-          catch (Exception ex) {
-            if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
+        try {
+          result = HandleNotifyOneWay(
+            address: address,
+            tid: tid,
+            message: message,
+            sourceNode: sourceNode
+          );
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-            throw;
-          }
-        });
+          throw;
+        }
+
         break;
 
       case ESV.InfC: // プロパティ値通知（応答要）
         // プロパティ値通知応答 INFC_Res
-        handlerTask = handlerTaskFactory.StartNew(async () => {
-          try {
-            _ = await HandleNotifyAsync(address, tid, message, sourceNode, destObject).ConfigureAwait(false);
-          }
-          catch (Exception ex) {
-            if (Logger is not null)
-              LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
+        try {
+          result = await HandleNotifyAsync(
+            address: address,
+            tid: tid,
+            message: message,
+            sourceNode: sourceNode,
+            destObject: destObject,
+            cancellationToken: cancellationToken
+          ).ConfigureAwait(false);
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-            throw;
-          }
-        });
+          throw;
+        }
+
         break;
 
       case ESV.SetIServiceNotAvailable: // プロパティ値書き込み要求不可応答
@@ -216,8 +258,8 @@ partial class EchonetClient
         break;
     }
 
-    // ハンドリングを行うタスクがなく、進行中のトランザクションにも該当しない場合
-    if (handlerTask is null && !TryFindTransaction(tid, out _)) {
+    // 電文が処理されず、進行中のトランザクションにも該当しない場合
+    if (result is null && !TryFindTransaction(tid, out _)) {
       // 要求には対応しないが、ログに記録する
       if (Logger is not null)
         LogUnmanagedTransactionAtFormat1MessageHandler(Logger, address, tid, message, null);
@@ -232,9 +274,10 @@ partial class EchonetClient
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
   /// <returns>
-  /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
-  /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
+  /// 非同期の読み取り操作を表す<see cref="ValueTask{T}"/>。
+  /// <see cref="ValueTask{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
   /// <seealso cref="RequestWriteOneWayAsync"/>
@@ -244,11 +287,12 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
-  private async Task<bool> HandleWriteOneWayAsync(
+  private async ValueTask<bool> HandleWriteOneWayAsync(
     IPAddress address,
     ushort tid,
     Format1Message message,
-    EchonetObject? destObject
+    EchonetObject? destObject,
+    CancellationToken cancellationToken
   )
   {
     if (destObject is null) {
@@ -291,7 +335,7 @@ partial class EchonetClient
       return true;
 
     const ESV ResponseServiceCode = ESV.SetIServiceNotAvailable; // SetI_SNA(0x50)
-    var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
     resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, ResponseServiceCode);
@@ -329,9 +373,10 @@ partial class EchonetClient
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
   /// <returns>
-  /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
-  /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
+  /// 非同期の読み取り操作を表す<see cref="ValueTask{T}"/>。
+  /// <see cref="ValueTask{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
   /// <seealso cref="RequestWriteAsync"/>
@@ -341,11 +386,12 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
   /// </seealso>
-  private async Task<bool> HandleWriteAsync(
+  private async ValueTask<bool> HandleWriteAsync(
     IPAddress address,
     ushort tid,
     Format1Message message,
-    EchonetObject? destObject
+    EchonetObject? destObject,
+    CancellationToken cancellationToken
   )
   {
     const ESV RequestServiceCode = ESV.SetC;
@@ -388,7 +434,7 @@ partial class EchonetClient
     var responseServiceCode = hasError
       ? ESV.SetCServiceNotAvailable // SetC_SNA(0x51)
       : ESV.SetResponse; // Set_Res(0x71)
-    var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
     resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
@@ -426,9 +472,10 @@ partial class EchonetClient
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
   /// <returns>
-  /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
-  /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
+  /// 非同期の読み取り操作を表す<see cref="ValueTask{T}"/>。
+  /// <see cref="ValueTask{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
   /// <seealso cref="RequestReadAsync"/>
@@ -438,11 +485,12 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
-  private async Task<bool> HandleReadAsync(
+  private async ValueTask<bool> HandleReadAsync(
     IPAddress address,
     ushort tid,
     Format1Message message,
-    EchonetObject? destObject
+    EchonetObject? destObject,
+    CancellationToken cancellationToken
   )
   {
     const ESV RequestServiceCode = ESV.Get;
@@ -479,7 +527,7 @@ partial class EchonetClient
     var responseServiceCode = hasError
       ? ESV.GetServiceNotAvailable // Get_SNA(0x52)
       : ESV.GetResponse; // Get_Res(0x72)
-    var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
     resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
@@ -520,9 +568,10 @@ partial class EchonetClient
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
   /// <returns>
-  /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
-  /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
+  /// 非同期の読み取り操作を表す<see cref="ValueTask{T}"/>。
+  /// <see cref="ValueTask{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
   /// <seealso cref="RequestWriteReadAsync"/>
@@ -532,11 +581,12 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
   /// </seealso>
-  private async Task<bool> HandleWriteReadAsync(
+  private async ValueTask<bool> HandleWriteReadAsync(
     IPAddress address,
     ushort tid,
     Format1Message message,
-    EchonetObject? destObject
+    EchonetObject? destObject,
+    CancellationToken cancellationToken
   )
   {
     const ESV RequestServiceCode = ESV.SetGet;
@@ -596,7 +646,7 @@ partial class EchonetClient
     var responseServiceCode = hasError
       ? ESV.SetGetServiceNotAvailable // SetGet_SNA(0x5E)
       : ESV.SetGetResponse; // SetGet_Res(0x7E)
-    var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
     resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
@@ -639,8 +689,8 @@ partial class EchonetClient
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <returns>
-  /// 非同期の読み取り操作を表す<see cref="Task{T}"/>。
-  /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
+  /// 非同期の読み取り操作を表す<see cref="ValueTask{T}"/>。
+  /// <see cref="ValueTask{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
   /// <seealso cref="RequestNotifyOneWayAsync"/>
@@ -707,9 +757,10 @@ partial class EchonetClient
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
   /// <returns>
-  /// 非同期の読み取り操作を表す<see cref="Task{Boolean}"/>。
-  /// <see cref="Task{T}.Result"/>には処理の結果が含まれます。
+  /// 非同期の読み取り操作を表す<see cref="ValueTask{Boolean}"/>。
+  /// <see cref="ValueTask{T}.Result"/>には処理の結果が含まれます。
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
   /// <seealso cref="NotifyAsync"/>
@@ -719,12 +770,13 @@ partial class EchonetClient
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.６ プロパティ値通知(応答要)サービス［0x74, 0x7A］
   /// </seealso>
-  private async Task<bool> HandleNotifyAsync(
+  private async ValueTask<bool> HandleNotifyAsync(
     IPAddress address,
     ushort tid,
     Format1Message message,
     EchonetOtherNode sourceNode,
-    EchonetObject? destObject
+    EchonetObject? destObject,
+    CancellationToken cancellationToken
   )
   {
     const ESV RequestServiceCode = ESV.InfC;
@@ -780,7 +832,7 @@ partial class EchonetClient
 
     if (destObject is not null) {
       const ESV ResponseServiceCode = ESV.InfCResponse; // INFC_Res(0x74)
-      var resilienceContext = ResilienceContextPool.Shared.Get(); // TODO: CancellationToken
+      var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
       resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
       resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, ResponseServiceCode);
