@@ -317,9 +317,9 @@ public class SmartMeterDataAggregator : HemsController {
     aggregationTaskStoppingTokenSource = new();
 
     aggregationTask = (aggregationTaskFactory ?? Task.Factory).StartNew(
-      action: async () => {
+      action: async state => {
         var resilienceContext = ResilienceContextPool.Shared.Get(
-          cancellationToken: aggregationTaskStoppingTokenSource.Token
+          cancellationToken: (CancellationToken)state!
         );
 
         try {
@@ -349,7 +349,8 @@ public class SmartMeterDataAggregator : HemsController {
           aggregationTaskCompletedCallback?.Invoke();
         }
       },
-      cancellationToken: CancellationToken.None
+      state: aggregationTaskStoppingTokenSource.Token,
+      cancellationToken: aggregationTaskStoppingTokenSource.Token
     );
 
     Logger?.LogInformation("Started data aggregation.");
