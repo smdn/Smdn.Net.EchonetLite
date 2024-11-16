@@ -64,6 +64,7 @@ partial class EchonetClient
   /// <remarks>
   /// このメソッドでは応答を待機しません。　ECHONET Lite サービスの要求を行ったら即座に処理を返します。
   /// </remarks>
+  /// <seealso cref="HandleWriteOneWayResponse"/>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
@@ -84,106 +85,61 @@ partial class EchonetClient
       throw new ArgumentNullException(nameof(properties));
 
     const ESV ServiceCode = ESV.SetI;
-    var responseTCS = new TaskCompletionSource();
-    using var ctr = cancellationToken.Register(
-      () => _ = responseTCS.TrySetCanceled(cancellationToken)
-    );
-    using var transaction = StartNewTransaction();
+
+    // 応答を待機せずに要求の送信のみを行う
+    // 応答の処理は共通のハンドラで行う
     var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
 
     try {
-      Format1MessageReceived += HandleSetISNA;
+      var tid = await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+        callback: async ctx => {
+          var tid = GetNewTransactionId();
 
-      try {
-        await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
-          callback: async ctx => {
-            await SendFrameAsync(
-              destinationNodeAddress,
-              buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-                buffer: buffer,
-                tid: transaction.Increment(),
-                sourceObject: sourceObject,
-                destinationObject: destinationObject,
-                esv: ServiceCode,
-                properties: properties
-              ),
-              ctx.CancellationToken
-            ).ConfigureAwait(false);
-          },
-          context: resilienceContext
-        ).ConfigureAwait(false);
+          await SendFrameAsync(
+            destinationNodeAddress,
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: tid,
+              sourceObject: sourceObject,
+              destinationObject: destinationObject,
+              esv: ServiceCode,
+              properties: properties
+            ),
+            ctx.CancellationToken
+          ).ConfigureAwait(false);
 
-        // FIXME: キャンセル要求があるか、いずれかから不可応答があるまで処理が返らない
-        await responseTCS.Task.ConfigureAwait(false);
-      }
-      catch (Exception ex) {
-        if (
-          destinationNodeAddress is not null &&
-          ex is OperationCanceledException exOperationCanceled &&
-          cancellationToken.Equals(exOperationCanceled.CancellationToken)
-        ) {
-          // 個別送信の場合、要求がすべて受理されたと仮定して書き込みを反映
-          var destination = GetOrAddOtherNodeObject(destinationNodeAddress, destinationObject, ESV.SetI);
+          return tid;
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
 
-          foreach (var prop in properties) {
-            _ = destination.StorePropertyValue(
-              esv: ESV.SetI,
-              tid: transaction.ID,
-              value: prop,
-              validateValue: false, // Setした内容をそのまま格納するため、検証しない
-              newModificationState: true // 要求は受理されたと仮定するため、値は未変更状態とする
-            );
-          }
+      // 要求はすべて受理されると仮定して書き込みを反映する
+      var destinationNodes = destinationNodeAddress is null
+        ? nodeRegistry.OtherNodes // 一斉同報通知の場合、既知のノードすべての対象オブジェクトに対して書き込みを反映する
+        : [GetOrAddOtherNode(destinationNodeAddress, ESV.SetI)];
+
+      foreach (var destinationNode in destinationNodes) {
+        var destination = destinationNode.GetOrAddDevice(
+          factory: deviceFactory,
+          eoj: destinationObject,
+          added: out _
+        );
+
+        foreach (var prop in properties) {
+          _ = destination.StorePropertyValue(
+            esv: ESV.SetI,
+            tid: tid,
+            value: prop,
+            validateValue: false, // Setした内容をそのまま格納するため、検証しない
+            newModificationState: true // 要求は受理されると仮定するため、値は未変更状態とする
+          );
         }
-
-        throw;
       }
     }
     finally {
       ResilienceContextPool.Shared.Return(resilienceContext);
-
-      Format1MessageReceived -= HandleSetISNA;
-    }
-
-    void HandleSetISNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
-    {
-      if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
-        return;
-      if (transaction.ID != value.TID)
-        return;
-      if (!EOJ.AreSame(value.Message.SEOJ, destinationObject))
-        return;
-      if (value.Message.ESV != ESV.SetIServiceNotAvailable)
-        return;
-
-      Logger?.LogDebug(
-        "Handling {ESV} (From: {Address}, TID: {TID:X4})",
-        value.Message.ESV.ToSymbolString(),
-        value.Address,
-        value.TID
-      );
-
-      // 不可応答ながらも要求が受理された書き込みを反映
-      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
-      var props = value.Message.GetProperties();
-
-      foreach (var prop in props.Where(static p => p.PDC == 0)) {
-        _ = respondingObject.StorePropertyValue(
-          esv: value.Message.ESV,
-          tid: value.TID,
-          value: properties.First(p => p.EPC == prop.EPC),
-          validateValue: false, // Setした内容をそのまま格納するため、検証しない
-          newModificationState: false // 要求は受理されたため、値を未変更状態にする
-        );
-
-        // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
-      }
-
-      responseTCS.SetResult();
-
-      // TODO 一斉通知の不可応答の扱いが…
     }
   }
 

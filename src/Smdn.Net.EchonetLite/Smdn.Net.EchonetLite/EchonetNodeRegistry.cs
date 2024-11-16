@@ -37,6 +37,8 @@ public sealed class EchonetNodeRegistry {
   /// <seealso cref="NodeAdded"/>
   public IReadOnlyCollection<EchonetNode> Nodes => readOnlyNodesView.Values;
 
+  internal IReadOnlyCollection<EchonetOtherNode> OtherNodes => readOnlyNodesView.Values;
+
   private readonly ConcurrentDictionary<IPAddress, EchonetOtherNode> nodes;
   private readonly ReadOnlyDictionary<IPAddress, EchonetOtherNode> readOnlyNodesView;
 

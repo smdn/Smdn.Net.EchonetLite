@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -228,7 +229,22 @@ partial class EchonetClient
         break;
 
       case ESV.SetIServiceNotAvailable: // プロパティ値書き込み要求不可応答
-        // プロパティ値書き込み要求（応答不要）SetIのレスポンスなので、要求送信(SETI)のハンドラで対処
+        // プロパティ値書き込み要求（応答不要）SetIのレスポンス
+        try {
+          result = HandleWriteOneWayResponse(
+            address: address,
+            tid: tid,
+            message: message,
+            sourceNode: sourceNode
+          );
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
+
+          throw;
+        }
+
         break;
 
       case ESV.SetResponse: // プロパティ値書き込み応答
@@ -905,6 +921,63 @@ partial class EchonetClient
     Logger?.LogDebug("Updated");
 
     return true;
+  }
+
+  /// <summary>
+  /// ECHONET Lite サービス応答「SetI_SNA:プロパティ値書き込み要求不可応答」(ESV <c>0x50</c>)を処理します。
+  /// </summary>
+  /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
+  /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
+  /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
+  /// <param name="sourceNode">応答元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
+  /// <returns>
+  /// 常に不可応答を表す<see langword="false"/>を返します。
+  /// </returns>
+  /// <seealso cref="RequestWriteOneWayAsync"/>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
+  /// </seealso>
+  private bool HandleWriteOneWayResponse(
+    IPAddress address,
+    ushort tid,
+    Format1Message message,
+    EchonetOtherNode sourceNode
+  )
+  {
+    const ESV ResponseServiceCode = ESV.SetIServiceNotAvailable;
+
+    if (Logger is not null)
+      LogHandlingServiceResponse(Logger, ResponseServiceCode, address, tid);
+
+    var objectAdded = false;
+    var responseProps = message.GetProperties();
+    var sourceObject = message.SEOJ.IsNodeProfile
+      ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
+      : sourceNode.GetOrAddDevice(deviceFactory, message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
+
+    if (objectAdded) {
+      Logger?.LogInformation(
+        "New object added (Node: {NodeAddress}, EOJ: {EOJ})",
+        sourceNode.Address,
+        sourceObject.EOJ
+      );
+    }
+
+    // 受理されなかったプロパティについて、返送された値を設定し、値を変更状態に戻す
+    foreach (var prop in responseProps.Where(static p => p.PDC != 0)) {
+      _ = sourceObject.StorePropertyValue(
+        esv: ResponseServiceCode,
+        tid: tid,
+        value: prop,
+        validateValue: false, // 返送された内容をそのまま格納するため、検証しない
+        newModificationState: true // 要求は受理されなかったため、値を変更状態にする
+      );
+    }
+
+    return false; // 不可応答
   }
 
   /// <summary>
