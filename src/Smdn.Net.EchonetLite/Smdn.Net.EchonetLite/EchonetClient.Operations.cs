@@ -92,6 +92,42 @@ partial class EchonetClient
   /// インスタンスリスト受信後に呼び出されるコールバックを表すデリゲートを指定します。
   /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
   /// </param>
+  /// <param name="resiliencePipelineForServiceRequest">
+  /// サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。
+  /// </param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>非同期の操作を表す<see cref="Task"/>。</returns>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４．２．１ サービス内容に関する基本シーケンス （C）通知要求受信時の基本シーケンス
+  /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
+  public Task RequestNotifyInstanceListAsync(
+    IPAddress? destinationNodeAddress,
+    Func<EchonetNode, bool> onInstanceListUpdated,
+    ResiliencePipeline? resiliencePipelineForServiceRequest = null,
+    CancellationToken cancellationToken = default
+  )
+    => RequestNotifyInstanceListAsync<EmptyStateForRequestNotifyInstanceList>(
+      destinationNodeAddress,
+      onInstanceListUpdated: (node, _) => onInstanceListUpdated(node),
+      state: default,
+      resiliencePipelineForServiceRequest: resiliencePipelineForServiceRequest,
+      cancellationToken: cancellationToken
+    );
+
+  private readonly struct EmptyStateForRequestNotifyInstanceList { }
+
+  /// <summary>
+  /// インスタンスリスト通知要求を行います。
+  /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)に対するECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を送信します。
+  /// </summary>
+  /// <param name="destinationNodeAddress">
+  /// 相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。
+  /// </param>
+  /// <param name="onInstanceListUpdated">
+  /// インスタンスリスト受信後に呼び出されるコールバックを表すデリゲートを指定します。
+  /// このコールバックが<see langword="true"/>を返す場合、結果を確定して処理を終了します。　<see langword="false"/>の場合、処理を継続します。
+  /// </param>
   /// <param name="state">各コールバックに共通して渡される状態変数を指定します。</param>
   /// <param name="resiliencePipelineForServiceRequest">
   /// サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。

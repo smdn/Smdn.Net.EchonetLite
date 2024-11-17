@@ -33,7 +33,7 @@ public sealed class EchonetNodeRegistry {
   /// インスタンスリスト通知要求等、一斉同報送信を行うなどの契機で新しいECHONET Lite ノードが追加された場合は、
   /// イベント<see cref="NodeAdded"/>が発生します。
   /// </remarks>
-  /// <seealso cref="EchonetClient.RequestNotifyInstanceListAsync"/>
+  /// <seealso cref="EchonetClient.RequestNotifyInstanceListAsync{TState}(IPAddress?, Func{EchonetNode, TState, bool}, TState, Polly.ResiliencePipeline?, System.Threading.CancellationToken)"/>
   /// <seealso cref="NodeAdded"/>
   public IReadOnlyCollection<EchonetNode> Nodes => readOnlyNodesView.Values;
 
