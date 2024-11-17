@@ -64,6 +64,16 @@ partial class EchonetClient
   private Transaction StartNewTransaction()
     => new(this);
 
+  /// <summary>
+  /// 自発の要求となるECHONET Lite フレームに設定する新しいトランザクションID(TID)を発行します。
+  /// このメソッドではTIDの発行のみを行います。　発行したTIDに対するトランザクション管理は行われません。
+  /// </summary>
+  /// <returns>
+  /// 新しくインクリメントされたTID。
+  /// </returns>
+  private ushort GetNewTransactionId()
+    => unchecked((ushort)Interlocked.Increment(ref tid));
+
   private bool TryFindTransaction(ushort tid, out Transaction transaction)
     => transactionsInProgress.TryGetValue(tid, out transaction);
 }

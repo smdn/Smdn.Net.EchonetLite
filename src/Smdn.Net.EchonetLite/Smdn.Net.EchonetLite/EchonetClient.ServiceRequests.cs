@@ -632,9 +632,8 @@ partial class EchonetClient
 
     const ESV ServiceCode = ESV.InfRequest;
 
-    // 要求の送信を行ったあとは、応答を待機せずにトランザクションを終了する
+    // 応答を待機せずに要求の送信のみを行う
     // 応答の処理は共通のハンドラで行う
-    using var transaction = StartNewTransaction();
     var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
@@ -646,7 +645,7 @@ partial class EchonetClient
             destinationNodeAddress,
             buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
               buffer: buffer,
-              tid: transaction.Increment(),
+              tid: GetNewTransactionId(),
               sourceObject: sourceObject,
               destinationObject: destinationObject,
               esv: ServiceCode,
@@ -702,9 +701,8 @@ partial class EchonetClient
 
     const ESV ServiceCode = ESV.Inf;
 
-    // 要求の送信を行ったあとは、応答を待機せずにトランザクションを終了する
+    // 応答を待機せずに要求の送信のみを行う
     // 応答の処理は共通のハンドラで行う
-    using var transaction = StartNewTransaction();
     var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
@@ -716,7 +714,7 @@ partial class EchonetClient
             destinationNodeAddress,
             buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
               buffer: buffer,
-              tid: transaction.Increment(),
+              tid: GetNewTransactionId(),
               sourceObject: sourceObject,
               destinationObject: destinationObject,
               esv: ServiceCode,
