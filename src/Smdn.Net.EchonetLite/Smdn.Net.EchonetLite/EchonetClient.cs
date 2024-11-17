@@ -49,14 +49,21 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
 #endif
 
   /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, EchonetNodeRegistry, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
+  /// </exception>
   public EchonetClient(
     IEchonetLiteHandler echonetLiteHandler,
-    ILogger? logger = null
+    bool shouldDisposeEchonetLiteHandler = false
   )
     : this(
-      echonetLiteHandler: echonetLiteHandler,
-      shouldDisposeEchonetLiteHandler: false,
-      logger: logger
+      selfNode: EchonetNode.CreateSelfNode(devices: Array.Empty<EchonetObject>()),
+      echonetLiteHandler: echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler)),
+      shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler,
+      nodeRegistry: null,
+      deviceFactory: null,
+      resiliencePipelineForSendingResponseFrame: null,
+      logger: null
     )
   {
   }
@@ -68,16 +75,17 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   public EchonetClient(
     IEchonetLiteHandler echonetLiteHandler,
     bool shouldDisposeEchonetLiteHandler,
-    ILogger? logger
+    EchonetNodeRegistry? nodeRegistry,
+    IEchonetDeviceFactory? deviceFactory
   )
     : this(
       selfNode: EchonetNode.CreateSelfNode(devices: Array.Empty<EchonetObject>()),
       echonetLiteHandler: echonetLiteHandler ?? throw new ArgumentNullException(nameof(echonetLiteHandler)),
       shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler,
-      nodeRegistry: null,
-      deviceFactory: null,
+      nodeRegistry: nodeRegistry,
+      deviceFactory: deviceFactory,
       resiliencePipelineForSendingResponseFrame: null,
-      logger: logger
+      logger: null
     )
   {
   }
