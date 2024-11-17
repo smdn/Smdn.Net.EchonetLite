@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 using NUnit.Framework;
@@ -100,6 +101,105 @@ public partial class PropertyContentSerializerTests {
     };
 
     Assert.That(PropertyContentSerializer.TrySerializeInstanceListNotification(instanceList, Span<byte>.Empty, out _), Is.False);
+  }
+
+  private static System.Collections.IEnumerable YieldTestCases_SerializeInstanceListNotification()
+  {
+    foreach (var prependPdc in new[] { true, false }) {
+      yield return new object?[] {
+        Array.Empty<EOJ>(),
+        new byte[] { 0x00 },
+        prependPdc
+      };
+      yield return new object?[] {
+        new List<EOJ>() {
+          new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x01)
+        },
+        new byte[] { 0x01, 0xBE, 0xAF, 0x01 },
+        prependPdc,
+      };
+      yield return new object?[] {
+        new List<EOJ>() {
+          new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x01),
+          new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x02)
+        },
+        new byte[] { 0x02, 0xBE, 0xAF, 0x01, 0xBE, 0xAF, 0x02 },
+        prependPdc,
+      };
+      yield return new object?[] {
+        new List<EOJ>() {
+          new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x01),
+          new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x02)
+        },
+        new byte[] { 0x02, 0xBE, 0xAF, 0x01, 0xBE, 0xAF, 0x02 },
+        prependPdc,
+      };
+    }
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_SerializeInstanceListNotification))]
+  public void SerializeInstanceListNotification(
+    IReadOnlyList<EOJ> instanceList,
+    byte[] expectedResult,
+    bool prependPdc
+  )
+  {
+    var buffer = new ArrayBufferWriter<byte>();
+
+    Assert.That(
+      PropertyContentSerializer.SerializeInstanceListNotification(instanceList, buffer, prependPdc: prependPdc),
+      Is.EqualTo(expectedResult.Length)
+    );
+
+    if (prependPdc) {
+      Assert.That(buffer.WrittenCount, Is.EqualTo(1 + expectedResult.Length), nameof(buffer.WrittenCount));
+      Assert.That(buffer.WrittenSpan[0], SequenceIs.EqualTo(expectedResult.Length), nameof(buffer));
+      Assert.That(buffer.WrittenMemory.Slice(1), SequenceIs.EqualTo(expectedResult), nameof(buffer));
+    }
+    else {
+      Assert.That(buffer.WrittenCount, Is.EqualTo(expectedResult.Length), nameof(buffer.WrittenCount));
+      Assert.That(buffer.WrittenMemory, SequenceIs.EqualTo(expectedResult), nameof(buffer));
+    }
+  }
+
+  [Test]
+  public void SerializeInstanceListNotification_NodesNull(
+    [Values] bool prependPdc
+  )
+  {
+    var buffer = new ArrayBufferWriter<byte>();
+
+    Assert.That(PropertyContentSerializer.SerializeInstanceListNotification(null!, buffer, prependPdc), Is.EqualTo(0));
+    Assert.That(buffer.WrittenCount, Is.EqualTo(0));
+  }
+
+  [Test]
+  public void SerializeInstanceListNotification_Over84Nodes(
+    [Values] bool prependPdc
+  )
+  {
+    var instanceList = new List<EOJ>();
+
+    for (var i = 0; i < 85; i++) {
+      instanceList.Add(new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: (byte)i));
+    }
+
+    Assert.That(instanceList.Count, Is.EqualTo(85), "instance list count");
+
+    var buffer = new ArrayBufferWriter<byte>();
+
+    Assert.That(
+      PropertyContentSerializer.SerializeInstanceListNotification(instanceList, buffer, prependPdc: prependPdc),
+      Is.EqualTo(253)
+    );
+
+    if (prependPdc) {
+      Assert.That(buffer.WrittenSpan[0], Is.EqualTo(253));
+      Assert.That(buffer.WrittenCount, Is.EqualTo(254));
+    }
+    else {
+      Assert.That(buffer.WrittenCount, Is.EqualTo(253));
+    }
   }
 
   private static System.Collections.IEnumerable YieldTestCases_TryDeserializeInstanceListNotification()

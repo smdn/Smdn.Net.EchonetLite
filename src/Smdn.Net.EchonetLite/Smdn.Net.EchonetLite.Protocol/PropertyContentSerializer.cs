@@ -1,12 +1,59 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
 public static class PropertyContentSerializer {
+  /// <summary>
+  /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)のプロパティ内容をシリアライズします。
+  /// </summary>
+  /// <remarks>
+  /// プロパティ内容が253バイト以上となる場合、その時点で書き込みを中断します。
+  /// つまり、<paramref name="instanceList"/>の85個目以降の要素は無視されます。
+  /// </remarks>
+  /// <param name="instanceList">インスタンスリストを表す<see cref="IEnumerable{EOJ}"/>。</param>
+  /// <param name="buffer">シリアライズした結果が書き込まれる<see cref="IBufferWriter{Byte}"/>。</param>
+  /// <param name="prependPdc">プロパティ内容に先行して、PDC(プロパティ値の長さ)を書き込むかどうかを指定します。</param>
+  /// <returns>
+  /// <paramref name="buffer"/>に書き込まれたインスタンスリストのバイト数を返します。
+  /// </returns>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
+  /// </seealso>
+  public static int SerializeInstanceListNotification(
+    IEnumerable<EOJ> instanceList,
+    IBufferWriter<byte> buffer,
+    bool prependPdc
+  )
+  {
+    if (buffer is null)
+      throw new ArgumentNullException(nameof(buffer));
+
+    int bytesWritten;
+
+    if (prependPdc) {
+      var destination = buffer.GetSpan(1 /* PDC */ + 253);
+
+      if (TrySerializeInstanceListNotification(instanceList, destination[1..], out bytesWritten)) {
+        destination[0] = (byte)bytesWritten;
+
+        buffer.Advance(1 + bytesWritten);
+      }
+    }
+    else {
+      var destination = buffer.GetSpan(253);
+
+      if (TrySerializeInstanceListNotification(instanceList, destination, out bytesWritten))
+        buffer.Advance(bytesWritten);
+    }
+
+    return bytesWritten;
+  }
+
   /// <summary>
   /// ECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)のプロパティ内容をシリアライズします。
   /// </summary>
