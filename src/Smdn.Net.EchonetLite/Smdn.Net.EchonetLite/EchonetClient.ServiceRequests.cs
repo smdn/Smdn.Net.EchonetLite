@@ -20,16 +20,6 @@ using Polly;
 
 using Smdn.Net.EchonetLite.Protocol;
 
-using ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary =
-#if SYSTEM_COLLECTIONS_OBJECTMODEL_READONLYDICTIONARY_EMPTY
-  System.Collections.ObjectModel.ReadOnlyDictionary<
-#else
-  Smdn.Net.EchonetLite.EchonetClient.ReadOnlyDictionaryShim<
-#endif
-    byte,
-    Smdn.Net.EchonetLite.EchonetServicePropertyResult
-  >;
-
 namespace Smdn.Net.EchonetLite;
 
 #pragma warning disable IDE0040
@@ -44,6 +34,41 @@ partial class EchonetClient
 
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForRequestServiceCode = new(nameof(ResiliencePropertyKeyForRequestServiceCode));
+
+  private static (
+    IReadOnlyList<PropertyValue> RequestProperties,
+    Dictionary<byte, EchonetServicePropertyResult> Results
+  )
+  CreateRequestAndResults(
+    IEnumerable<byte> requestPropertyCodes
+  )
+    => CreateRequestAndResults(
+      requestProperties: requestPropertyCodes.Select(PropertyValue.Create)
+    );
+
+  private static (
+    IReadOnlyList<PropertyValue> RequestProperties,
+    Dictionary<byte, EchonetServicePropertyResult> Results
+  )
+  CreateRequestAndResults(
+    IEnumerable<PropertyValue> requestProperties
+  )
+  {
+    var requestPropertyList = requestProperties.ToList();
+    var results = new Dictionary<byte, EchonetServicePropertyResult>(
+      capacity: requestPropertyList.Count
+    );
+
+    // set default results
+    foreach (var prop in requestPropertyList) {
+      results[prop.EPC] = EchonetServicePropertyResult.Unavailable;
+    }
+
+    return (
+      RequestProperties: requestPropertyList,
+      Results: results
+    );
+  }
 
   /// <summary>
   /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を行います。　このサービスは一斉同報が可能です。
@@ -180,8 +205,9 @@ partial class EchonetClient
     CancellationToken cancellationToken = default
   )
   {
-    if (properties is null)
-      throw new ArgumentNullException(nameof(properties));
+    var (requestProperties, results) = CreateRequestAndResults(
+      properties ?? throw new ArgumentNullException(nameof(properties))
+    );
 
     const ESV ServiceCode = ESV.SetC;
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
@@ -206,7 +232,7 @@ partial class EchonetClient
               sourceObject: sourceObject,
               destinationObject: destinationObject,
               esv: ServiceCode,
-              properties: properties
+              properties: requestProperties
             ),
             ctx.CancellationToken
           ).ConfigureAwait(false);
@@ -245,23 +271,29 @@ partial class EchonetClient
       var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
       var props = value.Message.GetProperties();
 
-      foreach (var prop in props.Where(static p => p.PDC == 0)) {
+      foreach (var prop in props) {
+        // PDC == 0: 要求は受理されたため、値を未変更状態にする
+        // PDC != 0: 要求は受理されなかったため、値を変更状態にする
+        var isAccepted = prop.PDC == 0;
+        var newModificationState = !isAccepted;
+
         _ = respondingObject.StorePropertyValue(
           esv: value.Message.ESV,
           tid: value.TID,
           value: properties.First(p => p.EPC == prop.EPC),
           validateValue: false, // Setした内容をそのまま格納するため、検証しない
-          newModificationState: false // 要求は受理されたため、値を未変更状態にする
+          newModificationState: newModificationState
         );
 
-        // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
+        results[prop.EPC] = isAccepted
+          ? EchonetServicePropertyResult.Accepted
+          : EchonetServicePropertyResult.NotAccepted;
       }
 
       responseTCS.SetResult(
         new(
           isSuccess: value.Message.ESV == ESV.SetResponse,
-          // TODO: 個々のプロパティの処理結果を設定する
-          results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          results: results
         )
       );
 
@@ -306,8 +338,9 @@ partial class EchonetClient
     CancellationToken cancellationToken = default
   )
   {
-    if (propertyCodes is null)
-      throw new ArgumentNullException(nameof(propertyCodes));
+    var (requestProperties, results) = CreateRequestAndResults(
+      propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))
+    );
 
     const ESV ServiceCode = ESV.Get;
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
@@ -332,7 +365,7 @@ partial class EchonetClient
               sourceObject: sourceObject,
               destinationObject: destinationObject,
               esv: ServiceCode,
-              properties: propertyCodes.Select(PropertyValue.Create)
+              properties: requestProperties
             ),
             ctx.CancellationToken
           ).ConfigureAwait(false);
@@ -371,21 +404,27 @@ partial class EchonetClient
       var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
       var props = value.Message.GetProperties();
 
-      foreach (var prop in props.Where(static p => 0 < p.PDC)) {
-        _ = respondingObject.StorePropertyValue(
-          esv: value.Message.ESV,
-          tid: value.TID,
-          value: prop,
-          validateValue: false, // Getされた内容をそのまま格納するため、検証しない
-          newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
-        );
+      foreach (var prop in props) {
+        if (0 < prop.PDC) {
+          _ = respondingObject.StorePropertyValue(
+            esv: value.Message.ESV,
+            tid: value.TID,
+            value: prop,
+            validateValue: false, // Getされた内容をそのまま格納するため、検証しない
+            newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
+          );
+
+          results[prop.EPC] = EchonetServicePropertyResult.Accepted;
+        }
+        else {
+          results[prop.EPC] = EchonetServicePropertyResult.NotAccepted;
+        }
       }
 
       responseTCS.SetResult(
         new(
           isSuccess: value.Message.ESV == ESV.GetResponse,
-          // TODO: 個々のプロパティの処理結果を設定する
-          results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          results: results
         )
       );
 
@@ -433,10 +472,12 @@ partial class EchonetClient
     CancellationToken cancellationToken = default
   )
   {
-    if (propertiesToSet is null)
-      throw new ArgumentNullException(nameof(propertiesToSet));
-    if (propertyCodesToGet is null)
-      throw new ArgumentNullException(nameof(propertyCodesToGet));
+    var (requestPropertiesToSet, setResults) = CreateRequestAndResults(
+      propertiesToSet ?? throw new ArgumentNullException(nameof(propertiesToSet))
+    );
+    var (requestPropertiesToGet, getResults) = CreateRequestAndResults(
+      propertyCodesToGet ?? throw new ArgumentNullException(nameof(propertyCodesToGet))
+    );
 
     const ESV ServiceCode = ESV.SetGet;
     var responseTCS = new TaskCompletionSource<(
@@ -465,8 +506,8 @@ partial class EchonetClient
               sourceObject: sourceObject,
               destinationObject: destinationObject,
               esv: ServiceCode,
-              propertiesForSet: propertiesToSet,
-              propertiesForGet: propertyCodesToGet.Select(PropertyValue.Create)
+              propertiesForSet: requestPropertiesToSet,
+              propertiesForGet: requestPropertiesToGet
             ),
             ctx.CancellationToken
           ).ConfigureAwait(false);
@@ -506,26 +547,40 @@ partial class EchonetClient
 
       // 要求が受理された書き込みを反映
       foreach (var prop in propsForSet.Where(static p => p.PDC == 0)) {
+        // PDC == 0: 要求は受理されたため、値を未変更状態にする
+        // PDC != 0: 要求は受理されなかったため、値を変更状態にする
+        var isAccepted = prop.PDC == 0;
+        var newModificationState = !isAccepted;
+
         _ = respondingObject.StorePropertyValue(
           esv: value.Message.ESV,
           tid: value.TID,
           value: propertiesToSet.First(p => p.EPC == prop.EPC),
           validateValue: false, // Setした内容をそのまま格納するため、検証しない
-          newModificationState: false // 要求は受理されたため、値を未変更状態にする
+          newModificationState: newModificationState
         );
 
-        // TODO: 受理されなかったプロパティについてはEchonetProperty.HasModified = trueに戻す
+        setResults[prop.EPC] = isAccepted
+          ? EchonetServicePropertyResult.Accepted
+          : EchonetServicePropertyResult.NotAccepted;
       }
 
       // 要求が受理された読み出しを反映
-      foreach (var prop in propsForGet.Where(static p => 0 < p.PDC)) {
-        _ = respondingObject.StorePropertyValue(
-          esv: value.Message.ESV,
-          tid: value.TID,
-          value: prop,
-          validateValue: false, // Getされた内容をそのまま格納するため、検証しない
-          newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
-        );
+      foreach (var prop in propsForGet) {
+        if (0 < prop.PDC) {
+          _ = respondingObject.StorePropertyValue(
+            esv: value.Message.ESV,
+            tid: value.TID,
+            value: prop,
+            validateValue: false, // Getされた内容をそのまま格納するため、検証しない
+            newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
+          );
+
+          getResults[prop.EPC] = EchonetServicePropertyResult.Accepted;
+        }
+        else {
+          getResults[prop.EPC] = EchonetServicePropertyResult.NotAccepted;
+        }
       }
 
       var isSuccess = value.Message.ESV == ESV.GetResponse;
@@ -534,13 +589,11 @@ partial class EchonetClient
         (
           SetResponse: new(
             isSuccess: isSuccess,
-            // TODO: 個々のプロパティの処理結果を設定する
-            results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+            results: setResults
           ),
           GetResponse: new(
             isSuccess: isSuccess,
-            // TODO: 個々のプロパティの処理結果を設定する
-            results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+            results: getResults
           )
         )
       );
@@ -726,8 +779,10 @@ partial class EchonetClient
   {
     if (destinationNodeAddress is null)
       throw new ArgumentNullException(nameof(destinationNodeAddress));
-    if (properties is null)
-      throw new ArgumentNullException(nameof(properties));
+
+    var (requestProperties, results) = CreateRequestAndResults(
+      properties ?? throw new ArgumentNullException(nameof(properties))
+    );
 
     const ESV ServiceCode = ESV.InfC;
     var responseTCS = new TaskCompletionSource<EchonetServiceResponse>();
@@ -752,7 +807,7 @@ partial class EchonetClient
               sourceObject: sourceObject,
               destinationObject: destinationObject,
               esv: ServiceCode,
-              properties: properties
+              properties: requestProperties
             ),
             ctx.CancellationToken
           ).ConfigureAwait(false);
@@ -786,11 +841,24 @@ partial class EchonetClient
         value.TID
       );
 
+      // 要求に対する応答を結果に反映する
+      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
+      var props = value.Message.GetProperties();
+
+      foreach (var prop in props) {
+        // PDC == 0: 要求は受理されたため
+        // PDC != 0: 要求は受理されなかった
+        var isAccepted = prop.PDC == 0;
+
+        results[prop.EPC] = isAccepted
+          ? EchonetServicePropertyResult.Accepted
+          : EchonetServicePropertyResult.NotAccepted;
+      }
+
       responseTCS.SetResult(
         new(
           isSuccess: true,
-          // TODO: 個々のプロパティの処理結果を設定する
-          results: ShimTypeForEmptyReadOnlyEchonetServicePropertyResultDictionary.Empty
+          results: results
         )
       );
     }
