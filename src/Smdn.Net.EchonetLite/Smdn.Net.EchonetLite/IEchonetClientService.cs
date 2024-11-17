@@ -67,7 +67,7 @@ internal interface IEchonetClientService {
   ValueTask<EchonetServiceResponse>
   RequestWriteAsync(
     EOJ sourceObject,
-    IPAddress? destinationNodeAddress,
+    IPAddress destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<PropertyValue> properties,
     ResiliencePipeline? resiliencePipeline,
@@ -77,7 +77,7 @@ internal interface IEchonetClientService {
   ValueTask<EchonetServiceResponse>
   RequestReadAsync(
     EOJ sourceObject,
-    IPAddress? destinationNodeAddress,
+    IPAddress destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<byte> propertyCodes,
     ResiliencePipeline? resiliencePipeline,
@@ -87,7 +87,7 @@ internal interface IEchonetClientService {
   ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)>
   RequestWriteReadAsync(
     EOJ sourceObject,
-    IPAddress? destinationNodeAddress,
+    IPAddress destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<PropertyValue> propertiesToSet,
     IEnumerable<byte> propertyCodesToGet,

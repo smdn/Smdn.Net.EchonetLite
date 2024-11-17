@@ -169,10 +169,10 @@ partial class EchonetClient
   }
 
   /// <summary>
-  /// ECHONET Lite サービス「SetC:プロパティ値書き込み要求（応答要）」(ESV <c>0x61</c>)を行います。　このサービスは一斉同報が可能です。
+  /// 相手先ノードを指定して、ECHONET Lite サービス「SetC:プロパティ値書き込み要求（応答要）」(ESV <c>0x61</c>)を行います。
   /// </summary>
   /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
-  /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+  /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
   /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
@@ -183,7 +183,8 @@ partial class EchonetClient
   /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
-  /// <paramref name="properties"/>が<see langword="null"/>です。
+  /// <paramref name="destinationNodeAddress"/>が<see langword="null"/>です。
+  /// または、<paramref name="properties"/>が<see langword="null"/>です。
   /// </exception>
   /// <remarks>
   /// このメソッドではECHONET Lite サービスの要求を送信したあと、応答を待機します。
@@ -198,13 +199,16 @@ partial class EchonetClient
   public async ValueTask<EchonetServiceResponse>
   RequestWriteAsync(
     EOJ sourceObject,
-    IPAddress? destinationNodeAddress,
+    IPAddress destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<PropertyValue> properties,
     ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
+    if (destinationNodeAddress is null)
+      throw new ArgumentNullException(nameof(destinationNodeAddress));
+
     var (requestProperties, results) = CreateRequestAndResults(
       properties ?? throw new ArgumentNullException(nameof(properties))
     );
@@ -240,7 +244,6 @@ partial class EchonetClient
         context: resilienceContext
       ).ConfigureAwait(false);
 
-      // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
@@ -251,7 +254,7 @@ partial class EchonetClient
 
     void HandleSetResOrSetCSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
+      if (!destinationNodeAddress.Equals(value.Address))
         return;
       if (transaction.ID != value.TID)
         return;
@@ -296,16 +299,41 @@ partial class EchonetClient
           results: results
         )
       );
-
-      // TODO 一斉通知の応答の扱いが…
     }
   }
 
+#if false
   /// <summary>
-  /// ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。　このサービスは一斉同報が可能です。
+  /// 一斉同報でのECHONET Lite サービス「SetC:プロパティ値書き込み要求（応答要）」(ESV <c>0x61</c>)を行います。
   /// </summary>
   /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
-  /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+  /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="properties">処理対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.２ プロパティ値書き込みサービス（応答要）［0x61,0x71,0x51］
+  /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
+  public ValueTask
+  RequestWriteMulticastAsync(
+    EOJ sourceObject,
+    EOJ destinationObject,
+    IEnumerable<PropertyValue> properties,
+    ResiliencePipeline? resiliencePipeline = null,
+    CancellationToken cancellationToken = default
+  )
+    => throw new NotImplementedException();
+#endif
+
+  /// <summary>
+  /// 相手先ノードを指定して、ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。
+  /// </summary>
+  /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="propertyCodes">処理対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
   /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
@@ -316,7 +344,8 @@ partial class EchonetClient
   /// また、書き込みに成功したプロパティを<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
-  /// <paramref name="propertyCodes"/>が<see langword="null"/>です。
+  /// <paramref name="destinationNodeAddress"/>が<see langword="null"/>です。
+  /// または、<paramref name="propertyCodes"/>が<see langword="null"/>です。
   /// </exception>
   /// <remarks>
   /// このメソッドではECHONET Lite サービスの要求を送信したあと、応答を待機します。
@@ -331,13 +360,16 @@ partial class EchonetClient
   public async ValueTask<EchonetServiceResponse>
   RequestReadAsync(
     EOJ sourceObject,
-    IPAddress? destinationNodeAddress,
+    IPAddress destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<byte> propertyCodes,
     ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
   {
+    if (destinationNodeAddress is null)
+      throw new ArgumentNullException(nameof(destinationNodeAddress));
+
     var (requestProperties, results) = CreateRequestAndResults(
       propertyCodes ?? throw new ArgumentNullException(nameof(propertyCodes))
     );
@@ -373,7 +405,6 @@ partial class EchonetClient
         context: resilienceContext
       ).ConfigureAwait(false);
 
-      // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
@@ -384,7 +415,7 @@ partial class EchonetClient
 
     void HandleGetResOrGetSNA(object? sender, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
+      if (!destinationNodeAddress.Equals(value.Address))
         return;
       if (transaction.ID != value.TID)
         return;
@@ -427,16 +458,41 @@ partial class EchonetClient
           results: results
         )
       );
-
-      // TODO 一斉通知の応答の扱いが…
     }
   }
 
+#if false
   /// <summary>
-  /// ECHONET Lite サービス「SetGet:プロパティ値書き込み・読み出し要求」(ESV <c>0x6E</c>)を行います。　このサービスは一斉同報が可能です。
+  /// 一斉同報でのECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。
   /// </summary>
   /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
-  /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。 <see langword="null"/>の場合、一斉同報通知を行います。</param>
+  /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="propertyCodes">処理対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
+  /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
+  public ValueTask
+  RequestReadMulticastAsync(
+    EOJ sourceObject,
+    EOJ destinationObject,
+    IEnumerable<byte> propertyCodes,
+    ResiliencePipeline? resiliencePipeline = null,
+    CancellationToken cancellationToken = default
+  )
+    => throw new NotImplementedException();
+#endif
+
+  /// <summary>
+  /// 相手先ノードを指定して、ECHONET Lite サービス「SetGet:プロパティ値書き込み・読み出し要求」(ESV <c>0x6E</c>)を行います。
+  /// </summary>
+  /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="destinationNodeAddress">相手先ECHONET Lite ノードのアドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <param name="propertiesToSet">書き込み対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
   /// <param name="propertyCodesToGet">読み出し対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
@@ -448,7 +504,8 @@ partial class EchonetClient
   /// また、処理に成功したプロパティを書き込み対象プロパティ・読み出し対象プロパティの順にて<see cref="IReadOnlyCollection{PropertyValue}"/>で返します。
   /// </returns>
   /// <exception cref="ArgumentNullException">
-  /// <paramref name="propertiesToSet"/>が<see langword="null"/>です。
+  /// <paramref name="destinationNodeAddress"/>が<see langword="null"/>です。
+  /// または、<paramref name="propertiesToSet"/>が<see langword="null"/>です。
   /// または、<paramref name="propertyCodesToGet"/>が<see langword="null"/>です。
   /// </exception>
   /// <remarks>
@@ -464,7 +521,7 @@ partial class EchonetClient
   public async ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)>
   RequestWriteReadAsync(
     EOJ sourceObject,
-    IPAddress? destinationNodeAddress,
+    IPAddress destinationNodeAddress,
     EOJ destinationObject,
     IEnumerable<PropertyValue> propertiesToSet,
     IEnumerable<byte> propertyCodesToGet,
@@ -472,6 +529,9 @@ partial class EchonetClient
     CancellationToken cancellationToken = default
   )
   {
+    if (destinationNodeAddress is null)
+      throw new ArgumentNullException(nameof(destinationNodeAddress));
+
     var (requestPropertiesToSet, setResults) = CreateRequestAndResults(
       propertiesToSet ?? throw new ArgumentNullException(nameof(propertiesToSet))
     );
@@ -515,7 +575,6 @@ partial class EchonetClient
         context: resilienceContext
       ).ConfigureAwait(false);
 
-      // TODO: 一斉送信の場合、停止要求があるまで待機させる
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
@@ -526,7 +585,7 @@ partial class EchonetClient
 
     void HandleSetGetResOrSetGetSNA(object? sender_, (IPAddress Address, ushort TID, Format1Message Message) value)
     {
-      if (destinationNodeAddress is not null && !destinationNodeAddress.Equals(value.Address))
+      if (!destinationNodeAddress.Equals(value.Address))
         return;
       if (transaction.ID != value.TID)
         return;
@@ -597,10 +656,37 @@ partial class EchonetClient
           )
         )
       );
-
-      // TODO 一斉通知の応答の扱いが…
     }
   }
+
+#if false
+  /// <summary>
+  /// 一斉同報でのECHONET Lite サービス「SetGet:プロパティ値書き込み・読み出し要求」(ESV <c>0x6E</c>)を行います。
+  /// </summary>
+  /// <param name="sourceObject">送信元ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="destinationObject">相手先ECHONET Lite オブジェクトを表す<see cref="EOJ"/>。</param>
+  /// <param name="propertiesToSet">書き込み対象のECHONET Lite プロパティとなる<see cref="IEnumerable{PropertyValue}"/>。</param>
+  /// <param name="propertyCodesToGet">読み出し対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
+  /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
+  /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
+  public ValueTask
+  RequestWriteReadMulticastAsync(
+    EOJ sourceObject,
+    EOJ destinationObject,
+    IEnumerable<PropertyValue> propertiesToSet,
+    IEnumerable<byte> propertyCodesToGet,
+    ResiliencePipeline? resiliencePipeline = null,
+    CancellationToken cancellationToken = default
+  )
+    => throw new NotImplementedException();
+#endif
 
   /// <summary>
   /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を行います。　このサービスは一斉同報が可能です。
