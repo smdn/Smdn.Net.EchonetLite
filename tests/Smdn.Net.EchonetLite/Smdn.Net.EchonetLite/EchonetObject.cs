@@ -9,6 +9,7 @@ using System.Linq;
 using NUnit.Framework;
 
 using Smdn.Net.EchonetLite.ComponentModel;
+using Smdn.Net.EchonetLite.Protocol;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
@@ -29,6 +30,19 @@ public class EchonetObjectTests {
     {
     }
 
+    public PseudoDevice(
+      byte classGroupCode,
+      byte classCode,
+      byte instanceCode
+    )
+      : base(
+        classGroupCode: classGroupCode,
+        classCode: classCode,
+        instanceCode: instanceCode
+      )
+    {
+    }
+
     public new EchonetProperty CreateProperty(byte propertyCode)
       => base.CreateProperty(
         propertyCode: propertyCode,
@@ -36,6 +50,15 @@ public class EchonetObjectTests {
         canGet: true,
         canAnnounceStatusChange: true
       );
+  }
+
+  [TestCase(0x0E, 0xF0, 0x00)]
+  [TestCase(0x05, 0xFF, 0x01)]
+  public void EOJ(byte classGroupCode, byte classCode, byte instanceCode)
+  {
+    var device = new PseudoDevice(classGroupCode, classCode, instanceCode);
+
+    Assert.That(device.EOJ, Is.EqualTo(new EOJ(classGroupCode, classCode, instanceCode)));
   }
 
   [Test]

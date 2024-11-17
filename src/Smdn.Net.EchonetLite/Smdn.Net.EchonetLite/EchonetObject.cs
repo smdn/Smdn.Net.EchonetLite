@@ -99,9 +99,9 @@ public abstract partial class EchonetObject {
   public abstract byte InstanceCode { get; }
 
   /// <summary>
-  /// EOJ
+  /// 現在のオブジェクトを表す<see cref="EOJ"/>を取得します。
   /// </summary>
-  internal EOJ EOJ => new(
+  public EOJ EOJ => new(
     classGroupCode: ClassGroupCode,
     classCode: ClassCode,
     instanceCode: InstanceCode
