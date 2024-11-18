@@ -254,7 +254,7 @@ partial class EchonetClient
     if (device is null)
       throw new ArgumentNullException(nameof(device));
     if (device.Node is not EchonetOtherNode otherNode)
-      throw new InvalidOperationException("Cannot acquire property maps of self node.");
+      throw new ArgumentException("Cannot acquire property maps of self node device.", paramName: nameof(device));
 
     using var scope = Logger?.BeginScope("Acquiring property maps");
 
