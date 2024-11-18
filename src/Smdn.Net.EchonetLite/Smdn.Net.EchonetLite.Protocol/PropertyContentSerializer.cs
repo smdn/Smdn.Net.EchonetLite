@@ -166,6 +166,136 @@ public static class PropertyContentSerializer {
   }
 
   /// <summary>
+  /// ECHONETプロパティ「プロパティマップ」のプロパティ内容をシリアライズします。　以下の「プロパティマップ」プロパティのシリアライズに使用します。
+  /// <list type="bullet">
+  ///   <item><description>「SetM プロパティマップ」(EPC <c>0x9B</c>)</description></item>
+  ///   <item><description>「GetM プロパティマップ」(EPC <c>0x9C</c>)</description></item>
+  ///   <item><description>「状変アナウンスプロパティマップ」(EPC <c>0x9D</c>)</description></item>
+  ///   <item><description>「Set プロパティマップ」(EPC <c>0x9E</c>)</description></item>
+  ///   <item><description>「Get プロパティマップ」(EPC <c>0x9F</c>)</description></item>
+  /// </list>
+  /// </summary>
+  /// <param name="propertyMap">「プロパティマップ」を表す<see cref="IReadOnlyCollection{Byte}"/>。</param>
+  /// <param name="buffer">シリアライズした結果が書き込まれる<see cref="IBufferWriter{Byte}"/>。</param>
+  /// <returns>
+  /// <paramref name="buffer"/>に書き込まれたプロパティマップのバイト数を返します。
+  /// </returns>
+  /// <seealso href="https://echonet.jp/spec_g/">
+  /// APPENDIX ECHONET 機器オブジェクト詳細規定 第２章 機器オブジェクトスーパークラス規定
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_g/">
+  /// APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
+  /// </seealso>
+  public static int SerializePropertyMap(
+    IReadOnlyCollection<byte> propertyMap,
+    IBufferWriter<byte> buffer
+  )
+  {
+    if (propertyMap is null)
+      throw new ArgumentNullException(nameof(propertyMap));
+    if (buffer is null)
+      throw new ArgumentNullException(nameof(buffer));
+
+    var destination = buffer.GetSpan(17);
+
+    if (TrySerializePropertyMap(propertyMap, destination, out var bytesWritten)) {
+      buffer.Advance(bytesWritten);
+      return bytesWritten;
+    }
+
+    return 0; // unreachable
+  }
+
+  /// <summary>
+  /// ECHONETプロパティ「プロパティマップ」のプロパティ内容をシリアライズします。　以下の「プロパティマップ」プロパティのシリアライズに使用します。
+  /// <list type="bullet">
+  ///   <item><description>「SetM プロパティマップ」(EPC <c>0x9B</c>)</description></item>
+  ///   <item><description>「GetM プロパティマップ」(EPC <c>0x9C</c>)</description></item>
+  ///   <item><description>「状変アナウンスプロパティマップ」(EPC <c>0x9D</c>)</description></item>
+  ///   <item><description>「Set プロパティマップ」(EPC <c>0x9E</c>)</description></item>
+  ///   <item><description>「Get プロパティマップ」(EPC <c>0x9F</c>)</description></item>
+  /// </list>
+  /// </summary>
+  /// <param name="propertyMap">「プロパティマップ」を表す<see cref="IReadOnlyCollection{Byte}"/>。</param>
+  /// <param name="destination">「プロパティマップ」をシリアライズした結果を書き込む先となる<see cref="ReadOnlySpan{Byte}"/>。</param>
+  /// <param name="bytesWritten"><paramref name="destination"/>に書き込まれた長さ。</param>
+  /// <returns>
+  /// 正常にシリアライズされた場合は<see langword="true"/>。
+  /// <paramref name="propertyMap"/>が<see langword="null"/>の場合、<paramref name="destination"/>の長さが足りない場合は<see langword="false"/>。
+  /// </returns>
+  /// <seealso href="https://echonet.jp/spec_g/">
+  /// APPENDIX ECHONET 機器オブジェクト詳細規定 第２章 機器オブジェクトスーパークラス規定
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_g/">
+  /// APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
+  /// </seealso>
+  public static bool TrySerializePropertyMap(
+    IReadOnlyCollection<byte> propertyMap,
+    Span<byte> destination,
+    out int bytesWritten
+  )
+  {
+    bytesWritten = default;
+
+    if (propertyMap is null || propertyMap.Count < 0)
+      return false; // do nothing
+
+    if (propertyMap.Count == 0) {
+      if (destination.Length < 1)
+        return false; // destination too short
+
+      // > APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
+      // > 記述形式（1）
+      // > 記述形式（2）
+      // > 1 バイト目：プロパティの数。バイナリ表示。
+      bytesWritten = 1;
+      destination[0] = 0;
+
+      return true;
+    }
+
+    if (propertyMap.Count < 0x10) {
+      // > APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
+      // > 記述形式（1）
+      // > 1 バイト目：プロパティの数。バイナリ表示。
+      // > 2 バイト目以降：プロパティのコード（1 バイトコード）をそのまま列挙する。
+      if (destination.Length < 1 + propertyMap.Count)
+        return false; // destination too short
+
+      destination[bytesWritten++] = (byte)propertyMap.Count;
+
+      foreach (var p in propertyMap) {
+        destination[bytesWritten++] = p;
+      }
+    }
+    else {
+      // > APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
+      // > 記述形式（2）
+      // > 1 バイト目：プロパティの数。バイナリ表示。
+      // > 2～17 バイト目：下図の 16 バイトのテーブルにおいて、存在するプロパティコードを示
+      // >         すビット位置に 1 をセットして 2 バイト目から順に列挙する。
+      if (destination.Length < 17)
+        return false; // destination too short
+
+      destination[0] = (byte)propertyMap.Count;
+
+      foreach (var p in propertyMap) {
+        if (p < 0x80)
+          continue; // ignore EPCs less than 0x80
+
+        var index = p & 0x0F;
+        var bit = (byte)(1 << (((p & 0xF0) - 0x80) >> 4));
+
+        destination[1 + index] |= bit;
+      }
+
+      bytesWritten = 17;
+    }
+
+    return true;
+  }
+
+  /// <summary>
   /// ECHONETプロパティ「プロパティマップ」のプロパティ内容をデシリアライズします。　以下の「プロパティマップ」プロパティのデシリアライズに使用します。
   /// <list type="bullet">
   ///   <item><description>「SetM プロパティマップ」(EPC <c>0x9B</c>)</description></item>
@@ -194,7 +324,10 @@ public static class PropertyContentSerializer {
   {
     propertyMap = default;
 
-    // 1 バイト目：プロパティの数。バイナリ表示。
+    // > APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
+    // > 記述形式（1）
+    // > 記述形式（2）
+    // > 1 バイト目：プロパティの数。バイナリ表示。
     if (content.Length < 1)
       return false;
 
@@ -210,9 +343,10 @@ public static class PropertyContentSerializer {
     content = content.Slice(1);
 
     if (numberOfProperties < 0x10) {
-      // 記述形式（1）
-      // 1 バイト目：プロパティの数。バイナリ表示。
-      // 2 バイト目以降：プロパティのコード（1 バイトコード）をそのまま列挙する。
+      // > APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
+      // > 記述形式（1）
+      // > 1 バイト目：プロパティの数。バイナリ表示。
+      // > 2 バイト目以降：プロパティのコード（1 バイトコード）をそのまま列挙する。
       if (content.Length < numberOfProperties)
         return false;
 
@@ -225,10 +359,11 @@ public static class PropertyContentSerializer {
 #endif
     }
     else {
-      // 記述形式（2）
-      // 1 バイト目：プロパティの数。バイナリ表示。
-      // 2～17 バイト目：下図の 16 バイトのテーブルにおいて、存在するプロパティコードを示
-      //         すビット位置に 1 をセットして 2 バイト目から順に列挙する。
+      // > APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
+      // > 記述形式（2）
+      // > 1 バイト目：プロパティの数。バイナリ表示。
+      // > 2～17 バイト目：下図の 16 バイトのテーブルにおいて、存在するプロパティコードを示
+      // >         すビット位置に 1 をセットして 2 バイト目から順に列挙する。
       if (content.Length < 16)
         return false;
 
