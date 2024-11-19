@@ -104,14 +104,34 @@ partial class EchonetClient
         }
 
       case EHD2.Format2:
-        // TODO: process format 2 messages
         Logger?.LogDebug(
           "Format 2 message (From: {Address}, TID: {TID:X4}, Message: {Message})",
           remoteAddress,
           tid,
           edata.ToHexString()
         );
-        break;
+
+        scope?.Dispose(); // exit from the logger scope
+
+        try {
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+          if (cancellationToken.IsCancellationRequested)
+            return ValueTask.FromCanceled(cancellationToken);
+#else
+          cancellationToken.ThrowIfCancellationRequested();
+#endif
+
+          return HandleFormat2MessageAsync(remoteAddress, tid, edata, cancellationToken);
+        }
+        catch (Exception ex) {
+          Logger?.LogError(
+            ex,
+            "An exception occured while handling format 2 message."
+          );
+
+          // this exception might be swallow by IEchonetLiteHandler
+          throw;
+        }
 
       default:
         // undefined message format, do nothing

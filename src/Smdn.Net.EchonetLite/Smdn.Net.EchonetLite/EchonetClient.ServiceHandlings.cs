@@ -909,4 +909,19 @@ partial class EchonetClient
 
     return true;
   }
+
+  /// <summary>
+  /// 受信した電文形式 2（任意電文形式）の電文を処理し、必要に応じて要求に対する応答を返します。
+  /// </summary>
+  /// <param name="address">ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>。</param>
+  /// <param name="id">受信したECHONET Lite フレームのTID。　TIDの値域は<see langword="ushort"/>です。</param>
+  /// <param name="edata">受信した任意電文形式の電文内容を表す<see cref="ReadOnlyMemory{Byte}"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
+  protected virtual ValueTask HandleFormat2MessageAsync(
+    IPAddress address,
+    int id,
+    ReadOnlyMemory<byte> edata,
+    CancellationToken cancellationToken
+  )
+    => default; // do nothing
 }

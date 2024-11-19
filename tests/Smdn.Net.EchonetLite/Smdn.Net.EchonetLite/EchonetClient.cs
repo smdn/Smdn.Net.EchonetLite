@@ -10,6 +10,8 @@ using NUnit.Framework;
 
 using Smdn.Net.EchonetLite.Protocol;
 
+using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
+
 namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
@@ -128,5 +130,78 @@ public class EchonetClientTests {
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), nameof(client.DisposeAsync));
 
     Assert.That(asyncDisposableHandler.IsDisposed, Is.EqualTo(shouldDisposeEchonetLiteHandler), nameof(asyncDisposableHandler.IsDisposed));
+  }
+
+  private class RespondFormat2MessageEchonetLiteHandler : IEchonetLiteHandler {
+    public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+
+    public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
+
+    public ValueTask RespondFormat2MessageAsync(
+      IPAddress address,
+      ushort tid,
+      byte[] edata,
+      CancellationToken cancellationToken = default
+    )
+    {
+      byte[] response = [
+        (byte)EHD1.EchonetLite, // EHD1
+        (byte)EHD2.Format2, // EHD2
+        (byte)(tid & 0xFF), // TID
+        (byte)((tid >> 8) & 0xFF), // TID
+        .. edata // EDATA2
+      ];
+
+      return ReceiveCallback?.Invoke(
+        address,
+        response,
+        cancellationToken
+      ) ?? default;
+    }
+  }
+
+  private class HandleFormat2MessageEchonetClient(
+    IEchonetLiteHandler handler,
+    Action<IPAddress, int, ReadOnlyMemory<byte>> testReceivedFormat2Message
+  ) : EchonetClient(handler) {
+    protected override ValueTask HandleFormat2MessageAsync(
+      IPAddress address,
+      int id,
+      ReadOnlyMemory<byte> edata,
+      CancellationToken cancellationToken
+    )
+    {
+      testReceivedFormat2Message(address, id, edata);
+
+      return default;
+    }
+  }
+
+  private static System.Collections.IEnumerable YieldTestCases_HandleFormat2MessageAsync()
+  {
+    yield return new object?[] { IPAddress.Loopback, (ushort)0x0000u, Array.Empty<byte>() };
+    yield return new object?[] { IPAddress.Loopback, (ushort)0xFFFFu, new byte[] { 0x00 } };
+    yield return new object?[] { IPAddress.Loopback, (ushort)0x1234u, new byte[] { 0x01, 0x23, 0x45, 0x67 } };
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_HandleFormat2MessageAsync))]
+  public async Task HandleFormat2MessageAsync(
+    IPAddress expectedAddress,
+    ushort expectedTid,
+    byte[] expectedDdata
+  )
+  {
+    var handler = new RespondFormat2MessageEchonetLiteHandler();
+    using var client = new HandleFormat2MessageEchonetClient(
+      handler: handler,
+      testReceivedFormat2Message: (address, tid, edata) => {
+        Assert.That(address, Is.EqualTo(expectedAddress));
+        Assert.That((int)tid, Is.EqualTo(expectedTid));
+        Assert.That(edata, SequenceIs.EqualTo(expectedDdata));
+      }
+    );
+
+    await handler.RespondFormat2MessageAsync(expectedAddress, expectedTid, expectedDdata);
   }
 }
