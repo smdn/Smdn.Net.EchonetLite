@@ -60,13 +60,13 @@ partial class EchonetClient
   private readonly ResiliencePipeline resiliencePipelineForSendingResponseFrame;
 
   /// <summary>
-  /// イベント<see cref="Format1MessageReceived"/>をハンドルするメソッドを実装します。
   /// 受信した電文形式 1（規定電文形式）の電文を処理し、必要に応じて要求に対する応答を返します。
   /// </summary>
   /// <param name="address">ECHONET Lite フレームの送信元を表す<see cref="IPAddress"/>。</param>
   /// <param name="id">受信したECHONET Lite フレームのTID。　TIDの値域は<see langword="ushort"/>です。</param>
-  /// <param name="message">受信した規定電文形式の電文を表す<see cref="Format1Message"/>。</param>
+  /// <param name="message">受信した規定電文形式の電文内容を表す<see cref="Format1Message"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
+  /// <seealso cref="Format1MessageReceived"/>
 #pragma warning disable CA1502 // TODO: reduce complexity
   protected virtual async ValueTask HandleFormat1MessageAsync(
     IPAddress address,
