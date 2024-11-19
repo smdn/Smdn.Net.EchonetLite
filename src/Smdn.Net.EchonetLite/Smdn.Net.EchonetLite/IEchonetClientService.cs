@@ -48,6 +48,13 @@ internal interface IEchonetClientService {
   /// </returns>
   IPAddress? GetSelfNodeAddress();
 
+  ValueTask<EchonetServiceResponse> AcquirePropertyMapsAsync(
+    EchonetObject device,
+    IEnumerable<byte>? extraPropertyCodes,
+    ResiliencePipeline? resiliencePipelineForServiceRequest,
+    CancellationToken cancellationToken
+  );
+
   ValueTask RequestWriteOneWayAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,

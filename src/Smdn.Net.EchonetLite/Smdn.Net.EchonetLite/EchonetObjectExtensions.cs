@@ -31,6 +31,48 @@ public static class EchonetObjectExtensions {
   }
 
   /// <summary>
+  /// 指定されたECHONET Lite オブジェクトに対して、ECHONETプロパティ「状変アナウンスプロパティマップ」(EPC <c>0x9D</c>)・
+  /// 「Set プロパティマップ」(EPC <c>0x9E</c>)・「Get プロパティマップ」(EPC <c>0x9F</c>)の読み出しを行います。
+  /// </summary>
+  /// <param name="device">対象のECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。</param>
+  /// <param name="extraPropertyCodes">
+  /// 読み出しを行う追加のECHONETプロパティを指定する<see cref="IEnumerable{Byte}"/>。
+  /// <see langword="null"/>を指定した場合は、プロパティマップのみを読み出します。
+  /// </param>
+  /// <param name="resiliencePipelineForServiceRequest">
+  /// サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。
+  /// </param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="device"/>が<see langword="null"/>です。
+  /// </exception>
+  /// <exception cref="InvalidOperationException">
+  /// <paramref name="device"/>は自ノードのECHONET Lite オブジェクトです。
+  /// このメソッドでは自ノードのECHONET Lite オブジェクトからプロパティマップを読み出すことはできません。
+  /// または、受信したEDTは無効なプロパティマップです。
+  /// </exception>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
+  public static async ValueTask<EchonetServiceResponse> AcquirePropertyMapsAsync(
+    this EchonetObject device,
+    IEnumerable<byte>? extraPropertyCodes = null,
+    ResiliencePipeline? resiliencePipelineForServiceRequest = null,
+    CancellationToken cancellationToken = default
+  )
+  {
+    if (device is null)
+      throw new ArgumentNullException(nameof(device));
+    if (device.Node is EchonetSelfNode)
+      throw CreateCanNotSpecifySelfNodeAsDestination();
+
+    return await GetClientServiceOrThrow(device).AcquirePropertyMapsAsync(
+      device: device,
+      extraPropertyCodes: extraPropertyCodes,
+      resiliencePipelineForServiceRequest: resiliencePipelineForServiceRequest,
+      cancellationToken: cancellationToken
+    ).ConfigureAwait(false);
+  }
+
+  /// <summary>
   /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を行います。　このサービスは一斉同報が可能です。
   /// </summary>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">

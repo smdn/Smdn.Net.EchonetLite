@@ -602,8 +602,7 @@ partial class HemsController {
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 #pragma warning disable CS8602, CS8604
 #endif
-        var ret = await client.AcquirePropertyMapsAsync(
-          device: smartMeterObject,
+        var ret = await smartMeterObject.AcquirePropertyMapsAsync(
           extraPropertyCodes: [smartMeterObject.Protocol.PropertyCode],
           resiliencePipelineForServiceRequest: resiliencePipelineForServiceRequest,
           cancellationToken: ct
