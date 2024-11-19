@@ -244,7 +244,7 @@ partial class EchonetClient
   /// または、受信したEDTは無効なプロパティマップです。
   /// </exception>
   [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
-  public async ValueTask<bool> AcquirePropertyMapsAsync(
+  public async ValueTask<EchonetServiceResponse> AcquirePropertyMapsAsync(
     EchonetObject device,
     IEnumerable<byte>? extraPropertyCodes = null,
     ResiliencePipeline? resiliencePipelineForServiceRequest = null,
@@ -272,7 +272,7 @@ partial class EchonetClient
     // 不可応答は無視
     if (!result.IsSuccess) {
       Logger?.LogWarning("Service not available (Node: {NodeAddress}, EOJ: {EOJ})", otherNode.Address, device.EOJ);
-      return false;
+      return result;
     }
 
     var mapCanAnno = new HashSet<byte>(capacity: 16);
@@ -346,6 +346,6 @@ partial class EchonetClient
 
     OnPropertyMapAcquired(device.EventArgs);
 
-    return true;
+    return result;
   }
 }
