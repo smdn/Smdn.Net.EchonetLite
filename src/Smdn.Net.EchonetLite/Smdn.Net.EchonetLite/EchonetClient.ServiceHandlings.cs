@@ -679,11 +679,8 @@ partial class EchonetClient
   }
 
   /// <summary>
-  /// ECHONET Lite サービス「INF_REQ:プロパティ値通知要求」(ESV <c>0x63</c>)を処理します。
+  /// ECHONET Lite サービス「INF:プロパティ値通知」(ESV <c>0x73</c>)を処理します。
   /// </summary>
-  /// <remarks>
-  /// 自発なので、0x73のみ。
-  /// </remarks>
   /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
@@ -707,7 +704,7 @@ partial class EchonetClient
     EchonetOtherNode sourceNode
   )
   {
-    const ESV RequestServiceCode = ESV.InfRequest;
+    const ESV RequestServiceCode = ESV.Inf;
 
     if (Logger is not null)
       LogHandlingServiceResponse(Logger, RequestServiceCode, address, tid);
@@ -809,7 +806,7 @@ partial class EchonetClient
 
     foreach (var prop in requestProps) {
       var accepted = sourceObject.StorePropertyValue(
-        esv: ESV.InfC,
+        esv: RequestServiceCode,
         tid: tid,
         value: prop,
         validateValue: false, // 通知された内容をそのまま格納するため、検証しない
@@ -831,7 +828,7 @@ partial class EchonetClient
     }
 
     if (destObject is not null) {
-      const ESV ResponseServiceCode = ESV.InfCResponse; // INFC_Res(0x74)
+      const ESV ResponseServiceCode = ESV.InfCResponse; // INFC_Res(0x7A)
       var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
       resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
