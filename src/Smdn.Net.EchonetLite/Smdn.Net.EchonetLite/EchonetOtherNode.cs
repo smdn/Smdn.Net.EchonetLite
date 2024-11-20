@@ -47,6 +47,9 @@ internal sealed class EchonetOtherNode : EchonetNode {
   {
     added = false;
 
+    if (eoj.IsNodeProfile)
+      return NodeProfile;
+
     if (devices.TryGetValue(eoj, out var device))
       return device;
 
