@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Net;
 
@@ -15,12 +14,18 @@ namespace Smdn.Net.EchonetLite;
 /// 他のECHONET Liteノード(他ノード)を表すクラス。
 /// </summary>
 internal sealed class EchonetOtherNode : EchonetNode {
+  private sealed class ReadOnlyValuesView<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> source) : IReadOnlyCollection<TValue> {
+    public int Count => source.Count;
+    public IEnumerator<TValue> GetEnumerator() => source.Values.GetEnumerator();
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => source.Values.GetEnumerator();
+  }
+
   public override IPAddress Address { get; }
 
-  public override IReadOnlyCollection<EchonetObject> Devices => readOnlyDevicesView.Values;
+  public override IReadOnlyCollection<EchonetObject> Devices => readOnlyDevicesView;
 
   private readonly ConcurrentDictionary<EOJ, EchonetObject> devices;
-  private readonly ReadOnlyDictionary<EOJ, EchonetObject> readOnlyDevicesView;
+  private readonly ReadOnlyValuesView<EOJ, EchonetObject> readOnlyDevicesView;
 
   internal EchonetOtherNode(IPAddress address, EchonetObject nodeProfile)
     : base(nodeProfile)
