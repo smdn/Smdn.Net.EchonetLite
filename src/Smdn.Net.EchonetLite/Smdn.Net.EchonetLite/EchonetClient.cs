@@ -93,13 +93,32 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// <summary>
   /// <see cref="EchonetClient"/>クラスのインスタンスを初期化します。
   /// </summary>
-  /// <param name="selfNode">自ノードを表す<see cref="EchonetNode"/>。</param>
-  /// <param name="echonetLiteHandler">このインスタンスがECHONET Lite フレームを送受信するために使用する<see cref="IEchonetLiteHandler"/>。</param>
-  /// <param name="shouldDisposeEchonetLiteHandler">オブジェクトが破棄される際に、<paramref name="echonetLiteHandler"/>も破棄するかどうかを表す値。</param>
-  /// <param name="nodeRegistry">既知のECHONET Lite ノード(他ノード)を管理する<see cref="EchonetNodeRegistry"/>。</param>
-  /// <param name="deviceFactory">機器オブジェクトのファクトリとして使用される<see cref="IEchonetDeviceFactory"/>。</param>
-  /// <param name="resiliencePipelineForSendingResponseFrame">サービス要求に対する応答のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
-  /// <param name="logger">このインスタンスの動作を記録する<see cref="ILogger"/>。</param>
+  /// <param name="selfNode">
+  /// 自ノードを表す<see cref="EchonetNode"/>。
+  /// </param>
+  /// <param name="echonetLiteHandler">
+  /// このインスタンスがECHONET Lite フレームを送受信するために使用する<see cref="IEchonetLiteHandler"/>。
+  /// </param>
+  /// <param name="shouldDisposeEchonetLiteHandler">
+  /// オブジェクトが破棄される際に、<paramref name="echonetLiteHandler"/>も破棄するかどうかを表す値。
+  /// 省略した場合は、<see langword="false"/>をデフォルト値として使用します。
+  /// </param>
+  /// <param name="nodeRegistry">
+  /// 既知のECHONET Lite ノード(他ノード)を管理する<see cref="EchonetNodeRegistry"/>。
+  /// 省略した場合は、<see langword="null"/>をデフォルト値として使用します。
+  /// </param>
+  /// <param name="deviceFactory">
+  /// 機器オブジェクトのファクトリとして使用される<see cref="IEchonetDeviceFactory"/>。
+  /// 省略した場合は、<see langword="null"/>をデフォルト値として使用します。
+  /// </param>
+  /// <param name="resiliencePipelineForSendingResponseFrame">
+  /// サービス要求に対する応答のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。
+  /// 省略した場合は、<see langword="null"/>をデフォルト値として使用します。
+  /// </param>
+  /// <param name="logger">
+  /// このインスタンスの動作を記録する<see cref="ILogger"/>。
+  /// 省略した場合は、<see langword="null"/>をデフォルト値として使用します。
+  /// </param>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="selfNode"/>が<see langword="null"/>です。
   /// あるいは、<paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
@@ -108,11 +127,11 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   public EchonetClient(
     EchonetNode selfNode,
     IEchonetLiteHandler echonetLiteHandler,
-    bool shouldDisposeEchonetLiteHandler,
-    EchonetNodeRegistry? nodeRegistry,
-    IEchonetDeviceFactory? deviceFactory,
-    ResiliencePipeline? resiliencePipelineForSendingResponseFrame,
-    ILogger? logger
+    bool shouldDisposeEchonetLiteHandler = false,
+    EchonetNodeRegistry? nodeRegistry = null,
+    IEchonetDeviceFactory? deviceFactory = null,
+    ResiliencePipeline? resiliencePipelineForSendingResponseFrame = null,
+    ILogger? logger = null
   )
   {
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
