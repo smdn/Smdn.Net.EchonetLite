@@ -60,7 +60,7 @@ partial class EchonetClient
       );
 
       property.SetValue(
-        newValue: bufferMemory,
+        newValue: bufferMemory.Slice(0, bytesWritten),
         raiseValueUpdatedEvent: false,
         setLastUpdatedTime: true
       );
