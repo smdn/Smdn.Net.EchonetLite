@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 using System.Threading;
@@ -68,6 +70,23 @@ public class EchonetClientTests {
       => throw new NotImplementedException();
 
     public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
+  }
+
+  internal static async ValueTask<EchonetNodeRegistry> CreateOtherNodeAsync(
+    IPAddress otherNodeAddress,
+    IReadOnlyList<EOJ> otherNodeObjects
+  )
+  {
+    using var client = new EchonetClient(
+      new RespondInstanceListEchonetLiteHandler(otherNodeObjects)
+    );
+
+    await client.RequestNotifyInstanceListAsync(
+      destinationNodeAddress: otherNodeAddress,
+      node => otherNodeAddress.Equals(node.Address)
+    ).ConfigureAwait(false);
+
+    return client.NodeRegistry;
   }
 
   [TestCase(true)]
