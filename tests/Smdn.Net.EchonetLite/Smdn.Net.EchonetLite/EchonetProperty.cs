@@ -5,10 +5,14 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 using NUnit.Framework;
 
 using Smdn.Net.EchonetLite.ComponentModel;
+using Smdn.Net.EchonetLite.Protocol;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
@@ -23,19 +27,6 @@ public class EchonetPropertyTests {
     public override DateTimeOffset GetUtcNow() => LocalNow.ToUniversalTime();
   }
 #endif
-
-  private class PseudoDevice : EchonetDevice {
-    protected override ISynchronizeInvoke? SynchronizingObject => null;
-
-    public PseudoDevice()
-      : base(
-        classGroupCode: 0x00,
-        classCode: 0x00,
-        instanceCode: 0x00
-      )
-    {
-    }
-  }
 
   private class PseudoProperty : EchonetProperty {
     public override EchonetObject Device { get; } = new PseudoDevice();
@@ -354,5 +345,99 @@ public class EchonetPropertyTests {
     Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true));
 
     Assert.That(countOfValueUpdated, Is.EqualTo(2), $"{nameof(countOfValueUpdated)} #2");
+  }
+
+  [Test]
+  public async Task ValueUpdated_MustBeInvokedByISynchronizeInvoke(
+    [Values] bool setSynchronizingObject
+  )
+  {
+    const byte EPCOperatingStatus = 0x80;
+
+    var edtInitialOperatingStatus = EchonetClientTests.CreatePropertyMapEDT(0x30);
+    var edtUpdatedOperatingStatus = EchonetClientTests.CreatePropertyMapEDT(0x31);
+
+    var destinationNodeAddress = IPAddress.Loopback;
+    var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
+    var device = nodeRegistry.Nodes.First(node => node.Address.Equals(destinationNodeAddress)).Devices.First();
+
+    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+    using var client = new EchonetClient(
+      echonetLiteHandler: new QueuedEchonetLiteHandler(
+        [
+          new RespondPropertyMapEchonetLiteHandler(
+            new Dictionary<byte, byte[]>() {
+              [EPCOperatingStatus] = edtInitialOperatingStatus,
+              [0x9D] = EchonetClientTests.CreatePropertyMapEDT(EPCOperatingStatus), // Status change announcement property map
+              [0x9E] = EchonetClientTests.CreatePropertyMapEDT(EPCOperatingStatus), // Set property map
+              [0x9F] = EchonetClientTests.CreatePropertyMapEDT(EPCOperatingStatus, 0x9D, 0x9E, 0x9F), // Get property map
+            }
+          ),
+          new RespondSingleGetRequestEchonetLiteHandler(
+            getResponses: new Dictionary<byte, byte[]>() {
+              [EPCOperatingStatus] = edtUpdatedOperatingStatus,
+            },
+            responseServiceCode: ESV.GetResponse
+          ),
+        ]
+      ),
+      shouldDisposeEchonetLiteHandler: false,
+      nodeRegistry: nodeRegistry,
+      deviceFactory: null
+    );
+
+    Assert.That(
+      async () => _ = await device.AcquirePropertyMapsAsync(
+        extraPropertyCodes: [EPCOperatingStatus],
+        cancellationToken: cts.Token
+      ).ConfigureAwait(false),
+      Throws.Nothing
+    );
+
+    var property = device.Properties[EPCOperatingStatus];
+
+    var numberOfRaisingsOfValueUpdatedEvent = 0;
+
+    property.ValueUpdated += (sender, e) => {
+      numberOfRaisingsOfValueUpdatedEvent++;
+
+      Assert.That(sender, Is.SameAs(property), nameof(property));
+      Assert.That(e.Property, Is.SameAs(property), nameof(e.Property));
+      Assert.That(e.OldValue, SequenceIs.EqualTo(edtInitialOperatingStatus), nameof(e.OldValue));
+      Assert.That(e.NewValue, SequenceIs.EqualTo(edtUpdatedOperatingStatus), nameof(e.NewValue));
+      Assert.That(e.PreviousUpdatedTime, Is.EqualTo(default(DateTime)), nameof(e.PreviousUpdatedTime));
+      Assert.That(e.UpdatedTime, Is.GreaterThan(e.PreviousUpdatedTime), nameof(e.UpdatedTime));
+    };
+
+    var numberOfCallsToBeginInvoke = 0;
+
+    if (setSynchronizingObject) {
+      client.SynchronizingObject = new PseudoEventInvoker(
+        onBeginInvoke: () => numberOfCallsToBeginInvoke++
+      );
+    }
+
+    Assert.That(
+      async () => _ = await device.ReadPropertiesAsync(
+        readPropertyCodes: [property.Code],
+        sourceObject: client.SelfNode.NodeProfile,
+        cancellationToken: cts.Token
+      ).ConfigureAwait(false),
+      Throws.Nothing
+    );
+
+    Assert.That(numberOfRaisingsOfValueUpdatedEvent, Is.EqualTo(1));
+
+    if (setSynchronizingObject) {
+      Assert.That(numberOfCallsToBeginInvoke, Is.Not.Zero);
+      Assert.That(
+        numberOfCallsToBeginInvoke,
+        Is.GreaterThanOrEqualTo(numberOfRaisingsOfValueUpdatedEvent)
+      );
+    }
+    else {
+      Assert.That(numberOfCallsToBeginInvoke, Is.Zero);
+    }
   }
 }

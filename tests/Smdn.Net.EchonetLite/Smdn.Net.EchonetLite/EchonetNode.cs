@@ -15,6 +15,67 @@ namespace Smdn.Net.EchonetLite;
 [TestFixture]
 public class EchonetNodeTests {
   [Test]
+  public void TryFindDevice_OfSelfNode()
+  {
+    var device1 = new PseudoDevice(0x05, 0xFF, 0x01);
+    var device2 = new PseudoDevice(0x05, 0xFF, 0x02);
+    var selfNode = EchonetNode.CreateSelfNode(
+      devices: [device1, device2]
+    );
+
+    EchonetObject? device = null;
+
+    Assert.That(selfNode.TryFindDevice(new EOJ(0x0E, 0xF0, 0x00), out _), Is.False, "node profiles must not be found");
+    Assert.That(selfNode.TryFindDevice(new EOJ(0x0E, 0xF0, 0x01), out _), Is.False, "node profiles must not be found");
+    Assert.That(selfNode.TryFindDevice(new EOJ(0x0E, 0xF0, 0x02), out _), Is.False, "node profiles must not be found");
+
+    Assert.That(selfNode.TryFindDevice(new EOJ(0x05, 0xFF, 0x00), out _), Is.False);
+
+    Assert.That(selfNode.TryFindDevice(new EOJ(0x05, 0xFF, 0x01), out device), Is.True);
+    Assert.That(device, Is.SameAs(device1));
+
+    Assert.That(selfNode.TryFindDevice(new EOJ(0x05, 0xFF, 0x02), out device), Is.True);
+    Assert.That(device, Is.SameAs(device2));
+
+    Assert.That(selfNode.TryFindDevice(new EOJ(0x05, 0xFF, 0x03), out _), Is.False);
+  }
+
+  [Test]
+  public async Task TryFindDevice_OfOtherNode()
+  {
+    var device0 = new EOJ(0x05, 0xFF, 0x00);
+    var device1 = new EOJ(0x05, 0xFF, 0x01);
+    var device2 = new EOJ(0x05, 0xFF, 0x02);
+    var device3 = new EOJ(0x05, 0xFF, 0x03);
+
+    var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(
+      otherNodeAddress: IPAddress.Loopback,
+      otherNodeObjects: [device1, device2]
+    ).ConfigureAwait(false);
+    var otherNode = nodeRegistry.Nodes.First();
+
+    EchonetObject? device = null;
+
+    Assert.That(otherNode.TryFindDevice(new EOJ(0x0E, 0xF0, 0x00), out _), Is.False, "node profiles must not be found");
+    Assert.That(otherNode.TryFindDevice(new EOJ(0x0E, 0xF0, 0x01), out _), Is.False, "node profiles must not be found");
+    Assert.That(otherNode.TryFindDevice(new EOJ(0x0E, 0xF0, 0x02), out _), Is.False, "node profiles must not be found");
+
+    Assert.That(otherNode.TryFindDevice(device0, out _), Is.False);
+
+    Assert.That(otherNode.TryFindDevice(device1, out device), Is.True);
+    Assert.That(device, Is.Not.Null);
+    Assert.That(device.EOJ, Is.EqualTo(device1));
+    Assert.That(otherNode.Devices.Contains(device), Is.True);
+
+    Assert.That(otherNode.TryFindDevice(device2, out device), Is.True);
+    Assert.That(device, Is.Not.Null);
+    Assert.That(device.EOJ, Is.EqualTo(device2));
+    Assert.That(otherNode.Devices.Contains(device), Is.True);
+
+    Assert.That(otherNode.TryFindDevice(device3, out _), Is.False);
+  }
+
+  [Test]
   public void DevicesChanged_OfOtherNode(
     [Values] bool setSynchronizingObject
   )

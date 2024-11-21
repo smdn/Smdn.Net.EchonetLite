@@ -13,30 +13,6 @@ namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public partial class EchonetClientOperationsTests {
-  private class PseudoDevice : EchonetDevice {
-    public PseudoDevice()
-      : base(
-        classGroupCode: 0x00,
-        classCode: 0x00,
-        instanceCode: 0x00
-      )
-    {
-    }
-
-    public PseudoDevice(
-      byte classGroupCode,
-      byte classCode,
-      byte instanceCode
-    )
-      : base(
-        classGroupCode: classGroupCode,
-        classCode: classCode,
-        instanceCode: instanceCode
-      )
-    {
-    }
-  }
-
   private class ValidateRequestEchonetLiteHandler(Action<IPAddress?, ReadOnlyMemory<byte>> validate) : IEchonetLiteHandler {
     public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
     {

@@ -18,15 +18,6 @@ using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 namespace Smdn.Net.EchonetLite;
 
 partial class EchonetClientOperationsTests {
-  private static byte[] CreatePropertyMapEDT(params byte[] epc)
-  {
-    var buffer = new byte[17];
-
-    _ = PropertyContentSerializer.TrySerializePropertyMap(epc, buffer, out var bytesWritten);
-
-    return buffer.AsSpan(0, bytesWritten).ToArray();
-  }
-
   [Test]
   public async Task AcquirePropertyMapsAsync()
   {
@@ -34,9 +25,9 @@ partial class EchonetClientOperationsTests {
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
     var device = nodeRegistry.Nodes.First(node => node.Address.Equals(destinationNodeAddress)).Devices.First();
     var getResponses = new Dictionary<byte, byte[]>() {
-      [0x9D] = CreatePropertyMapEDT(0x80, 0x81), // Status change announcement property map
-      [0x9E] = CreatePropertyMapEDT(0x80, 0x81), // Set property map
-      [0x9F] = CreatePropertyMapEDT(0x80, 0x81, 0x82, 0x9D, 0x9E, 0x9F), // Get property map
+      [0x9D] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81), // Status change announcement property map
+      [0x9E] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81), // Set property map
+      [0x9F] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81, 0x82, 0x9D, 0x9E, 0x9F), // Get property map
     };
 
     using var client = new EchonetClient(
@@ -154,9 +145,9 @@ partial class EchonetClientOperationsTests {
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
     var device = nodeRegistry.Nodes.First(node => node.Address.Equals(destinationNodeAddress)).Devices.First();
     var getResponses = new Dictionary<byte, byte[]>() {
-      [0x9D] = CreatePropertyMapEDT(0x80, 0x81), // Status change announcement property map
-      [0x9E] = CreatePropertyMapEDT(0x80, 0x81), // Set property map
-      [0x9F] = CreatePropertyMapEDT(0x80, 0x81, 0x82), // Get property map
+      [0x9D] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81), // Status change announcement property map
+      [0x9E] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81), // Set property map
+      [0x9F] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81, 0x82), // Get property map
     };
 
     using var client = new EchonetClient(
@@ -227,9 +218,9 @@ partial class EchonetClientOperationsTests {
     var getResponses = new Dictionary<byte, byte[]>() {
       [0x80] = [0x30],
       [0x82] = [0x00, 0x00, (byte)'R', 0x01],
-      [0x9D] = CreatePropertyMapEDT(0x80), // Status change announcement property map
-      [0x9E] = CreatePropertyMapEDT(0x80), // Set property map
-      [0x9F] = CreatePropertyMapEDT(0x80, 0x82), // Get property map
+      [0x9D] = EchonetClientTests.CreatePropertyMapEDT(0x80), // Status change announcement property map
+      [0x9E] = EchonetClientTests.CreatePropertyMapEDT(0x80), // Set property map
+      [0x9F] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x82), // Get property map
     };
 
     using var client = new EchonetClient(
@@ -301,9 +292,9 @@ partial class EchonetClientOperationsTests {
 
     // then acquire property maps
     var getResponses = new Dictionary<byte, byte[]>() {
-      [0x9D] = CreatePropertyMapEDT(0x80, 0x81), // Status change announcement property map
-      [0x9E] = CreatePropertyMapEDT(0x80, 0x81), // Set property map
-      [0x9F] = CreatePropertyMapEDT(0x80, 0x81, 0x82, 0x9D, 0x9E, 0x9F), // Get property map
+      [0x9D] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81), // Status change announcement property map
+      [0x9E] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81), // Set property map
+      [0x9F] = EchonetClientTests.CreatePropertyMapEDT(0x80, 0x81, 0x82, 0x9D, 0x9E, 0x9F), // Get property map
     };
 
     using var client = new EchonetClient(

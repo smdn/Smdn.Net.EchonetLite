@@ -89,6 +89,15 @@ public class EchonetClientTests {
     return client.NodeRegistry;
   }
 
+  internal static byte[] CreatePropertyMapEDT(params byte[] epc)
+  {
+    var buffer = new byte[17];
+
+    _ = PropertyContentSerializer.TrySerializePropertyMap(epc, buffer, out var bytesWritten);
+
+    return buffer.AsSpan(0, bytesWritten).ToArray();
+  }
+
   [TestCase(true)]
   [TestCase(false)]
   public void Dispose(bool shouldDisposeEchonetLiteHandler)
