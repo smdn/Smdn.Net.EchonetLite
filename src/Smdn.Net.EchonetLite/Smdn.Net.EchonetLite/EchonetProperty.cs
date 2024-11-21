@@ -149,10 +149,7 @@ public abstract class EchonetProperty {
   /// <summary>
   /// コンストラクタ。
   /// </summary>
-  /// <remarks>
-  /// このコンストラクタはテスト目的で公開されています。　コードから直接使用することを意図したものではありません。
-  /// </remarks>
-  protected /* private protected */ EchonetProperty()
+  private protected EchonetProperty()
   {
   }
 

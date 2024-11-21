@@ -8,6 +8,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Polly;
@@ -45,10 +46,12 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   ILogger? IEchonetClientService.Logger => Logger;
 
 #if SYSTEM_TIMEPROVIDER
-  TimeProvider? IEchonetClientService.TimeProvider => null; // TODO: make configurable, retrieve via IServiceProvider
+  private readonly TimeProvider? timeProvider;
+
+  TimeProvider? IEchonetClientService.TimeProvider => timeProvider;
 #endif
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, EchonetNodeRegistry, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, EchonetNodeRegistry, IEchonetDeviceFactory, ResiliencePipeline, ILogger, IServiceProvider)"/>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
   /// </exception>
@@ -68,7 +71,7 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   {
   }
 
-  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, EchonetNodeRegistry, IEchonetDeviceFactory, ResiliencePipeline, ILogger)"/>
+  /// <inheritdoc cref="EchonetClient(EchonetNode, IEchonetLiteHandler, bool, EchonetNodeRegistry, IEchonetDeviceFactory, ResiliencePipeline, ILogger, IServiceProvider)"/>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
   /// </exception>
@@ -119,6 +122,9 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// このインスタンスの動作を記録する<see cref="ILogger"/>。
   /// 省略した場合は、<see langword="null"/>をデフォルト値として使用します。
   /// </param>
+  /// <param name="serviceProvider">
+  /// このインスタンスで使用するサービスを取得するための<see cref="IServiceProvider"/>。
+  /// </param>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="selfNode"/>が<see langword="null"/>です。
   /// あるいは、<paramref name="echonetLiteHandler"/>が<see langword="null"/>です。
@@ -131,7 +137,8 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     EchonetNodeRegistry? nodeRegistry = null,
     IEchonetDeviceFactory? deviceFactory = null,
     ResiliencePipeline? resiliencePipelineForSendingResponseFrame = null,
-    ILogger? logger = null
+    ILogger? logger = null,
+    IServiceProvider? serviceProvider = null
   )
   {
     this.shouldDisposeEchonetLiteHandler = shouldDisposeEchonetLiteHandler;
@@ -146,6 +153,10 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
 
     this.nodeRegistry = nodeRegistry ?? new EchonetNodeRegistry();
     this.nodeRegistry.SetOwner(this);
+
+#if SYSTEM_TIMEPROVIDER
+    timeProvider = serviceProvider?.GetService<TimeProvider>();
+#endif
   }
 
   /// <summary>
