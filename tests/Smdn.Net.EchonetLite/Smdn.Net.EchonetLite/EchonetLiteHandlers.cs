@@ -18,6 +18,17 @@ internal class NoOpEchonetLiteHandler : IEchonetLiteHandler {
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
 }
 
+internal class ValidateRequestEchonetLiteHandler(Action<IPAddress?, ReadOnlyMemory<byte>> validate) : IEchonetLiteHandler {
+  public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  {
+    validate(address, data);
+
+    return default;
+  }
+
+  public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
+}
+
 internal class RespondInstanceListEchonetLiteHandler : IEchonetLiteHandler {
   private readonly IReadOnlyList<EOJ>? instanceListForUnicast;
   private readonly IReadOnlyDictionary<IPAddress, IEnumerable<EOJ>>? instanceListsForMulticast;

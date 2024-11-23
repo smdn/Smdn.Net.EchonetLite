@@ -75,13 +75,27 @@ public class EchonetClientTests {
     public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
   }
 
-  internal static async ValueTask<EchonetNodeRegistry> CreateOtherNodeAsync(
+  internal static ValueTask<EchonetNodeRegistry> CreateOtherNodeAsync(
     IPAddress otherNodeAddress,
     IReadOnlyList<EOJ> otherNodeObjects
   )
+    => CreateOtherNodeAsync(
+      otherNodeAddress: otherNodeAddress,
+      otherNodeObjects: otherNodeObjects,
+      nodeRegistry: null
+    );
+
+  internal static async ValueTask<EchonetNodeRegistry> CreateOtherNodeAsync(
+    IPAddress otherNodeAddress,
+    IReadOnlyList<EOJ> otherNodeObjects,
+    EchonetNodeRegistry? nodeRegistry
+  )
   {
     using var client = new EchonetClient(
-      new RespondInstanceListEchonetLiteHandler(otherNodeObjects)
+      echonetLiteHandler: new RespondInstanceListEchonetLiteHandler(otherNodeObjects),
+      shouldDisposeEchonetLiteHandler: false,
+      nodeRegistry: nodeRegistry,
+      deviceFactory: null
     );
 
     await client.RequestNotifyInstanceListAsync(
