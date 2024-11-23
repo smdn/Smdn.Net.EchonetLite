@@ -158,7 +158,7 @@ partial class EchonetClient
             tid: tid,
             value: prop,
             validateValue: false, // Setした内容をそのまま格納するため、検証しない
-            newModificationState: true // 要求は受理されると仮定するため、値は未変更状態とする
+            newModificationState: false // 要求は受理されると仮定するため、値は未変更状態とする
           );
         }
       }
