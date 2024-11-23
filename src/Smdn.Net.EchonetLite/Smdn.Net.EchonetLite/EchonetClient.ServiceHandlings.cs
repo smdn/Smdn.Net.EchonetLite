@@ -68,7 +68,6 @@ partial class EchonetClient
   /// <param name="message">受信した規定電文形式の電文内容を表す<see cref="Format1Message"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
   /// <seealso cref="Format1MessageReceived"/>
-#pragma warning disable CA1502 // TODO: reduce complexity
   protected virtual async ValueTask HandleFormat1MessageAsync(
     IPAddress address,
     int id,
@@ -86,11 +85,11 @@ partial class EchonetClient
       : SelfNode.FindDevice(message.DEOJ);
     bool? result = null;
 
-    switch (message.ESV) {
-      case ESV.SetI: // プロパティ値書き込み要求（応答不要）
-        // あれば、書き込んでおわり
-        // なければ、プロパティ値書き込み要求不可応答 SetI_SNA
-        try {
+    try {
+      switch (message.ESV) {
+        case ESV.SetI: // プロパティ値書き込み要求（応答不要）
+          // あれば、書き込んでおわり
+          // なければ、プロパティ値書き込み要求不可応答 SetI_SNA
           result = await HandleWriteOneWayRequestAsync(
             address: address,
             tid: tid,
@@ -98,20 +97,12 @@ partial class EchonetClient
             destObject: destObject,
             cancellationToken: cancellationToken
           ).ConfigureAwait(false);
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
-
-      case ESV.SetC: // プロパティ値書き込み要求（応答要）
-        // あれば、書き込んで プロパティ値書き込み応答 Set_Res
-        // なければ、プロパティ値書き込み要求不可応答 SetC_SNA
-        try {
+        case ESV.SetC: // プロパティ値書き込み要求（応答要）
+          // あれば、書き込んで プロパティ値書き込み応答 Set_Res
+          // なければ、プロパティ値書き込み要求不可応答 SetC_SNA
           result = await HandleWriteRequestAsync(
             address: address,
             tid: tid,
@@ -119,20 +110,12 @@ partial class EchonetClient
             destObject: destObject,
             cancellationToken: cancellationToken
           ).ConfigureAwait(false);
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
-
-      case ESV.Get: // プロパティ値読み出し要求
-        // あれば、プロパティ値読み出し応答 Get_Res
-        // なければ、プロパティ値読み出し不可応答 Get_SNA
-        try {
+        case ESV.Get: // プロパティ値読み出し要求
+          // あれば、プロパティ値読み出し応答 Get_Res
+          // なければ、プロパティ値読み出し不可応答 Get_SNA
           result = await HandleReadRequestAsync(
             address: address,
             tid: tid,
@@ -140,25 +123,17 @@ partial class EchonetClient
             destObject: destObject,
             cancellationToken: cancellationToken
           ).ConfigureAwait(false);
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
+        case ESV.InfRequest: // プロパティ値通知要求
+          // あれば、プロパティ値通知 INF
+          // なければ、プロパティ値通知不可応答 INF_SNA
+          break;
 
-      case ESV.InfRequest: // プロパティ値通知要求
-        // あれば、プロパティ値通知 INF
-        // なければ、プロパティ値通知不可応答 INF_SNA
-        break;
-
-      case ESV.SetGet: // プロパティ値書き込み・読み出し要求
-        // あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
-        // なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
-        try {
+        case ESV.SetGet: // プロパティ値書き込み・読み出し要求
+          // あれば、プロパティ値書き込み・読み出し応答 SetGet_Res
+          // なければ、プロパティ値書き込み・読み出し不可応答 SetGet_SNA
           result = await HandleWriteReadRequestAsync(
             address: address,
             tid: tid,
@@ -166,40 +141,24 @@ partial class EchonetClient
             destObject: destObject,
             cancellationToken: cancellationToken
           ).ConfigureAwait(false);
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
-
-      case ESV.Inf: // プロパティ値通知
-        // プロパティ値通知要求 INF_REQのレスポンス
-        // または、自発的な通知のケースがある。
-        // なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
-        try {
+        case ESV.Inf: // プロパティ値通知
+          // プロパティ値通知要求 INF_REQのレスポンス
+          // または、自発的な通知のケースがある。
+          // なので、要求送信(INF_REQ)のハンドラでも対処するが、こちらでも自発として対処をする。
           result = HandleNotifyOneWay(
             address: address,
             tid: tid,
             message: message,
             sourceNode: sourceNode
           );
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
-
-      case ESV.InfC: // プロパティ値通知（応答要）
-        // プロパティ値通知応答 INFC_Res
-        try {
+        case ESV.InfC: // プロパティ値通知（応答要）
+          // プロパティ値通知応答 INFC_Res
           result = await HandleNotifyAsync(
             address: address,
             tid: tid,
@@ -208,72 +167,48 @@ partial class EchonetClient
             destObject: destObject,
             cancellationToken: cancellationToken
           ).ConfigureAwait(false);
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
-
-      case ESV.SetResponse: // Set_Res: プロパティ値書き込み応答
-      case ESV.SetCServiceNotAvailable: // SetC_SNA: プロパティ値書き込み要求不可応答
-      case ESV.SetIServiceNotAvailable: // SetI_SNA: プロパティ値書き込み要求不可応答
-        // 「SetC: プロパティ値書き込み要求」のレスポンス
-        // 返送されてきたプロパティ値の状態を更新する
-        try {
+        case ESV.SetResponse: // Set_Res: プロパティ値書き込み応答
+        case ESV.SetCServiceNotAvailable: // SetC_SNA: プロパティ値書き込み要求不可応答
+        case ESV.SetIServiceNotAvailable: // SetI_SNA: プロパティ値書き込み要求不可応答
+          // 「SetC: プロパティ値書き込み要求」のレスポンス
+          // 返送されてきたプロパティ値の状態を更新する
           result = HandleWriteResponse(
             address: address,
             tid: tid,
             message: message,
             sourceNode: sourceNode
           );
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
-
-      case ESV.GetResponse: // Get_Res: プロパティ値読み出し応答
-      case ESV.GetServiceNotAvailable: // Get_SNA: プロパティ値読み出し不可応答
-        // 「Get: プロパティ値読み出し要求」のレスポンス
-        // 返送されてきたプロパティ値を格納する
-        try {
+        case ESV.GetResponse: // Get_Res: プロパティ値読み出し応答
+        case ESV.GetServiceNotAvailable: // Get_SNA: プロパティ値読み出し不可応答
+          // 「Get: プロパティ値読み出し要求」のレスポンス
+          // 返送されてきたプロパティ値を格納する
           result = HandleReadResponse(
             address: address,
             tid: tid,
             message: message,
             sourceNode: sourceNode
           );
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
+        case ESV.InfCResponse: // プロパティ値通知応答
+          // プロパティ値通知（応答要） INFCのレスポンスなので、要求送信(INFC)のハンドラで対処
+          break;
 
-      case ESV.InfCResponse: // プロパティ値通知応答
-        // プロパティ値通知（応答要） INFCのレスポンスなので、要求送信(INFC)のハンドラで対処
-        break;
+        case ESV.InfServiceNotAvailable: // プロパティ値通知不可応答
+          // プロパティ値通知要求 INF_REQ のレスポンスなので、要求送信(INF_REQ)のハンドラで対処
+          break;
 
-      case ESV.InfServiceNotAvailable: // プロパティ値通知不可応答
-        // プロパティ値通知要求 INF_REQ のレスポンスなので、要求送信(INF_REQ)のハンドラで対処
-        break;
-
-      case ESV.SetGetResponse: // SetGet_Res: プロパティ値書き込み・読み出し応答
-      case ESV.SetGetServiceNotAvailable: // SetGet_SNA: プロパティ値書き込み・読み出し不可応答
-        // 「SetGet: プロパティ値書き込み・読み出し要求」のレスポンス
-        // 返送されてきたSetプロパティの値の状態を更新・Getプロパティの値を格納する
-        try {
+        case ESV.SetGetResponse: // SetGet_Res: プロパティ値書き込み・読み出し応答
+        case ESV.SetGetServiceNotAvailable: // SetGet_SNA: プロパティ値書き込み・読み出し不可応答
+          // 「SetGet: プロパティ値書き込み・読み出し要求」のレスポンス
+          // 返送されてきたSetプロパティの値の状態を更新・Getプロパティの値を格納する
           result = HandleWriteResponse(
             address: address,
             tid: tid,
@@ -287,18 +222,18 @@ partial class EchonetClient
             message: message,
             sourceNode: sourceNode
           );
-        }
-        catch (Exception ex) {
-          if (Logger is not null)
-            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-          throw;
-        }
+          break;
 
-        break;
+        default:
+          break;
+      }
+    }
+    catch (Exception ex) {
+      if (Logger is not null)
+        LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-      default:
-        break;
+      throw;
     }
 
     if (TryFindTransaction(tid, out _)) {
@@ -316,7 +251,6 @@ partial class EchonetClient
         LogUnmanagedTransactionAtFormat1MessageHandler(Logger, address, tid, message, null);
     }
   }
-#pragma warning restore CA1502
 
   /// <summary>
   /// ECHONET Lite サービス「SetI:プロパティ値書き込み要求（応答不要）」(ESV <c>0x60</c>)を処理します。
