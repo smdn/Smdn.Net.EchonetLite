@@ -67,7 +67,7 @@ public class EchonetPropertyTests {
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
     var device = nodeRegistry.Nodes.First(node => node.Address.Equals(destinationNodeAddress)).Devices.First();
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
 
     var propertyMapResponse = new Dictionary<byte, byte[]>() {
       [0x9D] = EchonetClientTests.CreatePropertyMapEDT(epc), // Status change announcement property map
@@ -529,7 +529,7 @@ public class EchonetPropertyTests {
       );
     }
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
 
     Assert.That(
       async () => _ = await property.Device.ReadPropertiesAsync(

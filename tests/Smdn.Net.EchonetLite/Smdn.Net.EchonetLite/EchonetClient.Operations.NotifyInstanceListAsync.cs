@@ -94,8 +94,12 @@ partial class EchonetClientOperationsTests {
       )
     );
 
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
+
     Assert.That(
-      async () => await client.NotifyInstanceListAsync(),
+      async () => await client.NotifyInstanceListAsync(
+        cancellationToken: cts.Token
+      ),
       Throws.Nothing
     );
 

@@ -121,7 +121,7 @@ public class EchonetObjectTests {
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
     var device = nodeRegistry.Nodes.First(node => node.Address.Equals(destinationNodeAddress)).Devices.First();
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
 
     using var client = new EchonetClient(
       echonetLiteHandler: new QueuedEchonetLiteHandler(

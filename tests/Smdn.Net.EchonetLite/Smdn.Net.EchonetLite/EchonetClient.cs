@@ -18,6 +18,9 @@ namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class EchonetClientTests {
+  public static CancellationTokenSource CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed()
+    => new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
   private class ReceiveEDATA2EchonetLiteHandler : IEchonetLiteHandler {
     public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();

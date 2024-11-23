@@ -89,11 +89,14 @@ partial class EchonetClientOperationsTests {
       }
     };
 
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
+
     EchonetServiceResponse response = default;
 
     Assert.That(
       async () => response = await client.AcquirePropertyMapsAsync(
-        device: device
+        device: device,
+        cancellationToken: cts.Token
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -187,9 +190,12 @@ partial class EchonetClientOperationsTests {
       Assert.That(sender, Is.SameAs(device));
     };
 
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
+
     Assert.That(
       async () => await client.AcquirePropertyMapsAsync(
-        device: device
+        device: device,
+        cancellationToken: cts.Token
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -233,12 +239,15 @@ partial class EchonetClientOperationsTests {
     Assert.That(device.HasPropertyMapAcquired, Is.False);
     Assert.That(device.Properties.Count, Is.Zero);
 
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
+
     EchonetServiceResponse response = default;
 
     Assert.That(
       async () => response = await client.AcquirePropertyMapsAsync(
         device: device,
-        extraPropertyCodes: [0x80, 0x82]
+        extraPropertyCodes: [0x80, 0x82],
+        cancellationToken: cts.Token
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -279,11 +288,14 @@ partial class EchonetClientOperationsTests {
       deviceFactory: null
     );
 
+    using var ctsRead = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
+
     _ = await clientForReadProperty.RequestReadAsync(
       sourceObject: clientForReadProperty.SelfNode.NodeProfile.EOJ,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: device.EOJ,
-      propertyCodes: [0x80]
+      propertyCodes: [0x80],
+      cancellationToken: ctsRead.Token
     );
 
     Assert.That(device.Properties[0x80], Is.Not.Null);
@@ -304,11 +316,14 @@ partial class EchonetClientOperationsTests {
       deviceFactory: null
     );
 
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
+
     EchonetServiceResponse response = default;
 
     Assert.That(
       async () => response = await client.AcquirePropertyMapsAsync(
-        device: device
+        device: device,
+        cancellationToken: cts.Token
       ).ConfigureAwait(false),
       Throws.Nothing
     );

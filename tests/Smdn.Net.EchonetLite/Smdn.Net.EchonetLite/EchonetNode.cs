@@ -96,7 +96,7 @@ public class EchonetNodeTests {
         ]
       )
     );
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
 
     var numberOfCallsToBeginInvoke = 0;
 
