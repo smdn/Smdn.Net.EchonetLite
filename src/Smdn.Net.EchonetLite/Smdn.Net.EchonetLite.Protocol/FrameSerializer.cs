@@ -4,7 +4,7 @@
 namespace Smdn.Net.EchonetLite.Protocol;
 
 public static partial class FrameSerializer {
-  internal static bool IsESVWriteOrReadService(ESV esv)
+  internal static bool IsESVWriteAndReadService(ESV esv)
     => esv switch {
       ESV.SetGet => true,
       ESV.SetGetResponse => true,

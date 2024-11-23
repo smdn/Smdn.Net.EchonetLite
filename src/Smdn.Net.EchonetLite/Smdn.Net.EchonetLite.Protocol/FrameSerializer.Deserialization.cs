@@ -78,7 +78,7 @@ partial class FrameSerializer {
 
     bytes = bytes.Slice(7);
 
-    if (IsESVWriteOrReadService(esv)) {
+    if (IsESVWriteAndReadService(esv)) {
       // ４.２.３.４ プロパティ値書き込み読み出しサービス［0x6E,0x7E,0x5E］
       // OPCSet 処理プロパティ数(1B)
       // ECHONET Liteプロパティ(1B)

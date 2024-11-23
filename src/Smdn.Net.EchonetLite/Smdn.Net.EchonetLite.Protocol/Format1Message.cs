@@ -59,7 +59,7 @@ public readonly struct Format1Message {
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(true, nameof(propsForGet))]
 #endif
-  private bool IsWriteOrReadService => FrameSerializer.IsESVWriteOrReadService(ESV);
+  private bool IsWriteAndReadService => FrameSerializer.IsESVWriteAndReadService(ESV);
 
   /// <summary>
   /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="Format1Message"/>を作成します。
@@ -78,7 +78,7 @@ public readonly struct Format1Message {
   /// <exception cref="ArgumentNullException"><paramref name="properties"/>が<see langword="null"/>です。</exception>
   public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyList<PropertyValue> properties)
   {
-    if (FrameSerializer.IsESVWriteOrReadService(esv))
+    if (FrameSerializer.IsESVWriteAndReadService(esv))
       throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
 
     SEOJ = seoj;
@@ -105,7 +105,7 @@ public readonly struct Format1Message {
   /// <exception cref="ArgumentNullException"><paramref name="propertiesForSet"/>もしくは<paramref name="propertiesForGet"/>が<see langword="null"/>です。</exception>
   public Format1Message(EOJ seoj, EOJ deoj, ESV esv, IReadOnlyList<PropertyValue> propertiesForSet, IReadOnlyList<PropertyValue> propertiesForGet)
   {
-    if (!FrameSerializer.IsESVWriteOrReadService(esv))
+    if (!FrameSerializer.IsESVWriteAndReadService(esv))
       throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
 
     SEOJ = seoj;
@@ -128,7 +128,7 @@ public readonly struct Format1Message {
   /// </seealso>
   public IReadOnlyList<PropertyValue> GetProperties()
   {
-    if (IsWriteOrReadService)
+    if (IsWriteAndReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV.ToSymbolString()})");
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
@@ -155,7 +155,7 @@ public readonly struct Format1Message {
   )
   GetPropertiesForSetAndGet()
   {
-    if (!IsWriteOrReadService)
+    if (!IsWriteAndReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV.ToSymbolString()})");
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
@@ -167,7 +167,7 @@ public readonly struct Format1Message {
 
   public override string ToString()
   {
-    return IsWriteOrReadService
+    return IsWriteAndReadService
       ? $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}"", {PropertiesToString("OPCSet", propsForSetOrGet)}, {PropertiesToString("OPCGet", propsForGet)}}}"
       : $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}"", {PropertiesToString("OPC", propsForSetOrGet)}}}";
 

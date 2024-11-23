@@ -40,7 +40,7 @@ partial class FrameSerializer {
     IEnumerable<PropertyValue> properties
   )
   {
-    if (IsESVWriteOrReadService(esv))
+    if (IsESVWriteAndReadService(esv))
       throw new ArgumentException(message: $"ESV must be other than {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
 
     SerializeEchonetLiteFrameFormat1(
@@ -79,7 +79,7 @@ partial class FrameSerializer {
     IEnumerable<PropertyValue> propertiesForGet
   )
   {
-    if (!IsESVWriteOrReadService(esv))
+    if (!IsESVWriteAndReadService(esv))
       throw new ArgumentException(message: $"ESV must be {nameof(ESV.SetGet)}, {nameof(ESV.SetGetResponse)}, or {nameof(ESV.SetGetServiceNotAvailable)}.", paramName: nameof(esv));
 
     SerializeEchonetLiteFrameFormat1(
@@ -119,7 +119,7 @@ partial class FrameSerializer {
     // ECHONET Liteプロパティ(1B)
     // EDTのバイト数(1B)
     // プロパティ値データ(PDCで指定)
-    var failIfOpcSetOrOpcGetIsZero = IsESVWriteOrReadService(esv) && esv != ESV.SetGetServiceNotAvailable;
+    var failIfOpcSetOrOpcGetIsZero = IsESVWriteAndReadService(esv) && esv != ESV.SetGetServiceNotAvailable;
 
     if (!TryWriteEDataType1ProcessingTargetProperties(buffer, propsForSetOrGet, failIfEmpty: failIfOpcSetOrOpcGetIsZero))
       throw new InvalidOperationException("OPCSet can not be zero when ESV is other than SetGet_SNA.");
