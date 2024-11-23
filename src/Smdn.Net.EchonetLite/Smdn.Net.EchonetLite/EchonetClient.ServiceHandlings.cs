@@ -80,16 +80,6 @@ partial class EchonetClient
 
     cancellationToken.ThrowIfCancellationRequested();
 
-    if (TryFindTransaction(tid, out _)) {
-      // 進行中のトランザクション(自発の要求)がある場合は、応答を個別のハンドラで処理する
-      Format1MessageReceived?.Invoke(
-        sender: this,
-        e: (address, tid, message)
-      );
-
-      return;
-    }
-
     var sourceNode = GetOrAddOtherNode(address, message.ESV);
     var destObject = message.DEOJ.IsNodeProfile
       ? SelfNode.NodeProfile // 自ノードプロファイル宛てのリクエストの場合
@@ -228,10 +218,13 @@ partial class EchonetClient
 
         break;
 
-      case ESV.SetIServiceNotAvailable: // プロパティ値書き込み要求不可応答
-        // プロパティ値書き込み要求（応答不要）SetIのレスポンス
+      case ESV.SetResponse: // Set_Res: プロパティ値書き込み応答
+      case ESV.SetCServiceNotAvailable: // SetC_SNA: プロパティ値書き込み要求不可応答
+      case ESV.SetIServiceNotAvailable: // SetI_SNA: プロパティ値書き込み要求不可応答
+        // 「SetC: プロパティ値書き込み要求」のレスポンス
+        // 返送されてきたプロパティ値の状態を更新する
         try {
-          result = HandleWriteOneWayResponse(
+          result = HandleWriteResponse(
             address: address,
             tid: tid,
             message: message,
@@ -247,14 +240,25 @@ partial class EchonetClient
 
         break;
 
-      case ESV.SetResponse: // プロパティ値書き込み応答
-      case ESV.SetCServiceNotAvailable: // プロパティ値書き込み要求不可応答
-        // プロパティ値書き込み要求（応答要） SetCのレスポンスなので、要求送信(SETC)のハンドラで対処
-        break;
+      case ESV.GetResponse: // Get_Res: プロパティ値読み出し応答
+      case ESV.GetServiceNotAvailable: // Get_SNA: プロパティ値読み出し不可応答
+        // 「Get: プロパティ値読み出し要求」のレスポンス
+        // 返送されてきたプロパティ値を格納する
+        try {
+          result = HandleReadResponse(
+            address: address,
+            tid: tid,
+            message: message,
+            sourceNode: sourceNode
+          );
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
 
-      case ESV.GetResponse: // プロパティ値読み出し応答
-      case ESV.GetServiceNotAvailable: // プロパティ値読み出し不可応答
-        // プロパティ値読み出し要求 Getのレスポンスなので、要求送信(GET)のハンドラで対処
+          throw;
+        }
+
         break;
 
       case ESV.InfCResponse: // プロパティ値通知応答
@@ -265,17 +269,48 @@ partial class EchonetClient
         // プロパティ値通知要求 INF_REQ のレスポンスなので、要求送信(INF_REQ)のハンドラで対処
         break;
 
-      case ESV.SetGetResponse: // プロパティ値書き込み・読み出し応答
-      case ESV.SetGetServiceNotAvailable: // プロパティ値書き込み・読み出し不可応答
-        // プロパティ値書き込み・読み出し要求 SetGet のレスポンスなので、要求送信(SETGET)のハンドラで対処
+      case ESV.SetGetResponse: // SetGet_Res: プロパティ値書き込み・読み出し応答
+      case ESV.SetGetServiceNotAvailable: // SetGet_SNA: プロパティ値書き込み・読み出し不可応答
+        // 「SetGet: プロパティ値書き込み・読み出し要求」のレスポンス
+        // 返送されてきたSetプロパティの値の状態を更新・Getプロパティの値を格納する
+        try {
+          result = HandleWriteResponse(
+            address: address,
+            tid: tid,
+            message: message,
+            sourceNode: sourceNode
+          );
+
+          result &= HandleReadResponse(
+            address: address,
+            tid: tid,
+            message: message,
+            sourceNode: sourceNode
+          );
+        }
+        catch (Exception ex) {
+          if (Logger is not null)
+            LogExceptionAtFormat1MessageHandler(Logger, address, tid, message, ex);
+
+          throw;
+        }
+
         break;
 
       default:
         break;
     }
 
-    // 電文が処理されず、進行中のトランザクションにも該当しない場合
-    if (result is null && !TryFindTransaction(tid, out _)) {
+    if (TryFindTransaction(tid, out _)) {
+      // 進行中のトランザクション(自発の要求)がある場合は、
+      // 個別のハンドラでリクエスト結果を処理する
+      Format1MessageReceived?.Invoke(
+        sender: this,
+        e: (address, tid, message)
+      );
+    }
+    else if (result is null) {
+      // 電文が処理されず、進行中のトランザクションにも該当しない場合
       // 要求には対応しないが、ログに記録する
       if (Logger is not null)
         LogUnmanagedTransactionAtFormat1MessageHandler(Logger, address, tid, message, null);
@@ -924,36 +959,42 @@ partial class EchonetClient
   }
 
   /// <summary>
-  /// ECHONET Lite サービス応答「SetI_SNA:プロパティ値書き込み要求不可応答」(ESV <c>0x50</c>)を処理します。
+  /// プロパティ値書き込み要求に対する以下のECHONET Lite サービス応答を処理します。
+  /// <list type="bullet">
+  ///   <item>「Set_Res: プロパティ値書き込み応答」(ESV <c>0x71</c>)</item>
+  ///   <item>「SetGet_Res: プロパティ値書き込み・読み出し応答」(ESV <c>0x7E</c>)</item>
+  ///   <item>「SetI_SNA: プロパティ値書き込み要求不可応答」(ESV <c>0x50</c>)</item>
+  ///   <item>「SetC_SNA: プロパティ値書き込み要求不可応答」(ESV <c>0x51</c>)</item>
+  ///   <item>「SetGet_SNA: プロパティ値書き込み・読み出し不可応答」(ESV <c>0x5E</c>)</item>
+  /// </list>
   /// </summary>
   /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
   /// <param name="sourceNode">応答元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <returns>
-  /// 常に不可応答を表す<see langword="false"/>を返します。
+  /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
+  /// <seealso cref="RequestWriteAsync"/>
   /// <seealso cref="RequestWriteOneWayAsync"/>
+  /// <seealso cref="RequestWriteReadAsync"/>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
-  private bool HandleWriteOneWayResponse(
+  private bool HandleWriteResponse(
     IPAddress address,
     ushort tid,
     Format1Message message,
     EchonetOtherNode sourceNode
   )
   {
-    const ESV ResponseServiceCode = ESV.SetIServiceNotAvailable;
-
     if (Logger is not null)
-      LogHandlingServiceResponse(Logger, ResponseServiceCode, address, tid);
+      LogHandlingServiceResponse(Logger, message.ESV, address, tid);
 
     var objectAdded = false;
-    var responseProps = message.GetProperties();
     var sourceObject = message.SEOJ.IsNodeProfile
       ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
       : sourceNode.GetOrAddDevice(deviceFactory, message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
@@ -966,10 +1007,15 @@ partial class EchonetClient
       );
     }
 
-    // 受理されなかったプロパティについて、返送された値を設定し、値を変更状態に戻す
+    // 受理されなかったプロパティについて、返送された値を設定し
+    // 要求はすべて受理されると仮定して設定した値の状態を、変更状態に戻す
+    var (responseProps, _) = message.IsWriteAndReadService
+      ? message.GetPropertiesForSetAndGet()
+      : (message.GetProperties(), null);
+
     foreach (var prop in responseProps.Where(static p => p.PDC != 0)) {
       _ = sourceObject.StorePropertyValue(
-        esv: ResponseServiceCode,
+        esv: message.ESV,
         tid: tid,
         value: prop,
         validateValue: false, // 返送された内容をそのまま格納するため、検証しない
@@ -977,7 +1023,72 @@ partial class EchonetClient
       );
     }
 
-    return false; // 不可応答
+    return true;
+  }
+
+  /// <summary>
+  /// プロパティ値読み出し要求に対する以下のECHONET Lite サービス応答を処理します。
+  /// <list type="bullet">
+  ///   <item>「Get_Res: プロパティ値読み出し応答」(ESV <c>0x72</c>)</item>
+  ///   <item>「SetGet_Res: プロパティ値書き込み・読み出し応答」(ESV <c>0x7E</c>)</item>
+  ///   <item>「Get_SNA: プロパティ値読み出し不可応答」(ESV <c>0x52</c>)</item>
+  ///   <item>「SetGet_SNA: プロパティ値書き込み・読み出し不可応答」(ESV <c>0x5E</c>)</item>
+  /// </list>
+  /// </summary>
+  /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
+  /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
+  /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
+  /// <param name="sourceNode">応答元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
+  /// <returns>
+  /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
+  /// </returns>
+  /// <seealso cref="RequestReadAsync"/>
+  /// <seealso cref="RequestWriteReadAsync"/>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
+  /// </seealso>
+  private bool HandleReadResponse(
+    IPAddress address,
+    ushort tid,
+    Format1Message message,
+    EchonetOtherNode sourceNode
+  )
+  {
+    if (Logger is not null)
+      LogHandlingServiceResponse(Logger, message.ESV, address, tid);
+
+    var objectAdded = false;
+    var sourceObject = message.SEOJ.IsNodeProfile
+      ? sourceNode.NodeProfile // ノードプロファイルからの通知の場合
+      : sourceNode.GetOrAddDevice(deviceFactory, message.SEOJ, out objectAdded); // 未知のオブジェクト(プロパティはない状態で新規作成)
+
+    if (objectAdded) {
+      Logger?.LogInformation(
+        "New object added (Node: {NodeAddress}, EOJ: {EOJ})",
+        sourceNode.Address,
+        sourceObject.EOJ
+      );
+    }
+
+    var (_, responseProps) = message.IsWriteAndReadService
+      ? message.GetPropertiesForSetAndGet()
+      : (null, message.GetProperties());
+
+    // 受理されたプロパティについて、返送された値を設定する
+    foreach (var prop in responseProps.Where(static p => 0 < p.PDC)) {
+      _ = sourceObject.StorePropertyValue(
+        esv: message.ESV,
+        tid: tid,
+        value: prop,
+        validateValue: false, // 返送された内容をそのまま格納するため、検証しない
+        newModificationState: false // 返送された内容が格納されるため、値を未変更状態にする
+      );
+    }
+
+    return true;
   }
 
   /// <summary>

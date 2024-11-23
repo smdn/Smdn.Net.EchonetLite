@@ -93,7 +93,7 @@ partial class FrameSerializer {
     );
   }
 
-  private static void SerializeEchonetLiteFrameFormat1(
+  internal static void SerializeEchonetLiteFrameFormat1(
     IBufferWriter<byte> buffer,
     ushort tid,
     EOJ sourceObject,
