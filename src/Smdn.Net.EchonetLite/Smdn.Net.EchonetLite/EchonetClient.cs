@@ -8,7 +8,9 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 
+#if SYSTEM_TIMEPROVIDER
 using Microsoft.Extensions.DependencyInjection;
+#endif
 using Microsoft.Extensions.Logging;
 
 using Polly;
