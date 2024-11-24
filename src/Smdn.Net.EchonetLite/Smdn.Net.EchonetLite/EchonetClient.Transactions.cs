@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Smdn.Net.EchonetLite;
@@ -26,11 +27,14 @@ partial class EchonetClient
     capacity: 2 // TODO: best initial capacity
   );
 
-  private struct Transaction(EchonetClient owner) : IDisposable {
+  private class Transaction(EchonetClient owner) : IDisposable {
+#pragma warning disable CA2213
     private readonly EchonetClient owner = owner;
-    private ushort? id = null;
+#pragma warning restore CA2213
 
-    public readonly ushort ID => id ?? throw new InvalidOperationException("ID has not yet been assigned");
+    private ushort? id;
+
+    public ushort ID => id ?? throw new InvalidOperationException("ID has not yet been assigned");
 
     public ushort Increment()
     {
@@ -46,7 +50,7 @@ partial class EchonetClient
       return id.Value;
     }
 
-    public readonly void Dispose()
+    public void Dispose()
     {
       if (id.HasValue)
         // discard the transaction ID for finishing
@@ -74,6 +78,9 @@ partial class EchonetClient
   private ushort GetNewTransactionId()
     => unchecked((ushort)Interlocked.Increment(ref tid));
 
-  private bool TryFindTransaction(ushort tid, out Transaction transaction)
+  private bool TryFindTransaction(
+    ushort tid,
+    [NotNullWhen(true)] out Transaction? transaction
+  )
     => transactionsInProgress.TryGetValue(tid, out transaction);
 }

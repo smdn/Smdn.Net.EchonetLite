@@ -59,7 +59,7 @@ public readonly struct Format1Message {
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(true, nameof(propsForGet))]
 #endif
-  private bool IsWriteAndReadService => FrameSerializer.IsESVWriteAndReadService(ESV);
+  internal bool IsWriteAndReadService => FrameSerializer.IsESVWriteAndReadService(ESV);
 
   /// <summary>
   /// ECHONET Liteフレームの電文形式 1（規定電文形式）の電文を記述する<see cref="Format1Message"/>を作成します。

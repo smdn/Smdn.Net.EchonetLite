@@ -189,6 +189,77 @@ partial class EchonetClientServiceRequestsTests {
     );
   }
 
+  [TestCaseSource(nameof(YieldTestCases_RequestWriteOneWayAsync))]
+  public async Task RequestWriteOneWayAsync_PropertiesMustBeRestoredToModifiedStateWhenRequestNotPerformed(
+    PropertyValue[] requestPropertyValues,
+    bool performMulticast
+  )
+  {
+    var otherNodeAddresses = new[] { IPAddress.Parse("192.0.2.1"), IPAddress.Parse("192.0.2.2") };
+    var deoj = new EOJ(0x05, 0xFF, 0x01);
+    EchonetNodeRegistry? nodeRegistry = null;
+
+    foreach (var otherNodeAddress in otherNodeAddresses) {
+      nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(otherNodeAddress, [deoj], nodeRegistry);
+    }
+
+    var seoj = new EOJ(0x05, 0xFF, 0x01);
+    var destinationNodeAddress = performMulticast ? null : otherNodeAddresses[0];
+    var destinationNode = performMulticast ? null : nodeRegistry!.Nodes.First(node => node.Address.Equals(destinationNodeAddress));
+
+    using var client = new EchonetClient(
+      echonetLiteHandler: new ThrowsExceptionEchonetLiteHandler(),
+      shouldDisposeEchonetLiteHandler: false,
+      nodeRegistry: nodeRegistry,
+      deviceFactory: null
+    );
+
+    Assert.That(
+      async () => await client.RequestWriteOneWayAsync(
+        sourceObject: seoj,
+        destinationNodeAddress: performMulticast ? null : destinationNodeAddress,
+        destinationObject: deoj,
+        properties: requestPropertyValues
+      ).ConfigureAwait(false),
+      Throws.Exception
+    );
+
+    if (performMulticast) {
+      // requested property values must be set to the target object of all known nodes
+      foreach (var otherNodeAddress in otherNodeAddresses) {
+        var otherNode = nodeRegistry!.Nodes.First(node => node.Address.Equals(otherNodeAddress));
+        var destinationObject = otherNode.Devices.First(obj => obj.EOJ == deoj);
+
+        foreach (var property in requestPropertyValues) {
+          Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+          Assert.That(destinationObject.Properties[property.EPC].ValueMemory, SequenceIs.EqualTo(property.EDT));
+          Assert.That(destinationObject.Properties[property.EPC].HasModified, Is.True); // must be restored to modified state
+        }
+      }
+    }
+    else {
+      // requested property values must be set only to the target object of destination node
+      foreach (var otherNodeAddress in otherNodeAddresses) {
+        var otherNode = nodeRegistry!.Nodes.First(node => node.Address.Equals(destinationNodeAddress));
+        var destinationObject = otherNode.Devices.First(obj => obj.EOJ == deoj);
+        var isUnicastDestination = ReferenceEquals(otherNode, destinationNode);
+
+        if (isUnicastDestination) {
+          foreach (var property in requestPropertyValues) {
+            Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+            Assert.That(destinationObject.Properties[property.EPC].ValueMemory, SequenceIs.EqualTo(property.EDT));
+            Assert.That(destinationObject.Properties[property.EPC].HasModified, Is.True); // must be restored to modified state
+          }
+        }
+        else {
+          foreach (var property in requestPropertyValues) {
+            Assert.That(destinationObject.Properties, Does.Not.ContainKey((byte)property.EPC));
+          }
+        }
+      }
+    }
+  }
+
   private static System.Collections.IEnumerable YieldTestCases_RequestWriteOneWayAsync_ResponseNotPossible()
   {
     const bool PerformMulticast = true;

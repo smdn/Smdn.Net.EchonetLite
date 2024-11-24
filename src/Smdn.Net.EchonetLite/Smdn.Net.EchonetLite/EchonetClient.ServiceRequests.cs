@@ -89,7 +89,7 @@ partial class EchonetClient
   /// <remarks>
   /// このメソッドでは応答を待機しません。　ECHONET Lite サービスの要求を行ったら即座に処理を返します。
   /// </remarks>
-  /// <seealso cref="HandleWriteOneWayResponse"/>
+  /// <seealso cref="HandleWriteResponse"/>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
@@ -97,7 +97,7 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.１ プロパティ値書き込みサービス（応答不要）［0x60, 0x50］
   /// </seealso>
   [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
-  public async ValueTask RequestWriteOneWayAsync(
+  public ValueTask RequestWriteOneWayAsync(
     EOJ sourceObject,
     IPAddress? destinationNodeAddress,
     EOJ destinationObject,
@@ -113,37 +113,108 @@ partial class EchonetClient
 
     // 応答を待機せずに要求の送信のみを行う
     // 応答の処理は共通のハンドラで行う
+    return RequestWriteAsyncCore(
+      writeRequestServiceCode: ServiceCode,
+      transaction: null,
+      sourceObject: sourceObject,
+      destinationNodeAddress: destinationNodeAddress,
+      destinationObject: destinationObject,
+      requestPropertiesForSet: properties.ToList(), // XXX: reduce allocation
+      requestPropertiesForGet: null,
+      resiliencePipeline: resiliencePipeline,
+      cancellationToken: cancellationToken
+    );
+  }
+
+  private async ValueTask RequestWriteAsyncCore(
+    ESV writeRequestServiceCode,
+    Transaction? transaction,
+    EOJ sourceObject,
+    IPAddress? destinationNodeAddress,
+    EOJ destinationObject,
+    IReadOnlyList<PropertyValue> requestPropertiesForSet,
+    IReadOnlyList<PropertyValue>? requestPropertiesForGet,
+    ResiliencePipeline? resiliencePipeline,
+    CancellationToken cancellationToken
+  )
+  {
+#if DEBUG
+    switch (writeRequestServiceCode) {
+      case ESV.SetI:
+      case ESV.SetC:
+        if (requestPropertiesForGet is not null)
+          throw new InvalidOperationException($"can not specify properties for Get (ESV={writeRequestServiceCode})");
+        break;
+
+      case ESV.SetGet:
+        if (requestPropertiesForGet is null)
+          throw new InvalidOperationException($"properties for Get must be supplied (ESV={writeRequestServiceCode})");
+        break;
+
+      default:
+        throw new InvalidOperationException($"requested service code is not Set* (ESV={writeRequestServiceCode})");
+    }
+#endif
+
     var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, writeRequestServiceCode);
 
     try {
-      var tid = await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
-        callback: async ctx => {
-          var tid = GetNewTransactionId();
+      const bool StoreValues = true;
+      const bool RestoreValues = false;
 
-          await SendFrameAsync(
-            destinationNodeAddress,
-            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-              buffer: buffer,
-              tid: tid,
-              sourceObject: sourceObject,
-              destinationObject: destinationObject,
-              esv: ServiceCode,
-              properties: properties
-            ),
-            ctx.CancellationToken
-          ).ConfigureAwait(false);
+      ushort? tidWhenPropertyValuesStored = null;
 
-          return tid;
-        },
-        context: resilienceContext
-      ).ConfigureAwait(false);
+      try {
+        await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+          callback: async ctx => {
+            var tid = transaction is null ? GetNewTransactionId() : transaction.Increment();
 
-      // 要求はすべて受理されると仮定して書き込みを反映する
+            // 要求はすべて受理されると仮定して、要求の開始前に書き込みを反映する
+            if (tidWhenPropertyValuesStored is null) {
+              StorePropertyValues(tid: tid, trueForStoreFalseForRestore: StoreValues);
+
+              tidWhenPropertyValuesStored = tid;
+            }
+
+            await SendFrameAsync(
+              destinationNodeAddress,
+              buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+                buffer: buffer,
+                tid: tid,
+                sourceObject: sourceObject,
+                destinationObject: destinationObject,
+                esv: writeRequestServiceCode,
+                propsForSetOrGet: requestPropertiesForSet,
+                propsForGet: requestPropertiesForGet
+              ),
+              ctx.CancellationToken
+            ).ConfigureAwait(false);
+          },
+          context: resilienceContext
+        ).ConfigureAwait(false);
+      }
+      catch {
+        // 受理されると仮定したプロパティ値を、変更状態に戻す
+        if (tidWhenPropertyValuesStored.HasValue)
+          StorePropertyValues(tid: tidWhenPropertyValuesStored.Value, trueForStoreFalseForRestore: RestoreValues);
+
+        throw;
+      }
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
+
+    void StorePropertyValues(ushort tid, bool trueForStoreFalseForRestore)
+    {
+      // true: 値を格納する。　要求は受理されると仮定するため、値は未変更状態とする。
+      // false: 値の状態を戻す。　要求は実施されなかったため、格納した値を値を変更状態とする。
+      var newModificationState = !trueForStoreFalseForRestore;
       var destinationNodes = destinationNodeAddress is null
         ? nodeRegistry.OtherNodes // 一斉同報通知の場合、既知のノードすべての対象オブジェクトに対して書き込みを反映する
-        : [GetOrAddOtherNode(destinationNodeAddress, ESV.SetI)];
+        : [GetOrAddOtherNode(destinationNodeAddress, writeRequestServiceCode)];
 
       foreach (var destinationNode in destinationNodes) {
         var destination = destinationNode.GetOrAddDevice(
@@ -152,19 +223,16 @@ partial class EchonetClient
           added: out _
         );
 
-        foreach (var prop in properties) {
+        foreach (var prop in requestPropertiesForSet) {
           _ = destination.StorePropertyValue(
-            esv: ESV.SetI,
+            esv: writeRequestServiceCode,
             tid: tid,
             value: prop,
-            validateValue: false, // Setした内容をそのまま格納するため、検証しない
-            newModificationState: false // 要求は受理されると仮定するため、値は未変更状態とする
+            validateValue: false, // Setする内容をそのまま格納するため、検証しない
+            newModificationState: newModificationState
           );
         }
       }
-    }
-    finally {
-      ResilienceContextPool.Shared.Return(resilienceContext);
     }
   }
 
@@ -219,36 +287,25 @@ partial class EchonetClient
       () => _ = responseTCS.TrySetCanceled(cancellationToken)
     );
     using var transaction = StartNewTransaction();
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
 
     try {
       Format1MessageReceived += HandleSetResOrSetCSNA;
 
-      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
-        callback: async ctx => {
-          await SendFrameAsync(
-            destinationNodeAddress,
-            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-              buffer: buffer,
-              tid: transaction.Increment(),
-              sourceObject: sourceObject,
-              destinationObject: destinationObject,
-              esv: ServiceCode,
-              properties: requestProperties
-            ),
-            ctx.CancellationToken
-          ).ConfigureAwait(false);
-        },
-        context: resilienceContext
+      await RequestWriteAsyncCore(
+        writeRequestServiceCode: ServiceCode,
+        transaction: transaction,
+        sourceObject: sourceObject,
+        destinationNodeAddress: destinationNodeAddress,
+        destinationObject: destinationObject,
+        requestPropertiesForSet: requestProperties,
+        requestPropertiesForGet: null,
+        resiliencePipeline: resiliencePipeline,
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
-      ResilienceContextPool.Shared.Return(resilienceContext);
-
       Format1MessageReceived -= HandleSetResOrSetCSNA;
     }
 
@@ -270,23 +327,11 @@ partial class EchonetClient
         value.TID
       );
 
-      // 要求が受理された書き込みを反映
-      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
+      // レスポンス内容を結果に反映する(プロパティ値の格納・反映は共通のハンドラで行う)
       var props = value.Message.GetProperties();
 
       foreach (var prop in props) {
-        // PDC == 0: 要求は受理されたため、値を未変更状態にする
-        // PDC != 0: 要求は受理されなかったため、値を変更状態にする
         var isAccepted = prop.PDC == 0;
-        var newModificationState = !isAccepted;
-
-        _ = respondingObject.StorePropertyValue(
-          esv: value.Message.ESV,
-          tid: value.TID,
-          value: properties.First(p => p.EPC == prop.EPC),
-          validateValue: false, // Setした内容をそのまま格納するため、検証しない
-          newModificationState: newModificationState
-        );
 
         results[prop.EPC] = isAccepted
           ? EchonetServicePropertyResult.Accepted
@@ -431,25 +476,15 @@ partial class EchonetClient
         value.TID
       );
 
-      // 要求が受理された読み出しを反映
-      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
+      // レスポンス内容を結果に反映する(プロパティ値の格納・反映は共通のハンドラで行う)
       var props = value.Message.GetProperties();
 
       foreach (var prop in props) {
-        if (0 < prop.PDC) {
-          _ = respondingObject.StorePropertyValue(
-            esv: value.Message.ESV,
-            tid: value.TID,
-            value: prop,
-            validateValue: false, // Getされた内容をそのまま格納するため、検証しない
-            newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
-          );
+        var isAccepted = 0 < prop.PDC;
 
-          results[prop.EPC] = EchonetServicePropertyResult.Accepted;
-        }
-        else {
-          results[prop.EPC] = EchonetServicePropertyResult.NotAccepted;
-        }
+        results[prop.EPC] = isAccepted
+          ? EchonetServicePropertyResult.Accepted
+          : EchonetServicePropertyResult.NotAccepted;
       }
 
       responseTCS.SetResult(
@@ -549,37 +584,24 @@ partial class EchonetClient
     );
     using var transaction = StartNewTransaction();
 
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
-
     try {
       Format1MessageReceived += HandleSetGetResOrSetGetSNA;
 
-      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
-        callback: async ctx => {
-          await SendFrameAsync(
-            destinationNodeAddress,
-            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
-              buffer: buffer,
-              tid: transaction.Increment(),
-              sourceObject: sourceObject,
-              destinationObject: destinationObject,
-              esv: ServiceCode,
-              propertiesForSet: requestPropertiesToSet,
-              propertiesForGet: requestPropertiesToGet
-            ),
-            ctx.CancellationToken
-          ).ConfigureAwait(false);
-        },
-        context: resilienceContext
+      await RequestWriteAsyncCore(
+        writeRequestServiceCode: ServiceCode,
+        transaction: transaction,
+        sourceObject: sourceObject,
+        destinationNodeAddress: destinationNodeAddress,
+        destinationObject: destinationObject,
+        requestPropertiesForSet: requestPropertiesToSet,
+        requestPropertiesForGet: requestPropertiesToGet,
+        resiliencePipeline: resiliencePipeline,
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
       return await responseTCS.Task.ConfigureAwait(false);
     }
     finally {
-      ResilienceContextPool.Shared.Return(resilienceContext);
-
       Format1MessageReceived -= HandleSetGetResOrSetGetSNA;
     }
 
@@ -604,42 +626,22 @@ partial class EchonetClient
       var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
       var (propsForSet, propsForGet) = value.Message.GetPropertiesForSetAndGet();
 
-      // 要求が受理された書き込みを反映
-      foreach (var prop in propsForSet.Where(static p => p.PDC == 0)) {
-        // PDC == 0: 要求は受理されたため、値を未変更状態にする
-        // PDC != 0: 要求は受理されなかったため、値を変更状態にする
+      // レスポンス内容を結果に反映する(プロパティ値の格納・反映は共通のハンドラで行う)
+      foreach (var prop in propsForSet) {
         var isAccepted = prop.PDC == 0;
-        var newModificationState = !isAccepted;
-
-        _ = respondingObject.StorePropertyValue(
-          esv: value.Message.ESV,
-          tid: value.TID,
-          value: propertiesToSet.First(p => p.EPC == prop.EPC),
-          validateValue: false, // Setした内容をそのまま格納するため、検証しない
-          newModificationState: newModificationState
-        );
 
         setResults[prop.EPC] = isAccepted
           ? EchonetServicePropertyResult.Accepted
           : EchonetServicePropertyResult.NotAccepted;
       }
 
-      // 要求が受理された読み出しを反映
+      // レスポンス内容を結果に反映する(プロパティ値の格納・反映は共通のハンドラで行う)
       foreach (var prop in propsForGet) {
-        if (0 < prop.PDC) {
-          _ = respondingObject.StorePropertyValue(
-            esv: value.Message.ESV,
-            tid: value.TID,
-            value: prop,
-            validateValue: false, // Getされた内容をそのまま格納するため、検証しない
-            newModificationState: false // Getされた内容が格納されるため、値を未変更状態にする
-          );
+        var isAccepted = 0 < prop.PDC;
 
-          getResults[prop.EPC] = EchonetServicePropertyResult.Accepted;
-        }
-        else {
-          getResults[prop.EPC] = EchonetServicePropertyResult.NotAccepted;
-        }
+        getResults[prop.EPC] = isAccepted
+          ? EchonetServicePropertyResult.Accepted
+          : EchonetServicePropertyResult.NotAccepted;
       }
 
       var isSuccess = value.Message.ESV == ESV.GetResponse;
@@ -927,13 +929,10 @@ partial class EchonetClient
         value.TID
       );
 
-      // 要求に対する応答を結果に反映する
-      var respondingObject = GetOrAddOtherNodeObject(value.Address, value.Message.SEOJ, value.Message.ESV);
+      // レスポンス内容を結果に反映する(プロパティ値の格納・反映は共通のハンドラで行う)
       var props = value.Message.GetProperties();
 
       foreach (var prop in props) {
-        // PDC == 0: 要求は受理されたため
-        // PDC != 0: 要求は受理されなかった
         var isAccepted = prop.PDC == 0;
 
         results[prop.EPC] = isAccepted

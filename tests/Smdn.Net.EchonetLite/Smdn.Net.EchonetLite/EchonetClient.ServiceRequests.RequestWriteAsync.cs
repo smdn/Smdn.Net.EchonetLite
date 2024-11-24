@@ -192,6 +192,45 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
+  public async Task RequestWriteAsync_PropertiesMustBeRestoredToModifiedStateWhenRequestNotPerformed()
+  {
+    var destinationNodeAddress = IPAddress.Loopback;
+    var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
+    var destinationNode = nodeRegistry.Nodes.First(node => node.Address.Equals(destinationNodeAddress));
+    var destinationObject = destinationNode.Devices.First();
+    var seoj = new EOJ(0x05, 0xFF, 0x01);
+    var propertyCodes = new byte[] { 0x80, 0x97 };
+    var requestPropertyValues = new[] {
+      new PropertyValue(propertyCodes[0], new byte[] { 0x31 }),
+      new PropertyValue(propertyCodes[1], new byte[] { 0x01, 0x23 }),
+    };
+    using var client = new EchonetClient(
+      echonetLiteHandler: new ThrowsExceptionEchonetLiteHandler(),
+      shouldDisposeEchonetLiteHandler: false,
+      nodeRegistry: nodeRegistry,
+      deviceFactory: null
+    );
+
+    Assert.That(
+      async () => await client.RequestWriteAsync(
+        sourceObject: seoj,
+        destinationNodeAddress: destinationNodeAddress,
+        destinationObject: destinationObject.EOJ,
+        properties: requestPropertyValues
+      ),
+      Throws.Exception
+    );
+
+    Assert.That(destinationObject.Properties.ContainsKey(propertyCodes[0]), Is.True);
+    Assert.That(destinationObject.Properties[propertyCodes[0]].ValueMemory, SequenceIs.EqualTo(requestPropertyValues[0].EDT));
+    Assert.That(destinationObject.Properties[propertyCodes[0]].HasModified, Is.True); // must be restored to modified state
+
+    Assert.That(destinationObject.Properties.ContainsKey(propertyCodes[1]), Is.True);
+    Assert.That(destinationObject.Properties[propertyCodes[1]].ValueMemory, SequenceIs.EqualTo(requestPropertyValues[1].EDT));
+    Assert.That(destinationObject.Properties[propertyCodes[1]].HasModified, Is.True); // must be restored to modified state
+  }
+
+  [Test]
   public async Task RequestWriteAsync_NotAccepted_Partial()
   {
     var destinationNodeAddress = IPAddress.Loopback;
