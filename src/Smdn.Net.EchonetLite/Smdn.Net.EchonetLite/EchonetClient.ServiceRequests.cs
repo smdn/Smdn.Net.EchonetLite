@@ -496,7 +496,6 @@ partial class EchonetClient
     }
   }
 
-#if false
   /// <summary>
   /// 一斉同報でのECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。
   /// </summary>
@@ -505,6 +504,15 @@ partial class EchonetClient
   /// <param name="propertyCodes">処理対象のECHONET Lite プロパティのプロパティコード(EPC)の一覧を表す<see cref="IEnumerable{Byte}"/>。</param>
   /// <param name="resiliencePipeline">サービス要求のECHONET Lite フレームを送信する際に発生した例外から回復するための動作を規定する<see cref="ResiliencePipeline"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。 既定値は<see cref="CancellationToken.None"/>です。</param>
+  /// <returns>
+  /// 非同期の操作を表す<see cref="ValueTask"/>。
+  /// </returns>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="propertyCodes"/>が<see langword="null"/>です。
+  /// </exception>
+  /// <remarks>
+  /// このメソッドでは応答を待機しません。　ECHONET Lite サービスの要求を行ったら即座に処理を返します。
+  /// </remarks>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
   /// </seealso>
@@ -512,7 +520,7 @@ partial class EchonetClient
   /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
   /// </seealso>
   [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
-  public ValueTask
+  public async ValueTask
   RequestReadMulticastAsync(
     EOJ sourceObject,
     EOJ destinationObject,
@@ -520,8 +528,41 @@ partial class EchonetClient
     ResiliencePipeline? resiliencePipeline = null,
     CancellationToken cancellationToken = default
   )
-    => throw new NotImplementedException();
-#endif
+  {
+    if (propertyCodes is null)
+      throw new ArgumentNullException(nameof(propertyCodes));
+
+    const ESV ServiceCode = ESV.Get;
+
+    // 応答を待機せずに要求の送信のみを行う
+    // 応答の処理は共通のハンドラで行う
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
+
+    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+
+    try {
+      await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
+        callback: async ctx => {
+          await SendFrameAsync(
+            address: null, // multicast
+            buffer => FrameSerializer.SerializeEchonetLiteFrameFormat1(
+              buffer: buffer,
+              tid: GetNewTransactionId(),
+              sourceObject: sourceObject,
+              destinationObject: destinationObject,
+              esv: ServiceCode,
+              properties: propertyCodes.Select(PropertyValue.Create)
+            ),
+            ctx.CancellationToken
+          ).ConfigureAwait(false);
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
+  }
 
   /// <summary>
   /// 相手先ノードを指定して、ECHONET Lite サービス「SetGet:プロパティ値書き込み・読み出し要求」(ESV <c>0x6E</c>)を行います。

@@ -180,24 +180,21 @@ internal class RespondSingleServiceRequestEchonetLiteHandler(
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
 }
 
-internal class NotifyPropertyValueEchonetLiteHandler : IEchonetLiteHandler {
-  public ValueTask NotifyAsync(
-    EchonetObject sourceObject,
-    EOJ deoj,
-    ESV esv,
-    IReadOnlyDictionary<byte, byte[]> properties,
-    CancellationToken cancellationToken = default
-  )
-    => NotifyAsync(
-      fromAddress: sourceObject.Node.Address,
-      seoj: sourceObject.EOJ,
-      deoj: deoj,
-      esv: esv,
-      properties: properties,
-      cancellationToken: cancellationToken
-    );
+internal class ManualResponseEchonetLiteHandler : IEchonetLiteHandler {
+  private readonly Action<IPAddress?, ReadOnlyMemory<byte>>? validateRequest;
 
-  public async ValueTask NotifyAsync(
+  public ManualResponseEchonetLiteHandler()
+  {
+  }
+
+  public ManualResponseEchonetLiteHandler(
+    Action<IPAddress?, ReadOnlyMemory<byte>>? validateRequest
+  )
+  {
+    this.validateRequest = validateRequest;
+  }
+
+  public async ValueTask RespondAsync(
     IPAddress fromAddress,
     EOJ seoj,
     EOJ deoj,
@@ -246,9 +243,48 @@ internal class NotifyPropertyValueEchonetLiteHandler : IEchonetLiteHandler {
   }
 
   public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-    => default; // do nothing
+  {
+    validateRequest?.Invoke(address, data);
+
+    return default; // do nothing, use RespondAsync() to send response back
+  }
 
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
+}
+
+internal class NotifyPropertyValueEchonetLiteHandler : ManualResponseEchonetLiteHandler {
+  public ValueTask NotifyAsync(
+    EchonetObject sourceObject,
+    EOJ deoj,
+    ESV esv,
+    IReadOnlyDictionary<byte, byte[]> properties,
+    CancellationToken cancellationToken = default
+  )
+    => base.RespondAsync(
+      fromAddress: sourceObject.Node.Address,
+      seoj: sourceObject.EOJ,
+      deoj: deoj,
+      esv: esv,
+      properties: properties,
+      cancellationToken: cancellationToken
+    );
+
+  public ValueTask NotifyAsync(
+    IPAddress fromAddress,
+    EOJ seoj,
+    EOJ deoj,
+    ESV esv,
+    IReadOnlyDictionary<byte, byte[]> properties,
+    CancellationToken cancellationToken = default
+  )
+    => base.RespondAsync(
+      fromAddress: fromAddress,
+      seoj: seoj,
+      deoj: deoj,
+      esv: esv,
+      properties: properties,
+      cancellationToken: cancellationToken
+    );
 }
 
 internal class QueuedEchonetLiteHandler(IReadOnlyList<IEchonetLiteHandler> queuedHandlers) : IEchonetLiteHandler {
