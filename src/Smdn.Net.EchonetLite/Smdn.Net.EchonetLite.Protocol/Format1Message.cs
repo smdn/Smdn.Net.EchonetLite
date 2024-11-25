@@ -168,8 +168,8 @@ public readonly struct Format1Message {
   public override string ToString()
   {
     return IsWriteAndReadService
-      ? $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}"", {PropertiesToString("OPCSet", propsForSetOrGet)}, {PropertiesToString("OPCGet", propsForGet)}}}"
-      : $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}"", {PropertiesToString("OPC", propsForSetOrGet)}}}";
+      ? $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}[0x{(byte)ESV:X2}]"", {PropertiesToString("OPCSet", propsForSetOrGet)}, {PropertiesToString("OPCGet", propsForGet)}}}"
+      : $@"{{""SEOJ"": ""{SEOJ}"", ""DEOJ"": ""{DEOJ}"", ""ESV"": ""{ESV.ToSymbolString()}[0x{(byte)ESV:X2}]"", {PropertiesToString("OPC", propsForSetOrGet)}}}";
 
     static string PropertiesToString(string opcName, IReadOnlyList<PropertyValue>? properties)
       => properties is null || properties.Count == 0
