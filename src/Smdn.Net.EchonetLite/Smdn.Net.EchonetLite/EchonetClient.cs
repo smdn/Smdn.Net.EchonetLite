@@ -59,7 +59,8 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
   /// </exception>
   public EchonetClient(
     IEchonetLiteHandler echonetLiteHandler,
-    bool shouldDisposeEchonetLiteHandler = false
+    bool shouldDisposeEchonetLiteHandler = false,
+    IServiceProvider? serviceProvider = null
   )
     : this(
       selfNode: EchonetNode.CreateSelfNode(devices: Array.Empty<EchonetObject>()),
@@ -68,7 +69,8 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
       nodeRegistry: null,
       deviceFactory: null,
       resiliencePipelineForSendingResponseFrame: null,
-      logger: null
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<EchonetClient>(),
+      serviceProvider: serviceProvider
     )
   {
   }
@@ -81,7 +83,8 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
     IEchonetLiteHandler echonetLiteHandler,
     bool shouldDisposeEchonetLiteHandler,
     EchonetNodeRegistry? nodeRegistry,
-    IEchonetDeviceFactory? deviceFactory
+    IEchonetDeviceFactory? deviceFactory,
+    IServiceProvider? serviceProvider = null
   )
     : this(
       selfNode: EchonetNode.CreateSelfNode(devices: Array.Empty<EchonetObject>()),
@@ -90,7 +93,8 @@ public partial class EchonetClient : IEchonetClientService, IDisposable, IAsyncD
       nodeRegistry: nodeRegistry,
       deviceFactory: deviceFactory,
       resiliencePipelineForSendingResponseFrame: null,
-      logger: null
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<EchonetClient>(),
+      serviceProvider: serviceProvider
     )
   {
   }
