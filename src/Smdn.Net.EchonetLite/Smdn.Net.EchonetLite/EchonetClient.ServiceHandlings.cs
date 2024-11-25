@@ -720,7 +720,7 @@ partial class EchonetClient
 
       if (accepted) {
         // ノードプロファイルのインスタンスリスト通知の場合
-        if (ReferenceEquals(sourceObject, sourceNode.NodeProfile) && prop.EPC == 0xD5)
+        if (prop.EPC == 0xD5 && ReferenceEquals(sourceObject, sourceNode.NodeProfile))
           _ = ProcessReceivingInstanceListNotification(sourceNode, prop.EDT);
       }
       else {
@@ -800,7 +800,7 @@ partial class EchonetClient
 
       if (accepted) {
         // ノードプロファイルのインスタンスリスト通知の場合
-        if (ReferenceEquals(sourceObject, sourceNode.NodeProfile) && prop.EPC == 0xD5)
+        if (prop.EPC == 0xD5 && ReferenceEquals(sourceObject, sourceNode.NodeProfile))
           _ = ProcessReceivingInstanceListNotification(sourceNode, prop.EDT);
       }
       else {
