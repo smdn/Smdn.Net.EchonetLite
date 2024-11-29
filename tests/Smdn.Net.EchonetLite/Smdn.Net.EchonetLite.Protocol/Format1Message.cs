@@ -127,27 +127,27 @@ public class Format1MessageTests {
   {
     var message = default(Format1Message);
 
-    Assert.That(message.ToString(), Is.EqualTo(@"{""SEOJ"": ""00.00 00"", ""DEOJ"": ""00.00 00"", ""ESV"": ""00"", ""OPC"": 0, ""Properties"": []}"));
+    Assert.That(message.ToString(), Is.EqualTo(@"{""SEOJ"": ""00.00 00"", ""DEOJ"": ""00.00 00"", ""ESV"": ""00[0x00]"", ""OPC"": 0, ""Properties"": []}"));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_ToString_ESV()
   {
     foreach (var (esv, symbol) in new[] {
-      (ESV.SetI, "SetI"),
-      (ESV.SetC, "SetC"),
-      (ESV.Get, "Get"),
-      (ESV.InfRequest, "INF_REQ"),
-      (ESV.SetResponse, "Set_Res"),
-      (ESV.GetResponse, "Get_Res"),
-      (ESV.Inf, "INF"),
-      (ESV.InfC, "INFC"),
-      (ESV.InfCResponse, "INFC_Res"),
-      (ESV.SetIServiceNotAvailable, "SetI_SNA"),
-      (ESV.SetCServiceNotAvailable, "SetC_SNA"),
-      (ESV.GetServiceNotAvailable, "Get_SNA"),
-      (ESV.InfServiceNotAvailable, "INF_SNA"),
-      ((ESV)0x00, "00"),
-      ((ESV)0xFF, "FF"),
+      (ESV.SetI, "SetI[0x60]"),
+      (ESV.SetC, "SetC[0x61]"),
+      (ESV.Get, "Get[0x62]"),
+      (ESV.InfRequest, "INF_REQ[0x63]"),
+      (ESV.SetResponse, "Set_Res[0x71]"),
+      (ESV.GetResponse, "Get_Res[0x72]"),
+      (ESV.Inf, "INF[0x73]"),
+      (ESV.InfC, "INFC[0x74]"),
+      (ESV.InfCResponse, "INFC_Res[0x7A]"),
+      (ESV.SetIServiceNotAvailable, "SetI_SNA[0x50]"),
+      (ESV.SetCServiceNotAvailable, "SetC_SNA[0x51]"),
+      (ESV.GetServiceNotAvailable, "Get_SNA[0x52]"),
+      (ESV.InfServiceNotAvailable, "INF_SNA[0x53]"),
+      ((ESV)0x00, "00[0x00]"),
+      ((ESV)0xFF, "FF[0xFF]"),
     }) {
       yield return new object[] {
         new Format1Message(
@@ -161,9 +161,9 @@ public class Format1MessageTests {
     }
 
     foreach (var (esv, symbol) in new[] {
-      (ESV.SetGet, "SetGet"),
-      (ESV.SetGetResponse, "SetGet_Res"),
-      (ESV.SetGetServiceNotAvailable, "SetGet_SNA"),
+      (ESV.SetGet, "SetGet[0x6E]"),
+      (ESV.SetGetResponse, "SetGet_Res[0x7E]"),
+      (ESV.SetGetServiceNotAvailable, "SetGet_SNA[0x5E]"),
     }) {
       yield return new object[] {
         new Format1Message(
@@ -191,7 +191,7 @@ public class Format1MessageTests {
         ESV.Inf,
         []
       ),
-      @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF"", ""OPC"": 0, ""Properties"": []}"
+      @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF[0x73]"", ""OPC"": 0, ""Properties"": []}"
     };
 
     yield return new object[] {
@@ -203,7 +203,7 @@ public class Format1MessageTests {
           new(0xFF, new byte[] { 0x00, 0x01 })
         ]
       ),
-      @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF"", ""OPC"": 1, ""Properties"": [{""EPC"": ""FF"", ""PDC"": ""02"", ""EDT"": ""0001""}]}"
+      @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF[0x73]"", ""OPC"": 1, ""Properties"": [{""EPC"": ""FF"", ""PDC"": ""02"", ""EDT"": ""0001""}]}"
     };
 
     yield return new object[] {
@@ -217,7 +217,7 @@ public class Format1MessageTests {
           new(0xF2, new byte[] { 0x0A, 0x0B, 0x0C })
         ]
       ),
-      @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF"", ""OPC"": 3, ""Properties"": [{""EPC"": ""F0"", ""PDC"": ""00"", ""EDT"": """"}, {""EPC"": ""F1"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""F2"", ""PDC"": ""03"", ""EDT"": ""0A0B0C""}]}"
+      @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF[0x73]"", ""OPC"": 3, ""Properties"": [{""EPC"": ""F0"", ""PDC"": ""00"", ""EDT"": """"}, {""EPC"": ""F1"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""F2"", ""PDC"": ""03"", ""EDT"": ""0A0B0C""}]}"
     };
 
     yield return new object[] {
@@ -234,7 +234,7 @@ public class Format1MessageTests {
           new(0xC1, new byte[] { 0x10, 0x20 }),
         ]
       ),
-      @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""SetGet"", ""OPCSet"": 2, ""Properties"": [{""EPC"": ""A0"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""A1"", ""PDC"": ""02"", ""EDT"": ""0102""}], ""OPCGet"": 2, ""Properties"": [{""EPC"": ""C0"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""C1"", ""PDC"": ""02"", ""EDT"": ""1020""}]}"
+      @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""SetGet[0x6E]"", ""OPCSet"": 2, ""Properties"": [{""EPC"": ""A0"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""A1"", ""PDC"": ""02"", ""EDT"": ""0102""}], ""OPCGet"": 2, ""Properties"": [{""EPC"": ""C0"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""C1"", ""PDC"": ""02"", ""EDT"": ""1020""}]}"
     };
   }
 
