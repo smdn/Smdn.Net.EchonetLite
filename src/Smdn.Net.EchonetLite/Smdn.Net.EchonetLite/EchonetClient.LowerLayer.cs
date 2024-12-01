@@ -55,8 +55,9 @@ partial class EchonetClient
     using var scope = Logger?.BeginScope($"Receive ({remoteAddress}, TID={tid:X4})");
 
     Logger?.LogTrace(
-      "ECHONET Lite frame (From: {Address}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
+      "ECHONET Lite frame (From: {FromAddress}, To: {ToAddress}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
       remoteAddress,
+      GetSelfNodeAddress(),
       (byte)ehd1,
       (byte)ehd2,
       (byte)tid,
@@ -67,16 +68,18 @@ partial class EchonetClient
       case EHD2.Format1:
         if (!FrameSerializer.TryParseEDataAsFormat1Message(edata.Span, out var format1Message)) {
           Logger?.LogWarning(
-            "Invalid Format 1 message (From: {Address}, TID: {TID:X4})",
+            "Invalid Format 1 message (From: {FromAddress}, To: {ToAddress}, TID: {TID:X4})",
             remoteAddress,
+            GetSelfNodeAddress(),
             tid
           );
           return default;
         }
 
         Logger?.LogDebug(
-          "Format 1 message (From: {Address}, TID: {TID:X4}, Message: {Message})",
+          "Format 1 message (From: {FromAddress}, To: {ToAddress}, TID: {TID:X4}, Message: {Message})",
           remoteAddress,
+          GetSelfNodeAddress(),
           tid,
           format1Message
         );
@@ -105,8 +108,9 @@ partial class EchonetClient
 
       case EHD2.Format2:
         Logger?.LogDebug(
-          "Format 2 message (From: {Address}, TID: {TID:X4}, Message: {Message})",
+          "Format 2 message (From: {FromAddress}, To: {ToAddress}, TID: {TID:X4}, Message: {Message})",
           remoteAddress,
+          GetSelfNodeAddress(),
           tid,
           edata.ToHexString()
         );
@@ -136,8 +140,9 @@ partial class EchonetClient
       default:
         // undefined message format, do nothing
         Logger?.LogDebug(
-          "Undefined format message (From: {Address}, TID: {TID:X4}, Message: {Message})",
+          "Undefined format message (From: {FromAddress}, To: {ToAddress}, TID: {TID:X4}, Message: {Message})",
           remoteAddress,
+          GetSelfNodeAddress(),
           tid,
           edata.ToHexString()
         );
@@ -191,7 +196,8 @@ partial class EchonetClient
 
       if (Logger.IsEnabled(LogLevel.Trace)) {
         Logger.LogTrace(
-          "ECHONET Lite frame (To: {Address}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
+          "ECHONET Lite frame (From: {FromAddress}, To: {ToAddress}, EHD1: {EHD1:X2}, EHD2: {EHD2:X2}, TID: {TID:X4}, EDATA: {EDATA})",
+          GetSelfNodeAddress(),
           address,
           (byte)ehd1,
           (byte)ehd2,
@@ -203,7 +209,8 @@ partial class EchonetClient
       if (ehd2 == EHD2.Format1 && Logger.IsEnabled(LogLevel.Debug)) {
         if (FrameSerializer.TryParseEDataAsFormat1Message(edata.Span, out var format1Message)) {
           Logger.LogDebug(
-            "Format 1 message (To: {Address}, TID: {TID:X4}, Message: {Message})",
+            "Format 1 message (From: {FromAddress}, To: {ToAddress}, TID: {TID:X4}, Message: {Message})",
+            GetSelfNodeAddress(),
             address,
             tid,
             format1Message
@@ -211,7 +218,8 @@ partial class EchonetClient
         }
         else {
           Logger.LogWarning(
-            "Invalid Format 1 message (To: {Address}, TID: {TID:X4})",
+            "Invalid Format 1 message (From: {FromAddress}, To: {ToAddress}, TID: {TID:X4})",
+            GetSelfNodeAddress(),
             address,
             tid
           );
