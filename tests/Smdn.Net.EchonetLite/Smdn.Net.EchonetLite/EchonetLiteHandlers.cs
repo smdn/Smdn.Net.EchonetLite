@@ -29,21 +29,47 @@ internal class ValidateRequestEchonetLiteHandler(Action<IPAddress?, ReadOnlyMemo
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
 }
 
-internal class RespondInstanceListEchonetLiteHandler : IEchonetLiteHandler {
+internal class ReceiveInstanceListEchonetLiteHandler : IEchonetLiteHandler {
   private readonly IReadOnlyList<EOJ>? instanceListForUnicast;
   private readonly IReadOnlyDictionary<IPAddress, IEnumerable<EOJ>>? instanceListsForMulticast;
 
-  public RespondInstanceListEchonetLiteHandler(IReadOnlyList<EOJ> instanceList)
+  public ReceiveInstanceListEchonetLiteHandler(IReadOnlyList<EOJ> instanceList)
   {
     instanceListForUnicast = instanceList;
   }
 
-  public RespondInstanceListEchonetLiteHandler(IReadOnlyDictionary<IPAddress, IEnumerable<EOJ>> instanceLists)
+  public ReceiveInstanceListEchonetLiteHandler(IReadOnlyDictionary<IPAddress, IEnumerable<EOJ>> instanceLists)
   {
     instanceListsForMulticast = instanceLists;
   }
 
-  public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  public virtual ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => default; // do nothing
+
+  public ValueTask PerformReceivingAsync(
+    IPAddress? receiveFromAddress,
+    ESV esv,
+    CancellationToken cancellationToken
+  )
+    => PerformReceivingAsync(
+      receiveFromAddress: receiveFromAddress,
+      tidHigh: 0x00,
+      tidLow: 0x00,
+      seoj: new(0x0E, 0xF0, 0x01),
+      deoj: new(0x0E, 0xF0, 0x01),
+      esv: esv,
+      cancellationToken: cancellationToken
+    );
+
+  public async ValueTask PerformReceivingAsync(
+    IPAddress? receiveFromAddress,
+    byte tidHigh,
+    byte tidLow,
+    EOJ seoj,
+    EOJ deoj,
+    ESV esv,
+    CancellationToken cancellationToken
+  )
   {
     var responseBuffer = new ArrayBufferWriter<byte>(initialCapacity: 256);
 
@@ -51,21 +77,42 @@ internal class RespondInstanceListEchonetLiteHandler : IEchonetLiteHandler {
       [
         (byte)EHD1.EchonetLite, // EHD1
         (byte)EHD2.Format1, // EHD2
-        data.Span[2], // TID
-        data.Span[3], // TID
-        data.Span[7], // SEOJ
-        data.Span[8], // SEOJ
-        data.Span[9], // SEOJ
-        data.Span[4], // DEOJ
-        data.Span[5], // DEOJ
-        data.Span[6], // DEOJ
-        (ESV)data.Span[10] == ESV.InfRequest ? (byte)ESV.Inf : throw new InvalidOperationException("unexpected service request"),
-        0x01, // OPC
-        0xD5, // EPC
+        tidHigh, // TID
+        tidLow, // TID
+        seoj.ClassGroupCode, // SEOJ
+        seoj.ClassCode, // SEOJ
+        seoj.InstanceCode, // SEOJ
+        deoj.ClassGroupCode, // DEOJ
+        deoj.ClassCode, // DEOJ
+        deoj.InstanceCode, // DEOJ
+        (byte)esv,
       ]
     );
 
-    if (address is null) {
+    switch (esv) {
+      case ESV.SetGet:
+      case ESV.SetGetResponse:
+      case ESV.SetGetServiceNotAvailable:
+        responseBuffer.Write<byte>(
+          [
+            0x00, // OPCSet
+            0x01, // OPCGet
+            0xD5, // EPC
+          ]
+        );
+        break;
+
+      default:
+        responseBuffer.Write<byte>(
+          [
+            0x01, // OPC
+            0xD5, // EPC
+          ]
+        );
+        break;
+    }
+
+    if (receiveFromAddress is null) {
       // perform multicast response
       if (instanceListsForMulticast is null)
         throw new InvalidOperationException($"`{nameof(instanceListsForMulticast)}` must be set");
@@ -85,7 +132,7 @@ internal class RespondInstanceListEchonetLiteHandler : IEchonetLiteHandler {
 
       // perform singlecast response
       if (instanceListsForMulticast is not null) {
-        if (!instanceListsForMulticast.TryGetValue(address, out instanceList))
+        if (!instanceListsForMulticast.TryGetValue(receiveFromAddress, out instanceList))
           return; // ignore
       }
       else {
@@ -94,11 +141,44 @@ internal class RespondInstanceListEchonetLiteHandler : IEchonetLiteHandler {
 
       _ = PropertyContentSerializer.SerializeInstanceListNotification(instanceList, responseBuffer, prependPdc: true);
 
-      await ReceiveCallback!(address, responseBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
+      await ReceiveCallback!(receiveFromAddress, responseBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }
   }
 
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
+}
+
+internal class RespondInstanceListEchonetLiteHandler : ReceiveInstanceListEchonetLiteHandler {
+  public RespondInstanceListEchonetLiteHandler(IReadOnlyList<EOJ> instanceList)
+    : base(instanceList)
+  {
+  }
+
+  public RespondInstanceListEchonetLiteHandler(IReadOnlyDictionary<IPAddress, IEnumerable<EOJ>> instanceLists)
+    : base(instanceLists)
+  {
+  }
+
+  public override ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => PerformReceivingAsync(
+      receiveFromAddress: address,
+      tidHigh: data.Span[2], // TID
+      tidLow: data.Span[3], // TID
+      seoj: new EOJ(
+        data.Span[7], // SEOJ
+        data.Span[8], // SEOJ
+        data.Span[9] // SEOJ
+      ),
+      deoj: new EOJ(
+        data.Span[4], // DEOJ
+        data.Span[5], // DEOJ
+        data.Span[6] // DEOJ
+      ),
+      esv: (ESV)data.Span[10] == ESV.InfRequest
+        ? ESV.Inf
+        : throw new InvalidOperationException("unexpected service request"),
+      cancellationToken: cancellationToken
+    );
 }
 
 internal class RespondPropertyMapEchonetLiteHandler(

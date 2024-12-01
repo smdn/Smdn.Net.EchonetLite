@@ -719,8 +719,8 @@ partial class EchonetClient
       );
 
       if (accepted) {
-        // ノードプロファイルのインスタンスリスト通知の場合
-        if (prop.EPC == 0xD5 && ReferenceEquals(sourceObject, sourceNode.NodeProfile))
+        // ノードプロファイルのインスタンスリスト通知の更新を処理する
+        if (prop.EPC == EPCInstanceListNotification && ReferenceEquals(sourceObject, sourceNode.NodeProfile))
           _ = ProcessReceivingInstanceListNotification(sourceNode, prop.EDT);
       }
       else {
@@ -799,8 +799,8 @@ partial class EchonetClient
       );
 
       if (accepted) {
-        // ノードプロファイルのインスタンスリスト通知の場合
-        if (prop.EPC == 0xD5 && ReferenceEquals(sourceObject, sourceNode.NodeProfile))
+        // ノードプロファイルのインスタンスリスト通知の更新を処理する
+        if (prop.EPC == EPCInstanceListNotification && ReferenceEquals(sourceObject, sourceNode.NodeProfile))
           _ = ProcessReceivingInstanceListNotification(sourceNode, prop.EDT);
       }
       else {
@@ -847,7 +847,7 @@ partial class EchonetClient
   }
 
   /// <summary>
-  /// インスタンスリスト通知受信時の処理を行います。
+  /// 受信したECHONETプロパティ「インスタンスリスト通知」(EPC <c>0xD5</c>)を処理します。
   /// </summary>
   /// <param name="sourceNode">送信元のECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="edtInstantListNotification">受信したインスタンスリスト通知を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
@@ -1020,6 +1020,10 @@ partial class EchonetClient
         validateValue: false, // 返送された内容をそのまま格納するため、検証しない
         newModificationState: false // 返送された内容が格納されるため、値を未変更状態にする
       );
+
+      // ノードプロファイルのインスタンスリスト通知の更新を処理する
+      if (prop.EPC == EPCInstanceListNotification && ReferenceEquals(sourceObject, sourceNode.NodeProfile))
+        _ = ProcessReceivingInstanceListNotification(sourceNode, prop.EDT);
     }
 
     return true;
