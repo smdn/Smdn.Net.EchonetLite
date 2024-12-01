@@ -128,11 +128,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
       buffer.ToHexString()
     );
 
-  /// <summary>
-  /// Performs multicast send.
-  /// </summary>
-  /// <param name="buffer">The <see cref="ReadOnlyMemory{Byte}"/> in which the data to be sent is written.</param>
-  /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+  /// <inheritdoc/>
   protected override async ValueTask SendAsyncCore(
     ReadOnlyMemory<byte> buffer,
     CancellationToken cancellationToken
@@ -157,12 +153,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
     udpClient.Close();
   }
 
-  /// <summary>
-  /// Performs unicast send to a specific remote address.
-  /// </summary>
-  /// <param name="remoteAddress">The <see cref="IPAddress"/> to which the data to be sent.</param>
-  /// <param name="buffer">The <see cref="ReadOnlyMemory{Byte}"/> in which the data to be sent is written.</param>
-  /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+  /// <inheritdoc/>
   protected override async ValueTask SendToAsyncCore(
     IPAddress remoteAddress,
     ReadOnlyMemory<byte> buffer,
