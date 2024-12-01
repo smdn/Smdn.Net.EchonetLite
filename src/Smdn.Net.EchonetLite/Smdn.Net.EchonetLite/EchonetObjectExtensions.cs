@@ -185,6 +185,41 @@ public static class EchonetObjectExtensions {
   }
 
   /// <summary>
+  /// ECHONET Lite サービス「Get:プロパティ値読み出し要求」(ESV <c>0x62</c>)を行います。　このサービスは一斉同報が可能です。
+  /// </summary>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ３．２．５ ECHONET Lite サービス（ESV）
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ４.２.３.３ プロパティ値読み出しサービス［0x62,0x72,0x52］
+  /// </seealso>
+  [CLSCompliant(false)] // ResiliencePipeline is not CLS compliant
+  public static ValueTask
+  ReadPropertiesMulticastAsync(
+    this EchonetObject sourceObject,
+    EOJ destinationObject,
+    IEnumerable<byte> readPropertyCodes,
+    ResiliencePipeline? resiliencePipeline = null,
+    CancellationToken cancellationToken = default
+  )
+  {
+    if (sourceObject is null)
+      throw new ArgumentNullException(nameof(sourceObject));
+    if (sourceObject.Node is not EchonetSelfNode)
+      throw CreateCanNotSpecifyOtherNodeAsSource();
+    if (readPropertyCodes is null)
+      throw new ArgumentNullException(nameof(readPropertyCodes));
+
+    return GetClientServiceOrThrow(sourceObject).RequestReadMulticastAsync(
+      sourceObject: sourceObject.EOJ,
+      destinationObject: destinationObject,
+      propertyCodes: readPropertyCodes,
+      resiliencePipeline: resiliencePipeline,
+      cancellationToken: cancellationToken
+    );
+  }
+
+  /// <summary>
   /// ECHONET Lite サービス「SetGet:プロパティ値書き込み・読み出し要求」(ESV <c>0x6E</c>)を行います。　このサービスは一斉同報が可能です。
   /// </summary>
   /// <seealso href="https://echonet.jp/spec_v114_lite/">

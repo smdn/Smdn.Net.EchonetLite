@@ -84,6 +84,15 @@ internal interface IEchonetClientService {
     CancellationToken cancellationToken
   );
 
+  ValueTask
+  RequestReadMulticastAsync(
+    EOJ sourceObject,
+    EOJ destinationObject,
+    IEnumerable<byte> propertyCodes,
+    ResiliencePipeline? resiliencePipeline,
+    CancellationToken cancellationToken
+  );
+
   ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)>
   RequestWriteReadAsync(
     EOJ sourceObject,
