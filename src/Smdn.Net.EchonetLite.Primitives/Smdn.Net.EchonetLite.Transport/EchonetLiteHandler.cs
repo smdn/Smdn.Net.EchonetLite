@@ -16,6 +16,18 @@ namespace Smdn.Net.EchonetLite.Transport;
 /// </summary>
 /// <see cref="IEchonetLiteHandler"/>
 public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAsyncDisposable {
+  /// <summary>
+  /// Gets the default port number defined in <see href="https://echonet.jp/spec_v114_lite/">ECHONET Lite specification</see>.
+  /// </summary>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 １．２ 通信レイヤ上の位置づけ
+  /// </seealso>
+  // > ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 １．２ 通信レイヤ上の位置づけ
+  // > （１）Layer4 で UDP(User Datagram Protocol)、Layer3 で IP(Internet Protocol)、を使用する場合
+  // > ECHONET Lite ノードは、ポート 3610 にて、UDP ユニキャスト、および、マルチキャストのパケットを待ち受けるものとする。
+  // > また、ポート番号 3610 にて、UDP ブロードキャストのパケットを待ち受けし、メッセージを受信し処理することを推奨する。
+  public const int DefaultPort = 3610;
+
   private static readonly TaskFactory DefaultReceivingTaskFactory = new(
     cancellationToken: default,
     creationOptions: TaskCreationOptions.LongRunning,
