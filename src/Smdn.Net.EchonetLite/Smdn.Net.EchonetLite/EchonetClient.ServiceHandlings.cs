@@ -209,19 +209,20 @@ partial class EchonetClient
         case ESV.SetGetServiceNotAvailable: // SetGet_SNA: プロパティ値書き込み・読み出し不可応答
           // 「SetGet: プロパティ値書き込み・読み出し要求」のレスポンス
           // 返送されてきたSetプロパティの値の状態を更新・Getプロパティの値を格納する
-          result = HandleWriteResponse(
+          var resultWrite = HandleWriteResponse(
+            address: address,
+            tid: tid,
+            message: message,
+            sourceNode: sourceNode
+          );
+          var resultRead = HandleReadResponse(
             address: address,
             tid: tid,
             message: message,
             sourceNode: sourceNode
           );
 
-          result &= HandleReadResponse(
-            address: address,
-            tid: tid,
-            message: message,
-            sourceNode: sourceNode
-          );
+          result = resultWrite && resultRead;
 
           break;
 
