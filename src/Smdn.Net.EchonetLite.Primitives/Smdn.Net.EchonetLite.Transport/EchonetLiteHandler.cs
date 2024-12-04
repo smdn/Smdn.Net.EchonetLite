@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Buffers;
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +42,9 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
   private CancellationTokenSource? cancellationTokenSourceReceiveEchonetLite;
   private readonly ArrayBufferWriter<byte> bufferEchonetLite = new(initialCapacity: 512); // TODO: define best initial capacity for echonet lite stream
 
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
+  [MemberNotNullWhen(true, nameof(taskReceiveEchonetLite))]
+#endif
   protected bool IsReceiving => taskReceiveEchonetLite is not null;
 
   /// <summary>
@@ -75,6 +81,15 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
       throw new InvalidOperationException("already started receiving");
   }
 
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
+  [MemberNotNull(nameof(taskReceiveEchonetLite))]
+#endif
+  protected void ThrowIfNotReceiving()
+  {
+    if (!IsReceiving)
+      throw new InvalidOperationException("already stopped receiving or not started yet");
+  }
+
   /// <summary>
   /// Creates and starts the receiving task using <see cref="TaskFactory"/> with default configuration.
   /// </summary>
@@ -105,9 +120,7 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
   protected async ValueTask StopReceivingAsync()
   {
     ThrowIfDisposed();
-
-    if (taskReceiveEchonetLite is null)
-      throw new InvalidOperationException("already stopped or not started yet");
+    ThrowIfNotReceiving();
 
 #if SYSTEM_THREADING_CANCELLATIONTOKENSOURCE_CANCELASYNC
     await cancellationTokenSourceReceiveEchonetLite!.CancelAsync().ConfigureAwait(false);
@@ -116,16 +129,21 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
 #endif
 
     try {
+#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
+#pragma warning disable CS8602
+#endif
       await taskReceiveEchonetLite.ConfigureAwait(false);
+#pragma warning restore CS8602
     }
     catch (OperationCanceledException ex) when (cancellationTokenSourceReceiveEchonetLite.Token.Equals(ex.CancellationToken)) {
       // ignore OperationCanceledException
       // (it is as expected since the cancellation is requested above)
-      taskReceiveEchonetLite = null;
-
-      cancellationTokenSourceReceiveEchonetLite.Dispose();
-      cancellationTokenSourceReceiveEchonetLite = null;
     }
+
+    taskReceiveEchonetLite = null;
+
+    cancellationTokenSourceReceiveEchonetLite.Dispose();
+    cancellationTokenSourceReceiveEchonetLite = null;
   }
 
   public void Dispose()
@@ -175,11 +193,16 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
       try {
         await StopReceivingAsync().ConfigureAwait(false);
       }
-#pragma warning disable CA1031
-      catch {
+#pragma warning disable CA1031, CA1848
+      catch (Exception ex) {
+        Logger?.LogError(
+          exception: ex,
+          message: "An exception occured while stopping receiving task."
+        );
+
         // swallow all exceptions
       }
-#pragma warning restore CA1031
+#pragma warning restore CA1031, CA1848
     }
 
     cancellationTokenSourceReceiveEchonetLite?.Dispose();
@@ -255,6 +278,7 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
   )
   {
     ThrowIfDisposed();
+    ThrowIfNotReceiving();
 
     return SendAsyncCore(
       buffer: data,
@@ -272,7 +296,11 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
     CancellationToken cancellationToken
   )
   {
+    if (remoteAddress is null)
+      throw new ArgumentNullException(nameof(remoteAddress));
+
     ThrowIfDisposed();
+    ThrowIfNotReceiving();
 
     return SendToAsyncCore(
       remoteAddress: remoteAddress,
