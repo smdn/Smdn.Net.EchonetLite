@@ -13,13 +13,24 @@ namespace Smdn.Net.EchonetLite;
 /// </summary>
 public interface IEchonetLiteHandler {
   /// <summary>
-  /// ECHONET Lite フレームを送信します。
+  /// サブネット内のすべてのECHONET Lite ノードに対してECHONET Lite フレームの一斉同報送信を行います。
   /// </summary>
-  /// <param name="address">送信先を表す<see cref="IPAddress"/>。　<see langword="null"/>の場合は、サブネット内のすべてのノードに対して一斉同報送信を行います。</param>
   /// <param name="data">送信内容を表す<see cref="ReadOnlyMemory{Byte}"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
   /// <returns>非同期の送信操作を表す<see cref="ValueTask"/>。</returns>
-  ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken);
+  ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken);
+
+  /// <summary>
+  /// 指定されたECHONET Lite ノードに対してECHONET Lite フレームの個別送信を行います。
+  /// </summary>
+  /// <param name="remoteAddress">送信先を表す<see cref="IPAddress"/>。</param>
+  /// <param name="data">送信内容を表す<see cref="ReadOnlyMemory{Byte}"/>。</param>
+  /// <param name="cancellationToken">キャンセル要求を監視するためのトークン。</param>
+  /// <returns>非同期の送信操作を表す<see cref="ValueTask"/>。</returns>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="remoteAddress"/>が<see langword="null"/>です。
+  /// </exception>
+  ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken);
 
   /// <summary>
   /// ECHONET Lite フレームを受信した場合に呼び出されるコールバックメソッドを設定または取得します。

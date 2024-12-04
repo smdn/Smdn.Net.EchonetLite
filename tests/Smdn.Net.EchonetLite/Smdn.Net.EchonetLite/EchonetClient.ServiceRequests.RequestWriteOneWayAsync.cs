@@ -110,13 +110,17 @@ partial class EchonetClientServiceRequestsTests {
     var destinationNode = performMulticast ? null : nodeRegistry!.Nodes.First(node => node.Address.Equals(destinationNodeAddress));
 
     using var client = new EchonetClient(
-      echonetLiteHandler: new ValidateRequestEchonetLiteHandler(
-        validate: (address, data) => {
-          Assert.That(address, Is.EqualTo(destinationNodeAddress));
+      echonetLiteHandler: performMulticast
+        ? new ValidateMulticastRequestEchonetLiteHandler(
+            validate: data => TestRequestWriteOneWayMessage(data.Span, seoj, deoj, requestPropertyValues)
+          )
+        : new ValidateUnicastRequestEchonetLiteHandler(
+            validate: (address, data) => {
+              Assert.That(address, Is.EqualTo(destinationNodeAddress));
 
-          TestRequestWriteOneWayMessage(data.Span, seoj, deoj, requestPropertyValues);
-        }
-      ),
+              TestRequestWriteOneWayMessage(data.Span, seoj, deoj, requestPropertyValues);
+            }
+          ),
       shouldDisposeEchonetLiteHandler: false,
       nodeRegistry: nodeRegistry,
       deviceFactory: null
@@ -309,13 +313,17 @@ partial class EchonetClientServiceRequestsTests {
     using var client = new EchonetClient(
       echonetLiteHandler: new QueuedEchonetLiteHandler(
         [
-          new ValidateRequestEchonetLiteHandler(
-            validate: (address, data) => {
-              Assert.That(address, Is.EqualTo(destinationNodeAddress));
+          performMulticast
+            ? new ValidateMulticastRequestEchonetLiteHandler(
+                validate: data => TestRequestWriteOneWayMessage(data.Span, seoj, deoj, requestPropertyValues)
+              )
+            : new ValidateUnicastRequestEchonetLiteHandler(
+                validate: (address, data) => {
+                  Assert.That(address, Is.EqualTo(destinationNodeAddress));
 
-              TestRequestWriteOneWayMessage(data.Span, seoj, deoj, requestPropertyValues);
-            }
-          ),
+                  TestRequestWriteOneWayMessage(data.Span, seoj, deoj, requestPropertyValues);
+                }
+              ),
           respondServiceNotAvailableHandler,
         ]
       ),

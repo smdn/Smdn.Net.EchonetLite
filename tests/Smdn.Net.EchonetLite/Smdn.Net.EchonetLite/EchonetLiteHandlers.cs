@@ -12,19 +12,39 @@ using Smdn.Net.EchonetLite.Protocol;
 namespace Smdn.Net.EchonetLite;
 
 internal class NoOpEchonetLiteHandler : IEchonetLiteHandler {
-  public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => default; // do nothing
+
+  public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
     => default; // do nothing
 
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
 }
 
-internal class ValidateRequestEchonetLiteHandler(Action<IPAddress?, ReadOnlyMemory<byte>> validate) : IEchonetLiteHandler {
-  public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+internal class ValidateUnicastRequestEchonetLiteHandler(Action<IPAddress, ReadOnlyMemory<byte>> validate) : IEchonetLiteHandler {
+  public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => throw new InvalidOperationException("can not perform multicast");
+
+  public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
   {
-    validate(address, data);
+    validate(remoteAddress, data);
 
     return default;
   }
+
+  public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
+}
+
+internal class ValidateMulticastRequestEchonetLiteHandler(Action<ReadOnlyMemory<byte>> validate) : IEchonetLiteHandler {
+  public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  {
+    validate(data);
+
+    return default;
+  }
+
+  public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => throw new InvalidOperationException("can not perform unicast");
 
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
 }
@@ -43,7 +63,10 @@ internal class ReceiveInstanceListEchonetLiteHandler : IEchonetLiteHandler {
     instanceListsForMulticast = instanceLists;
   }
 
-  public virtual ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  public virtual ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => default; // do nothing
+
+  public virtual ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
     => default; // do nothing
 
   public ValueTask PerformReceivingAsync(
@@ -159,9 +182,15 @@ internal class RespondInstanceListEchonetLiteHandler : ReceiveInstanceListEchone
   {
   }
 
-  public override ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  public override ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => SendAsyncCore(null, data, cancellationToken);
+
+  public override ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => SendAsyncCore(remoteAddress, data, cancellationToken);
+
+  private ValueTask SendAsyncCore(IPAddress? remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
     => PerformReceivingAsync(
-      receiveFromAddress: address,
+      receiveFromAddress: remoteAddress,
       tidHigh: data.Span[2], // TID
       tidLow: data.Span[3], // TID
       seoj: new EOJ(
@@ -209,7 +238,10 @@ internal class RespondSingleServiceRequestEchonetLiteHandler(
   ESV responseServiceCode
 ) : IEchonetLiteHandler
 {
-  public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    => throw new InvalidOperationException("can not perform multicast");
+
+  public async ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
   {
     if (!FrameSerializer.TryDeserialize(data, out _, out _, out _, out var edata))
       throw new InvalidOperationException("invalid ECHONET Lite frame");
@@ -254,24 +286,24 @@ internal class RespondSingleServiceRequestEchonetLiteHandler(
       );
     }
 
-    await ReceiveCallback!(address!, responseBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
+    await ReceiveCallback!(remoteAddress, responseBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
   }
 
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
 }
 
 internal class ManualResponseEchonetLiteHandler : IEchonetLiteHandler {
-  private readonly Action<IPAddress?, ReadOnlyMemory<byte>>? validateRequest;
+  private readonly Action<ReadOnlyMemory<byte>>? validateMulticastRequest;
 
   public ManualResponseEchonetLiteHandler()
   {
   }
 
   public ManualResponseEchonetLiteHandler(
-    Action<IPAddress?, ReadOnlyMemory<byte>>? validateRequest
+    Action<ReadOnlyMemory<byte>>? validateMulticastRequest
   )
   {
-    this.validateRequest = validateRequest;
+    this.validateMulticastRequest = validateMulticastRequest;
   }
 
   public async ValueTask RespondAsync(
@@ -322,10 +354,15 @@ internal class ManualResponseEchonetLiteHandler : IEchonetLiteHandler {
     ).ConfigureAwait(false);
   }
 
-  public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
   {
-    validateRequest?.Invoke(address, data);
+    validateMulticastRequest?.Invoke(data);
 
+    return default; // do nothing, use RespondAsync() to send response back
+  }
+
+  public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  {
     return default; // do nothing, use RespondAsync() to send response back
   }
 
@@ -370,12 +407,20 @@ internal class NotifyPropertyValueEchonetLiteHandler : ManualResponseEchonetLite
 internal class QueuedEchonetLiteHandler(IReadOnlyList<IEchonetLiteHandler> queuedHandlers) : IEchonetLiteHandler {
   private int index = 0;
 
-  public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  public async ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
   {
     if (queuedHandlers.Count <= index)
       throw new InvalidOperationException($"unexpected request (index = {index})");
 
-    await queuedHandlers[index++].SendAsync(address, data, cancellationToken).ConfigureAwait(false);
+    await queuedHandlers[index++].SendAsync(data, cancellationToken).ConfigureAwait(false);
+  }
+
+  public async ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  {
+    if (queuedHandlers.Count <= index)
+      throw new InvalidOperationException($"unexpected request (index = {index})");
+
+    await queuedHandlers[index++].SendToAsync(remoteAddress, data, cancellationToken).ConfigureAwait(false);
   }
 
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback {

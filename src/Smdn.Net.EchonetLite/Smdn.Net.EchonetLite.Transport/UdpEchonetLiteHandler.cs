@@ -160,7 +160,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
     CancellationToken cancellationToken
   )
   {
-    var remoteEndPoint = new IPEndPoint(remoteAddress, DefaultUdpPort);
+    var remoteEndPoint = new IPEndPoint(remoteAddress, DefaultUdpPort); // TODO: reduce allocation
 
     LogSend(remoteEndPoint, buffer);
 

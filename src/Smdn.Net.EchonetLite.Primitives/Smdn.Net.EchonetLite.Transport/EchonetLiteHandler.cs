@@ -249,23 +249,36 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
   /// A method that implements <see cref="IEchonetLiteHandler.SendAsync"/>.
   /// </summary>
   /// <seealso cref="IEchonetLiteHandler.SendAsync"/>
-  public async ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+  public ValueTask SendAsync(
+    ReadOnlyMemory<byte> data,
+    CancellationToken cancellationToken
+  )
   {
-    if (address is null) {
-      // perform multicast
-      await SendAsyncCore(
-        buffer: data,
-        cancellationToken: cancellationToken
-      ).ConfigureAwait(false);
-    }
-    else {
-      // perform unicast
-      await SendToAsyncCore(
-        remoteAddress: address,
-        buffer: data,
-        cancellationToken: cancellationToken
-      ).ConfigureAwait(false);
-    }
+    ThrowIfDisposed();
+
+    return SendAsyncCore(
+      buffer: data,
+      cancellationToken: cancellationToken
+    );
+  }
+
+  /// <summary>
+  /// A method that implements <see cref="IEchonetLiteHandler.SendToAsync"/>.
+  /// </summary>
+  /// <seealso cref="IEchonetLiteHandler.SendToAsync"/>
+  public ValueTask SendToAsync(
+    IPAddress remoteAddress,
+    ReadOnlyMemory<byte> data,
+    CancellationToken cancellationToken
+  )
+  {
+    ThrowIfDisposed();
+
+    return SendToAsyncCore(
+      remoteAddress: remoteAddress,
+      buffer: data,
+      cancellationToken: cancellationToken
+    );
   }
 
   /// <summary>

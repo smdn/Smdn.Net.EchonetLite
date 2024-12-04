@@ -85,12 +85,8 @@ partial class EchonetClientOperationsTests {
   {
     using var client = new EchonetClient(
       selfNode: EchonetNode.CreateSelfNode(selfNodeProfile, devices),
-      echonetLiteHandler: new ValidateRequestEchonetLiteHandler(
-        validate: (address, data) => {
-          Assert.That(address, Is.Null);
-
-          TestNotifyInstanceListMessage(data.Span, selfNodeProfile, devices);
-        }
+      echonetLiteHandler: new ValidateMulticastRequestEchonetLiteHandler(
+        validate: data => TestNotifyInstanceListMessage(data.Span, selfNodeProfile, devices)
       )
     );
 

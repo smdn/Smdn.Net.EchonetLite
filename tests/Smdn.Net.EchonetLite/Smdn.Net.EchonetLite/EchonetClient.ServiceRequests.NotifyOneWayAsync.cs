@@ -56,13 +56,17 @@ partial class EchonetClientServiceRequestsTests {
     var seoj = new EOJ(0x05, 0xFF, 0x01);
     var deoj = new EOJ(0x05, 0xFF, 0x02);
     using var client = new EchonetClient(
-      echonetLiteHandler: new ValidateRequestEchonetLiteHandler(
-        validate: (address, data) => {
-          Assert.That(address, Is.EqualTo(destinationNodeAddress));
+      echonetLiteHandler: destinationNodeAddress is null
+        ? new ValidateMulticastRequestEchonetLiteHandler(
+            validate: data => TestNotifyOneWayMessage(data.Span, seoj, deoj, requestPropertyValues)
+          )
+        : new ValidateUnicastRequestEchonetLiteHandler(
+            validate: (address, data) => {
+              Assert.That(address, Is.EqualTo(destinationNodeAddress));
 
-          TestNotifyOneWayMessage(data.Span, seoj, deoj, requestPropertyValues);
-        }
-      )
+              TestNotifyOneWayMessage(data.Span, seoj, deoj, requestPropertyValues);
+            }
+          )
     );
 
     using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();

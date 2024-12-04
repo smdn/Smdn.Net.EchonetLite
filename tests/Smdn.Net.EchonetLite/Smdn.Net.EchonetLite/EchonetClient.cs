@@ -22,7 +22,10 @@ public class EchonetClientTests {
     => new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
   private class ReceiveEDATA2EchonetLiteHandler : IEchonetLiteHandler {
-    public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+
+    public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
     public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
@@ -53,7 +56,10 @@ public class EchonetClientTests {
       IsDisposed = true;
     }
 
-    public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+
+    public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
     public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
@@ -69,7 +75,10 @@ public class EchonetClientTests {
       return default;
     }
 
-    public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+
+    public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
     public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
@@ -178,7 +187,10 @@ public class EchonetClientTests {
   }
 
   private class RespondFormat2MessageEchonetLiteHandler : IEchonetLiteHandler {
-    public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+
+    public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
     public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }

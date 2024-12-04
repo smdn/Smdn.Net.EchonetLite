@@ -15,7 +15,10 @@ namespace Smdn.Net.EchonetLite;
 [TestFixture]
 public partial class EchonetClientServiceRequestsTests {
   private class ThrowsExceptionEchonetLiteHandler : IEchonetLiteHandler {
-    public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+      => throw new InvalidOperationException();
+
+    public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
       => throw new InvalidOperationException();
 
     public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback { get; set; }
@@ -35,10 +38,11 @@ public partial class EchonetClientServiceRequestsTests {
       GetResponseFromAddress = getResponseFromAddress;
     }
 
-    public ValueTask SendAsync(IPAddress? address, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+      => throw new NotSupportedException();
+
+    public ValueTask SendToAsync(IPAddress remoteAddress, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
     {
-      if (address is null)
-        throw new InvalidOperationException("cannot perform multicast");
       if (data.Length < 4)
         throw new InvalidOperationException("invalid request");
 
@@ -57,7 +61,7 @@ public partial class EchonetClientServiceRequestsTests {
         ResponseEData.Span.CopyTo(responseBufferMemory.Span[4..]);
 
         var responseFromAddress = GetResponseFromAddress is null
-          ? address
+          ? remoteAddress
           : GetResponseFromAddress();
 
         return ReceiveCallback?.Invoke(

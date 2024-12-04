@@ -95,11 +95,7 @@ partial class EchonetClientServiceRequestsTests {
 
     var seoj = new EOJ(0x05, 0xFF, 0x01);
     var handler = new ManualResponseEchonetLiteHandler(
-      validateRequest: (address, data) => {
-        Assert.That(address, Is.Null, "must perform multicast");
-
-        TestRequestReadMulticastMessage(data.Span, seoj, deoj, requestPropertyCodes);
-      }
+      validateMulticastRequest: data => TestRequestReadMulticastMessage(data.Span, seoj, deoj, requestPropertyCodes)
     );
 
     using var client = new EchonetClient(
@@ -212,11 +208,7 @@ partial class EchonetClientServiceRequestsTests {
 
     var seoj = new EOJ(0x05, 0xFF, 0x01);
     var handler = new ManualResponseEchonetLiteHandler(
-      validateRequest: (address, data) => {
-        Assert.That(address, Is.Null, "must perform multicast");
-
-        TestRequestReadMulticastMessage(data.Span, seoj, deoj, requestPropertyCodes);
-      }
+      validateMulticastRequest: data => TestRequestReadMulticastMessage(data.Span, seoj, deoj, requestPropertyCodes)
     );
 
     using var client = new EchonetClient(

@@ -177,7 +177,10 @@ partial class EchonetClient
       if (Logger is not null)
         LogFrame(requestFrameBuffer.WrittenMemory);
 
-      await echonetLiteHandler.SendAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
+      if (address is null)
+        await echonetLiteHandler.SendAsync(requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
+      else
+        await echonetLiteHandler.SendToAsync(address, requestFrameBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }
     finally {
       // reset written count to reuse the buffer for the next write

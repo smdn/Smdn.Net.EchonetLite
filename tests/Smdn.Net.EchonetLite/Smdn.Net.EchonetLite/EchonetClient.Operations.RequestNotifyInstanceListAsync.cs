@@ -46,9 +46,8 @@ partial class EchonetClientOperationsTests {
     var destinationNodeAddress = IPAddress.Loopback;
 
     using var client = new EchonetClient(
-      new ValidateRequestEchonetLiteHandler(
+      new ValidateUnicastRequestEchonetLiteHandler(
         (address, data) => {
-          Assert.That(address, Is.Not.Null, nameof(address));
           Assert.That(address, Is.EqualTo(destinationNodeAddress), nameof(address));
 
           TestRequestNotifyInstanceListMessage(data.Span);
@@ -68,12 +67,8 @@ partial class EchonetClientOperationsTests {
   public void RequestNotifyInstanceListAsync_Multicast()
   {
     using var client = new EchonetClient(
-      new ValidateRequestEchonetLiteHandler(
-        (address, data) => {
-          Assert.That(address, Is.Null, nameof(address));
-
-          TestRequestNotifyInstanceListMessage(data.Span);
-        }
+      new ValidateMulticastRequestEchonetLiteHandler(
+        data => TestRequestNotifyInstanceListMessage(data.Span)
       )
     );
 
