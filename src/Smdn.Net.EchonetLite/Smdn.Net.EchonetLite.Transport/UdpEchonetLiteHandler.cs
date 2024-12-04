@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#if false // not tested with actual ECHONET Lite nodes
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
 
 using System;
@@ -214,3 +215,4 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
 #endif
   }
 }
+#endif
