@@ -437,7 +437,6 @@ public class EchonetPropertyTests {
     var expectedPreviousUpdatedTime = default(DateTime);
 
     p.ValueUpdated += (sender, e) => {
-      Console.WriteLine("ValueUPdated callend");
       Assert.That(sender, Is.SameAs(p), nameof(sender));
       Assert.That(e.Property, Is.SameAs(p), nameof(e.Property));
 
