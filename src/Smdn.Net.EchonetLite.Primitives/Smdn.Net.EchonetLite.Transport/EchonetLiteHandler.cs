@@ -268,6 +268,13 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
     CancellationToken cancellationToken
   );
 
+  private static ValueTask CreateCanceledValueTask(CancellationToken cancellationToken)
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+    => ValueTask.FromCanceled(cancellationToken);
+#else
+    => new(Task.FromCanceled(cancellationToken));
+#endif
+
   /// <summary>
   /// A method that implements <see cref="IEchonetLiteHandler.SendAsync"/>.
   /// </summary>
@@ -279,6 +286,9 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
   {
     ThrowIfDisposed();
     ThrowIfNotReceiving();
+
+    if (cancellationToken.IsCancellationRequested)
+      return CreateCanceledValueTask(cancellationToken);
 
     return SendAsyncCore(
       buffer: data,
@@ -301,6 +311,9 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
 
     ThrowIfDisposed();
     ThrowIfNotReceiving();
+
+    if (cancellationToken.IsCancellationRequested)
+      return CreateCanceledValueTask(cancellationToken);
 
     return SendToAsyncCore(
       remoteAddress: remoteAddress,

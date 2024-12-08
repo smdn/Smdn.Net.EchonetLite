@@ -180,6 +180,25 @@ public class EchonetLiteHandlerTests {
   }
 
   [Test]
+  public void SendAsync_CancellationRequested()
+  {
+    using var handler = new ConcreteEchonetLiteHandler();
+
+    handler.StartReceiving();
+
+    using var cts = new CancellationTokenSource();
+
+    cts.Cancel();
+
+    Assert.That(
+      async () => await handler.SendAsync(data: default, cancellationToken: cts.Token),
+      Throws
+        .InstanceOf<OperationCanceledException>()
+        .With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cts.Token)
+    );
+  }
+
+  [Test]
   public void SendToAsync()
   {
     using var handler = new ConcreteEchonetLiteHandler();
@@ -213,6 +232,25 @@ public class EchonetLiteHandlerTests {
     Assert.That(
       async () => await handler.SendToAsync(remoteAddress: IPAddress.Loopback, data: default, cancellationToken: default),
       Throws.InvalidOperationException
+    );
+  }
+
+  [Test]
+  public void SendToAsync_CancellationRequested()
+  {
+    using var handler = new ConcreteEchonetLiteHandler();
+
+    handler.StartReceiving();
+
+    using var cts = new CancellationTokenSource();
+
+    cts.Cancel();
+
+    Assert.That(
+      async () => await handler.SendToAsync(remoteAddress: IPAddress.Loopback, data: default, cancellationToken: cts.Token),
+      Throws
+        .InstanceOf<OperationCanceledException>()
+        .With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cts.Token)
     );
   }
 }
