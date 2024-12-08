@@ -226,33 +226,60 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
       if (cancellationToken.IsCancellationRequested)
         return;
 
-      IPAddress echonetLiteRemoteAddress;
-
       try {
-        bufferEchonetLite.Clear();
+        IPAddress echonetLiteRemoteAddress;
 
-        echonetLiteRemoteAddress = await ReceiveAsyncCore(
-          buffer: bufferEchonetLite,
-          cancellationToken: cancellationToken
-        ).ConfigureAwait(false);
+        try {
+          bufferEchonetLite.Clear();
+
+          echonetLiteRemoteAddress = await ReceiveAsyncCore(
+            buffer: bufferEchonetLite,
+            cancellationToken: cancellationToken
+          ).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) {
+          return; // cancellation requested
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+          return;
+
+        var handleReceivedDataAsync = ReceiveCallback;
+
+        if (handleReceivedDataAsync is not null) {
+          await handleReceivedDataAsync(
+            /*remoteAddress:*/ echonetLiteRemoteAddress,
+            /*data:*/ bufferEchonetLite.WrittenMemory,
+            /*cancellationToken:*/ cancellationToken
+          ).ConfigureAwait(false);
+        }
       }
-      catch (OperationCanceledException) {
-        return; // cancellation requested
-      }
-
-      if (cancellationToken.IsCancellationRequested)
-        return;
-
-      var handleReceivedDataAsync = ReceiveCallback;
-
-      if (handleReceivedDataAsync is not null) {
-        await handleReceivedDataAsync(
-          /*remoteAddress:*/ echonetLiteRemoteAddress,
-          /*data:*/ bufferEchonetLite.WrittenMemory,
-          /*cancellationToken:*/ cancellationToken
-        ).ConfigureAwait(false);
+      catch (Exception ex) {
+        if (!HandleReceiveTaskException(ex))
+          throw;
       }
     }
+  }
+
+  /// <summary>
+  /// When overridden in a derived class, returns <see langword="true"/> if the exception has been handled,
+  /// or <see langword="false"/> if the exception should be rethrown and the task for receiving stopped.
+  /// </summary>
+  /// <param name="exception">
+  /// The <see cref="Exception"/> the occurred within the task for receiving and which may stop the task.
+  /// </param>
+  /// <returns><see langword="true"/> if the exception has been handled, otherwise <see langword="false"/>.</returns>
+  protected virtual bool HandleReceiveTaskException(Exception exception)
+  {
+    // log and rethrow unhandled exception
+#pragma warning disable CA1848
+    Logger?.LogCritical(
+      exception: exception,
+      message: "An unhandled exception occured within the task for receiving."
+    );
+#pragma warning restore CA1848
+
+    return false;
   }
 
   /// <summary>

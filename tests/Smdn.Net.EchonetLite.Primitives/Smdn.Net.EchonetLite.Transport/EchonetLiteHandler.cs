@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.Transport;
 
 [TestFixture]
-public class EchonetLiteHandlerTests {
+public partial class EchonetLiteHandlerTests {
   private class ConcreteEchonetLiteHandler : EchonetLiteHandler {
     public new bool IsReceiving => base.IsReceiving;
 
