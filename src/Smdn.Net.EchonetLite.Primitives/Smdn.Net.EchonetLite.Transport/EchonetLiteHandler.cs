@@ -38,6 +38,22 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
     scheduler: null
   );
 
+  protected class ReceivedFromUnknownAddressException : InvalidOperationException {
+    public ReceivedFromUnknownAddressException()
+    {
+    }
+
+    public ReceivedFromUnknownAddressException(string message)
+      : base(message)
+    {
+    }
+
+    public ReceivedFromUnknownAddressException(string message, Exception? innerException)
+      : base(message, innerException)
+    {
+    }
+  }
+
   private Task? taskReceiveEchonetLite;
   private CancellationTokenSource? cancellationTokenSourceReceiveEchonetLite;
   private readonly ArrayBufferWriter<byte> bufferEchonetLite = new(initialCapacity: 512); // TODO: define best initial capacity for echonet lite stream
@@ -247,6 +263,9 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
         var handleReceivedDataAsync = ReceiveCallback;
 
         if (handleReceivedDataAsync is not null) {
+          if (echonetLiteRemoteAddress is null)
+            throw new ReceivedFromUnknownAddressException("Received data from an unaddressed remote host.");
+
           await handleReceivedDataAsync(
             /*remoteAddress:*/ echonetLiteRemoteAddress,
             /*data:*/ bufferEchonetLite.WrittenMemory,

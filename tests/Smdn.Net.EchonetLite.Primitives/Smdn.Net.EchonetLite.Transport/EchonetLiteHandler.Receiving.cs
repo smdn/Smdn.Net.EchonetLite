@@ -149,6 +149,50 @@ partial class EchonetLiteHandlerTests {
   }
 
   [Test]
+  public async Task ReceiveEchonetLiteAsync_ReceiveFromNullAddress()
+  {
+    IPAddress nullFromAddress = null!;
+    var expectedData = new byte[] { 0x01, 0x23 };
+
+    using var handler = new PseudoIncomingEchonetLiteHandler();
+
+    handler.StartReceiving();
+
+    var numberOfCallsToReceiveCallback = 0;
+    var numberOfCallsToReceiveTaskExceptionHandler = 0;
+    Exception? exceptionOccuredInReceiveEchonetLiteAsync = null;
+
+    handler.ReceiveCallback = (address, data, cancellationToken) => {
+      numberOfCallsToReceiveCallback++;
+
+      return default;
+    };
+
+    handler.ReceiveTaskExceptionHandler = (ex) => {
+      numberOfCallsToReceiveTaskExceptionHandler++;
+      exceptionOccuredInReceiveEchonetLiteAsync = ex;
+
+      return true;
+    };
+
+    handler.QueueIncomingAction(
+      (writer, cancellationToken) => {
+        writer.Write(expectedData);
+
+        return new(nullFromAddress); // return null as a remote address
+      }
+    );
+
+    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+    await handler.WaitUntilConsumedAsync(cts.Token);
+
+    Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(0));
+    Assert.That(numberOfCallsToReceiveTaskExceptionHandler, Is.EqualTo(1));
+    Assert.That(exceptionOccuredInReceiveEchonetLiteAsync, Is.InstanceOf<InvalidOperationException>());
+  }
+
+  [Test]
   public async Task ReceiveEchonetLiteAsync_ExceptionOccuredInReceiveAsyncCore()
   {
     using var handler = new PseudoIncomingEchonetLiteHandler();
