@@ -1,4 +1,4 @@
-[![GitHub license](https://img.shields.io/github/license/smdn/Smdn.Net.EchonetLite)](https://github.com/smdn/Smdn.Net.EchonetLite/blob/main/COPYING.txt)
+[![GitHub license](https://img.shields.io/github/license/smdn/Smdn.Net.EchonetLite)](https://github.com/smdn/Smdn.Net.EchonetLite/blob/main/LICENSE.txt)
 [![tests/main](https://img.shields.io/github/actions/workflow/status/smdn/Smdn.Net.EchonetLite/test.yml?branch=main&label=tests%2Fmain)](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/test.yml)
 [![CodeQL](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/smdn/Smdn.Net.EchonetLite/actions/workflows/codeql-analysis.yml)
 
