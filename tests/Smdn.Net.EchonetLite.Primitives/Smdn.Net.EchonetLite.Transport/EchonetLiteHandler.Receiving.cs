@@ -274,7 +274,7 @@ partial class EchonetLiteHandlerTests {
     var expectedFromAddress = IPAddress.Loopback;
     var expectedData = new byte[] { 0x01, 0x23 };
 
-    using var callsToReceiveCallbackEvent = new ManualResetEventSlim(false);
+    using var callsToReceiveTaskExceptionHandlerEvent = new ManualResetEventSlim(false);
     using var handler = new PseudoIncomingEchonetLiteHandler();
 
     handler.StartReceiving();
@@ -286,13 +286,13 @@ partial class EchonetLiteHandlerTests {
     handler.ReceiveCallback = (address, data, cancellationToken) => {
       numberOfCallsToReceiveCallback++;
 
-      callsToReceiveCallbackEvent.Set();
-
       throw new NotImplementedException();
     };
 
     handler.ReceiveTaskExceptionHandler = ex => {
       numberOfCallsToReceiveTaskExceptionHandler++;
+
+      callsToReceiveTaskExceptionHandlerEvent.Set();
 
       return ex is NotImplementedException;
     };
@@ -309,14 +309,14 @@ partial class EchonetLiteHandlerTests {
 
     await handler.WaitUntilConsumedAsync(cts.Token);
 
-    callsToReceiveCallbackEvent.Wait(cts.Token);
+    callsToReceiveTaskExceptionHandlerEvent.Wait(cts.Token);
 
     Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(1));
     Assert.That(numberOfCallsToReceiveTaskExceptionHandler, Is.EqualTo(1));
     Assert.That(handler.IsReceiving, Is.True);
 
     // following inputs must be processed successfully
-    callsToReceiveCallbackEvent.Reset();
+    using var callsToReceiveCallbackEvent = new ManualResetEventSlim(false);
 
     handler.ReceiveCallback = (address, data, cancellationToken) => {
       numberOfCallsToReceiveCallback++;
