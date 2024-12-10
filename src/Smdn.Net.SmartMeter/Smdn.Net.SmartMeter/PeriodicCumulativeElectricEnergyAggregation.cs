@@ -12,9 +12,11 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Smdn.Net.EchonetLite;
 using Smdn.Net.EchonetLite.ObjectModel;
+using Smdn.Net.EchonetLite.RouteB;
 
-namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
+namespace Smdn.Net.SmartMeter;
 
 /// <summary>
 /// 一定期間内における積算電力量を収集するための収集期間を定義し、現時点までの積算電力量を取得するためのインターフェイスを提供します。

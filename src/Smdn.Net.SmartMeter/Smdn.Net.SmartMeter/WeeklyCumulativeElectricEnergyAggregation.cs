@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 
-namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
+namespace Smdn.Net.SmartMeter;
 
 /// <summary>
 /// 週間の積算電力量を収集・取得するためのインターフェイスを提供します。

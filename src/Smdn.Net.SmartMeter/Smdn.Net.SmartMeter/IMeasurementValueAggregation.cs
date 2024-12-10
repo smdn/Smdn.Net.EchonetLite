@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 using Smdn.Net.EchonetLite.ObjectModel;
 
-namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
+namespace Smdn.Net.SmartMeter;
 
 internal interface IMeasurementValueAggregation {
   TimeSpan AggregationInterval { get; }

@@ -14,11 +14,13 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Registry;
 
+using Smdn.Net.EchonetLite;
 using Smdn.Net.EchonetLite.ObjectModel;
+using Smdn.Net.EchonetLite.RouteB;
 using Smdn.Net.EchonetLite.RouteB.Credentials;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 
-namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
+namespace Smdn.Net.SmartMeter;
 
 /// <summary>
 /// スマートメーターに対して定期的なデータ収集を行う<see cref="HemsController"/>を実装します。

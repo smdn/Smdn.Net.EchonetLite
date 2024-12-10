@@ -3,8 +3,9 @@
 using System;
 
 using Smdn.Net.EchonetLite.ObjectModel;
+using Smdn.Net.EchonetLite.RouteB;
 
-namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
+namespace Smdn.Net.SmartMeter;
 
 /// <summary>
 /// 瞬時電流計測値を収集・取得するためのインターフェイスを提供します。

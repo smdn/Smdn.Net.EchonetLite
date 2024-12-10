@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 using Smdn.Net.EchonetLite.ComponentModel;
 
-namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
+namespace Smdn.Net.SmartMeter;
 
 /// <summary>
 /// スマートメーターから計測値を収集・取得するためのインターフェイスを提供します。

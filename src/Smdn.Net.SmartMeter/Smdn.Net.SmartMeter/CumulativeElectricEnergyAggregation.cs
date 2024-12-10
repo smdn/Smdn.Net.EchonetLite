@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 using System;
 
-namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
+using Smdn.Net.EchonetLite.RouteB;
+
+namespace Smdn.Net.SmartMeter;
 
 /// <summary>
 /// 定時積算電力量計測値を収集・取得するためのインターフェイスを提供します。

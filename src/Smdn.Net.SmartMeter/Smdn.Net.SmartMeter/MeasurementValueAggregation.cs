@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 using Smdn.Net.EchonetLite.ObjectModel;
 
-namespace Smdn.Net.EchonetLite.RouteB.DataAggregation;
+namespace Smdn.Net.SmartMeter;
 
 /// <summary>
 /// スマートメーターから現在の計測値を収集・取得するためのインターフェイスを提供します。
@@ -26,7 +26,7 @@ public abstract class MeasurementValueAggregation<TMeasurementValue> : SmartMete
   /// 最新の計測値を取得します。
   /// </summary>
   /// <exception cref="InvalidOperationException">
-  /// このインスタンスが適切な<see cref="HemsController"/>と関連付けられていません。
+  /// このインスタンスが適切な<see cref="Smdn.Net.EchonetLite.RouteB.HemsController"/>と関連付けられていません。
   /// もしくは、最新の計測値がまだ取得されていません。
   /// </exception>
   public TMeasurementValue LatestValue {
