@@ -126,6 +126,6 @@ This is an unofficial project that has no affiliation with [ECHONET Consortium](
 
 This is a project forked from [HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite).
 
-コード中の著作権情報およびライセンス情報に関する正当性については、コミット[07b30a0bfc1d32fe589ed172f7d6702dd747a68f](/../../commit/07b30a0bfc1d32fe589ed172f7d6702dd747a68f)およびプルリクエスト[smdn/EchoDotNetLite #1](/smdn/EchoDotNetLite/pull/1)をご参照ください。
+コード中の著作権情報およびライセンス情報に関する正当性については、コミット[07b30a0bfc1d32fe589ed172f7d6702dd747a68f](/../../commit/07b30a0bfc1d32fe589ed172f7d6702dd747a68f)およびプルリクエスト[smdn/EchoDotNetLite #1](https://github.com/smdn/EchoDotNetLite/pull/1)をご参照ください。
 
-For an acknowledgement and legality of the copyright and license information in the code, please refer to the commit [07b30a0bfc1d32fe589ed172f7d6702dd747a68f](/../../commit/07b30a0bfc1d32fe589ed172f7d6702dd747a68f) and pull request [smdn/EchoDotNetLite #1](/smdn/EchoDotNetLite/pull/1).
+For an acknowledgement and legality of the copyright and license information in the code, please refer to the commit [07b30a0bfc1d32fe589ed172f7d6702dd747a68f](/../../commit/07b30a0bfc1d32fe589ed172f7d6702dd747a68f) and pull request [smdn/EchoDotNetLite #1](https://github.com/smdn/EchoDotNetLite/pull/1).
