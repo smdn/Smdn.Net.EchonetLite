@@ -264,7 +264,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 #pragma warning disable CS8602, CS8604
 #endif
     if (!client.IsPanaSessionAlive)
-      throw new InvalidOperationException("pana session terminated or expired");
+      throw new InvalidOperationException("pana session terminated or expired"); // TODO: throw SkStackPanaSessionTerminatedException instead, or re-establish pana session
 
     return SendToAsyncCore(
       remoteAddress: client.PanaSessionPeerAddress, // TODO: multicast
@@ -292,7 +292,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 #pragma warning disable CS8602
 #endif
     if (!client.IsPanaSessionAlive)
-      throw new InvalidOperationException("pana session terminated or expired");
+      throw new InvalidOperationException("pana session terminated or expired"); // TODO: throw SkStackPanaSessionTerminatedException instead, or re-establish pana session
     if (!client.PanaSessionPeerAddress.Equals(remoteAddress))
       throw new NotSupportedException($"Sending to a specified remote address {remoteAddress} is not supported.");
 
