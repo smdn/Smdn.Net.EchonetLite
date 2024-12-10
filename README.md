@@ -6,9 +6,7 @@
 `Smdn.Net.EchonetLite`は、[ECHONET Lite](https://echonet.jp/)やその周辺の規格/仕様を.NETで使用できるように実装したものです。 `Smdn.Net.EchonetLite` is the implementation of [ECHONET Lite](https://echonet.jp/english/) and its related standards/specifications for .NET.
 
 ## Introduction
-このプロジェクトは[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をフォークしたものです。　This is a project forked from [HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite).
-
-本プロジェクトでは、オリジナルである[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をよりモダンな.NET/C#コードに書き換え、NuGetパッケージとしてリリースすることを目的としています。　また、Bルートサービス(電力メーター情報発信サービス)を.NETで利用できるようにするために必要な実装を確保・維持することを主な動機としています。
+本プロジェクトは、オリジナルである[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をよりモダンな.NET/C#コードに書き換え、NuGetパッケージとしてリリースすることを目的としています。　また、Bルートサービス(電力メーター情報発信サービス)を.NETで利用できるようにするために必要な実装を確保・維持することを主な動機としています。
 
 現時点ではBルートサービスをターゲットとしていますが、長期的にはECHONET Liteを広くサポートすることも検討しています。
 
@@ -122,3 +120,12 @@ This is an unofficial project that has no affiliation with [ECHONET Consortium](
 「ECHONET」、「エコーネット」、「ECHONET Lite」は、[エコーネットコンソーシアム](https://echonet.jp/organization/)の商標または登録商標です。
 
 **ECHONET**, **エコーネット**, **ECHONET Lite** are registered trademarks or trademarks of [ECHONET Consortium](https://echonet.jp/organization_en/).
+
+## Note about the original codes
+このプロジェクトは[HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite)をフォークしたものです。
+
+This is a project forked from [HiroyukiSakoh/EchoDotNetLite](https://github.com/HiroyukiSakoh/EchoDotNetLite).
+
+コード中の著作権情報およびライセンス情報に関する正当性については、コミット[07b30a0bfc1d32fe589ed172f7d6702dd747a68f](/../../commit/07b30a0bfc1d32fe589ed172f7d6702dd747a68f)およびプルリクエスト[smdn/EchoDotNetLite #1](https://github.com/smdn/EchoDotNetLite/pull/1)をご参照ください。
+
+For an acknowledgement and legality of the copyright and license information in the code, please refer to the commit [07b30a0bfc1d32fe589ed172f7d6702dd747a68f](/../../commit/07b30a0bfc1d32fe589ed172f7d6702dd747a68f) and pull request [smdn/EchoDotNetLite #1](https://github.com/smdn/EchoDotNetLite/pull/1).
