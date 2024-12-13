@@ -70,7 +70,7 @@ jobs:
     with:
       project:                                ${{ inputs.project }}
       os:                                     ${{ inputs.os == '' && 'ubuntu-24.04, ubuntu-22.04, ubuntu-20.04, windows-latest, macos-latest' || inputs.os }}
-      verbose:                                ${{ inputs.verbose }}
+      verbose:                                ${{ inputs.verbose == 'true' }}
       path_proj_install_project_assets:       "eng/InstallProjectAssets.proj"
       dotnet_sdk_version:                     ${{ inputs.dotnet_sdk_version == '' && '8.0.100' || inputs.dotnet_sdk_version }}
       timeout_minutes_test_job:               10
