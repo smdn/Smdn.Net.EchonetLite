@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.RouteB.Credentials;
 
 [TestFixture]
-public class RouteBCredentialServiceCollectionExtensions {
+public class RouteBCredentialServiceCollectionExtensionsTests {
   private const string ID = "00112233445566778899AABBCCDDEEFF";
   private const string Password = "0123456789AB";
 
