@@ -492,6 +492,9 @@ partial class HemsController {
           }
         }
 
+#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
+#pragma warning disable CS8602
+#endif
         try {
           using var ctr = ct.Register(() => _ = tcs.TrySetCanceled(ct));
 
@@ -503,6 +506,7 @@ partial class HemsController {
         finally {
           client.InstanceListUpdated -= HandleInstanceListUpdated;
         }
+#pragma warning restore CS8602
       },
       getResultForTimeout: static () => null, // expected timeout
       messageForTimeoutException: null, // not used
