@@ -122,9 +122,14 @@ partial class HemsController {
 
   private TimeSpan timeoutWaitingProactiveNotification = TimeSpan.FromSeconds(5.0); // as default
 
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
+  [MemberNotNullWhen(true, nameof(client))]
+  [MemberNotNullWhen(true, nameof(smartMeterObject))]
+#endif
+  public bool IsConnected => client is not null && smartMeterObject is not null;
+
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
   [MemberNotNull(nameof(client))]
-  [MemberNotNull(nameof(Client))]
   [MemberNotNull(nameof(smartMeterObject))]
 #pragma warning disable CS8774
 #endif
