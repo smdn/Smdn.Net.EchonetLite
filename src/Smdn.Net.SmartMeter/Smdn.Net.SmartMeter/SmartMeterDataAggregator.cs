@@ -233,24 +233,6 @@ public class SmartMeterDataAggregator : HemsController {
     CancellationToken cancellationToken = default
   )
     => StartAsync(
-      aggregationTaskCompletedCallback: null,
-      aggregationTaskFactory: DefaultAggregationTaskFactory,
-      cancellationToken: cancellationToken
-    );
-
-  /// <summary>
-  /// スマートメーターへ接続し、定期的にスマートメーターからデータ収集を行うタスクを起動します。
-  /// </summary>
-  /// <remarks>
-  /// データ収集のタスクは非同期で動作します。　メソッドはタスク起動後に処理を返します。
-  /// データ収集のタスクを停止する場合は、<see cref="StopAsync"/>を呼び出してください。
-  /// </remarks>
-  public ValueTask StartAsync(
-    Action? aggregationTaskCompletedCallback,
-    CancellationToken cancellationToken = default
-  )
-    => StartAsync(
-      aggregationTaskCompletedCallback: aggregationTaskCompletedCallback,
       aggregationTaskFactory: DefaultAggregationTaskFactory,
       cancellationToken: cancellationToken
     );
@@ -263,7 +245,6 @@ public class SmartMeterDataAggregator : HemsController {
   /// データ収集のタスクを停止する場合は、<see cref="StopAsync"/>を呼び出してください。
   /// </remarks>
   public async ValueTask StartAsync(
-    Action? aggregationTaskCompletedCallback,
     TaskFactory? aggregationTaskFactory,
     CancellationToken cancellationToken = default
   )
@@ -301,18 +282,12 @@ public class SmartMeterDataAggregator : HemsController {
             ).ConfigureAwait(false);
           }
           catch (Exception ex) {
-            Logger?.LogError(
-              exception: ex,
-              "Stopped data aggregation by unhandled exception."
-            );
-
-            throw;
+            if (!HandleAggregationTaskException(ex))
+              throw;
           }
         }
         finally {
           ResilienceContextPool.Shared.Return(resilienceContext);
-
-          aggregationTaskCompletedCallback?.Invoke();
         }
       },
       state: aggregationTaskStoppingTokenSource.Token,
@@ -320,6 +295,25 @@ public class SmartMeterDataAggregator : HemsController {
     );
 
     Logger?.LogInformation("Started data aggregation.");
+  }
+
+  /// <summary>
+  /// When overridden in a derived class, returns <see langword="true"/> if the exception has been handled,
+  /// or <see langword="false"/> if the exception should be rethrown and the task for receiving stopped.
+  /// </summary>
+  /// <param name="exception">
+  /// The <see cref="Exception"/> the occurred within the task for receiving and which may stop the task.
+  /// </param>
+  /// <returns><see langword="true"/> if the exception has been handled, otherwise <see langword="false"/>.</returns>
+  protected virtual bool HandleAggregationTaskException(Exception exception)
+  {
+    // log and rethrow unhandled exception
+    Logger?.LogCritical(
+      exception: exception,
+      message: "An unhandled exception occured within the aggregation task."
+    );
+
+    return false;
   }
 
   private sealed class AggregationTaskState {
