@@ -228,7 +228,11 @@ partial class HemsController {
       Logger?.LogInformation("Finding smart meter node and device object (this may take a few seconds) ...");
 
       using (var scope = Logger?.BeginScope("Finding smart meter")) {
-        smartMeterObject = await WaitForRouteBSmartMeterProactiveNotificationAsync(
+        smartMeterObject = FindRegisteredRouteBSmartMeterFromNodeRegistry(
+          smartMeterNodeAddress: echonetLiteHandler.PeerAddress
+        );
+
+        smartMeterObject ??= await WaitForRouteBSmartMeterProactiveNotificationAsync(
           smartMeterNodeAddress: echonetLiteHandler.PeerAddress,
           cancellationToken: cancellationToken
         ).ConfigureAwait(false);
@@ -443,6 +447,25 @@ partial class HemsController {
       cancellationToken: cancellationToken
     );
 
+  private LowVoltageSmartElectricEnergyMeter? FindRegisteredRouteBSmartMeterFromNodeRegistry(
+    IPAddress smartMeterNodeAddress
+  )
+  {
+    ThrowIfSelfNodeNotReady();
+
+#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
+#pragma warning disable CS8602
+#endif
+    return client
+      .NodeRegistry
+      .Nodes
+      .FirstOrDefault(n => n.Address.Equals(smartMeterNodeAddress))
+      ?.Devices
+      ?.OfType<LowVoltageSmartElectricEnergyMeter>()
+      ?.FirstOrDefault();
+#pragma warning restore CS8602
+  }
+
   /// <summary>
   /// 下位層でのネットワーク接続確立を契機とする、スマートメーターからの自発的なインスタンスリスト通知を待機します。
   /// </summary>
@@ -459,21 +482,6 @@ partial class HemsController {
   )
   {
     ThrowIfSelfNodeNotReady();
-
-#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
-#pragma warning disable CS8602
-#endif
-    var lvsm = client
-      .NodeRegistry
-      .Nodes
-      .FirstOrDefault(n => n.Address.Equals(smartMeterNodeAddress))
-      ?.Devices
-      ?.OfType<LowVoltageSmartElectricEnergyMeter>()
-      ?.FirstOrDefault();
-#pragma warning restore CS8602
-
-    if (lvsm is not null)
-      return new(lvsm);
 
     Logger?.LogDebug("Waiting for instance list notification ...");
 
