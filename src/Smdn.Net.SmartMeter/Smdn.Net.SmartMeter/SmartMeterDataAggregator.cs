@@ -395,7 +395,8 @@ public class SmartMeterDataAggregator : HemsController {
       }
     }
     finally {
-      SmartMeter.PropertyValueUpdated -= HandleSmartMeterPropertyValueUpdated;
+      if (IsConnected)
+        SmartMeter.PropertyValueUpdated -= HandleSmartMeterPropertyValueUpdated;
 
       aggregationTaskStoppingTokenSource.Dispose();
       aggregationTaskStoppingTokenSource = null;
