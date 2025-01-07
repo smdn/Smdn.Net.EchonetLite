@@ -85,11 +85,13 @@ public class SmartMeterDataAggregator : HemsController {
   private Task? aggregationTask;
   private CancellationTokenSource? aggregationTaskStoppingTokenSource;
 
+#pragma warning disable CS0419
   /// <summary>
   /// 定期的にスマートメーターからデータ収集を行うタスクが動作しているかどうかを表す値を返します。
   /// </summary>
   /// <seealso cref="StartAsync"/>
   /// <seealso cref="StopAsync"/>
+#pragma warning restore CS0419
   public bool IsRunning => aggregationTask is not null;
 
   private readonly ResiliencePipeline resiliencePipelineConnectToSmartMeter;
@@ -366,11 +368,13 @@ public class SmartMeterDataAggregator : HemsController {
     }
   }
 
+#pragma warning disable CS0419
   /// <summary>
   /// スマートメーターからデータ収集を行うタスクを停止し、スマートメーターから切断します。
   /// </summary>
   /// <seealso cref="StartAsync"/>
   /// <seealso cref="IsRunning"/>
+#pragma warning restore CS0419
   public async ValueTask StopAsync(
     CancellationToken cancellationToken
   )
