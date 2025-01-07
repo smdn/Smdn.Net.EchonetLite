@@ -18,10 +18,10 @@ public static class PropertyMapSerializer {
   ///   <item><description>「Get プロパティマップ」(EPC <c>0x9F</c>)</description></item>
   /// </list>
   /// </summary>
+  /// <param name="writer">シリアライズした結果の書き込み先となる<see cref="IBufferWriter{Byte}"/>。</param>
   /// <param name="propertyMap">「プロパティマップ」を表す<see cref="IReadOnlyCollection{Byte}"/>。</param>
-  /// <param name="buffer">シリアライズした結果が書き込まれる<see cref="IBufferWriter{Byte}"/>。</param>
   /// <returns>
-  /// <paramref name="buffer"/>に書き込まれたプロパティマップのバイト数を返します。
+  /// <paramref name="writer"/>に書き込まれたプロパティマップのバイト数を返します。
   /// </returns>
   /// <seealso href="https://echonet.jp/spec_g/">
   /// APPENDIX ECHONET 機器オブジェクト詳細規定 第２章 機器オブジェクトスーパークラス規定
@@ -30,19 +30,19 @@ public static class PropertyMapSerializer {
   /// APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
   /// </seealso>
   public static int Serialize(
-    IReadOnlyCollection<byte> propertyMap,
-    IBufferWriter<byte> buffer
+    IBufferWriter<byte> writer,
+    IReadOnlyCollection<byte> propertyMap
   )
   {
+    if (writer is null)
+      throw new ArgumentNullException(nameof(writer));
     if (propertyMap is null)
       throw new ArgumentNullException(nameof(propertyMap));
-    if (buffer is null)
-      throw new ArgumentNullException(nameof(buffer));
 
-    var destination = buffer.GetSpan(17);
+    var destination = writer.GetSpan(17);
 
     if (TrySerialize(propertyMap, destination, out var bytesWritten)) {
-      buffer.Advance(bytesWritten);
+      writer.Advance(bytesWritten);
       return bytesWritten;
     }
 
@@ -148,11 +148,11 @@ public static class PropertyMapSerializer {
   ///   <item><description>「Get プロパティマップ」(EPC <c>0x9F</c>)</description></item>
   /// </list>
   /// </summary>
-  /// <param name="content">「プロパティマップ」のプロパティ内容を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
+  /// <param name="data">「プロパティマップ」のプロパティ内容を表す<see cref="ReadOnlySpan{Byte}"/>。</param>
   /// <param name="propertyMap">デシリアライズした結果を格納した<see cref="IReadOnlyList{Byte}"/>。</param>
   /// <returns>
   /// 正常にデシリアライズされた場合は<see langword="true"/>。
-  /// <paramref name="content"/>の内容に不足がある場合は<see langword="false"/>。
+  /// <paramref name="data"/>の内容に不足がある場合は<see langword="false"/>。
   /// </returns>
   /// <seealso href="https://echonet.jp/spec_g/">
   /// APPENDIX ECHONET 機器オブジェクト詳細規定 第２章 機器オブジェクトスーパークラス規定
@@ -161,7 +161,7 @@ public static class PropertyMapSerializer {
   /// APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
   /// </seealso>
   public static bool TryDeserialize(
-    ReadOnlySpan<byte> content,
+    ReadOnlySpan<byte> data,
     [NotNullWhen(true)] out IReadOnlyList<byte>? propertyMap
   )
   {
@@ -171,10 +171,10 @@ public static class PropertyMapSerializer {
     // > 記述形式（1）
     // > 記述形式（2）
     // > 1 バイト目：プロパティの数。バイナリ表示。
-    if (content.Length < 1)
+    if (data.Length < 1)
       return false;
 
-    var numberOfProperties = (int)content[0];
+    var numberOfProperties = (int)data[0];
 
     if (numberOfProperties == 0) {
       propertyMap = Array.Empty<byte>();
@@ -183,21 +183,21 @@ public static class PropertyMapSerializer {
 
     var props = new List<byte>(capacity: numberOfProperties);
 
-    content = content.Slice(1);
+    data = data.Slice(1);
 
     if (numberOfProperties < 0x10) {
       // > APPENDIX ECHONET 機器オブジェクト詳細規定 付録１ プロパティマップ記述形式
       // > 記述形式（1）
       // > 1 バイト目：プロパティの数。バイナリ表示。
       // > 2 バイト目以降：プロパティのコード（1 バイトコード）をそのまま列挙する。
-      if (content.Length < numberOfProperties)
+      if (data.Length < numberOfProperties)
         return false;
 
 #if SYSTEM_COLLECTIONS_GENERIC_COLLECTIONEXTENSIONS_ADDRANGE
-      props.AddRange(content.Slice(0, numberOfProperties));
+      props.AddRange(data.Slice(0, numberOfProperties));
 #else
       for (var i = 0; i < numberOfProperties; i++) {
-        props.Add(content[i]);
+        props.Add(data[i]);
       }
 #endif
     }
@@ -207,11 +207,11 @@ public static class PropertyMapSerializer {
       // > 1 バイト目：プロパティの数。バイナリ表示。
       // > 2～17 バイト目：下図の 16 バイトのテーブルにおいて、存在するプロパティコードを示
       // >         すビット位置に 1 をセットして 2 バイト目から順に列挙する。
-      if (content.Length < 16)
+      if (data.Length < 16)
         return false;
 
       for (var i = 0; i < 16; i++) {
-        var propertyBits = content[i];
+        var propertyBits = data[i];
         var lower = i;
 
         for (var j = 0; j < 8; j++) {

@@ -44,14 +44,13 @@ partial class EchonetClient
   )
   {
     // インスタンスリスト通知 0xD5 (TODO: refer EchonetNodeProfileDetail)
-    const int SizeMax = 253; // unsigned char×(MAX)253
     var property = SelfNode.NodeProfile.Properties[EPCInstanceListNotification];
     byte[]? buffer = null;
 
     try {
-      buffer = ArrayPool<byte>.Shared.Rent(SizeMax);
+      buffer = ArrayPool<byte>.Shared.Rent(InstanceListSerializer.MaxDataLength);
 
-      var bufferMemory = buffer.AsMemory(0, SizeMax);
+      var bufferMemory = buffer.AsMemory(0, InstanceListSerializer.MaxDataLength);
 
       _ = InstanceListSerializer.TrySerialize(
         SelfNode.Devices.Select(static o => o.EOJ),

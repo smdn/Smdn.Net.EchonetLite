@@ -21,7 +21,7 @@ public partial class PropertyMapSerializerSerializerTests {
     Assert.That(
       PropertyMapSerializer.Serialize(
         propertyMap: [],
-        buffer: buffer
+        writer: buffer
       ),
       Is.EqualTo(1)
     );
@@ -46,7 +46,7 @@ public partial class PropertyMapSerializerSerializerTests {
     Assert.That(
       PropertyMapSerializer.Serialize(
         propertyMap: propertyMap,
-        buffer: buffer
+        writer: buffer
       ),
       Is.EqualTo(1 + propertyMap.Length)
     );
@@ -57,7 +57,7 @@ public partial class PropertyMapSerializerSerializerTests {
     // reverse operation
     Assert.That(
       PropertyMapSerializer.TryDeserialize(
-        content: buffer.WrittenSpan,
+        data: buffer.WrittenSpan,
         out var reconstructedPropertyMap
       ),
       Is.True
@@ -203,7 +203,7 @@ public partial class PropertyMapSerializerSerializerTests {
     Assert.That(
       PropertyMapSerializer.Serialize(
         propertyMap: propertyMap,
-        buffer: buffer
+        writer: buffer
       ),
       Is.EqualTo(17)
     );
@@ -214,7 +214,7 @@ public partial class PropertyMapSerializerSerializerTests {
     // reverse operation
     Assert.That(
       PropertyMapSerializer.TryDeserialize(
-        content: buffer.WrittenSpan,
+        data: buffer.WrittenSpan,
         out var reconstructedPropertyMap
       ),
       Is.True
@@ -228,7 +228,7 @@ public partial class PropertyMapSerializerSerializerTests {
     Assert.That(
       () => PropertyMapSerializer.Serialize(
         propertyMap: null!,
-        buffer: new ArrayBufferWriter<byte>(initialCapacity: 17)
+        writer: new ArrayBufferWriter<byte>(initialCapacity: 17)
       ),
       Throws
         .ArgumentNullException
@@ -237,16 +237,16 @@ public partial class PropertyMapSerializerSerializerTests {
   }
 
   [Test]
-  public void Serialize_ArgumentNull_Buffer()
+  public void Serialize_ArgumentNull_Writer()
   {
     Assert.That(
       () => PropertyMapSerializer.Serialize(
         propertyMap: [0x80],
-        buffer: null!
+        writer: null!
       ),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("buffer")
+        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("writer")
     );
   }
 
@@ -313,7 +313,7 @@ public partial class PropertyMapSerializerSerializerTests {
     // reverse operation
     Assert.That(
       PropertyMapSerializer.TryDeserialize(
-        content: buffer.AsSpan(0, bytesWritten),
+        data: buffer.AsSpan(0, bytesWritten),
         out var reconstructedPropertyMap
       ),
       Is.True
@@ -356,7 +356,7 @@ public partial class PropertyMapSerializerSerializerTests {
     // reverse operation
     Assert.That(
       PropertyMapSerializer.TryDeserialize(
-        content: buffer.AsSpan(0, bytesWritten),
+        data: buffer.AsSpan(0, bytesWritten),
         out var reconstructedPropertyMap
       ),
       Is.True

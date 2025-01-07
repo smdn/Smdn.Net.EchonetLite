@@ -145,21 +145,21 @@ public partial class InstanceListSerializerTests {
     bool prependPdc
   )
   {
-    var buffer = new ArrayBufferWriter<byte>();
+    var writer = new ArrayBufferWriter<byte>();
 
     Assert.That(
-      InstanceListSerializer.Serialize(instanceList, buffer, prependPdc: prependPdc),
+      InstanceListSerializer.Serialize(writer, instanceList, prependPdc: prependPdc),
       Is.EqualTo(expectedResult.Length)
     );
 
     if (prependPdc) {
-      Assert.That(buffer.WrittenCount, Is.EqualTo(1 + expectedResult.Length), nameof(buffer.WrittenCount));
-      Assert.That(buffer.WrittenSpan[0], SequenceIs.EqualTo(expectedResult.Length), nameof(buffer));
-      Assert.That(buffer.WrittenMemory.Slice(1), SequenceIs.EqualTo(expectedResult), nameof(buffer));
+      Assert.That(writer.WrittenCount, Is.EqualTo(1 + expectedResult.Length), nameof(writer.WrittenCount));
+      Assert.That(writer.WrittenSpan[0], SequenceIs.EqualTo(expectedResult.Length), nameof(writer));
+      Assert.That(writer.WrittenMemory.Slice(1), SequenceIs.EqualTo(expectedResult), nameof(writer));
     }
     else {
-      Assert.That(buffer.WrittenCount, Is.EqualTo(expectedResult.Length), nameof(buffer.WrittenCount));
-      Assert.That(buffer.WrittenMemory, SequenceIs.EqualTo(expectedResult), nameof(buffer));
+      Assert.That(writer.WrittenCount, Is.EqualTo(expectedResult.Length), nameof(writer.WrittenCount));
+      Assert.That(writer.WrittenMemory, SequenceIs.EqualTo(expectedResult), nameof(writer));
     }
   }
 
@@ -168,10 +168,10 @@ public partial class InstanceListSerializerTests {
     [Values] bool prependPdc
   )
   {
-    var buffer = new ArrayBufferWriter<byte>();
+    var writer = new ArrayBufferWriter<byte>();
 
-    Assert.That(InstanceListSerializer.Serialize(null!, buffer, prependPdc), Is.EqualTo(0));
-    Assert.That(buffer.WrittenCount, Is.EqualTo(0));
+    Assert.That(InstanceListSerializer.Serialize(writer, null!, prependPdc), Is.EqualTo(0));
+    Assert.That(writer.WrittenCount, Is.EqualTo(0));
   }
 
   [Test]
@@ -187,19 +187,19 @@ public partial class InstanceListSerializerTests {
 
     Assert.That(instanceList.Count, Is.EqualTo(85), "instance list count");
 
-    var buffer = new ArrayBufferWriter<byte>();
+    var writer = new ArrayBufferWriter<byte>();
 
     Assert.That(
-      InstanceListSerializer.Serialize(instanceList, buffer, prependPdc: prependPdc),
+      InstanceListSerializer.Serialize(writer, instanceList, prependPdc: prependPdc),
       Is.EqualTo(253)
     );
 
     if (prependPdc) {
-      Assert.That(buffer.WrittenSpan[0], Is.EqualTo(253));
-      Assert.That(buffer.WrittenCount, Is.EqualTo(254));
+      Assert.That(writer.WrittenSpan[0], Is.EqualTo(253));
+      Assert.That(writer.WrittenCount, Is.EqualTo(254));
     }
     else {
-      Assert.That(buffer.WrittenCount, Is.EqualTo(253));
+      Assert.That(writer.WrittenCount, Is.EqualTo(253));
     }
   }
 
