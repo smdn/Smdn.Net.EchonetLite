@@ -53,7 +53,7 @@ partial class EchonetClient
 
       var bufferMemory = buffer.AsMemory(0, SizeMax);
 
-      _ = PropertyContentSerializer.TrySerializeInstanceListNotification(
+      _ = InstanceListSerializer.TrySerialize(
         SelfNode.Devices.Select(static o => o.EOJ),
         bufferMemory.Span,
         out var bytesWritten
@@ -293,7 +293,7 @@ partial class EchonetClient
       if (!device.Properties.TryGetValue(epc, out var pr))
         continue;
 
-      if (!PropertyContentSerializer.TryDeserializePropertyMap(pr.ValueSpan, out var propertyMap))
+      if (!PropertyMapSerializer.TryDeserialize(pr.ValueSpan, out var propertyMap))
         throw new InvalidOperationException($"EDT contains invalid property map (EPC={pr.Code:X2})");
 
       foreach (var code in propertyMap) {

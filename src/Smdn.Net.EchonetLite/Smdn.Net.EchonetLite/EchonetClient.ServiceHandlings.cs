@@ -861,7 +861,7 @@ partial class EchonetClient
   {
     using var scope = Logger?.BeginScope($"Instance list (Node: {sourceNode.Address})");
 
-    if (!PropertyContentSerializer.TryDeserializeInstanceListNotification(edtInstantListNotification.Span, out var instanceList)) {
+    if (!InstanceListSerializer.TryDeserialize(edtInstantListNotification.Span, out var instanceList)) {
       Logger?.LogWarning(
         "Invalid instance list received (EDT: {EDT})",
         edtInstantListNotification.ToHexString()

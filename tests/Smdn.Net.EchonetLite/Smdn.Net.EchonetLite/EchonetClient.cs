@@ -119,7 +119,7 @@ public class EchonetClientTests {
   {
     var buffer = new byte[17];
 
-    _ = PropertyContentSerializer.TrySerializePropertyMap(epc, buffer, out var bytesWritten);
+    _ = PropertyMapSerializer.TrySerialize(epc, buffer, out var bytesWritten);
 
     return buffer.AsSpan(0, bytesWritten).ToArray();
   }

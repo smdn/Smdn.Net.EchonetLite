@@ -145,7 +145,7 @@ internal class ReceiveInstanceListEchonetLiteHandler : IEchonetLiteHandler {
 
         responseBufferForEachResponse.Write(responseBuffer.WrittenSpan);
 
-        _ = PropertyContentSerializer.SerializeInstanceListNotification(instanceList, responseBufferForEachResponse, prependPdc: true);
+        _ = InstanceListSerializer.Serialize(instanceList, responseBufferForEachResponse, prependPdc: true);
 
         await ReceiveCallback!(nodeAddress, responseBufferForEachResponse.WrittenMemory, cancellationToken).ConfigureAwait(false);
       }
@@ -162,7 +162,7 @@ internal class ReceiveInstanceListEchonetLiteHandler : IEchonetLiteHandler {
         instanceList = instanceListForUnicast ?? throw new InvalidOperationException($"`{nameof(instanceListForUnicast)}` must be set");
       }
 
-      _ = PropertyContentSerializer.SerializeInstanceListNotification(instanceList, responseBuffer, prependPdc: true);
+      _ = InstanceListSerializer.Serialize(instanceList, responseBuffer, prependPdc: true);
 
       await ReceiveCallback!(receiveFromAddress, responseBuffer.WrittenMemory, cancellationToken).ConfigureAwait(false);
     }
