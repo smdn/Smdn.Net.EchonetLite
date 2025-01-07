@@ -12,10 +12,48 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// <summary>
   /// ノードプロファイルを表す<see cref="EOJ"/>を取得します。　インスタンスコードは<c>0</c>を使用します。
   /// </summary>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１０ プロファイルオブジェクトクラスグループ規定
+  /// </seealso>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
+  /// </seealso>
   public static readonly EOJ NodeProfile = new(
-    classGroupCode: Codes.ClassGroups.ProfileClass,
-    classCode: Codes.Classes.NodeProfile,
+    classGroupCode: 0x0E,
+    classCode: 0xF0,
     instanceCode: 0x00
+  );
+
+  /// <summary>
+  /// 一般ノード(general node)のノードプロファイルを表す<see cref="EOJ"/>を取得します。
+  /// </summary>
+  /// <summary>
+  /// このノードプロファイルでは、インスタンスコード<c>0x01</c>を使用します。
+  /// </summary>
+  /// <seealso cref="EchonetObject.CreateNodeProfile(byte)"/>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
+  /// </seealso>
+  public static readonly EOJ NodeProfileForGeneralNode = new(
+    classGroupCode: 0x0E,
+    classCode: 0xF0,
+    instanceCode: 0x01
+  );
+
+  /// <summary>
+  /// 送信専用ノード(transmission-only node)のノードプロファイルを表す<see cref="EOJ"/>を取得します。
+  /// </summary>
+  /// <summary>
+  /// このノードプロファイルでは、インスタンスコード<c>0x02</c>を使用します。
+  /// </summary>
+  /// <seealso cref="EchonetObject.CreateNodeProfile(byte)"/>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
+  /// </seealso>
+  public static readonly EOJ NodeProfileForTransmissionOnlyNode = new(
+    classGroupCode: 0x0E,
+    classCode: 0xF0,
+    instanceCode: 0x02
   );
 
   /// <summary>
@@ -33,7 +71,12 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// </summary>
   public byte InstanceCode { get; }
 
-  internal bool IsNodeProfile => ClassGroupCode == Codes.ClassGroups.ProfileClass && ClassCode == Codes.Classes.NodeProfile;
+  internal bool IsProfileObjectClass =>
+    ClassGroupCode == NodeProfile.ClassGroupCode;
+
+  internal bool IsNodeProfile =>
+    ClassGroupCode == NodeProfile.ClassGroupCode &&
+    ClassCode == NodeProfile.ClassCode;
 
   /// <summary>
   /// ECHONET オブジェクト（EOJ）を記述する<see cref="EOJ"/>を作成します。
@@ -59,7 +102,7 @@ public readonly struct EOJ : IEquatable<EOJ> {
   /// <param name="y">比較する2つめのECHONET オブジェクトを表す<see cref="EOJ"/>。</param>
   /// <returns>2つのECHONET オブジェクトが同じである場合、もしくはどちらも同じプロファイルクラスグループのオブジェクトである場合は<see langword="true"/>、そうでない場合は<see langword="false"/>。</returns>
   public static bool AreSame(EOJ x, EOJ y)
-    => x.ClassGroupCode == Codes.ClassGroups.ProfileClass && y.ClassGroupCode == Codes.ClassGroups.ProfileClass
+    => x.IsProfileObjectClass && y.IsProfileObjectClass
       ? x.ClassCode == y.ClassCode // 同じプロファイルクラスグループのオブジェクトかどうか比較
       : x == y; // 同じECHONETオブジェクトかどうか比較
 

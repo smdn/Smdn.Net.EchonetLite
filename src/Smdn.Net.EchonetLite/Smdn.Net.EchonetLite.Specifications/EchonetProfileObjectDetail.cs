@@ -19,8 +19,22 @@ public abstract class EchonetProfileObjectDetail : IEchonetObjectSpecification {
   /// </seealso>
   public static IEchonetObjectSpecification NodeProfile { get; } = new EchonetNodeProfileDetail();
 
-  public byte ClassGroupCode => Codes.ClassGroups.ProfileClass;
+  /// <summary>
+  /// 現在のインスタンスが表すプロファイルオブジェクトの、クラスグループコードを表す<see cref="byte"/>を取得します。
+  /// </summary>
+  /// <remarks>
+  /// プロファイルオブジェクトのクラスグループコードは<c>0x0E</c>です。
+  /// </remarks>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１０ プロファイルオブジェクトクラスグループ規定
+  /// </seealso>
+  public byte ClassGroupCode => 0x0E;
+
+  /// <summary>
+  /// 現在のインスタンスが表すプロファイルオブジェクトの、クラスコードを表す<see cref="byte"/>を取得します。
+  /// </summary>
   public abstract byte ClassCode { get; }
+
   public abstract IEnumerable<IEchonetPropertySpecification> Properties { get; }
 
   protected static class PropertyDetails {

@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+using Smdn.Net.EchonetLite.Protocol;
 using Smdn.Net.EchonetLite.Specifications;
 
 namespace Smdn.Net.EchonetLite;
@@ -24,8 +25,8 @@ partial class EchonetObject {
   public static EchonetObject CreateNodeProfile(bool transmissionOnly = false)
     => CreateNodeProfile(
       instanceCode: transmissionOnly
-        ? Codes.Instances.TransmissionOnlyNode
-        : Codes.Instances.GeneralNode
+        ? EOJ.NodeProfileForTransmissionOnlyNode.InstanceCode
+        : EOJ.NodeProfileForGeneralNode.InstanceCode
     );
 
   /// <summary>

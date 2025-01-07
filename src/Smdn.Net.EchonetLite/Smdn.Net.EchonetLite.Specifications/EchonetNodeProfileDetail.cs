@@ -12,7 +12,15 @@ namespace Smdn.Net.EchonetLite.Specifications;
 /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
 /// </seealso>
 internal sealed class EchonetNodeProfileDetail : EchonetProfileObjectDetail {
-  public override byte ClassCode => Codes.Classes.NodeProfile;
+  /// <inheritdoc/>
+  /// <remarks>
+  /// ノードプロファイルオブジェクトのクラスコードは<c>0xF0</c>です。
+  /// </remarks>
+  /// <seealso href="https://echonet.jp/spec_v114_lite/">
+  /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 ６．１１．１ ノードプロファイルクラス詳細規定
+  /// </seealso>
+  public override byte ClassCode => 0xF0;
+
   public override IEnumerable<IEchonetPropertySpecification> Properties { get; }
     = PropertyDetails
       .Properties
