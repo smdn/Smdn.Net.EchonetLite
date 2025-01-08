@@ -127,41 +127,37 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     base.ThrowIfDisposed();
   }
 
-  protected override ValueTask ConnectAsyncCore(
+  protected override async ValueTask ConnectAsyncCore(
     IRouteBCredential credential,
     CancellationToken cancellationToken
   )
   {
-#pragma warning disable CA1510
-    if (credential is null)
-      throw new ArgumentNullException(nameof(credential));
-#pragma warning restore CA1510
-
     ThrowIfDisposed();
-    ThrowIfReceiving();
 
-    return CoreAsync();
+#if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
+#pragma warning disable CS8602
+#endif
+    if (client.IsPanaSessionAlive)
+      throw new InvalidOperationException("PANA session has already been established.");
+#pragma warning restore CS8602
 
-    async ValueTask CoreAsync()
-    {
-      var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
-      try {
-        resilienceContext.Properties.Set(ResiliencePropertyKeyForClient, client);
-        resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
+    try {
+      resilienceContext.Properties.Set(ResiliencePropertyKeyForClient, client);
+      resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
 
-        panaSessionInfo = await resiliencePipelineAuthenticate.ExecuteAsync(
-          callback: async ctx => {
-            await PrepareSessionAsync(ctx.CancellationToken).ConfigureAwait(false);
+      panaSessionInfo = await resiliencePipelineAuthenticate.ExecuteAsync(
+        callback: async ctx => {
+          await PrepareSessionAsync(ctx.CancellationToken).ConfigureAwait(false);
 
-            return await AuthenticateAsPanaClientAsync(ctx.CancellationToken).ConfigureAwait(false);
-          },
-          context: resilienceContext
-        ).ConfigureAwait(false);
-      }
-      finally {
-        ResilienceContextPool.Shared.Return(resilienceContext);
-      }
+          return await AuthenticateAsPanaClientAsync(ctx.CancellationToken).ConfigureAwait(false);
+        },
+        context: resilienceContext
+      ).ConfigureAwait(false);
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
     }
 
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
