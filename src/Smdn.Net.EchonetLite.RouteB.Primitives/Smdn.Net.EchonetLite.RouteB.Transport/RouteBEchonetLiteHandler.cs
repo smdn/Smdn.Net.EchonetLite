@@ -41,10 +41,19 @@ public abstract class RouteBEchonetLiteHandler : EchonetLiteHandler {
 
     ThrowIfDisposed();
 
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+    if (cancellationToken.IsCancellationRequested)
+      return ValueTask.FromCanceled(cancellationToken);
+#endif
+
     return Core();
 
     async ValueTask Core()
     {
+#if !SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+      cancellationToken.ThrowIfCancellationRequested();
+#endif
+
       await ConnectAsyncCore(
         credential: credential,
         cancellationToken: cancellationToken
@@ -66,10 +75,19 @@ public abstract class RouteBEchonetLiteHandler : EchonetLiteHandler {
   {
     ThrowIfDisposed();
 
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+    if (cancellationToken.IsCancellationRequested)
+      return ValueTask.FromCanceled(cancellationToken);
+#endif
+
     return Core();
 
     async ValueTask Core()
     {
+#if !SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+      cancellationToken.ThrowIfCancellationRequested();
+#endif
+
       if (IsReceiving)
         await StopReceivingAsync().ConfigureAwait(false);
 

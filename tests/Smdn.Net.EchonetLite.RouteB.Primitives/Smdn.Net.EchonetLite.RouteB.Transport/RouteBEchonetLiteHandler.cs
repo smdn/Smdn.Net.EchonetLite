@@ -117,6 +117,32 @@ public class RouteBEchonetLiteHandlerTests {
   }
 
   [Test]
+  public void ConnectAsync_CancellationRequested()
+  {
+    using var handler = new PseudoRouteBEchonetLiteHandler();
+    using var credential = new PseudoRouteBCredential();
+    using var cts = new CancellationTokenSource();
+
+    cts.Cancel();
+
+    Assert.That(handler.IsReceiving, Is.False, $"{nameof(handler.IsReceiving)} before atempting connection");
+
+    Assert.That(
+      async () => await handler.ConnectAsync(credential: credential, cancellationToken: cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
+    );
+
+#pragma warning disable CA2012
+    Assert.That(
+      handler.ConnectAsync(credential: credential, cancellationToken: cts.Token).IsCanceled,
+      Is.True
+    );
+#pragma warning restore CA2012
+
+    Assert.That(handler.IsReceiving, Is.False, $"{nameof(handler.IsReceiving)} after atempting connection");
+  }
+
+  [Test]
   public async Task DisconnectAsync()
   {
     using var handler = new PseudoRouteBEchonetLiteHandler();
@@ -158,5 +184,34 @@ public class RouteBEchonetLiteHandlerTests {
       () => handler.DisconnectAsync(),
       Throws.TypeOf<ObjectDisposedException>()
     );
+  }
+
+  [Test]
+  public async Task DisconnectAsync_CancellationRequested()
+  {
+    using var handler = new PseudoRouteBEchonetLiteHandler();
+    using var credential = new PseudoRouteBCredential();
+
+    await handler.ConnectAsync(credential: credential);
+
+    using var cts = new CancellationTokenSource();
+
+    cts.Cancel();
+
+    Assert.That(handler.IsReceiving, Is.True, $"{nameof(handler.IsReceiving)} before atempting disconnection");
+
+    Assert.That(
+      async () => await handler.DisconnectAsync(cancellationToken: cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
+    );
+
+#pragma warning disable CA2012
+    Assert.That(
+      handler.DisconnectAsync(cancellationToken: cts.Token).IsCanceled,
+      Is.True
+    );
+#pragma warning restore CA2012
+
+    Assert.That(handler.IsReceiving, Is.True, $"{nameof(handler.IsReceiving)} after atempting disconnection");
   }
 }
