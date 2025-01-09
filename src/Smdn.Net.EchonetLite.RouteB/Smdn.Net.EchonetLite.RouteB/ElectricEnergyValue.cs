@@ -1,5 +1,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+using System;
+
 namespace Smdn.Net.EchonetLite.RouteB;
 
 /// <summary>
@@ -39,8 +41,15 @@ public readonly struct ElectricEnergyValue {
 
   private readonly decimal multiplierToKiloWattHours;
 
-  internal ElectricEnergyValue(int rawValue, decimal multiplierToKiloWattHours)
+  public ElectricEnergyValue(int rawValue, decimal multiplierToKiloWattHours)
   {
+    if (rawValue != NoMeasurementDataValue) {
+      if (rawValue < 0)
+        throw new ArgumentOutOfRangeException(paramName: nameof(rawValue), actualValue: rawValue, message: "must be zero or positive number");
+      if (multiplierToKiloWattHours <= 0.0m)
+        throw new ArgumentOutOfRangeException(paramName: nameof(multiplierToKiloWattHours), actualValue: multiplierToKiloWattHours, message: "must be non-zero positive number");
+    }
+
     this.multiplierToKiloWattHours = multiplierToKiloWattHours;
     RawValue = rawValue;
   }

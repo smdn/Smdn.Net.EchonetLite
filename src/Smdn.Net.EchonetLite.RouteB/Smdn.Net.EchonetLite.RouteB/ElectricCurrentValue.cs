@@ -5,7 +5,7 @@ namespace Smdn.Net.EchonetLite.RouteB;
 /// <summary>
 /// 低圧スマート電力量メータより取得された電流(A)の値を表す構造体です。
 /// </summary>
-public readonly struct ElectricCurrentValue {
+public readonly struct ElectricCurrentValue(short rawValue) {
   private const short Underflow = unchecked((short)(ushort)0x_8000);
   private const short Overflow = unchecked((short)(ushort)0x_7FFF);
   private const short NoMeasurementData = unchecked((short)(ushort)0x_7FFE);
@@ -24,18 +24,13 @@ public readonly struct ElectricCurrentValue {
   /// この値は、計測単位が乗算される前の値を表します。
   /// また、エラー等を表す値の場合もそのまま返します。
   /// </summary>
-  public short RawValue { get; }
+  public short RawValue { get; } = rawValue;
 
   /// <summary>
   /// <see cref="ElectricCurrentValue"/>が有効な値を保持しているかどうかを表す<see cref="bool"/>の値を取得します。
   /// </summary>
   /// <value><see langword="true"/>の場合、有効な電流値を保持しています。　<see langword="false"/>の場合、「アンダーフロー」・「オーバーフロー」・「計測値なし」のいずれかを表します。</value>
   public bool IsValid => RawValue is not (Underflow or Overflow or NoMeasurementData);
-
-  internal ElectricCurrentValue(short rawValue)
-  {
-    RawValue = rawValue;
-  }
 
   public override string ToString()
     => RawValue switch {
