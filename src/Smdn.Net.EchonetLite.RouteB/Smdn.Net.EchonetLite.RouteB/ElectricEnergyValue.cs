@@ -25,7 +25,7 @@ public readonly struct ElectricEnergyValue {
   /// </summary>
   /// <remarks><see cref="IsValid"/>が<see langword="false"/>の場合、<c>0</c>を返します。</remarks>
   /// <see cref="IsValid"/>
-  public decimal WattHours => KiloWattHours / 1_000.0m;
+  public decimal WattHours => KiloWattHours * 1_000.0m;
 
   /// <summary>
   /// ECHONETプロパティ(EPC)から取得される電力量を、そのままの値で取得します。
