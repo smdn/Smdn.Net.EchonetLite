@@ -1,20 +1,21 @@
-// Smdn.Net.EchonetLite.dll (Smdn.Net.EchonetLite-2.0.0-preview2)
+// Smdn.Net.EchonetLite.dll (Smdn.Net.EchonetLite-2.0.0)
 //   Name: Smdn.Net.EchonetLite
 //   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0-preview2+60a8ce3520b765b1bcab669a662cfb615f41a1f5
+//   InformationalVersion: 2.0.0+2bb1851c89ba40ded2eeae51a98f8f88d864931f
 //   TargetFramework: .NETCoreApp,Version=v8.0
 //   Configuration: Release
 //   Referenced assemblies:
+//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
 //     Smdn.Net.EchonetLite.Primitives, Version=2.0.0.0, Culture=neutral
 //     System.Collections, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Collections.Concurrent, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.ComponentModel.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Linq, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Memory, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
-//     System.Net.NetworkInformation, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Net.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Net.Sockets, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.ObjectModel, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Threading, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
@@ -30,11 +31,10 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Polly;
 using Smdn.Net.EchonetLite;
-using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.ObjectModel;
 using Smdn.Net.EchonetLite.Protocol;
-using Smdn.Net.EchonetLite.Transport;
 
 namespace Smdn.Net.EchonetLite {
   public interface IEchonetDeviceFactory {
@@ -51,44 +51,48 @@ namespace Smdn.Net.EchonetLite {
     IAsyncDisposable,
     IDisposable
   {
-    public event EventHandler<EchonetNode>? InstanceListUpdated;
-    public event EventHandler<EchonetNode>? InstanceListUpdating;
-    public event EventHandler<EchonetNode>? NodeJoined;
-    public event EventHandler<EchonetObject>? PropertyMapAcquired;
-    public event EventHandler<EchonetObject>? PropertyMapAcquiring;
+    public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForRequestServiceCode; // = "ResiliencePropertyKeyForRequestServiceCode"
+    public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForResponseServiceCode; // = "ResiliencePropertyKeyForResponseServiceCode"
 
-    public EchonetClient(EchonetNode selfNode, IEchonetLiteHandler echonetLiteHandler, bool shouldDisposeEchonetLiteHandler, IEchonetDeviceFactory? deviceFactory, ILogger<EchonetClient>? logger) {}
-    public EchonetClient(IEchonetLiteHandler echonetLiteHandler, ILogger<EchonetClient>? logger = null) {}
-    public EchonetClient(IEchonetLiteHandler echonetLiteHandler, bool shouldDisposeEchonetLiteHandler, ILogger<EchonetClient>? logger) {}
+    public event EventHandler<EchonetNodeEventArgs>? InstanceListUpdated;
+    public event EventHandler<EchonetNodeEventArgs>? InstanceListUpdating;
+    public event EventHandler<EchonetObjectEventArgs>? PropertyMapAcquired;
+    public event EventHandler<EchonetObjectEventArgs>? PropertyMapAcquiring;
 
-    public IReadOnlyCollection<EchonetNode> OtherNodes { get; }
+    public EchonetClient(EchonetNode selfNode, IEchonetLiteHandler echonetLiteHandler, bool shouldDisposeEchonetLiteHandler = false, EchonetNodeRegistry? nodeRegistry = null, IEchonetDeviceFactory? deviceFactory = null, ResiliencePipeline? resiliencePipelineForSendingResponseFrame = null, ILogger? logger = null, IServiceProvider? serviceProvider = null) {}
+    public EchonetClient(IEchonetLiteHandler echonetLiteHandler, bool shouldDisposeEchonetLiteHandler = false, IServiceProvider? serviceProvider = null) {}
+    public EchonetClient(IEchonetLiteHandler echonetLiteHandler, bool shouldDisposeEchonetLiteHandler, EchonetNodeRegistry? nodeRegistry, IEchonetDeviceFactory? deviceFactory, IServiceProvider? serviceProvider = null) {}
+
+    protected ILogger? Logger { get; }
+    public EchonetNodeRegistry NodeRegistry { get; }
     public EchonetNode SelfNode { get; }
-    public TaskFactory? ServiceHandlerTaskFactory { get; set; }
     public ISynchronizeInvoke? SynchronizingObject { get; set; }
 
-    public async ValueTask<bool> AcquirePropertyMapsAsync(EchonetObject device, IEnumerable<byte>? extraPropertyCodes = null, CancellationToken cancellationToken = default) {}
+    public async ValueTask<EchonetServiceResponse> AcquirePropertyMapsAsync(EchonetObject device, IEnumerable<byte>? extraPropertyCodes = null, ResiliencePipeline? resiliencePipelineForServiceRequest = null, CancellationToken cancellationToken = default) {}
     protected virtual void Dispose(bool disposing) {}
     public void Dispose() {}
     public async ValueTask DisposeAsync() {}
     protected virtual async ValueTask DisposeAsyncCore() {}
     internal protected IPAddress? GetSelfNodeAddress() {}
-    protected void InvokeEvent<TEventArgs>(object? sender, EventHandler<TEventArgs>? eventHandler, TEventArgs e) {}
-    public async ValueTask<EchonetServiceResponse> NotifyAsync(EOJ sourceObject, IEnumerable<PropertyValue> properties, IPAddress destinationNodeAddress, EOJ destinationObject, CancellationToken cancellationToken = default) {}
-    public async ValueTask NotifyInstanceListAsync(CancellationToken cancellationToken = default) {}
-    public ValueTask NotifyOneWayAsync(EOJ sourceObject, IEnumerable<PropertyValue> properties, IPAddress? destinationNodeAddress, EOJ destinationObject, CancellationToken cancellationToken = default) {}
-    protected virtual void OnInstanceListUpdated(EchonetNode node) {}
-    protected virtual void OnInstanceListUpdating(EchonetNode node) {}
-    protected virtual void OnNodeJoined(EchonetNode node) {}
-    protected virtual void OnPropertyMapAcquired(EchonetObject device) {}
-    protected virtual void OnPropertyMapAcquiring(EchonetObject device) {}
-    public ValueTask RequestNotifyInstanceListAsync(IPAddress? destinationNodeAddress = null, CancellationToken cancellationToken = default) {}
-    public async Task RequestNotifyInstanceListAsync<TState>(IPAddress? destinationNodeAddress, Func<EchonetNode, TState, bool> onInstanceListUpdated, TState state, CancellationToken cancellationToken = default) {}
-    public ValueTask RequestNotifyOneWayAsync(EOJ sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<byte> propertyCodes, CancellationToken cancellationToken = default) {}
-    public async ValueTask<EchonetServiceResponse> RequestReadAsync(EOJ sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<byte> propertyCodes, CancellationToken cancellationToken = default) {}
-    public async ValueTask<EchonetServiceResponse> RequestWriteAsync(EOJ sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<PropertyValue> properties, CancellationToken cancellationToken = default) {}
-    public async ValueTask RequestWriteOneWayAsync(EOJ sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<PropertyValue> properties, CancellationToken cancellationToken = default) {}
-    public async ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)> RequestWriteReadAsync(EOJ sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<PropertyValue> propertiesToSet, IEnumerable<byte> propertyCodesToGet, CancellationToken cancellationToken = default) {}
-    void IEventInvoker.InvokeEvent<TEventArgs>(object? sender, EventHandler<TEventArgs>? eventHandler, TEventArgs e) {}
+    protected virtual async ValueTask HandleFormat1MessageAsync(IPAddress address, int id, Format1Message message, CancellationToken cancellationToken) {}
+    protected virtual ValueTask HandleFormat2MessageAsync(IPAddress address, int id, ReadOnlyMemory<byte> edata, CancellationToken cancellationToken) {}
+    protected void InvokeEvent<TEventArgs>(EventHandler<TEventArgs>? eventHandler, TEventArgs e) where TEventArgs : EventArgs {}
+    public async ValueTask<EchonetServiceResponse> NotifyAsync(EOJ sourceObject, IEnumerable<PropertyValue> properties, IPAddress destinationNodeAddress, EOJ destinationObject, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public async ValueTask NotifyInstanceListAsync(ResiliencePipeline? resiliencePipelineForServiceRequest = null, CancellationToken cancellationToken = default) {}
+    public async ValueTask NotifyOneWayAsync(EOJ sourceObject, IEnumerable<PropertyValue> properties, IPAddress? destinationNodeAddress, EOJ destinationObject, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    protected virtual void OnInstanceListUpdated(EchonetNodeEventArgs e) {}
+    protected virtual void OnInstanceListUpdating(EchonetNodeEventArgs e) {}
+    protected virtual void OnPropertyMapAcquired(EchonetObjectEventArgs e) {}
+    protected virtual void OnPropertyMapAcquiring(EchonetObjectEventArgs e) {}
+    public Task RequestNotifyInstanceListAsync(IPAddress? destinationNodeAddress, Func<EchonetNode, bool> onInstanceListUpdated, ResiliencePipeline? resiliencePipelineForServiceRequest = null, CancellationToken cancellationToken = default) {}
+    public ValueTask RequestNotifyInstanceListAsync(IPAddress? destinationNodeAddress = null, ResiliencePipeline? resiliencePipelineForServiceRequest = null, CancellationToken cancellationToken = default) {}
+    public async Task RequestNotifyInstanceListAsync<TState>(IPAddress? destinationNodeAddress, Func<EchonetNode, TState, bool> onInstanceListUpdated, TState state, ResiliencePipeline? resiliencePipelineForServiceRequest = null, CancellationToken cancellationToken = default) {}
+    public async ValueTask RequestNotifyOneWayAsync(EOJ sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<byte> propertyCodes, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public async ValueTask<EchonetServiceResponse> RequestReadAsync(EOJ sourceObject, IPAddress destinationNodeAddress, EOJ destinationObject, IEnumerable<byte> propertyCodes, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public async ValueTask RequestReadMulticastAsync(EOJ sourceObject, EOJ destinationObject, IEnumerable<byte> propertyCodes, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public async ValueTask<EchonetServiceResponse> RequestWriteAsync(EOJ sourceObject, IPAddress destinationNodeAddress, EOJ destinationObject, IEnumerable<PropertyValue> properties, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public ValueTask RequestWriteOneWayAsync(EOJ sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<PropertyValue> properties, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public async ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)> RequestWriteReadAsync(EOJ sourceObject, IPAddress destinationNodeAddress, EOJ destinationObject, IEnumerable<PropertyValue> propertiesToSet, IEnumerable<byte> propertyCodesToGet, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
     protected void ThrowIfDisposed() {}
   }
 
@@ -114,6 +118,24 @@ namespace Smdn.Net.EchonetLite {
     public abstract IPAddress Address { get; }
     public abstract IReadOnlyCollection<EchonetObject> Devices { get; }
     public EchonetObject NodeProfile { get; }
+
+    public bool TryFindDevice(EOJ eoj, [NotNullWhen(true)] out EchonetObject? device) {}
+  }
+
+  public sealed class EchonetNodeEventArgs : EventArgs {
+    public EchonetNodeEventArgs(EchonetNode node) {}
+
+    public EchonetNode Node { get; }
+  }
+
+  public sealed class EchonetNodeRegistry {
+    public event EventHandler<EchonetNodeEventArgs>? NodeAdded;
+
+    public EchonetNodeRegistry() {}
+
+    public IReadOnlyCollection<EchonetNode> Nodes { get; }
+
+    public bool TryFind(IPAddress address, [NotNullWhen(true)] out EchonetNode? node) {}
   }
 
   public abstract class EchonetObject {
@@ -121,61 +143,72 @@ namespace Smdn.Net.EchonetLite {
     public static EchonetObject CreateNodeProfile(bool transmissionOnly = false) {}
 
     public event EventHandler<NotifyCollectionChangedEventArgs>? PropertiesChanged;
+    public event EventHandler<EchonetPropertyValueUpdatedEventArgs>? PropertyValueUpdated;
 
     public abstract byte ClassCode { get; }
     public abstract byte ClassGroupCode { get; }
-    protected virtual IEventInvoker EventInvoker { get; }
+    public EOJ EOJ { get; }
     public abstract bool HasPropertyMapAcquired { get; }
     public abstract byte InstanceCode { get; }
     public EchonetNode Node { get; }
     public abstract IReadOnlyDictionary<byte, EchonetProperty> Properties { get; }
+    internal protected virtual ISynchronizeInvoke? SynchronizingObject { get; }
 
+    internal protected void OnPropertyValueUpdated(EchonetPropertyValueUpdatedEventArgs e) {}
     public override string ToString() {}
   }
 
+  public sealed class EchonetObjectEventArgs : EventArgs {
+    public EchonetObjectEventArgs(EchonetObject device) {}
+
+    public EchonetObject Device { get; }
+  }
+
   public static class EchonetObjectExtensions {
-    public static ValueTask NotifyPropertiesOneWayMulticastAsync(this EchonetObject sourceObject, IEnumerable<byte> notifyPropertyCodes, EOJ destinationObject, CancellationToken cancellationToken = default) {}
-    public static async ValueTask<EchonetServiceResponse> ReadPropertiesAsync(this EchonetObject destinationObject, IEnumerable<byte> readPropertyCodes, EchonetObject sourceObject, CancellationToken cancellationToken = default) {}
-    public static ValueTask RequestNotifyPropertiesOneWayAsync(this EchonetObject sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<byte> requestNotifyPropertyCodes, CancellationToken cancellationToken = default) {}
-    public static async ValueTask<EchonetServiceResponse> WritePropertiesAsync(this EchonetObject destinationObject, IEnumerable<byte> writePropertyCodes, EchonetObject sourceObject, CancellationToken cancellationToken = default) {}
-    public static async ValueTask WritePropertiesOneWayAsync(this EchonetObject destinationObject, IEnumerable<byte> writePropertyCodes, EchonetObject sourceObject, CancellationToken cancellationToken = default) {}
-    public static async ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)> WriteReadPropertiesAsync(this EchonetObject destinationObject, IEnumerable<byte> writePropertyCodes, IEnumerable<byte> readPropertyCodes, EchonetObject sourceObject, CancellationToken cancellationToken = default) {}
+    public static async ValueTask<EchonetServiceResponse> AcquirePropertyMapsAsync(this EchonetObject device, IEnumerable<byte>? extraPropertyCodes = null, ResiliencePipeline? resiliencePipelineForServiceRequest = null, CancellationToken cancellationToken = default) {}
+    public static ValueTask NotifyPropertiesOneWayMulticastAsync(this EchonetObject sourceObject, IEnumerable<byte> notifyPropertyCodes, EOJ destinationObject, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public static async ValueTask<EchonetServiceResponse> ReadPropertiesAsync(this EchonetObject destinationObject, IEnumerable<byte> readPropertyCodes, EchonetObject sourceObject, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public static ValueTask ReadPropertiesMulticastAsync(this EchonetObject sourceObject, EOJ destinationObject, IEnumerable<byte> readPropertyCodes, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public static ValueTask RequestNotifyPropertiesOneWayAsync(this EchonetObject sourceObject, IPAddress? destinationNodeAddress, EOJ destinationObject, IEnumerable<byte> requestNotifyPropertyCodes, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public static async ValueTask<EchonetServiceResponse> WritePropertiesAsync(this EchonetObject destinationObject, IEnumerable<byte> writePropertyCodes, EchonetObject sourceObject, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public static async ValueTask WritePropertiesOneWayAsync(this EchonetObject destinationObject, IEnumerable<byte> writePropertyCodes, EchonetObject sourceObject, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
+    public static async ValueTask<(EchonetServiceResponse SetResponse, EchonetServiceResponse GetResponse)> WriteReadPropertiesAsync(this EchonetObject destinationObject, IEnumerable<byte> writePropertyCodes, IEnumerable<byte> readPropertyCodes, EchonetObject sourceObject, ResiliencePipeline? resiliencePipeline = null, CancellationToken cancellationToken = default) {}
   }
 
   public abstract class EchonetProperty {
-    public event EventHandler<(ReadOnlyMemory<byte> OldValue, ReadOnlyMemory<byte> NewValue)>? ValueChanged;
-
-    protected EchonetProperty() {}
+    public event EventHandler<EchonetPropertyValueUpdatedEventArgs>? ValueUpdated;
 
     public abstract bool CanAnnounceStatusChange { get; }
     public abstract bool CanGet { get; }
     public abstract bool CanSet { get; }
     public abstract byte Code { get; }
     public abstract EchonetObject Device { get; }
-    protected virtual IEventInvoker EventInvoker { get; }
     public bool HasModified { get; }
-    public DateTimeOffset LastUpdatedTime { get; }
+    public DateTime LastUpdatedTime { get; }
     protected virtual TimeProvider TimeProvider { get; }
     public ReadOnlyMemory<byte> ValueMemory { get; }
     public ReadOnlySpan<byte> ValueSpan { get; }
 
     internal protected virtual bool IsAcceptableValue(ReadOnlySpan<byte> edt) {}
-    public void SetValue(ReadOnlyMemory<byte> newValue, bool raiseValueChangedEvent = false, bool setLastUpdatedTime = false) {}
+    public void SetValue(ReadOnlyMemory<byte> newValue, bool raiseValueUpdatedEvent = false, bool setLastUpdatedTime = false) {}
     public override string ToString() {}
-    public void WriteValue(Action<IBufferWriter<byte>> write, bool raiseValueChangedEvent = false, bool setLastUpdatedTime = false) {}
+    internal protected abstract void UpdateAccessRule(bool canSet, bool canGet, bool canAnnounceStatusChange);
+    public void WriteValue(Action<IBufferWriter<byte>> write, bool raiseValueUpdatedEvent = false, bool setLastUpdatedTime = false) {}
+  }
+
+  public sealed class EchonetPropertyValueUpdatedEventArgs : EventArgs {
+    public EchonetPropertyValueUpdatedEventArgs(EchonetProperty property, ReadOnlyMemory<byte> oldValue, ReadOnlyMemory<byte> newValue, DateTime previousUpdatedTime, DateTime updatedTime) {}
+
+    public ReadOnlyMemory<byte> NewValue { get; }
+    public ReadOnlyMemory<byte> OldValue { get; }
+    public DateTime PreviousUpdatedTime { get; }
+    public EchonetProperty Property { get; }
+    public DateTime UpdatedTime { get; }
   }
 
   public readonly struct EchonetServiceResponse {
     public bool IsSuccess { get; init; }
-    public IReadOnlyDictionary<EchonetProperty, EchonetServicePropertyResult> Properties { get; init; }
-  }
-}
-
-namespace Smdn.Net.EchonetLite.ComponentModel {
-  public interface IEventInvoker {
-    ISynchronizeInvoke? SynchronizingObject { get; set; }
-
-    void InvokeEvent<TEventArgs>(object? sender, EventHandler<TEventArgs>? eventHandler, TEventArgs e);
+    public IReadOnlyDictionary<byte, EchonetServicePropertyResult> Results { get; init; }
   }
 }
 
@@ -234,6 +267,12 @@ namespace Smdn.Net.EchonetLite.ObjectModel {
     public EchonetObject? DeviceObject { get; }
     public byte? PropertyCode { get; }
   }
+
+  public static class IEchonetPropertyAccessorExtensions {
+    public static bool HasElapsedSinceLastUpdated(this IEchonetPropertyAccessor accessor, DateTime dateTime) {}
+    public static bool HasElapsedSinceLastUpdated(this IEchonetPropertyAccessor accessor, TimeSpan duration) {}
+    public static bool HasValue<TValue>(this IEchonetPropertyGetAccessor<TValue> getAccessor) {}
+  }
 }
 
 namespace Smdn.Net.EchonetLite.Protocol {
@@ -281,14 +320,24 @@ namespace Smdn.Net.EchonetLite.Protocol {
     public static bool TryParseEDataAsFormat1Message(ReadOnlySpan<byte> bytes, out Format1Message message) {}
   }
 
-  public static class PropertyContentSerializer {
-    public static bool TryDeserializeInstanceListNotification(ReadOnlySpan<byte> content, [NotNullWhen(true)] out IReadOnlyList<EOJ>? instanceList) {}
-    public static bool TryDeserializePropertyMap(ReadOnlySpan<byte> content, [NotNullWhen(true)] out IReadOnlyList<byte>? propertyMap) {}
-    public static bool TrySerializeInstanceListNotification(IEnumerable<EOJ> instanceList, Span<byte> destination, out int bytesWritten) {}
+  public static class InstanceListSerializer {
+    public const int MaxDataLength = 253;
+
+    public static int Serialize(IBufferWriter<byte> writer, IEnumerable<EOJ> instanceList, bool prependPdc) {}
+    public static bool TryDeserialize(ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadOnlyList<EOJ>? instanceList) {}
+    public static bool TrySerialize(IEnumerable<EOJ> instanceList, Span<byte> destination, out int bytesWritten) {}
+  }
+
+  public static class PropertyMapSerializer {
+    public static int Serialize(IBufferWriter<byte> writer, IReadOnlyCollection<byte> propertyMap) {}
+    public static bool TryDeserialize(ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadOnlyList<byte>? propertyMap) {}
+    public static bool TrySerialize(IReadOnlyCollection<byte> propertyMap, Span<byte> destination, out int bytesWritten) {}
   }
 
   public readonly struct EOJ : IEquatable<EOJ> {
     public static readonly EOJ NodeProfile; // = "0E.F0 00"
+    public static readonly EOJ NodeProfileForGeneralNode; // = "0E.F0 01"
+    public static readonly EOJ NodeProfileForTransmissionOnlyNode; // = "0E.F0 02"
 
     public static bool AreSame(EOJ x, EOJ y) {}
     public static bool operator == (EOJ c1, EOJ c2) {}
@@ -358,20 +407,5 @@ namespace Smdn.Net.EchonetLite.Specifications {
     public abstract IEnumerable<IEchonetPropertySpecification> Properties { get; }
   }
 }
-
-namespace Smdn.Net.EchonetLite.Transport {
-  public class UdpEchonetLiteHandler : EchonetLiteHandler {
-    public UdpEchonetLiteHandler(ILogger<UdpEchonetLiteHandler> logger) {}
-
-    public override IPAddress? LocalAddress { get; }
-    public override ISynchronizeInvoke? SynchronizingObject { get; set; }
-
-    protected override void Dispose(bool disposing) {}
-    protected override ValueTask DisposeAsyncCore() {}
-    protected override async ValueTask<IPAddress> ReceiveAsyncCore(IBufferWriter<byte> buffer, CancellationToken cancellationToken) {}
-    protected override async ValueTask SendAsyncCore(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken) {}
-    protected override async ValueTask SendToAsyncCore(IPAddress remoteAddress, ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken) {}
-  }
-}
-// API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.4.1.0.
+// API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.5.0.0.
 // Smdn.Reflection.ReverseGenerating.ListApi.Core v1.3.1.0 (https://github.com/smdn/Smdn.Reflection.ReverseGenerating)
