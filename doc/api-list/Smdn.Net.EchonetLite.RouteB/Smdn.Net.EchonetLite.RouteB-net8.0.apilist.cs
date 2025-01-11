@@ -1,17 +1,19 @@
-// Smdn.Net.EchonetLite.RouteB.dll (Smdn.Net.EchonetLite.RouteB-2.0.0-preview3)
+// Smdn.Net.EchonetLite.RouteB.dll (Smdn.Net.EchonetLite.RouteB-2.0.0)
 //   Name: Smdn.Net.EchonetLite.RouteB
 //   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0-preview3+2612dc0eb7dba458048cbe65c5e156d272f8ee87
+//   InformationalVersion: 2.0.0+3138f40758ea06ba8f2c2eee70c4237b7f1411d1
 //   TargetFramework: .NETCoreApp,Version=v8.0
 //   Configuration: Release
 //   Referenced assemblies:
 //     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
 //     Smdn.Net.EchonetLite, Version=2.0.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.Primitives, Version=2.0.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.0.0.0, Culture=neutral
 //     System.Collections, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.ComponentModel, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Linq, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Memory, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 //     System.Net.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
@@ -20,11 +22,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Polly;
 using Smdn.Net.EchonetLite;
 using Smdn.Net.EchonetLite.ObjectModel;
 using Smdn.Net.EchonetLite.RouteB;
@@ -37,29 +41,37 @@ namespace Smdn.Net.EchonetLite.RouteB {
     IDisposable,
     IRouteBCredentialIdentity
   {
-    public HemsController(IRouteBEchonetLiteHandlerFactory echonetLiteHandlerFactory, IRouteBCredentialProvider routeBCredentialProvider, ILoggerFactory? loggerFactory = null) {}
+    public HemsController(IRouteBEchonetLiteHandlerFactory echonetLiteHandlerFactory, IRouteBCredentialProvider routeBCredentialProvider, ILogger? logger, ILoggerFactory? loggerFactoryForEchonetClient) {}
     public HemsController(IServiceProvider serviceProvider) {}
 
     protected EchonetClient Client { get; }
     public EchonetObject Controller { get; }
+    [MemberNotNullWhen(true, "client")]
+    [MemberNotNullWhen(true, "smartMeterObject")]
+    public bool IsConnected { [MemberNotNullWhen(true, "client"), MemberNotNullWhen(true, "smartMeterObject")] get; }
     [MemberNotNullWhen(false, "echonetLiteHandler")]
     protected bool IsDisposed { [MemberNotNullWhen(false, "echonetLiteHandler")] get; }
+    protected ILogger? Logger { get; }
     public LowVoltageSmartElectricEnergyMeter SmartMeter { get; }
+    public ISynchronizeInvoke? SynchronizingObject { get; set; }
     public TimeSpan TimeoutWaitingProactiveNotification { get; set; }
     public TimeSpan TimeoutWaitingResponse1 { get; set; }
     public TimeSpan TimeoutWaitingResponse2 { get; set; }
 
-    public ValueTask ConnectAsync(CancellationToken cancellationToken = default) {}
+    public ValueTask ConnectAsync(ResiliencePipeline? resiliencePipelineForServiceRequest = null, CancellationToken cancellationToken = default) {}
     public async ValueTask DisconnectAsync(CancellationToken cancellationToken = default) {}
     protected virtual void Dispose(bool disposing) {}
     public void Dispose() {}
     public async ValueTask DisposeAsync() {}
     protected virtual async ValueTask DisposeAsyncCore() {}
+    public ValueTask<TResult> RunWithResponseWaitTimer1Async<TResult>(Func<CancellationToken, ValueTask<TResult>> asyncAction, TResult resultForTimeout, CancellationToken cancellationToken = default) {}
+    public ValueTask<TResult> RunWithResponseWaitTimer1Async<TResult>(Func<CancellationToken, ValueTask<TResult>> asyncAction, string? messageForTimeoutException = null, CancellationToken cancellationToken = default) {}
+    public ValueTask<TResult> RunWithResponseWaitTimer2Async<TResult>(Func<CancellationToken, ValueTask<TResult>> asyncAction, string? messageForTimeoutException = null, CancellationToken cancellationToken = default) {}
     [MemberNotNull("client")]
-    [MemberNotNull("Client")]
     [MemberNotNull("smartMeterObject")]
-    [MemberNotNull("controllerObject")]
     protected void ThrowIfDisconnected() {}
+    [MemberNotNull("echonetLiteHandler")]
+    protected void ThrowIfDisposed() {}
   }
 
   public sealed class LowVoltageSmartElectricEnergyMeter : DeviceSuperClass {
@@ -94,6 +106,8 @@ namespace Smdn.Net.EchonetLite.RouteB {
   }
 
   public readonly struct ElectricCurrentValue {
+    public ElectricCurrentValue(short rawValue) {}
+
     public decimal Amperes { get; }
     public bool IsValid { get; }
     public short RawValue { get; }
@@ -104,6 +118,8 @@ namespace Smdn.Net.EchonetLite.RouteB {
   public readonly struct ElectricEnergyValue {
     public static readonly ElectricEnergyValue NoMeasurementData; // = "(no data)"
     public static readonly ElectricEnergyValue Zero; // = "0 [kWh]"
+
+    public ElectricEnergyValue(int rawValue, decimal multiplierToKiloWattHours) {}
 
     public bool IsValid { get; }
     public decimal KiloWattHours { get; }
@@ -138,5 +154,5 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport {
     public static IServiceCollection AddRouteBHandler(this IServiceCollection services, Action<IRouteBEchonetLiteHandlerBuilder> configure) {}
   }
 }
-// API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.4.1.0.
+// API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.5.0.0.
 // Smdn.Reflection.ReverseGenerating.ListApi.Core v1.3.1.0 (https://github.com/smdn/Smdn.Reflection.ReverseGenerating)
