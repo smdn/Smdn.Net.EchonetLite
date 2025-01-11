@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿// SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
+// SPDX-License-Identifier: MIT
+using System.Net;
 using System.Net.NetworkInformation;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -11,12 +13,12 @@ using Polly.Telemetry;
 
 using Smdn.Devices.BP35XX;
 using Smdn.Net.EchonetLite.RouteB.Credentials;
-using Smdn.Net.EchonetLite.RouteB.DataAggregation;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 using Smdn.Net.SkStackIP;
 using Smdn.Net.SkStackIP.Protocol;
+using Smdn.Net.SmartMeter;
 
 // SmartMeterAggregationServiceをホストするアプリケーションを構築するHostApplicationBuilderを作成します
 var builder = Host.CreateApplicationBuilder(args);

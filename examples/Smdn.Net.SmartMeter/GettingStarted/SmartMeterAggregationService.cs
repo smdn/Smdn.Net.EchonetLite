@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 using Microsoft.Extensions.Hosting;
 
-using Smdn.Net.EchonetLite.RouteB.DataAggregation;
+using Smdn.Net.SmartMeter;
 
 /// <summary>
 /// スマートメーターに接続して定期的なデータ収集を行う<see cref="BackgroundService"/>を実装します。

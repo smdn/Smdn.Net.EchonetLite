@@ -11,16 +11,19 @@ SPDX-License-Identifier: MIT
     <ItemGroup>
       <_SmdnNetEchonetLiteReference
         Include="@(PackageReference)"
-        Condition="$([System.String]::new('%(Identity)').StartsWith('Smdn.Net.EchonetLite'))"
+        Condition="
+          $([System.String]::new('%(Identity)').StartsWith('Smdn.Net.EchonetLite')) or
+          $([System.String]::new('%(Identity)').StartsWith('Smdn.Net.SmartMeter'))
+        "
         ProjectPath="$(MSBuildThisFileDirectory)..\src\%(Identity)\%(Identity).csproj"
       />
     </ItemGroup>
 
     <ItemGroup>
-      <!-- Remove package references to Smdn.Net.EchonetLite.* -->
+      <!-- Remove package references to Smdn.Net.EchonetLite.* and Smdn.Net.SmartMeter.* -->
       <PackageReference Remove="@(_SmdnNetEchonetLiteReference)" />
 
-      <!-- Include project reference to Smdn.Net.EchonetLite.* -->
+      <!-- Include project reference to Smdn.Net.EchonetLite.* and Smdn.Net.SmartMeter.* -->
       <ProjectReference Include="%(_SmdnNetEchonetLiteReference.ProjectPath)" />
     </ItemGroup>
   </Target>
