@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Smdn.Net.EchonetLite.RouteB" Version="2.*-*" />
+    <PackageReference Include="Smdn.Net.EchonetLite.RouteB" Version="2.*" />
     <PackageReference Include="Smdn.Net.EchonetLite.RouteB.BP35XX" Version="2.*-*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
   </ItemGroup>
