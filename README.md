@@ -106,12 +106,16 @@ Bルートサービスに接続してスマートメーターとの通信を行�
 - 低圧スマート電力量メータ: 東京電力管内・1機
 
 # 参考情報
-* [HEMS-スマートメーターBルート(低圧電力メーター)運用ガイドライン第4.0版](http://www.meti.go.jp/committee/kenkyukai/shoujo/smart_house/pdf/009_s03_00.pdf)
-* [エコーネット規格　（一般公開）](https://echonet.jp/spec_g/)
-* [GitHub SkyleyNetworks/SKSTACK_API](https://github.com/SkyleyNetworks/SKSTACK_API)
-* [MoekadenRoom (機器オブジェクトエミュレーター)](https://github.com/SonyCSL/MoekadenRoom/blob/master/README.jp.md)
-* [OpenECHO (ECHONET Liteのjava実装)](https://github.com/SonyCSL/OpenECHO)
-
+- ECHONET Lite・Bルートサービス
+  - [ECHONET Lite規格書](https://echonet.jp/spec_g/)
+  - (PDF) [EMS・アグリゲーションコントローラースマートメーターBルート(低圧スマート電力量メーター)運用ガイドライン 第5.0版](https://www.meti.go.jp/shingikai/energy_environment/jisedai_smart_meter/pdf/20220531_2.pdf)
+  - [電力メーター情報発信サービス（Bルートサービス）｜電力自由化への対応｜東京電力パワーグリッド株式会社](https://www.tepco.co.jp/pg/consignment/liberalization/smartmeter-broute.html)
+- Wi-SUNモジュール
+  - [Wi-SUNモジュール - 製品検索結果 | ローム株式会社 - ROHM Semiconductor](https://www.rohm.co.jp/products/wireless-communication/specified-low-power-radio-modules)
+  - [SKSTACK IP for HAN - Skyley Official Wiki](https://www.skyley.com/wiki/?SKSTACK+IP+for+HAN)
+- How To
+  - [Bルートやってみた - Skyley Official Wiki](https://www.skyley.com/wiki/?B%E3%83%AB%E3%83%BC%E3%83%88%E3%82%84%E3%81%A3%E3%81%A6%E3%81%BF%E3%81%9F)
+  - [.NET Core2.1でスマートメーターと戯れる Part1 #C# - Qiita](https://qiita.com/HiroyukiSakoh/items/a93a76db89a9d6b80108)
 
 
 # For contributers
