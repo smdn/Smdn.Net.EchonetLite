@@ -20,9 +20,9 @@
 - [tests/](./tests/) - 各ライブラリ(アセンブリ)のNUnitテストスイートです。　各ディレクトリは、`テスト対象のアセンブリ名`/`名前空間`の階層構造になっています。
 
 ## Smdn.Net.EchonetLite
-[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite/)
-
 [Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)は、「[ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様](https://echonet.jp/spec_g/)」(en:[Part II ECHONET Lite Communication Middleware Specifications](https://echonet.jp/spec_g/))に記載されている仕様に基づく実装を提供します。
+
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite/)
 
 <details>
 <summary>Read More</summary>
@@ -35,9 +35,9 @@ version 2.0.0時点では、[同仕様Ver.1.14](https://echonet.jp/spec_v114_lit
 
 
 ## Smdn.Net.EchonetLite.RouteB
-[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.RouteB.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.RouteB/)
-
 [Smdn.Net.EchonetLite.RouteB](./src/Smdn.Net.EchonetLite.RouteB/)は、「[低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書](https://echonet.jp/spec_g/)」(en:[Interface Specification for Application Layer Communication between Smart Electric Energy Meters and HEMS Controllers](https://echonet.jp/spec-en/))に記載されている仕様に基づく実装を提供します。
+
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.RouteB.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.RouteB/)
 
 <details>
 <summary>Read More</summary>
@@ -46,19 +46,19 @@ version 2.0.0時点では、[同仕様Ver.1.14](https://echonet.jp/spec_v114_lit
 
 実際にスマートメーターとの通信を行うには、Bルートサービスに接続可能なデバイス、及びそれを操作する`RouteBEchonetLiteHandler`の具象クラスが必要です。　具体的には、`Smdn.Net.EchonetLite.RouteB.BP35XX`などのライブラリと組み合わせて使用してください。
 
+</details>
+
 > [!NOTE]
 > version 2.0.0時点の`LowVoltageSmartElectricEnergyMeter`は、APPENDIX Release KまでのECHONETプロパティが実装済み・実機動作確認済みとなっています。
-> これ以降のReleaseで追加されたECHONETプロパティについては、実機での動作が確認出来次第、実装したいと考えています。
-> より新しいECHONETプロパティを搭載するスマートメータでの動作検証が可能な方がいましたら、ご協力ください。
-
-</details>
+>
+> これ以降のReleaseで追加されたECHONETプロパティについては、実機での動作が確認出来次第、実装したいと考えています。　より新しいECHONETプロパティを搭載するスマートメータでの動作検証が可能な方がいましたら、ご協力ください。
 
 
 
 ## Smdn.Net.SmartMeter
-[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.SmartMeter.svg)](https://www.nuget.org/packages/Smdn.Net.SmartMeter/)
-
 [Smdn.Net.SmartMeter](./src/Smdn.Net.SmartMeter/)は、スマートメーターから定期的なデータ収集を行うためのAPIを提供します。
+
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.SmartMeter.svg)](https://www.nuget.org/packages/Smdn.Net.SmartMeter/)
 
 <details>
 <summary>Read More</summary>
@@ -73,9 +73,9 @@ version 2.0.0時点では、[同仕様Ver.1.14](https://echonet.jp/spec_v114_lit
 ## その他のライブラリ
 
 ### Smdn.Net.EchonetLite.Primitives
-[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Primitives.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Primitives/)
-
 `Smdn.Net.EchonetLite.*`で共通して使用される型と抽象化機能を提供します。
+
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Primitives.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Primitives/)
 
 <details>
 <summary>Read More</summary>
@@ -85,9 +85,9 @@ version 2.0.0時点では、[同仕様Ver.1.14](https://echonet.jp/spec_v114_lit
 
 
 ### Smdn.Net.EchonetLite.RouteB.Primitives
-[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.RouteB.Primitives.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.RouteB.Primitives/)
-
 `Smdn.Net.EchonetLite.RouteB.*`で共通して使用される型と抽象化機能を提供します。
+
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.RouteB.Primitives.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.RouteB.Primitives/)
 
 <details>
 <summary>Read More</summary>
@@ -97,21 +97,20 @@ Bルートサービスに接続してスマートメーターとの通信を行�
 
 
 ### Smdn.Net.EchonetLite.Appendix
-[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Appendix.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Appendix/)
-
 [Smdn.Net.EchonetLite.Appendix](./src/Smdn.Net.EchonetLite.Appendix/)は、「[ECHONET SPECIFICATION APPENDIX ECHONET 機器オブジェクト詳細規定](https://echonet.jp/spec_g/)」(en:[APPENDIX Detailed Requirements for ECHONET Device objects](https://echonet.jp/spec_g/))に記載されているクラスグループ・機器オブジェクト・プロパティ構成の定義、およびその定義を参照するためのAPIを提供します。
+
+[![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Appendix.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Appendix/)
 
 <details>
 <summary>Read More</summary>
 
 [APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）](https://echonet.jp/spec_old_lite/#standard-03)をもとに[生成したJSONファイル](./src/Smdn.Net.EchonetLite.Appendix/MasterData/)をアセンブリのリソースとして埋め込んでいます。　また、それを読み取るクラス郡を実装しています。
+</details>
 
 > [!NOTE]
 > 本ライブラリは、オリジナルにおける`EchoDotNetLite.Specifications`をベースにしています。　オリジナルでは手作業によりAPPENDIXからJSONへ変換しているため、その過程で脱字・転記ミス等が発生している可能性あります。
 >
 > 今後のバージョンで、より新しいReleaseへの追従、および[Machine Readable Appendix](https://echonet.jp/spec_g/)をベースにした生成手段を使用するよう改善予定です。
-
-</details>
 
 
 
