@@ -46,6 +46,11 @@ version 2.0.0時点では、[同仕様Ver.1.14](https://echonet.jp/spec_v114_lit
 
 実際にスマートメーターとの通信を行うには、Bルートサービスに接続可能なデバイス、及びそれを操作する`RouteBEchonetLiteHandler`の具象クラスが必要です。　具体的には、`Smdn.Net.EchonetLite.RouteB.BP35XX`などのライブラリと組み合わせて使用してください。
 
+> [!NOTE]
+> version 2.0.0時点の`LowVoltageSmartElectricEnergyMeter`は、APPENDIX Release KまでのECHONETプロパティが実装済み・実機動作確認済みとなっています。
+> これ以降のReleaseで追加されたECHONETプロパティについては、実機での動作が確認出来次第、実装したいと考えています。
+> より新しいECHONETプロパティを搭載するスマートメータでの動作検証が可能な方がいましたら、ご協力ください。
+
 </details>
 
 
