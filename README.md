@@ -24,27 +24,45 @@
 
 [Smdn.Net.EchonetLite](./src/Smdn.Net.EchonetLite/)は、「[ECHONET Lite SPECIFICATION 第２部 ECHONET Lite 通信ミドルウェア仕様](https://echonet.jp/spec_g/)」(en:[Part II ECHONET Lite Communication Middleware Specifications](https://echonet.jp/spec_g/))に記載されている仕様に基づく実装を提供します。
 
+<details>
+<summary>Read More</summary>
+
 このライブラリでは、同仕様書における**通信ミドルウェア**(**Communication Middleware**)に相当する機能を.NETで実装した`EchonetClient`など、ECHONET Liteデバイスとの通信を行うためのAPI・抽象化モデルを提供します。
 
 version 2.0.0時点では、[同仕様Ver.1.14](https://echonet.jp/spec_v114_lite/)をもとに、[低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書](https://echonet.jp/spec_g/)で要求される機能を中心に実装しています。
+</details>
+
+
 
 ## Smdn.Net.EchonetLite.RouteB
 [![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.RouteB.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.RouteB/)
 
 [Smdn.Net.EchonetLite.RouteB](./src/Smdn.Net.EchonetLite.RouteB/)は、「[低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書](https://echonet.jp/spec_g/)」(en:[Interface Specification for Application Layer Communication between Smart Electric Energy Meters and HEMS Controllers](https://echonet.jp/spec-en/))に記載されている仕様に基づく実装を提供します。
 
+<details>
+<summary>Read More</summary>
+
 このライブラリでは、低圧スマート電力量メータとの通信を確立するための対向デバイスとなる**HEMSコントローラ**を実装する`HemsController`、また**機器オブジェクト詳細規定**で規定される低圧スマート電力量メータクラスを実装し、実際に値を読み出すためAPIを提供する`LowVoltageSmartElectricEnergyMeter`、Bルートでの通信機能と認証情報を`IServiceCollection`に追加するためのDI機構を提供する拡張メソッドなどを提供します。
 
 実際にスマートメーターとの通信を行うには、Bルートサービスに接続可能なデバイス、及びそれを操作する`RouteBEchonetLiteHandler`の具象クラスが必要です。　具体的には、`Smdn.Net.EchonetLite.RouteB.BP35XX`などのライブラリと組み合わせて使用してください。
+
+</details>
+
+
 
 ## Smdn.Net.SmartMeter
 [![NuGet](https://img.shields.io/nuget/v/Smdn.Net.SmartMeter.svg)](https://www.nuget.org/packages/Smdn.Net.SmartMeter/)
 
 [Smdn.Net.SmartMeter](./src/Smdn.Net.SmartMeter/)は、スマートメーターから定期的なデータ収集を行うためのAPIを提供します。
 
+<details>
+<summary>Read More</summary>
+
 `SmartMeterDataAggregator`は、スマートメーターに対してバックグラウンドで定期的なデータ収集行い、瞬時電力、瞬時電流、および日間・週間・月間などの期間ごとの積算電力量を一定間隔ごとに継続して収集します。
 
 `SmartMeterDataAggregator`は、[BackgroundService](https://learn.microsoft.com/ja-jp/dotnet/core/extensions/workers)などで長期間安定して動作させるために、Pollyの[ResiliencePipeline](https://www.pollydocs.org/pipelines/)による例外ハンドリング・タイムアウトとリトライ・再接続による回復などもサポートします。
+</details>
+
 
 
 ## その他のライブラリ
@@ -52,14 +70,25 @@ version 2.0.0時点では、[同仕様Ver.1.14](https://echonet.jp/spec_v114_lit
 ### Smdn.Net.EchonetLite.Primitives
 [![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.Primitives.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.Primitives/)
 
+`Smdn.Net.EchonetLite.*`で共通して使用される型と抽象化機能を提供します。
+
+<details>
+<summary>Read More</summary>
+
 「[ECHONET Lite 通信ミドルウェア仕様](https://echonet.jp/spec_g/)」における**下位通信層**(**Lower Communication Layers**)との通信エンドポイントを実装するためのインターフェース`IEchonetLiteHandler`、「[ECHONET SPECIFICATION APPENDIX ECHONET 機器オブジェクト詳細規定](https://echonet.jp/spec_g/)」(en:[APPENDIX Detailed Requirements for ECHONET Device objects](https://echonet.jp/spec_g/))で定義される機器オブジェクト・プロファイルオブジェクトおよび各ECHONETプロパティの詳細規定を参照するためのインターフェイス``IEchonetObjectSpecification``・``IEchonetPropertySpecification``を提供します。
+</details>
 
 
 ### Smdn.Net.EchonetLite.RouteB.Primitives
 [![NuGet](https://img.shields.io/nuget/v/Smdn.Net.EchonetLite.RouteB.Primitives.svg)](https://www.nuget.org/packages/Smdn.Net.EchonetLite.RouteB.Primitives/)
 
-Bルートサービスに接続してスマートメーターとの通信を行うための機能を実装するための抽象クラス`RouteBEchonetLiteHandler`、およびBルートの認証情報を取得してデバイスに書き込むためのインターフェイス`IRouteBCredential`などを提供します。
+`Smdn.Net.EchonetLite.RouteB.*`で共通して使用される型と抽象化機能を提供します。
 
+<details>
+<summary>Read More</summary>
+
+Bルートサービスに接続してスマートメーターとの通信を行うための機能を実装するための抽象クラス`RouteBEchonetLiteHandler`、およびBルートの認証情報を取得してデバイスに書き込むためのインターフェイス`IRouteBCredential`などを提供します。
+</details>
 
 
 ### Smdn.Net.EchonetLite.Appendix
@@ -67,12 +96,18 @@ Bルートサービスに接続してスマートメーターとの通信を行�
 
 [Smdn.Net.EchonetLite.Appendix](./src/Smdn.Net.EchonetLite.Appendix/)は、「[ECHONET SPECIFICATION APPENDIX ECHONET 機器オブジェクト詳細規定](https://echonet.jp/spec_g/)」(en:[APPENDIX Detailed Requirements for ECHONET Device objects](https://echonet.jp/spec_g/))に記載されているクラスグループ・機器オブジェクト・プロパティ構成の定義、およびその定義を参照するためのAPIを提供します。
 
+<details>
+<summary>Read More</summary>
+
 [APPENDIX ECHONET機器オブジェクト詳細規定 Release K （日本語版）](https://echonet.jp/spec_old_lite/#standard-03)をもとに[生成したJSONファイル](./src/Smdn.Net.EchonetLite.Appendix/MasterData/)をアセンブリのリソースとして埋め込んでいます。　また、それを読み取るクラス郡を実装しています。
 
 > [!NOTE]
 > 本ライブラリは、オリジナルにおける`EchoDotNetLite.Specifications`をベースにしています。　オリジナルでは手作業によりAPPENDIXからJSONへ変換しているため、その過程で脱字・転記ミス等が発生している可能性あります。
 >
 > 今後のバージョンで、より新しいReleaseへの追従、および[Machine Readable Appendix](https://echonet.jp/spec_g/)をベースにした生成手段を使用するよう改善予定です。
+
+</details>
+
 
 
 ### その他のプロジェクト/ライブラリ
