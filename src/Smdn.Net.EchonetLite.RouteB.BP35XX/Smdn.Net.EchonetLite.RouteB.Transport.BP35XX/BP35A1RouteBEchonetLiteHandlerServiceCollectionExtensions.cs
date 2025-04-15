@@ -22,19 +22,79 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
 public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
-  /// <inheritdoc cref="AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(IServiceCollection, RetryStrategyOptions, SkStackRouteBSessionConfiguration, Action{ResiliencePipelineBuilder, AddResiliencePipelineContext{string}})"/>
+#pragma warning disable SA1004
+  /// <inheritdoc cref="
+  /// AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+  ///   IServiceCollection,
+  ///   SkStackRouteBSessionConfiguration,
+  ///   Action{
+  ///     ResiliencePipelineBuilder{object?},
+  ///     AddResiliencePipelineContext{string},
+  ///     Func{
+  ///       ResilienceContext,
+  ///       ValueTask
+  ///     }
+  ///   }
+  /// )
+  /// "/>
+  /// <param name="services">サービスを追加する対象の<see cref="IServiceCollection"/>。</param>
+  /// <param name="routeBSessionConfiguration">
+  /// アクティブスキャンの実行で発見を期待するPANA認証エージェント(PAA)、および
+  /// アクティブスキャンのオプションを指定する<see cref="SkStackActiveScanOptions"/>が設定された<see cref="SkStackRouteBSessionConfiguration"/>。
+  /// </param>
+  /// <param name="retryOptions">
+  /// 追加される<see cref="ResiliencePipeline"/>に適用する<see cref="RetryStrategyOptions"/>を指定します。
+  /// <see cref="RetryStrategyOptions{TResult}.OnRetry"/>を除くプロパティが適用されます。
+  /// </param>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="services"/>が<see langword="null"/>です。
+  /// または、<paramref name="retryOptions"/>が<see langword="null"/>です。
+  /// または、<paramref name="routeBSessionConfiguration"/>が<see langword="null"/>です。
+  /// </exception>
+#pragma warning restore SA1004
   [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
   public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
     this IServiceCollection services,
-    RetryStrategyOptions retryOptions,
+    RetryStrategyOptions<object?> retryOptions,
     SkStackRouteBSessionConfiguration routeBSessionConfiguration
   )
-    => AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+  {
+    if (services is null)
+      throw new ArgumentNullException(nameof(services));
+    if (retryOptions is null)
+      throw new ArgumentNullException(nameof(retryOptions));
+    if (routeBSessionConfiguration is null)
+      throw new ArgumentNullException(nameof(routeBSessionConfiguration));
+
+    return AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
       services: services,
-      retryOptions: retryOptions,
       routeBSessionConfiguration: routeBSessionConfiguration,
-      configure: static (builder, context) => { /* do nothing */ }
+      configureWorkaroundPipeline: (builder, context, applyWorkaroundAsync) => {
+        builder.AddRetry(
+          new RetryStrategyOptions<object?> {
+            ShouldHandle = args => {
+              if (args.Outcome.Exception is SkStackPanaSessionEstablishmentException)
+                return new(true);
+
+              return retryOptions.ShouldHandle(args);
+            },
+            OnRetry = retryArgs => {
+              if (retryArgs.AttemptNumber < retryOptions.MaxRetryAttempts - 1)
+                return default; // do nothing
+              else
+                return applyWorkaroundAsync(retryArgs.Context);
+            },
+            MaxRetryAttempts = retryOptions.MaxRetryAttempts,
+            BackoffType = retryOptions.BackoffType,
+            UseJitter = retryOptions.UseJitter,
+            MaxDelay = retryOptions.MaxDelay,
+            DelayGenerator = retryOptions.DelayGenerator,
+            Randomizer = retryOptions.Randomizer,
+          }
+        );
+      }
     );
+  }
 
   /// <summary>
   /// <see cref="IServiceCollection"/>に対して、BP35A1でのPANA認証失敗時のリトライと回避策の適用を行う<see cref="ResiliencePipeline"/>を追加します。
@@ -54,86 +114,71 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   ///   </para>
   /// </remarks>
   /// <param name="services">サービスを追加する対象の<see cref="IServiceCollection"/>。</param>
-  /// <param name="retryOptions">
-  /// 追加される<see cref="ResiliencePipeline"/>に適用する<see cref="RetryStrategyOptions"/>を指定します。
-  /// <see cref="RetryStrategyOptions{TResult}.ShouldHandle"/>および<see cref="RetryStrategyOptions{TResult}.OnRetry"/>を除くプロパティが適用されます。
-  /// </param>
   /// <param name="routeBSessionConfiguration">
   /// アクティブスキャンの実行で発見を期待するPANA認証エージェント(PAA)、および
   /// アクティブスキャンのオプションを指定する<see cref="SkStackActiveScanOptions"/>が設定された<see cref="SkStackRouteBSessionConfiguration"/>。
   /// </param>
-  /// <param name="configure">
+  /// <param name="configureWorkaroundPipeline">
   /// 追加する<see cref="ResiliencePipeline"/>を設定する<see cref="ResiliencePipelineBuilder"/>を処理するデリゲートを指定します。
+  /// 第三引数に、ワークアラウンドを適用するためのメソッドへのデリゲートが渡されます。
   /// </param>
   /// <returns>サービスを追加した<see cref="IServiceCollection"/>。</returns>
   /// <exception cref="ArgumentNullException">
   /// <paramref name="services"/>が<see langword="null"/>です。
-  /// または、<paramref name="retryOptions"/>が<see langword="null"/>です。
   /// または、<paramref name="routeBSessionConfiguration"/>が<see langword="null"/>です。
-  /// または、<paramref name="configure"/>が<see langword="null"/>です。
+  /// または、<paramref name="configureWorkaroundPipeline"/>が<see langword="null"/>です。
   /// </exception>
   [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
   public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
     this IServiceCollection services,
-    RetryStrategyOptions retryOptions,
     SkStackRouteBSessionConfiguration routeBSessionConfiguration,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
+    Action<
+      ResiliencePipelineBuilder<object?>,
+      AddResiliencePipelineContext<string>,
+      Func<ResilienceContext, ValueTask>
+    > configureWorkaroundPipeline
   )
   {
 #pragma warning disable CA1510
     if (services is null)
       throw new ArgumentNullException(nameof(services));
-    if (retryOptions is null)
-      throw new ArgumentNullException(nameof(retryOptions));
     if (routeBSessionConfiguration is null)
       throw new ArgumentNullException(nameof(routeBSessionConfiguration));
-    if (configure is null)
-      throw new ArgumentNullException(nameof(configure));
+    if (configureWorkaroundPipeline is null)
+      throw new ArgumentNullException(nameof(configureWorkaroundPipeline));
 #pragma warning restore CA1510
 
-    return services.AddResiliencePipeline(
-      key: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate,
-      configure: (builder, context) => {
-        builder.AddRetry(
-          new RetryStrategyOptions {
-            ShouldHandle = new PredicateBuilder().Handle<SkStackPanaSessionEstablishmentException>(),
-            OnRetry = new BP35A1RetryPanaAuthentication(
-              retryOptions.MaxRetryAttempts,
-              routeBSessionConfiguration
-            ).OnRetry,
-            MaxRetryAttempts = retryOptions.MaxRetryAttempts,
-            BackoffType = retryOptions.BackoffType,
-            UseJitter = retryOptions.UseJitter,
-            MaxDelay = retryOptions.MaxDelay,
-            DelayGenerator = retryOptions.DelayGenerator,
-            Randomizer = retryOptions.Randomizer,
-          }
-        );
+    var workaround = new BP35A1PanaAuthenticationWorkaround(routeBSessionConfiguration);
 
-        configure(builder, context);
-      }
+    return services.AddResiliencePipeline<string, object?>(
+      key: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate,
+      configure: (builder, context) =>
+        configureWorkaroundPipeline(
+          builder,
+          context,
+          resilienceContext => workaround.ApplyWorkaroundAsync(resilienceContext)
+        )
     );
   }
 
-  private class BP35A1RetryPanaAuthentication(
-    int maxRetryAttempts,
+  private sealed class BP35A1PanaAuthenticationWorkaround(
     SkStackRouteBSessionConfiguration sessionConfiguration
   ) {
     private readonly SkStackRouteBSessionConfiguration sessionConfiguration = sessionConfiguration ?? throw new ArgumentNullException(nameof(sessionConfiguration));
 
-    public async ValueTask OnRetry(OnRetryArguments<object> retryArgs)
+    public async ValueTask ApplyWorkaroundAsync(
+      ResilienceContext resilienceContext
+    )
     {
       // ResilienceContextのプロパティから、処理中のクライアントを取得する
-      if (!retryArgs.Context.Properties.TryGetValue(SkStackRouteBEchonetLiteHandler.ResiliencePropertyKeyForClient, out var client))
+      if (!resilienceContext.Properties.TryGetValue(SkStackRouteBEchonetLiteHandler.ResiliencePropertyKeyForClient, out var client))
         return;
       if (client is null)
         return;
       if (client is not BP35A1)
         return;
-      if (retryArgs.AttemptNumber < maxRetryAttempts - 1)
-        return;
 
-      if (!retryArgs.Context.Properties.TryGetValue(SkStackRouteBEchonetLiteHandler.ResiliencePropertyKeyForLogger, out var logger))
+      if (!resilienceContext.Properties.TryGetValue(SkStackRouteBEchonetLiteHandler.ResiliencePropertyKeyForLogger, out var logger))
         return;
 
       using var scope = logger?.BeginScope("BP35A1 workaround");
@@ -149,7 +194,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
           channelMask: sessionConfiguration.Channel.HasValue
             ? SkStackChannel.CreateMask(sessionConfiguration.Channel.Value)
             : 0xFFFFFFFFu,
-          cancellationToken: retryArgs.Context.CancellationToken
+          cancellationToken: resilienceContext.CancellationToken
         ).ConfigureAwait(false);
 
         if (0 < scanResult.Count) {
@@ -161,7 +206,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
       if (
         activeScanResult is null ||
         activeScanResult.Count == 0 ||
-        !await MatchAnyAsync(client, activeScanResult, retryArgs.Context.CancellationToken).ConfigureAwait(false)
+        !await MatchAnyAsync(client, activeScanResult, resilienceContext.CancellationToken).ConfigureAwait(false)
       ) {
         logger?.LogError("The active scan did not find any matching PAA.");
 
