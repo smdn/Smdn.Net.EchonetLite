@@ -16,7 +16,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
   public Action<SkStackClient>? ConfigureSkStackClient { get; set; }
   public Action<SkStackRouteBSessionConfiguration>? ConfigureRouteBSessionConfiguration { get; set; }
 
-  public virtual ValueTask<RouteBEchonetLiteHandler> CreateAsync(
+  public ValueTask<RouteBEchonetLiteHandler> CreateAsync(
     CancellationToken cancellationToken
   )
   {
