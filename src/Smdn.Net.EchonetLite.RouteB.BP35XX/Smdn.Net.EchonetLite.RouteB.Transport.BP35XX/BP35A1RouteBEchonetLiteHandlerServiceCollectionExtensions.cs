@@ -20,7 +20,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   /// AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
   ///   IServiceCollection,
   ///   Action{
-  ///     ResiliencePipelineBuilder{object?},
+  ///     ResiliencePipelineBuilder,
   ///     AddResiliencePipelineContext{string},
   ///     Func{
   ///       ResilienceContext,
@@ -42,7 +42,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
   public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
     this IServiceCollection services,
-    RetryStrategyOptions<object?> retryOptions
+    RetryStrategyOptions retryOptions
   )
   {
     if (services is null)
@@ -54,7 +54,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
       services: services,
       configureWorkaroundPipeline: (builder, context, applyWorkaroundAsync) => {
         builder.AddRetry(
-          new RetryStrategyOptions<object?> {
+          new RetryStrategyOptions {
             ShouldHandle = args => {
               if (args.Outcome.Exception is SkStackPanaSessionEstablishmentException)
                 return new(true);
@@ -110,7 +110,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
     this IServiceCollection services,
     Action<
-      ResiliencePipelineBuilder<object?>,
+      ResiliencePipelineBuilder,
       AddResiliencePipelineContext<string>,
       Func<ResilienceContext, ValueTask>
     > configureWorkaroundPipeline
@@ -123,7 +123,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
       throw new ArgumentNullException(nameof(configureWorkaroundPipeline));
 #pragma warning restore CA1510
 
-    return services.AddResiliencePipeline<string, object?>(
+    return services.AddResiliencePipeline<string>(
       key: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate,
       configure: (builder, context) =>
         configureWorkaroundPipeline(
