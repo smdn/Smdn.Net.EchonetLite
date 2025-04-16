@@ -146,6 +146,8 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
       throw new InvalidOperationException("PANA session has already been established.");
 #pragma warning restore CS8602
 
+    await PrepareSessionAsync(cancellationToken).ConfigureAwait(false);
+
     var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     try {
@@ -153,8 +155,6 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 
       panaSessionInfo = await resiliencePipelineAuthenticate.ExecuteAsync(
         callback: async ctx => {
-          await PrepareSessionAsync(ctx.CancellationToken).ConfigureAwait(false);
-
           return await AuthenticateAsPanaClientAsync(ctx.CancellationToken).ConfigureAwait(false);
         },
         context: resilienceContext
