@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 
+#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
+
 using System;
 using System.Buffers;
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
@@ -155,6 +157,8 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 
       panaSessionInfo = await resiliencePipelineAuthenticate.ExecuteAsync(
         callback: async ctx => {
+          Logger?.LogInformation("Starting the PANA authentication ...");
+
           return await AuthenticateAsPanaClientAsync(ctx.CancellationToken).ConfigureAwait(false);
         },
         context: resilienceContext
@@ -163,6 +167,14 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     finally {
       ResilienceContextPool.Shared.Return(resilienceContext);
     }
+
+    Logger?.LogInformation(
+      "PANA session has been established. (Address={Address}, MacAddress={MacAddress}, Channel={Channel}, PanId={PanId})",
+      panaSessionInfo.PeerAddress,
+      panaSessionInfo.PeerMacAddress,
+      panaSessionInfo.Channel,
+      panaSessionInfo.PanId
+    );
 
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
 #pragma warning disable CS8602
