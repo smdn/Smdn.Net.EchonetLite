@@ -26,10 +26,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
   public static readonly string ResiliencePipelineKeyForSend = nameof(SkStackRouteBEchonetLiteHandler) + "." + nameof(resiliencePipelineSend);
 
   [CLSCompliant(false)]
-  public static readonly ResiliencePropertyKey<SkStackClient?> ResiliencePropertyKeyForClient = new(nameof(ResiliencePropertyKeyForClient));
-
-  [CLSCompliant(false)]
-  public static readonly ResiliencePropertyKey<ILogger?> ResiliencePropertyKeyForLogger = new(nameof(ResiliencePropertyKeyForLogger));
+  public static readonly ResiliencePropertyKey<SkStackRouteBEchonetLiteHandler?> ResiliencePropertyKeyForInstance = new(nameof(ResiliencePropertyKeyForInstance));
 
   private SkStackClient? client;
   private readonly bool shouldDisposeClient;
@@ -45,7 +42,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
   /// <inheritdoc/>
   public override IPAddress? PeerAddress => panaSessionInfo?.PeerAddress;
 
-  private protected SkStackClient Client {
+  protected SkStackClient Client {
     get {
       ThrowIfDisposed();
 
@@ -54,6 +51,14 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 #endif
       return client;
 #pragma warning restore CS8603
+    }
+  }
+
+  protected SkStackRouteBSessionConfiguration SessionConfiguration {
+    get {
+      ThrowIfDisposed();
+
+      return sessionConfiguration;
     }
   }
 
@@ -144,8 +149,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
     try {
-      resilienceContext.Properties.Set(ResiliencePropertyKeyForClient, client);
-      resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
+      resilienceContext.Properties.Set(ResiliencePropertyKeyForInstance, this);
 
       panaSessionInfo = await resiliencePipelineAuthenticate.ExecuteAsync(
         callback: async ctx => {
