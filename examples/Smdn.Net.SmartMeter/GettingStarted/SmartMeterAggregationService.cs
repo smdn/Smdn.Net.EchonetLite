@@ -1,5 +1,3 @@
-// SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
-// SPDX-License-Identifier: MIT
 using Microsoft.Extensions.Hosting;
 
 using Smdn.Net.SmartMeter;

@@ -1,6 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
-// SPDX-License-Identifier: MIT
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Smdn.Devices.BP35XX;
