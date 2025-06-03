@@ -71,6 +71,37 @@ public class SmartMeterDataAggregator : HemsController {
   public static readonly string ResiliencePipelineKeyForRunAggregationTask
     = nameof(SmartMeterDataAggregator) + "." + nameof(resiliencePipelineRunAggregationTask);
 
+  // [CLSCompliant(false)]
+  internal static readonly ResiliencePropertyKey<ILogger?> ResiliencePropertyKeyForLogger = new(
+    $"{nameof(SmartMeterDataAggregator)}.{nameof(ResiliencePropertyKeyForLogger)}"
+  );
+
+  /// <summary>
+  /// 現在処理中の<see cref="ResiliencePipeline"/>に関連付けられている<see cref="ResilienceContext"/>から
+  /// <see cref="SmartMeterDataAggregator"/>の動作を記録する<see cref="ILogger"/>を取得します。
+  /// </summary>
+  /// <param name="resilienceContext">
+  /// 現在処理中の<see cref="ResiliencePipeline"/>に関連付けられている<see cref="ResilienceContext"/>。
+  /// </param>
+  /// <returns>
+  /// <see cref="SmartMeterDataAggregator"/>に<see cref="ILogger"/>が設定されている場合は、そのインスタンス。
+  /// 設定されていない場合は、<see langword="null"/>。
+  /// </returns>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="resilienceContext"/>が<see langword="null"/>です。
+  /// </exception>
+  [CLSCompliant(false)]
+  public static ILogger? GetLoggerForResiliencePipeline(ResilienceContext resilienceContext)
+  {
+    if (resilienceContext is null)
+      throw new ArgumentNullException(nameof(resilienceContext));
+
+    if (resilienceContext.Properties.TryGetValue(ResiliencePropertyKeyForLogger, out var logger))
+      return logger;
+
+    return null;
+  }
+
   /// <summary>
   /// 収集する対象のデータを表す<see cref="SmartMeterDataAggregation"/>のコレクションを取得します。
   /// </summary>
@@ -195,17 +226,24 @@ public class SmartMeterDataAggregator : HemsController {
   {
     Logger?.LogDebug("Connecting to the smart meter ...");
 
-    await resiliencePipelineConnectToSmartMeter.ExecuteAsync(
-#pragma warning disable IDE0200
-      async ct => await ConnectAsync(
-        resiliencePipelineForServiceRequest: ResiliencePipelineReadSmartMeterPropertyValue,
-        cancellationToken: ct
-      ).ConfigureAwait(false),
-#pragma warning restore IDE0200
-      cancellationToken: cancellationToken
-    ).ConfigureAwait(false);
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
-    Logger?.LogInformation("Connected to the smart meter.");
+    try {
+      resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
+
+      await resiliencePipelineConnectToSmartMeter.ExecuteAsync(
+        callback: async ctx => await ConnectAsync(
+          resiliencePipelineForServiceRequest: ResiliencePipelineReadSmartMeterPropertyValue,
+          cancellationToken: ctx.CancellationToken
+        ).ConfigureAwait(false),
+        context: resilienceContext
+      ).ConfigureAwait(false);
+
+      Logger?.LogInformation("Connected to the smart meter.");
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
   }
 
   private async ValueTask ReconnectToSmartMeterAsync(CancellationToken cancellationToken)
@@ -218,17 +256,24 @@ public class SmartMeterDataAggregator : HemsController {
 
     Logger?.LogInformation("Disconnected from the smart meter and reconnecting ...");
 
-    await resiliencePipelineReconnectToSmartMeter.ExecuteAsync(
-#pragma warning disable IDE0200
-      async ct => await ConnectAsync(
-        resiliencePipelineForServiceRequest: ResiliencePipelineReadSmartMeterPropertyValue,
-        cancellationToken: ct
-      ).ConfigureAwait(false),
-#pragma warning restore IDE0200
-      cancellationToken: cancellationToken
-    ).ConfigureAwait(false);
+    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
 
-    Logger?.LogInformation("Reconnected to the smart meter.");
+    try {
+      resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
+
+      await resiliencePipelineReconnectToSmartMeter.ExecuteAsync(
+        callback: async ctx => await ConnectAsync(
+          resiliencePipelineForServiceRequest: ResiliencePipelineReadSmartMeterPropertyValue,
+          cancellationToken: ctx.CancellationToken
+        ).ConfigureAwait(false),
+        context: resilienceContext
+      ).ConfigureAwait(false);
+
+      Logger?.LogInformation("Reconnected to the smart meter.");
+    }
+    finally {
+      ResilienceContextPool.Shared.Return(resilienceContext);
+    }
   }
 
   /// <summary>
@@ -283,6 +328,8 @@ public class SmartMeterDataAggregator : HemsController {
         );
 
         try {
+          resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
+
           try {
             await resiliencePipelineRunAggregationTask.ExecuteAsync(
               callback: async (context, state) =>
@@ -615,25 +662,34 @@ public class SmartMeterDataAggregator : HemsController {
       if (stoppingToken.IsCancellationRequested)
         break;
 
-      await resiliencePipelineAcquirePropertyValuesForAggregatingData.ExecuteAsync(
-        ct => AcquirePropertyValuesForAggregatingDataAsync(
-          propertyCodesToAcquire,
-          ct
-        ),
-        cancellationToken: stoppingToken
-      ).ConfigureAwait(false);
+      var resilienceContext = ResilienceContextPool.Shared.Get(stoppingToken);
 
-      foreach (var periodicalAggregation in periodicCumulativeElectricEnergyAggregations) {
-        if (stoppingToken.IsCancellationRequested)
-          break;
+      try {
+        resilienceContext.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
 
-        await resiliencePipelineUpdatePeriodicCumulativeElectricEnergyBaselineValue.ExecuteAsync(
-          ct => periodicalAggregation.UpdateBaselineValueAsync(
-            logger: Logger,
-            cancellationToken: ct
+        await resiliencePipelineAcquirePropertyValuesForAggregatingData.ExecuteAsync(
+          callback: ctx => AcquirePropertyValuesForAggregatingDataAsync(
+            propertyCodesToAcquire,
+            stoppingToken: ctx.CancellationToken
           ),
-          cancellationToken: stoppingToken
+          context: resilienceContext
         ).ConfigureAwait(false);
+
+        foreach (var periodicalAggregation in periodicCumulativeElectricEnergyAggregations) {
+          if (resilienceContext.CancellationToken.IsCancellationRequested)
+            break;
+
+          await resiliencePipelineUpdatePeriodicCumulativeElectricEnergyBaselineValue.ExecuteAsync(
+            callback: ctx => periodicalAggregation.UpdateBaselineValueAsync(
+              logger: Logger,
+              cancellationToken: ctx.CancellationToken
+            ),
+            context: resilienceContext
+          ).ConfigureAwait(false);
+        }
+      }
+      finally {
+        ResilienceContextPool.Shared.Return(resilienceContext);
       }
 
       if (stoppingToken.IsCancellationRequested)
