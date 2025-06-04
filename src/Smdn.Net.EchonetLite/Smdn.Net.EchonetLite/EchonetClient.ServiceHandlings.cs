@@ -22,9 +22,6 @@ namespace Smdn.Net.EchonetLite;
 partial class EchonetClient
 #pragma warning restore IDE0040
 {
-  [CLSCompliant(false)]
-  public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForResponseServiceCode = new(nameof(ResiliencePropertyKeyForResponseServiceCode));
-
   private static readonly Action<ILogger, IPAddress, ushort, Format1Message, Exception?>
   LogExceptionAtFormat1MessageHandler = LoggerMessage.Define<IPAddress, ushort, Format1Message>(
     LogLevel.Error,
@@ -321,10 +318,12 @@ partial class EchonetClient
       return true;
 
     const ESV ResponseServiceCode = ESV.SetIServiceNotAvailable; // SetI_SNA(0x50)
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, ResponseServiceCode);
+    var resilienceContext = CreateResilienceContextForResponse(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: RequestServiceCode,
+      responseServiceCode: ResponseServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
@@ -420,10 +419,12 @@ partial class EchonetClient
     var responseServiceCode = hasError
       ? ESV.SetCServiceNotAvailable // SetC_SNA(0x51)
       : ESV.SetResponse; // Set_Res(0x71)
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
+    var resilienceContext = CreateResilienceContextForResponse(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: RequestServiceCode,
+      responseServiceCode: responseServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
@@ -513,10 +514,12 @@ partial class EchonetClient
     var responseServiceCode = hasError
       ? ESV.GetServiceNotAvailable // Get_SNA(0x52)
       : ESV.GetResponse; // Get_Res(0x72)
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
+    var resilienceContext = CreateResilienceContextForResponse(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: RequestServiceCode,
+      responseServiceCode: responseServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
@@ -632,10 +635,12 @@ partial class EchonetClient
     var responseServiceCode = hasError
       ? ESV.SetGetServiceNotAvailable // SetGet_SNA(0x5E)
       : ESV.SetGetResponse; // SetGet_Res(0x7E)
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
+    var resilienceContext = CreateResilienceContextForResponse(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: RequestServiceCode,
+      responseServiceCode: responseServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       await resiliencePipelineForSendingResponseFrame.ExecuteAsync(
@@ -815,10 +820,12 @@ partial class EchonetClient
 
     if (destObject is not null) {
       const ESV ResponseServiceCode = ESV.InfCResponse; // INFC_Res(0x7A)
-      var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-      resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, RequestServiceCode);
-      resilienceContext.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, ResponseServiceCode);
+      var resilienceContext = CreateResilienceContextForResponse(
+        resilienceContextPool: ResilienceContextPool.Shared,
+        requestServiceCode: RequestServiceCode,
+        responseServiceCode: ResponseServiceCode,
+        cancellationToken: cancellationToken
+      );
 
       try {
         await resiliencePipelineForSendingResponseFrame.ExecuteAsync(

@@ -32,9 +32,6 @@ partial class EchonetClient
   }
 #endif
 
-  [CLSCompliant(false)]
-  public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForRequestServiceCode = new(nameof(ResiliencePropertyKeyForRequestServiceCode));
-
   private static (
     IReadOnlyList<PropertyValue> RequestProperties,
     Dictionary<byte, EchonetServicePropertyResult> Results
@@ -156,9 +153,11 @@ partial class EchonetClient
     }
 #endif
 
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, writeRequestServiceCode);
+    var resilienceContext = CreateResilienceContextForRequest(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: writeRequestServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       const bool StoreValues = true;
@@ -425,9 +424,11 @@ partial class EchonetClient
       () => _ = responseTCS.TrySetCanceled(cancellationToken)
     );
     using var transaction = StartNewTransaction();
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+    var resilienceContext = CreateResilienceContextForRequest(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: ServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       Format1MessageReceived += HandleGetResOrGetSNA;
@@ -536,9 +537,11 @@ partial class EchonetClient
 
     // 応答を待機せずに要求の送信のみを行う
     // 応答の処理は共通のハンドラで行う
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+    var resilienceContext = CreateResilienceContextForRequest(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: ServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
@@ -772,9 +775,11 @@ partial class EchonetClient
 
     // 応答を待機せずに要求の送信のみを行う
     // 応答の処理は共通のハンドラで行う
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+    var resilienceContext = CreateResilienceContextForRequest(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: ServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
@@ -841,9 +846,11 @@ partial class EchonetClient
 
     // 応答を待機せずに要求の送信のみを行う
     // 応答の処理は共通のハンドラで行う
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+    var resilienceContext = CreateResilienceContextForRequest(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: ServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       await (resiliencePipeline ?? ResiliencePipeline.Empty).ExecuteAsync(
@@ -919,9 +926,11 @@ partial class EchonetClient
       () => _ = responseTCS.TrySetCanceled(cancellationToken)
     );
     using var transaction = StartNewTransaction();
-    var resilienceContext = ResilienceContextPool.Shared.Get(cancellationToken);
-
-    resilienceContext.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, ServiceCode);
+    var resilienceContext = CreateResilienceContextForRequest(
+      resilienceContextPool: ResilienceContextPool.Shared,
+      requestServiceCode: ServiceCode,
+      cancellationToken: cancellationToken
+    );
 
     try {
       Format1MessageReceived += HandleINFCRes;
