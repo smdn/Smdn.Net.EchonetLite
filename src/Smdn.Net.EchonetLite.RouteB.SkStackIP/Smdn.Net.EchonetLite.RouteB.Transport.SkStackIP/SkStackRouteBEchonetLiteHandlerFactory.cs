@@ -14,7 +14,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
   private readonly IServiceCollection services = services;
 
   public Action<SkStackClient>? ConfigureSkStackClient { get; set; }
-  public Action<SkStackRouteBSessionConfiguration>? ConfigureRouteBSessionConfiguration { get; set; }
+  public Action<SkStackRouteBSessionOptions>? ConfigureRouteBSessionOptions { get; set; }
 
   public ValueTask<RouteBEchonetLiteHandler> CreateAsync(
     CancellationToken cancellationToken
@@ -27,14 +27,14 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
     // TODO
 #endif
 
-    var sessionConfiguration = new SkStackRouteBSessionConfiguration();
+    var sessionOptions = new SkStackRouteBSessionOptions();
 
-    ConfigureRouteBSessionConfiguration?.Invoke(sessionConfiguration);
+    ConfigureRouteBSessionOptions?.Invoke(sessionOptions);
 
     var serviceProvider = services.BuildServiceProvider();
 
     return CreateAsyncCore(
-      sessionConfiguration: sessionConfiguration,
+      sessionOptions: sessionOptions,
       configureSkStackClient: ConfigureSkStackClient,
       serviceProvider: serviceProvider,
       cancellationToken: cancellationToken
@@ -42,7 +42,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
   }
 
   protected abstract ValueTask<RouteBEchonetLiteHandler> CreateAsyncCore(
-    SkStackRouteBSessionConfiguration sessionConfiguration,
+    SkStackRouteBSessionOptions sessionOptions,
     Action<SkStackClient>? configureSkStackClient,
     IServiceProvider serviceProvider,
     CancellationToken cancellationToken

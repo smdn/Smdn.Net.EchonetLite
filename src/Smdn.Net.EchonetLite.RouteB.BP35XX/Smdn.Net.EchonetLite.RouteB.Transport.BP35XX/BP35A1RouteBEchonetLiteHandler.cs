@@ -20,13 +20,13 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 public sealed class BP35A1RouteBEchonetLiteHandler : SkStackRouteBUdpEchonetLiteHandler {
   public BP35A1RouteBEchonetLiteHandler(
     BP35A1 client,
-    SkStackRouteBSessionConfiguration sessionConfiguration,
+    SkStackRouteBSessionOptions sessionOptions,
     bool shouldDisposeClient = false,
     IServiceProvider? serviceProvider = null
   )
     : base(
       client: client,
-      sessionConfiguration: sessionConfiguration,
+      sessionOptions: sessionOptions,
       shouldDisposeClient: shouldDisposeClient,
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<BP35A1RouteBEchonetLiteHandler>(),
       serviceProvider: serviceProvider
@@ -41,13 +41,13 @@ public sealed class BP35A1RouteBEchonetLiteHandler : SkStackRouteBUdpEchonetLite
     Logger?.LogInformation("Performing an active scan to find the peer PAA.");
 
     IReadOnlyList<SkStackPanDescription>? activeScanResult = null;
-    var scanDurationFactors = (SessionConfiguration.ActiveScanOptions ?? SkStackActiveScanOptions.Default).EnumerateScanDurationFactors();
+    var scanDurationFactors = (SessionOptions.ActiveScanOptions ?? SkStackActiveScanOptions.Default).EnumerateScanDurationFactors();
 
     foreach (var scanDuration in scanDurationFactors) {
       var (_, scanResult) = await Client.SendSKSCANActiveScanPairAsync(
         durationFactor: scanDuration,
-        channelMask: SessionConfiguration.Channel.HasValue
-          ? SkStackChannel.CreateMask(SessionConfiguration.Channel.Value)
+        channelMask: SessionOptions.Channel.HasValue
+          ? SkStackChannel.CreateMask(SessionOptions.Channel.Value)
           : 0xFFFFFFFFu,
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
@@ -74,22 +74,22 @@ public sealed class BP35A1RouteBEchonetLiteHandler : SkStackRouteBUdpEchonetLite
     CancellationToken cancellationToken
   )
   {
-    if (SessionConfiguration.PaaMacAddress is not null) {
-      if (!activeScanResult.Any(desc => desc.MacAddress.Equals(SessionConfiguration.PaaMacAddress)))
+    if (SessionOptions.PaaMacAddress is not null) {
+      if (!activeScanResult.Any(desc => desc.MacAddress.Equals(SessionOptions.PaaMacAddress)))
         return false; // no matching PAA
     }
 
-    if (SessionConfiguration.Channel is not null) {
-      if (!activeScanResult.Any(desc => desc.Channel.Equals(SessionConfiguration.Channel)))
+    if (SessionOptions.Channel is not null) {
+      if (!activeScanResult.Any(desc => desc.Channel.Equals(SessionOptions.Channel)))
         return false; // no matching PAA
     }
 
-    if (SessionConfiguration.PanId is not null) {
-      if (!activeScanResult.Any(desc => desc.Id.Equals(SessionConfiguration.PanId)))
+    if (SessionOptions.PanId is not null) {
+      if (!activeScanResult.Any(desc => desc.Id.Equals(SessionOptions.PanId)))
         return false; // no matching PAA
     }
 
-    if (SessionConfiguration.PaaAddress is not null) {
+    if (SessionOptions.PaaAddress is not null) {
       var matchAny = false;
 
       foreach (var desc in activeScanResult) {
@@ -98,7 +98,7 @@ public sealed class BP35A1RouteBEchonetLiteHandler : SkStackRouteBUdpEchonetLite
           cancellationToken: cancellationToken
         ).ConfigureAwait(false);
 
-        if (paaAddress.Equals(SessionConfiguration.PaaAddress)) {
+        if (paaAddress.Equals(SessionOptions.PaaAddress)) {
           matchAny = true;
           break;
         }

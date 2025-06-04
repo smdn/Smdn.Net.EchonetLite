@@ -18,14 +18,14 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 public class SkStackRouteBUdpEchonetLiteHandler : SkStackRouteBEchonetLiteHandler {
   public SkStackRouteBUdpEchonetLiteHandler(
     SkStackClient client,
-    SkStackRouteBSessionConfiguration sessionConfiguration,
+    SkStackRouteBSessionOptions sessionOptions,
     bool shouldDisposeClient = false,
     ILogger? logger = null,
     IServiceProvider? serviceProvider = null
   )
     : base(
       client: client,
-      sessionConfiguration: sessionConfiguration,
+      sessionOptions: sessionOptions,
       shouldDisposeClient: shouldDisposeClient,
       logger: logger,
       serviceProvider: serviceProvider

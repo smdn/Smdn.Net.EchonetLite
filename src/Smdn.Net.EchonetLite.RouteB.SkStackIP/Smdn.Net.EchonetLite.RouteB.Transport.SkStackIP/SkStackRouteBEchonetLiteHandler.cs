@@ -34,7 +34,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
 
   private SkStackClient? client;
   private readonly bool shouldDisposeClient;
-  private readonly SkStackRouteBSessionConfiguration sessionConfiguration;
+  private readonly SkStackRouteBSessionOptions sessionOptions;
   private readonly ResiliencePipeline resiliencePipelineAuthenticate;
   private readonly ResiliencePipeline resiliencePipelineSend;
   private SkStackPanaSessionInfo? panaSessionInfo;
@@ -58,17 +58,17 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     }
   }
 
-  protected SkStackRouteBSessionConfiguration SessionConfiguration {
+  protected SkStackRouteBSessionOptions SessionOptions {
     get {
       ThrowIfDisposed();
 
-      return sessionConfiguration;
+      return sessionOptions;
     }
   }
 
   private protected SkStackRouteBEchonetLiteHandler(
     SkStackClient client,
-    SkStackRouteBSessionConfiguration sessionConfiguration,
+    SkStackRouteBSessionOptions sessionOptions,
     bool shouldDisposeClient,
     ILogger? logger,
     IServiceProvider? serviceProvider
@@ -79,7 +79,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     )
   {
     this.client = client ?? throw new ArgumentNullException(nameof(client));
-    this.sessionConfiguration = (sessionConfiguration ?? throw new ArgumentNullException(nameof(sessionConfiguration))).Clone(); // holds the clone to avoid being affected from the changes to the original
+    this.sessionOptions = (sessionOptions ?? throw new ArgumentNullException(nameof(sessionOptions))).Clone(); // holds the clone to avoid being affected from the changes to the original
     this.shouldDisposeClient = shouldDisposeClient;
 
     var resiliencePipelineProvider = serviceProvider?.GetService<ResiliencePipelineProvider<string>>();
@@ -186,11 +186,11 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     )
     {
       var shouldObtainPanInformationByActiveScan =
-        !sessionConfiguration.Channel.HasValue ||
-        !sessionConfiguration.PanId.HasValue ||
+        !sessionOptions.Channel.HasValue ||
+        !sessionOptions.PanId.HasValue ||
         (
-          sessionConfiguration.PaaMacAddress is null &&
-          sessionConfiguration.PaaAddress is null
+          sessionOptions.PaaMacAddress is null &&
+          sessionOptions.PaaAddress is null
         );
 
       if (shouldObtainPanInformationByActiveScan) {
@@ -198,20 +198,20 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
         return client.AuthenticateAsPanaClientAsync(
           writeRBID: credential.WriteIdTo,
           writePassword: credential.WritePasswordTo,
-          scanOptions: sessionConfiguration.ActiveScanOptions,
+          scanOptions: sessionOptions.ActiveScanOptions,
           cancellationToken: ct
         );
       }
 
-      var shouldResolvePaaAddress = sessionConfiguration.PaaAddress is null;
+      var shouldResolvePaaAddress = sessionOptions.PaaAddress is null;
 
       if (shouldResolvePaaAddress) {
         return client.AuthenticateAsPanaClientAsync(
           writeRBID: credential.WriteIdTo,
           writePassword: credential.WritePasswordTo,
-          paaMacAddress: sessionConfiguration.PaaMacAddress!,
-          channel: sessionConfiguration.Channel!.Value,
-          panId: sessionConfiguration.PanId!.Value,
+          paaMacAddress: sessionOptions.PaaMacAddress!,
+          channel: sessionOptions.Channel!.Value,
+          panId: sessionOptions.PanId!.Value,
           cancellationToken: ct
         );
       }
@@ -219,9 +219,9 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
         return client.AuthenticateAsPanaClientAsync(
           writeRBID: credential.WriteIdTo,
           writePassword: credential.WritePasswordTo,
-          paaAddress: sessionConfiguration.PaaAddress!,
-          channel: sessionConfiguration.Channel!.Value,
-          panId: sessionConfiguration.PanId!.Value,
+          paaAddress: sessionOptions.PaaAddress!,
+          channel: sessionOptions.Channel!.Value,
+          panId: sessionOptions.PanId!.Value,
           cancellationToken: ct
         );
       }

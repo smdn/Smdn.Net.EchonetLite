@@ -27,7 +27,7 @@ public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonet
 #pragma warning restore IDE0290
 
   protected override async ValueTask<RouteBEchonetLiteHandler> CreateAsyncCore(
-    SkStackRouteBSessionConfiguration sessionConfiguration,
+    SkStackRouteBSessionOptions sessionOptions,
     Action<SkStackClient>? configureSkStackClient,
     IServiceProvider serviceProvider,
     CancellationToken cancellationToken
@@ -52,7 +52,7 @@ public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonet
 
     return new BP35A1RouteBEchonetLiteHandler(
       client: client,
-      sessionConfiguration: sessionConfiguration,
+      sessionOptions: sessionOptions,
       shouldDisposeClient: true,
       serviceProvider: serviceProvider
     );

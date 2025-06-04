@@ -26,17 +26,17 @@ public static class SkStackRouteBEchonetLiteHandlerBuilderExtensions {
 
   public static ISkStackRouteBEchonetLiteHandlerFactory ConfigureSession(
     this ISkStackRouteBEchonetLiteHandlerFactory factory,
-    Action<SkStackRouteBSessionConfiguration> configureRouteBSessionConfiguration
+    Action<SkStackRouteBSessionOptions> configureRouteBSessionOptions
   )
   {
 #pragma warning disable CA1510
     if (factory is null)
       throw new ArgumentNullException(nameof(factory));
-    if (configureRouteBSessionConfiguration is null)
-      throw new ArgumentNullException(nameof(configureRouteBSessionConfiguration));
+    if (configureRouteBSessionOptions is null)
+      throw new ArgumentNullException(nameof(configureRouteBSessionOptions));
 #pragma warning restore CA1510
 
-    factory.ConfigureRouteBSessionConfiguration = configureRouteBSessionConfiguration;
+    factory.ConfigureRouteBSessionOptions = configureRouteBSessionOptions;
 
     return factory;
   }

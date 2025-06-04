@@ -10,9 +10,9 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 /// <summary>
-/// A class representing the Route B session configurations.
+/// A class that represents the options for the Route B session configurations.
 /// </summary>
-public sealed class SkStackRouteBSessionConfiguration : ICloneable {
+public sealed class SkStackRouteBSessionOptions : ICloneable {
   /// <summary>
   /// Gets or sets the <see cref="IPAddress"/> representing the IP address of the PANA Authentication Agent (PAA), or Personal Area Network (PAN) coordinator.
   /// </summary>
@@ -46,7 +46,7 @@ public sealed class SkStackRouteBSessionConfiguration : ICloneable {
   /// </summary>
   public SkStackActiveScanOptions? ActiveScanOptions { get; set; }
 
-  public SkStackRouteBSessionConfiguration Clone()
+  public SkStackRouteBSessionOptions Clone()
     => new() {
       PaaAddress = this.PaaAddress,
       PaaMacAddress = this.PaaMacAddress,
