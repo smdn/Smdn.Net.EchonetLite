@@ -3,6 +3,8 @@
 using System;
 using System.Threading;
 
+using Microsoft.Extensions.Logging;
+
 using Polly;
 
 using Smdn.Net.EchonetLite.Protocol;
@@ -14,6 +16,11 @@ partial class EchonetClient
 #pragma warning restore IDE0040
 {
   [CLSCompliant(false)]
+  public static readonly ResiliencePropertyKey<ILogger?> ResiliencePropertyKeyForLogger = new(
+    nameof(ResiliencePropertyKeyForLogger)
+  );
+
+  [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForRequestServiceCode = new(
     nameof(ResiliencePropertyKeyForRequestServiceCode)
   );
@@ -23,7 +30,7 @@ partial class EchonetClient
     nameof(ResiliencePropertyKeyForResponseServiceCode)
   );
 
-  private static ResilienceContext CreateResilienceContextForRequest(
+  private ResilienceContext CreateResilienceContextForRequest(
     ResilienceContextPool resilienceContextPool,
     ESV requestServiceCode,
     CancellationToken cancellationToken
@@ -31,12 +38,13 @@ partial class EchonetClient
   {
     var context = resilienceContextPool.Get(cancellationToken);
 
+    context.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
     context.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, requestServiceCode);
 
     return context;
   }
 
-  private static ResilienceContext CreateResilienceContextForResponse(
+  private ResilienceContext CreateResilienceContextForResponse(
     ResilienceContextPool resilienceContextPool,
     ESV requestServiceCode,
     ESV responseServiceCode,
@@ -45,6 +53,7 @@ partial class EchonetClient
   {
     var context = resilienceContextPool.Get(cancellationToken);
 
+    context.Properties.Set(ResiliencePropertyKeyForLogger, Logger);
     context.Properties.Set(ResiliencePropertyKeyForRequestServiceCode, requestServiceCode);
     context.Properties.Set(ResiliencePropertyKeyForResponseServiceCode, responseServiceCode);
 
