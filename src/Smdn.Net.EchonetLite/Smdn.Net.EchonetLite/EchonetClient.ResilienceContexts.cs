@@ -17,17 +17,17 @@ partial class EchonetClient
 {
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<ILogger?> ResiliencePropertyKeyForLogger = new(
-    nameof(ResiliencePropertyKeyForLogger)
+    $"{nameof(EchonetClient)}.{nameof(ResiliencePropertyKeyForLogger)}"
   );
 
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForRequestServiceCode = new(
-    nameof(ResiliencePropertyKeyForRequestServiceCode)
+    $"{nameof(EchonetClient)}.{nameof(ResiliencePropertyKeyForRequestServiceCode)}"
   );
 
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForResponseServiceCode = new(
-    nameof(ResiliencePropertyKeyForResponseServiceCode)
+    $"{nameof(EchonetClient)}.{nameof(ResiliencePropertyKeyForResponseServiceCode)}"
   );
 
   /// <summary>

@@ -28,7 +28,9 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
   public static readonly string ResiliencePipelineKeyForSend = nameof(SkStackRouteBEchonetLiteHandler) + "." + nameof(resiliencePipelineSend);
 
   [CLSCompliant(false)]
-  public static readonly ResiliencePropertyKey<SkStackRouteBEchonetLiteHandler?> ResiliencePropertyKeyForInstance = new(nameof(ResiliencePropertyKeyForInstance));
+  public static readonly ResiliencePropertyKey<SkStackRouteBEchonetLiteHandler?> ResiliencePropertyKeyForInstance = new(
+    $"{nameof(SkStackRouteBEchonetLiteHandler)}.{nameof(ResiliencePropertyKeyForInstance)}"
+  );
 
   private SkStackClient? client;
   private readonly bool shouldDisposeClient;
