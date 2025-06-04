@@ -5,9 +5,15 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 using NUnit.Framework;
 
+using Polly;
+
 using Smdn.Net.EchonetLite.Protocol;
+using Smdn.Net.EchonetLite.ResilienceStrategies;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
@@ -25,10 +31,29 @@ partial class EchonetClientServiceRequestsTests {
       new byte[] { 0x30 }, // EPC = 0x80
       new byte[] { 0x00, 0x00, (byte)'R', 0x01 }, // EPC = 0x82
     };
+
+    var logger = NullLoggerFactory.Instance.CreateLogger(nameof(EchonetClient));
+
+    var wasRequestSent = false;
+    ILogger? loggerForResiliencePipeline = null;
+    ESV requestServiceCodeForResiliencePipeline = default;
+    ESV responseServiceCodeForResiliencePipeline = default;
+
+    var resiliencePipeline = new ResiliencePipelineBuilder().AddPostHook(
+      hook: resilienceContext => {
+        wasRequestSent = true;
+        loggerForResiliencePipeline = EchonetClient.GetLoggerForResiliencePipeline(resilienceContext);
+        _ = EchonetClient.TryGetRequestServiceCodeForResiliencePipeline(resilienceContext, out requestServiceCodeForResiliencePipeline);
+        _ = EchonetClient.TryGetResponseServiceCodeForResiliencePipeline(resilienceContext, out responseServiceCodeForResiliencePipeline);
+      }
+    ).Build();
+
     using var client = new EchonetClient(
-      new SingleTransactionEchonetLiteHandler(
+      selfNode: EchonetNode.CreateSelfNode([]),
+      echonetLiteHandler: new SingleTransactionEchonetLiteHandler(
         responseEData: CreateResponseEData(seoj, deoj, ESV.GetResponse, propertyCodes, propertyValues)
-      )
+      ),
+      logger: logger
     );
 
     using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
@@ -38,6 +63,7 @@ partial class EchonetClientServiceRequestsTests {
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: deoj,
       propertyCodes: propertyCodes,
+      resiliencePipeline: resiliencePipeline,
       cancellationToken: cts.Token
     );
 
@@ -57,6 +83,11 @@ partial class EchonetClientServiceRequestsTests {
 
     Assert.That(destinationObject!.Properties.ContainsKey(propertyCodes[1]), Is.True);
     Assert.That(destinationObject!.Properties[propertyCodes[1]].ValueMemory, SequenceIs.EqualTo(propertyValues[1]));
+
+    Assert.That(wasRequestSent, Is.True);
+    Assert.That(loggerForResiliencePipeline, Is.SameAs(logger));
+    Assert.That(requestServiceCodeForResiliencePipeline, Is.EqualTo(ESV.Get));
+    Assert.That(responseServiceCodeForResiliencePipeline, Is.EqualTo(default(ESV)));
   }
 
   [Test]

@@ -8,9 +8,15 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 using NUnit.Framework;
 
+using Polly;
+
 using Smdn.Net.EchonetLite.Protocol;
+using Smdn.Net.EchonetLite.ResilienceStrategies;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
@@ -48,7 +54,25 @@ partial class EchonetClientServiceRequestsTests {
   {
     var seoj = new EOJ(0x05, 0xFF, 0x01);
     var deoj = new EOJ(0x05, 0xFF, 0x02);
+
+    var logger = NullLoggerFactory.Instance.CreateLogger(nameof(EchonetClient));
+
+    var wasRequestSent = false;
+    ILogger? loggerForResiliencePipeline = null;
+    ESV requestServiceCodeForResiliencePipeline = default;
+    ESV responseServiceCodeForResiliencePipeline = default;
+
+    var resiliencePipeline = new ResiliencePipelineBuilder().AddPostHook(
+      hook: resilienceContext => {
+        wasRequestSent = true;
+        loggerForResiliencePipeline = EchonetClient.GetLoggerForResiliencePipeline(resilienceContext);
+        _ = EchonetClient.TryGetRequestServiceCodeForResiliencePipeline(resilienceContext, out requestServiceCodeForResiliencePipeline);
+        _ = EchonetClient.TryGetResponseServiceCodeForResiliencePipeline(resilienceContext, out responseServiceCodeForResiliencePipeline);
+      }
+    ).Build();
+
     using var client = new EchonetClient(
+      selfNode: EchonetNode.CreateSelfNode([]),
       echonetLiteHandler: destinationNodeAddress is null
         ? new ValidateMulticastRequestEchonetLiteHandler(
             validate: data => TestRequestNotifyOneWayMessage(data.Span, seoj, deoj, propertyCodes)
@@ -59,7 +83,8 @@ partial class EchonetClientServiceRequestsTests {
 
               TestRequestNotifyOneWayMessage(data.Span, seoj, deoj, propertyCodes);
             }
-          )
+          ),
+      logger: logger
     );
 
     using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
@@ -70,10 +95,16 @@ partial class EchonetClientServiceRequestsTests {
         destinationNodeAddress: destinationNodeAddress,
         destinationObject: deoj,
         propertyCodes: propertyCodes,
+        resiliencePipeline: resiliencePipeline,
         cancellationToken: cts.Token
       ).ConfigureAwait(false),
       Throws.Nothing
     );
+
+    Assert.That(wasRequestSent, Is.True);
+    Assert.That(loggerForResiliencePipeline, Is.SameAs(logger));
+    Assert.That(requestServiceCodeForResiliencePipeline, Is.EqualTo(ESV.InfRequest));
+    Assert.That(responseServiceCodeForResiliencePipeline, Is.EqualTo(default(ESV)));
 
     void TestRequestNotifyOneWayMessage(
       ReadOnlySpan<byte> message,

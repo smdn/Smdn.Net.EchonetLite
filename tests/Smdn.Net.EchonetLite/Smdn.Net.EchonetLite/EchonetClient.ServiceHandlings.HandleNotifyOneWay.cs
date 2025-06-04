@@ -7,16 +7,83 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 using NUnit.Framework;
+
+using Polly;
 
 using Smdn.Net.EchonetLite.Protocol;
 using Smdn.Net.EchonetLite.Specifications;
+using Smdn.Net.EchonetLite.ResilienceStrategies;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite;
 
 partial class EchonetClientServiceHandlingsTests {
+  [TestCase(ESV.Inf, false, default(ESV))]
+  [TestCase(ESV.InfC, true, ESV.InfCResponse)]
+  public async Task HandleNotify_ResilienceContextProperties(ESV esv, bool shouldResponseSent, ESV expectedResponseESV)
+  {
+    var sourceNodeAddress = IPAddress.Loopback;
+    var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(sourceNodeAddress, []);
+    var sourceNode = nodeRegistry.Nodes.First(node => node.Address.Equals(sourceNodeAddress));
+    var notifyHandler = new NotifyPropertyValueEchonetLiteHandler();
+    var logger = NullLoggerFactory.Instance.CreateLogger(nameof(EchonetClient));
+
+    var wasResponseSent = false;
+    ILogger? loggerForResiliencePipeline = null;
+    ESV requestServiceCodeForResiliencePipeline = default;
+    ESV responseServiceCodeForResiliencePipeline = default;
+
+    var resiliencePipeline = new ResiliencePipelineBuilder().AddPostHook(
+      hook: resilienceContext => {
+        wasResponseSent = true;
+        loggerForResiliencePipeline = EchonetClient.GetLoggerForResiliencePipeline(resilienceContext);
+        _ = EchonetClient.TryGetRequestServiceCodeForResiliencePipeline(resilienceContext, out requestServiceCodeForResiliencePipeline);
+        _ = EchonetClient.TryGetResponseServiceCodeForResiliencePipeline(resilienceContext, out responseServiceCodeForResiliencePipeline);
+      }
+    ).Build();
+
+    using var client = new EchonetClient(
+      selfNode: EchonetNode.CreateSelfNode(devices: []),
+      echonetLiteHandler: notifyHandler,
+      shouldDisposeEchonetLiteHandler: false,
+      nodeRegistry: nodeRegistry,
+      deviceFactory: null,
+      resiliencePipelineForSendingResponseFrame: resiliencePipeline,
+      logger: logger
+    );
+
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
+
+    Assert.That(
+      async () => await notifyHandler.NotifyAsync(
+        sourceObject: sourceNode.NodeProfile,
+        deoj: EOJ.NodeProfile,
+        esv: esv,
+        properties: new Dictionary<byte, byte[]>() {
+          [0xD5] = [
+            0x01,
+            0x0E, 0xF0, 0x01,
+          ],
+        },
+        cancellationToken: cts.Token
+      ).ConfigureAwait(false),
+      Throws.Nothing
+    );
+
+    Assert.That(wasResponseSent, Is.EqualTo(shouldResponseSent));
+
+    if (shouldResponseSent) {
+      Assert.That(loggerForResiliencePipeline, Is.SameAs(logger));
+      Assert.That(requestServiceCodeForResiliencePipeline, Is.EqualTo(esv));
+      Assert.That(responseServiceCodeForResiliencePipeline, Is.EqualTo(expectedResponseESV));
+    }
+  }
+
   [TestCase(ESV.Inf)]
   [TestCase(ESV.InfC)]
   public async Task HandleNotify_FromNodeProfile(ESV esv)
