@@ -36,7 +36,7 @@ Also provides an abstract interface `IRouteBCredential` to handle credentials us
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
     <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.Primitives\Smdn.Net.EchonetLite.Primitives.csproj'))" />
   </ItemGroup>
 

@@ -58,6 +58,32 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   }
 
   [Test]
+  public void AddRouteBCredential_WithServiceKey()
+  {
+    var services = new ServiceCollection();
+
+    services.AddRouteBCredential(
+      serviceKey: "key1",
+      id: "this must not be selected",
+      password: "this must not be selected"
+    );
+    services.AddRouteBCredential(
+      serviceKey: "key2",
+      id: ID,
+      password: Password
+    );
+
+    var credentialProvider = services.BuildServiceProvider().GetRequiredKeyedService<IRouteBCredentialProvider>("key2");
+
+    Assert.That(credentialProvider, Is.Not.Null, nameof(credentialProvider));
+
+    var (id, password) = GetCredential(credentialProvider, identity: null!);
+
+    Assert.That(id, Is.EqualTo(ID));
+    Assert.That(password, Is.EqualTo(Password));
+  }
+
+  [Test]
   public void AddRouteBCredential_TryAddMultiple()
   {
     var services = new ServiceCollection();
@@ -93,6 +119,13 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
         password: password!
       )
     );
+    Assert.Throws<ArgumentNullException>(
+      () => services.AddRouteBCredential(
+        serviceKey: "key",
+        id: id!,
+        password: password!
+      )
+    );
   }
 
   [Test]
@@ -108,6 +141,45 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
     );
 
     var credentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
+
+    Assert.That(credentialProvider, Is.Not.Null, nameof(credentialProvider));
+
+    try {
+      Environment.SetEnvironmentVariable(EnvVarForId, ID);
+      Environment.SetEnvironmentVariable(EnvVarForPassword, Password);
+
+      var (id, password) = GetCredential(credentialProvider, identity: null!);
+
+      Assert.That(id, Is.EqualTo(ID));
+      Assert.That(password, Is.EqualTo(Password));
+    }
+    finally {
+      Environment.SetEnvironmentVariable(EnvVarForId, null);
+      Environment.SetEnvironmentVariable(EnvVarForPassword, null);
+    }
+  }
+
+  [Test]
+  public void AddRouteBCredentialFromEnvironmentVariable_WithServiceKey()
+  {
+    var services = new ServiceCollection();
+
+    Assert.DoesNotThrow(
+      () => services.AddRouteBCredentialFromEnvironmentVariable(
+        serviceKey: "key1",
+        envVarForId: "this_must_not_be_selected",
+        envVarForPassword: "this_must_not_be_selected"
+      )
+    );
+    Assert.DoesNotThrow(
+      () => services.AddRouteBCredentialFromEnvironmentVariable(
+        serviceKey: "key2",
+        envVarForId: EnvVarForId,
+        envVarForPassword: EnvVarForPassword
+      )
+    );
+
+    var credentialProvider = services.BuildServiceProvider().GetRequiredKeyedService<IRouteBCredentialProvider>("key2");
 
     Assert.That(credentialProvider, Is.Not.Null, nameof(credentialProvider));
 
@@ -214,6 +286,15 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
         envVarForPassword: envVarForPassword!
       )
     );
+
+    Assert.Throws(
+      typeOfExpectedException,
+      () => services.AddRouteBCredentialFromEnvironmentVariable(
+        serviceKey: "key",
+        envVarForId: envVarForId!,
+        envVarForPassword: envVarForPassword!
+      )
+    );
   }
 
   private class ConcreteRouteBCredentialProvider : IRouteBCredentialProvider {
@@ -238,6 +319,33 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   }
 
   [Test]
+  public void AddRouteBCredentialProvider_WithServiceKey()
+  {
+    var services = new ServiceCollection();
+    var credentialProvider1 = new ConcreteRouteBCredentialProvider();
+    var credentialProvider2 = new ConcreteRouteBCredentialProvider();
+
+    services.AddRouteBCredentialProvider(
+      serviceKey: "key1",
+      credentialProvider: credentialProvider1
+    );
+    services.AddRouteBCredentialProvider(
+      serviceKey: "key2",
+      credentialProvider: credentialProvider2
+    );
+
+    var registeredCredentialProviderKey1 = services.BuildServiceProvider().GetRequiredKeyedService<IRouteBCredentialProvider>("key1");
+
+    Assert.That(registeredCredentialProviderKey1, Is.Not.Null, nameof(registeredCredentialProviderKey1));
+    Assert.That(registeredCredentialProviderKey1, Is.SameAs(credentialProvider1));
+
+    var registeredCredentialProviderKey2 = services.BuildServiceProvider().GetRequiredKeyedService<IRouteBCredentialProvider>("key1");
+
+    Assert.That(registeredCredentialProviderKey2, Is.Not.Null, nameof(registeredCredentialProviderKey2));
+    Assert.That(registeredCredentialProviderKey2, Is.SameAs(credentialProvider1));
+  }
+
+  [Test]
   public void AddRouteBCredentialProvider_TryAddMultiple()
   {
     var services = new ServiceCollection();
@@ -258,12 +366,40 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   }
 
   [Test]
+  public void AddRouteBCredentialProvider_WithServiceKey_TryAddMultiple()
+  {
+    var services = new ServiceCollection();
+    var firstCredentialProvider = new ConcreteRouteBCredentialProvider();
+    var secondCredentialProvider = new ConcreteRouteBCredentialProvider();
+
+    services.AddRouteBCredentialProvider(
+      serviceKey: "key",
+      credentialProvider: firstCredentialProvider
+    );
+    services.AddRouteBCredentialProvider(
+      serviceKey: "key",
+      credentialProvider: secondCredentialProvider
+    );
+
+    var registeredCredentialProvider = services.BuildServiceProvider().GetRequiredKeyedService<IRouteBCredentialProvider>("key");
+
+    Assert.That(registeredCredentialProvider, Is.Not.Null, nameof(registeredCredentialProvider));
+    Assert.That(registeredCredentialProvider, Is.SameAs(firstCredentialProvider));
+  }
+
+  [Test]
   public void AddRouteBCredentialProvider_ArgumentNull()
   {
     var services = new ServiceCollection();
 
     Assert.Throws<ArgumentNullException>(
       () => services.AddRouteBCredentialProvider(
+        credentialProvider: null!
+      )
+    );
+    Assert.Throws<ArgumentNullException>(
+      () => services.AddRouteBCredentialProvider(
+        serviceKey: "key",
         credentialProvider: null!
       )
     );
