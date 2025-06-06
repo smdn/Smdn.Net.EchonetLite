@@ -125,7 +125,7 @@ public class RouteBEchonetLiteHandlerTests {
 
     cts.Cancel();
 
-    Assert.That(handler.IsReceiving, Is.False, $"{nameof(handler.IsReceiving)} before atempting connection");
+    Assert.That(handler.IsReceiving, Is.False, $"{nameof(handler.IsReceiving)} before attempting connection");
 
     Assert.That(
       async () => await handler.ConnectAsync(credential: credential, cancellationToken: cts.Token),
@@ -139,7 +139,7 @@ public class RouteBEchonetLiteHandlerTests {
     );
 #pragma warning restore CA2012
 
-    Assert.That(handler.IsReceiving, Is.False, $"{nameof(handler.IsReceiving)} after atempting connection");
+    Assert.That(handler.IsReceiving, Is.False, $"{nameof(handler.IsReceiving)} after attempting connection");
   }
 
   [Test]
@@ -198,7 +198,7 @@ public class RouteBEchonetLiteHandlerTests {
 
     cts.Cancel();
 
-    Assert.That(handler.IsReceiving, Is.True, $"{nameof(handler.IsReceiving)} before atempting disconnection");
+    Assert.That(handler.IsReceiving, Is.True, $"{nameof(handler.IsReceiving)} before attempting disconnection");
 
     Assert.That(
       async () => await handler.DisconnectAsync(cancellationToken: cts.Token),
@@ -212,6 +212,6 @@ public class RouteBEchonetLiteHandlerTests {
     );
 #pragma warning restore CA2012
 
-    Assert.That(handler.IsReceiving, Is.True, $"{nameof(handler.IsReceiving)} after atempting disconnection");
+    Assert.That(handler.IsReceiving, Is.True, $"{nameof(handler.IsReceiving)} after attempting disconnection");
   }
 }

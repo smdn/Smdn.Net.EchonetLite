@@ -302,7 +302,7 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
-  public void RequestNotifyInstanceListAsync_NodeAndObjectInstanceMustBeReused_AccrossClient(
+  public void RequestNotifyInstanceListAsync_NodeAndObjectInstanceMustBeReused_AcrossClient(
     [Values] bool shareInstances
   )
   {

@@ -157,7 +157,7 @@ internal class ReceiveInstanceListEchonetLiteHandler : IEchonetLiteHandler {
     else {
       IEnumerable<EOJ>? instanceList = null;
 
-      // perform singlecast response
+      // perform unicast response
       if (instanceListsForMulticast is not null) {
         if (!instanceListsForMulticast.TryGetValue(receiveFromAddress, out instanceList))
           return; // ignore

@@ -310,7 +310,7 @@ public class SmartMeterDataAggregator : HemsController {
     ThrowIfDisposed();
 
     if (aggregationTask is not null || aggregationTaskStoppingTokenSource is not null)
-      throw new InvalidOperationException("adready started");
+      throw new InvalidOperationException("already started");
 
     await ConnectToSmartMeterAsync(cancellationToken).ConfigureAwait(false);
 
@@ -370,7 +370,7 @@ public class SmartMeterDataAggregator : HemsController {
     // log and rethrow unhandled exception
     Logger?.LogCritical(
       exception: exception,
-      message: "An unhandled exception occured within the aggregation task."
+      message: "An unhandled exception occurred within the aggregation task."
     );
 
     return false;
@@ -397,7 +397,7 @@ public class SmartMeterDataAggregator : HemsController {
         ).ConfigureAwait(false);
       }
       catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) {
-        // completes aggreagtion without rethrowing exception since a stop request has been made
+        // completes aggregation without re-throwing exception since a stop request has been made
         return;
       }
     }
@@ -406,11 +406,11 @@ public class SmartMeterDataAggregator : HemsController {
       await PerformDataAggregationAsync(stoppingToken: stoppingToken).ConfigureAwait(false);
 
       if (stoppingToken.IsCancellationRequested)
-        // completes aggreagtion since a stop request has been made
+        // completes aggregation since a stop request has been made
         return;
     }
     catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) {
-      // completes aggreagtion without rethrowing exception since a stop request has been made
+      // completes aggregation without re-throwing exception since a stop request has been made
       return;
     }
   }
@@ -490,7 +490,7 @@ public class SmartMeterDataAggregator : HemsController {
   private IEnumerable<byte> EnumeratePropertyCodesToGet()
   {
     foreach (var aggregation in measurementValueAggregations) {
-      foreach (var propertyCode in aggregation.EnumeratePropertyCodesToAquire()) {
+      foreach (var propertyCode in aggregation.EnumeratePropertyCodesToAcquire()) {
         yield return propertyCode;
       }
     }
@@ -500,7 +500,7 @@ public class SmartMeterDataAggregator : HemsController {
 
     // acquire the current date and time for the purpose of determining if the date has
     // changed on both the smart meter and controller side, in updating the
-    // PeriodicyCumulativeElectricEnergy's baseline values
+    // PeriodicCumulativeElectricEnergy's baseline values
     if (
       SmartMeter.CurrentDateAndTime.BaseProperty.LastUpdatedTime.Date != DateTime.Today ||
       SmartMeter.CurrentDateAndTime.HasElapsedSinceLastUpdated(TimeSpan.FromMinutes(10)) // XXX: best acquiring interval

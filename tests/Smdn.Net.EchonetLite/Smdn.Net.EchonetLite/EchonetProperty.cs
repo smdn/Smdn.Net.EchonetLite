@@ -123,10 +123,10 @@ public class EchonetPropertyTests {
   [TestCaseSource(nameof(YieldTestCases_SetValue))]
   public async Task SetValue(byte[] newValue)
   {
-    var intialValue = new byte[] { 0xCD, 0xCD };
+    var initialValue = new byte[] { 0xCD, 0xCD };
     var (nodeRegistry, p) = await CreatePropertyAsync(
       epc: 0xFF,
-      edtInitial: intialValue
+      edtInitial: initialValue
     );
     using var client = new EchonetClient(
       echonetLiteHandler: new NoOpEchonetLiteHandler(),
@@ -163,10 +163,10 @@ public class EchonetPropertyTests {
   [TestCaseSource(nameof(YieldTestCases_SetValue))]
   public async Task SetValue_RaiseValueUpdatedEvent(byte[] newValue)
   {
-    var intialValue = new byte[] { 0xCD, 0xCD };
+    var initialValue = new byte[] { 0xCD, 0xCD };
     var (nodeRegistry, p) = await CreatePropertyAsync(
       epc: 0xFF,
-      edtInitial: intialValue
+      edtInitial: initialValue
     );
     using var client = new EchonetClient(
       echonetLiteHandler: new NoOpEchonetLiteHandler(),
@@ -253,10 +253,10 @@ public class EchonetPropertyTests {
   [TestCaseSource(nameof(YieldTestCases_WriteValue))]
   public async Task WriteValue(byte[] newValue)
   {
-    var intialValue = new byte[] { 0xCD, 0xCD };
+    var initialValue = new byte[] { 0xCD, 0xCD };
     var (nodeRegistry, p) = await CreatePropertyAsync(
       epc: 0xFF,
-      edtInitial: intialValue
+      edtInitial: initialValue
     );
     using var client = new EchonetClient(
       echonetLiteHandler: new NoOpEchonetLiteHandler(),
@@ -293,10 +293,10 @@ public class EchonetPropertyTests {
   [TestCaseSource(nameof(YieldTestCases_WriteValue))]
   public async Task WriteValue_RaiseValueUpdatedEvent(byte[] newValue)
   {
-    var intialValue = new byte[] { 0xCD, 0xCD };
+    var initialValue = new byte[] { 0xCD, 0xCD };
     var (nodeRegistry, p) = await CreatePropertyAsync(
       epc: 0xFF,
-      edtInitial: intialValue
+      edtInitial: initialValue
     );
     using var client = new EchonetClient(
       echonetLiteHandler: new NoOpEchonetLiteHandler(),

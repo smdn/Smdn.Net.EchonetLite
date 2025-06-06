@@ -26,7 +26,7 @@ partial class EchonetClient
   LogExceptionAtFormat1MessageHandler = LoggerMessage.Define<IPAddress, ushort, Format1Message>(
     LogLevel.Error,
     eventId: default, // TODO
-    formatString: "An error occured while handling received message (Address: {Address}, TID: {TID:X4}, Message: {Message})"
+    formatString: "An error occurred while handling received message (Address: {Address}, TID: {TID:X4}, Message: {Message})"
   );
 
   private static readonly Action<ILogger, IPAddress, ushort, Format1Message, Exception?>
@@ -675,7 +675,7 @@ partial class EchonetClient
   /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
-  /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
+  /// <param name="sourceNode">要求元ECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <returns>
   /// 非同期の読み取り操作を表す<see cref="ValueTask{T}"/>。
   /// <see cref="ValueTask{T}.Result"/>には処理の結果が含まれます。
@@ -743,7 +743,7 @@ partial class EchonetClient
   /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
-  /// <param name="sourceNode">要求元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
+  /// <param name="sourceNode">要求元ECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <param name="destObject">対象ECHONET Lite オブジェクトを表す<see cref="EchonetObject"/>。　対象がない場合は<see langword="null"/>。</param>
   /// <param name="cancellationToken">キャンセル要求を監視するための<see cref="CancellationToken"/>。</param>
   /// <returns>
@@ -913,7 +913,7 @@ partial class EchonetClient
   /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
-  /// <param name="sourceNode">応答元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
+  /// <param name="sourceNode">応答元ECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <returns>
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>
@@ -980,7 +980,7 @@ partial class EchonetClient
   /// <param name="address">受信したECHONET Lite フレームの送信元アドレスを表す<see cref="IPAddress"/>。</param>
   /// <param name="tid">受信したECHONET Lite フレームのトランザクションID(TID)を表す<see cref="ushort"/>。</param>
   /// <param name="message">受信した電文形式 1（規定電文形式）の電文を表す<see cref="Format1Message"/>。</param>
-  /// <param name="sourceNode">応答元CHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
+  /// <param name="sourceNode">応答元ECHONET Lite ノードを表す<see cref="EchonetOtherNode"/>。</param>
   /// <returns>
   /// 要求を正常に処理した場合は<see langword="true"/>、そうでなければ<see langword="false"/>が設定されます。
   /// </returns>

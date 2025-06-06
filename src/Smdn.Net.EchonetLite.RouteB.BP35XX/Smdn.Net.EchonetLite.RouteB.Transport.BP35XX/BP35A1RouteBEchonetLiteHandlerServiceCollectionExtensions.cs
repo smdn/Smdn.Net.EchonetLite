@@ -133,10 +133,10 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
             // ResilienceContextのプロパティから、呼び出し元のSkStackRouteBEchonetLiteHandlerインスタンスを取得する
             if (!resilienceContext.Properties.TryGetValue(SkStackRouteBEchonetLiteHandler.ResiliencePropertyKeyForInstance, out var handler))
               return default;
-            if (handler is not BP35A1RouteBEchonetLiteHandler bp35a1Hanlder)
+            if (handler is not BP35A1RouteBEchonetLiteHandler bp35a1Handler)
               return default;
 
-            return bp35a1Hanlder.PerformPanaAuthenticationWorkaroundAsync(
+            return bp35a1Handler.PerformPanaAuthenticationWorkaroundAsync(
               cancellationToken: resilienceContext.CancellationToken
             );
           }

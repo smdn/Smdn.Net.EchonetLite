@@ -99,7 +99,7 @@ partial class EchonetClient
         catch (Exception ex) {
           Logger?.LogError(
             ex,
-            "An exception occured while handling format 1 message."
+            "An exception occurred while handling format 1 message."
           );
 
           // this exception might be swallow by IEchonetLiteHandler
@@ -130,7 +130,7 @@ partial class EchonetClient
         catch (Exception ex) {
           Logger?.LogError(
             ex,
-            "An exception occured while handling format 2 message."
+            "An exception occurred while handling format 2 message."
           );
 
           // this exception might be swallow by IEchonetLiteHandler

@@ -69,10 +69,10 @@ public abstract class MeasurementValueAggregation<TMeasurementValue> : SmartMete
   protected internal virtual void OnLatestValueUpdated()
     => OnPropertyChanged(nameof(LatestValue));
 
-  IEnumerable<byte> IMeasurementValueAggregation.EnumeratePropertyCodesToAquire()
-    => EnumeratePropertyCodesToAquire();
+  IEnumerable<byte> IMeasurementValueAggregation.EnumeratePropertyCodesToAcquire()
+    => EnumeratePropertyCodesToAcquire();
 
-  internal IEnumerable<byte> EnumeratePropertyCodesToAquire()
+  internal IEnumerable<byte> EnumeratePropertyCodesToAcquire()
   {
     if (PropertyAccessor.HasElapsedSinceLastUpdated(AggregationInterval))
       yield return PropertyAccessor.PropertyCode;

@@ -30,10 +30,10 @@ public sealed class LowVoltageSmartElectricEnergyMeter : DeviceSuperClass {
   /// <seealso cref="Coefficient"/>
   internal decimal MultiplierForCumulativeElectricEnergy {
     get {
-      var coeff = Coefficient.TryGetValue(out var c) ? c : 1;
+      var coefficient = Coefficient.TryGetValue(out var c) ? c : 1;
       var unit = UnitForCumulativeElectricEnergy.TryGetValue(out var u) ? u : 1.0m;
 
-      return coeff * unit;
+      return coefficient * unit;
     }
   }
 

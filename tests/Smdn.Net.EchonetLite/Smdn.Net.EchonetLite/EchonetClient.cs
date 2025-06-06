@@ -246,7 +246,7 @@ public class EchonetClientTests {
   public async Task HandleFormat2MessageAsync(
     IPAddress expectedAddress,
     ushort expectedTid,
-    byte[] expectedDdata
+    byte[] expectedEData
   )
   {
     var handler = new RespondFormat2MessageEchonetLiteHandler();
@@ -255,10 +255,10 @@ public class EchonetClientTests {
       testReceivedFormat2Message: (address, tid, edata) => {
         Assert.That(address, Is.EqualTo(expectedAddress));
         Assert.That((int)tid, Is.EqualTo(expectedTid));
-        Assert.That(edata, SequenceIs.EqualTo(expectedDdata));
+        Assert.That(edata, SequenceIs.EqualTo(expectedEData));
       }
     );
 
-    await handler.RespondFormat2MessageAsync(expectedAddress, expectedTid, expectedDdata);
+    await handler.RespondFormat2MessageAsync(expectedAddress, expectedTid, expectedEData);
   }
 }

@@ -92,7 +92,7 @@ partial class EchonetLiteHandlerTests {
     handler.StartReceiving();
 
     var numberOfCallsToReceiveCallback = 0;
-    Exception? exceptionOccuredInReceiveCallback = null;
+    Exception? exceptionOccurredInReceiveCallback = null;
 
     handler.ReceiveCallback = async (address, data, cancellationToken) => {
       numberOfCallsToReceiveCallback++;
@@ -102,7 +102,7 @@ partial class EchonetLiteHandlerTests {
         Assert.That(data, SequenceIs.EqualTo(expectedData));
       }
       catch (Exception ex) {
-        exceptionOccuredInReceiveCallback = ex;
+        exceptionOccurredInReceiveCallback = ex;
       }
 
       callsToReceiveCallbackEvent.Set();
@@ -125,7 +125,7 @@ partial class EchonetLiteHandlerTests {
     callsToReceiveCallbackEvent.Wait(cts.Token);
 
     Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(1));
-    Assert.That(exceptionOccuredInReceiveCallback, Is.Null);
+    Assert.That(exceptionOccurredInReceiveCallback, Is.Null);
   }
 
   [Test]
@@ -166,7 +166,7 @@ partial class EchonetLiteHandlerTests {
 
     var numberOfCallsToReceiveCallback = 0;
     var numberOfCallsToReceiveTaskExceptionHandler = 0;
-    Exception? exceptionOccuredInReceiveEchonetLiteAsync = null;
+    Exception? exceptionOccurredInReceiveEchonetLiteAsync = null;
 
     handler.ReceiveCallback = (address, data, cancellationToken) => {
       numberOfCallsToReceiveCallback++;
@@ -176,7 +176,7 @@ partial class EchonetLiteHandlerTests {
 
     handler.ReceiveTaskExceptionHandler = ex => {
       numberOfCallsToReceiveTaskExceptionHandler++;
-      exceptionOccuredInReceiveEchonetLiteAsync = ex;
+      exceptionOccurredInReceiveEchonetLiteAsync = ex;
 
       callsToReceiveTaskExceptionHandlerEvent.Set();
 
@@ -199,11 +199,11 @@ partial class EchonetLiteHandlerTests {
 
     Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(0));
     Assert.That(numberOfCallsToReceiveTaskExceptionHandler, Is.EqualTo(1));
-    Assert.That(exceptionOccuredInReceiveEchonetLiteAsync, Is.InstanceOf<InvalidOperationException>());
+    Assert.That(exceptionOccurredInReceiveEchonetLiteAsync, Is.InstanceOf<InvalidOperationException>());
   }
 
   [Test]
-  public async Task ReceiveEchonetLiteAsync_ExceptionOccuredInReceiveAsyncCore()
+  public async Task ReceiveEchonetLiteAsync_ExceptionOccurredInReceiveAsyncCore()
   {
     using var callsToReceiveTaskExceptionHandlerEvent = new ManualResetEventSlim(false);
     using var handler = new PseudoIncomingEchonetLiteHandler();
@@ -269,7 +269,7 @@ partial class EchonetLiteHandlerTests {
   }
 
   [Test]
-  public async Task ReceiveEchonetLiteAsync_ExceptionOccuredInReceiveCallback()
+  public async Task ReceiveEchonetLiteAsync_ExceptionOccurredInReceiveCallback()
   {
     var expectedFromAddress = IPAddress.Loopback;
     var expectedData = new byte[] { 0x01, 0x23 };

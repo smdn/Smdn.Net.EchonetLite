@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+// cSpell:ignore JEMA,JEMAHA
 using System.Collections.Generic;
 #if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
 using System.Diagnostics.CodeAnalysis;
@@ -751,7 +752,7 @@ public static class DeviceClasses {
   /// <param name="classCode">取得するECHONET Lite オブジェクトのクラスコード。</param>
   /// <param name="includeProfiles">機器クラスに加え、プロファイルクラスも一致に含めるかどうかを指定する値。</param>
   /// <param name="echonetObject">取得できた場合は、そのECHONET Lite オブジェクト。　取得できなかった場合は、<see langword="null"/>。</param>
-  /// <returns>指定されたクラスグループコード・クラスコードと一致するCHONET Lite オブジェクトを取得できた場合は<see langword="true"/>、取得できなかった場合は<see langword="false"/>。</returns>
+  /// <returns>指定されたクラスグループコード・クラスコードと一致するECHONET Lite オブジェクトを取得できた場合は<see langword="true"/>、取得できなかった場合は<see langword="false"/>。</returns>
   public static bool TryLookupClass(
     byte classGroupCode,
     byte classCode,

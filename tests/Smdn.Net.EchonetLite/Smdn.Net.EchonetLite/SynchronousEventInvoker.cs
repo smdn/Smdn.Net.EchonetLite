@@ -11,7 +11,7 @@ internal class SynchronousEventInvoker : ISynchronizeInvoke {
 
   public IAsyncResult BeginInvoke(Delegate method, object?[]? args)
   {
-    // run synchronously, and throws excpetion if exception occured in event handlers
+    // run synchronously, and throws exception if exception occurred in event handlers
     method.DynamicInvoke(args);
 
     return null!;

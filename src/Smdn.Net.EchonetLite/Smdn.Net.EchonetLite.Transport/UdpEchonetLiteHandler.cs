@@ -122,7 +122,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
     catch (Exception ex) {
       Logger?.LogError(
         ex,
-        $"unexpected exception occured while initializing {nameof(UdpClient)} {{LocalEndPoint}}",
+        $"unexpected exception occurred while initializing {nameof(UdpClient)} {{LocalEndPoint}}",
         LocalEndPoint
       );
       throw;
@@ -178,7 +178,7 @@ public class UdpEchonetLiteHandler : EchonetLiteHandler {
     catch (Exception ex) {
       Logger?.LogError(
         ex,
-        $"unexpected exception occured while initializing {nameof(UdpClient)} {{LocalEndPoint}}",
+        $"unexpected exception occurred while initializing {nameof(UdpClient)} {{LocalEndPoint}}",
         LocalEndPoint
       );
       throw;

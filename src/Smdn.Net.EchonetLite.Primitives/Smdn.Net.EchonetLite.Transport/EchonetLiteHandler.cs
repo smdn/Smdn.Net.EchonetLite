@@ -213,7 +213,7 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
       catch (Exception ex) {
         Logger?.LogError(
           exception: ex,
-          message: "An exception occured while stopping receiving task."
+          message: "An exception occurred while stopping receiving task."
         );
 
         // swallow all exceptions
@@ -294,7 +294,7 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
 #pragma warning disable CA1848
     Logger?.LogCritical(
       exception: exception,
-      message: "An unhandled exception occured within the task for receiving."
+      message: "An unhandled exception occurred within the task for receiving."
     );
 #pragma warning restore CA1848
 

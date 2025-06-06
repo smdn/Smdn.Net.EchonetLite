@@ -12,5 +12,5 @@ internal interface IMeasurementValueAggregation {
   IEchonetPropertyAccessor PropertyAccessor { get; }
 
   void OnLatestValueUpdated();
-  IEnumerable<byte> EnumeratePropertyCodesToAquire();
+  IEnumerable<byte> EnumeratePropertyCodesToAcquire();
 }

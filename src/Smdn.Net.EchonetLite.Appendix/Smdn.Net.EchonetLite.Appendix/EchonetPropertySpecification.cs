@@ -162,7 +162,9 @@ public sealed class EchonetPropertySpecification : IEchonetPropertySpecification
   /// </summary>
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   // MasterDataのJSONファイルでは、プロパティ名がOptionRequiredではなくOptionRequierdとなっていることに注意
+  // cSpell:disable
   [JsonPropertyName("OptionRequierd")]
+  // cSpell:enable
   public IReadOnlyList<ApplicationServiceName> OptionRequired { get; }
 
   /// <summary>
