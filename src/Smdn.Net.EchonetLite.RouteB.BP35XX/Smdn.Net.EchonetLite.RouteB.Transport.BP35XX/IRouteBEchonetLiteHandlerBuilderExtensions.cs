@@ -13,7 +13,7 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 public static class IRouteBEchonetLiteHandlerBuilderExtensions {
   public static ISkStackRouteBEchonetLiteHandlerFactory AddBP35A1(
     this IRouteBEchonetLiteHandlerBuilder builder,
-    Action<BP35A1Configurations> configure
+    Action<BP35A1Options> configure
   )
   {
 #pragma warning disable CA1510

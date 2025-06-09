@@ -13,12 +13,12 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
 public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonetLiteHandlerFactory {
-  private readonly Action<BP35A1Configurations> configure;
+  private readonly Action<BP35A1Options> configure;
 
 #pragma warning disable IDE0290
   public BP35A1RouteBEchonetLiteHandlerFactory(
     IServiceCollection services,
-    Action<BP35A1Configurations> configure
+    Action<BP35A1Options> configure
   )
     : base(services)
   {
@@ -33,17 +33,17 @@ public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonet
     CancellationToken cancellationToken
   )
   {
-    var configurations = new BP35A1Configurations();
+    var options = new BP35A1Options();
 
-    configure(configurations);
+    configure(options);
 
-    if (string.IsNullOrEmpty(configurations.SerialPortName))
-      throw new InvalidOperationException($"{configurations.SerialPortName} is not valid");
+    if (string.IsNullOrEmpty(options.SerialPortName))
+      throw new InvalidOperationException($"{options.SerialPortName} is not valid");
 
     cancellationToken.ThrowIfCancellationRequested();
 
     var client = await BP35A1.CreateAsync(
-      configurations: configurations,
+      options: options,
       serviceProvider: serviceProvider,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false);
