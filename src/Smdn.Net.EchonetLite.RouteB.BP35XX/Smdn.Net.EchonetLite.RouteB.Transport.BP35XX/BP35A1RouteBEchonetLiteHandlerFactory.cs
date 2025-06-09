@@ -54,7 +54,8 @@ public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonet
       client: client,
       sessionOptions: sessionOptions,
       shouldDisposeClient: true,
-      serviceProvider: serviceProvider
+      serviceProvider: serviceProvider,
+      routeBServiceKey: null // TODO: pass routeBServiceKey
     );
   }
 }

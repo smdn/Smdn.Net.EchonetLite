@@ -19,16 +19,18 @@ public class SkStackRouteBUdpEchonetLiteHandler : SkStackRouteBEchonetLiteHandle
   public SkStackRouteBUdpEchonetLiteHandler(
     SkStackClient client,
     SkStackRouteBSessionOptions sessionOptions,
-    bool shouldDisposeClient = false,
-    ILogger? logger = null,
-    IServiceProvider? serviceProvider = null
+    bool shouldDisposeClient,
+    ILogger? logger,
+    IServiceProvider? serviceProvider,
+    object? routeBServiceKey
   )
     : base(
       client: client,
       sessionOptions: sessionOptions,
       shouldDisposeClient: shouldDisposeClient,
       logger: logger,
-      serviceProvider: serviceProvider
+      serviceProvider: serviceProvider,
+      routeBServiceKey: routeBServiceKey
     )
   {
   }

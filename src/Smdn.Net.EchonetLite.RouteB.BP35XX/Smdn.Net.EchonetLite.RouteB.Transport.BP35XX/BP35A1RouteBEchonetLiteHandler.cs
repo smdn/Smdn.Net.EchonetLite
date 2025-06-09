@@ -21,15 +21,17 @@ public sealed class BP35A1RouteBEchonetLiteHandler : SkStackRouteBUdpEchonetLite
   public BP35A1RouteBEchonetLiteHandler(
     BP35A1 client,
     SkStackRouteBSessionOptions sessionOptions,
-    bool shouldDisposeClient = false,
-    IServiceProvider? serviceProvider = null
+    bool shouldDisposeClient,
+    IServiceProvider? serviceProvider,
+    object? routeBServiceKey
   )
     : base(
       client: client,
       sessionOptions: sessionOptions,
       shouldDisposeClient: shouldDisposeClient,
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<BP35A1RouteBEchonetLiteHandler>(),
-      serviceProvider: serviceProvider
+      serviceProvider: serviceProvider,
+      routeBServiceKey: routeBServiceKey
     )
   {
   }

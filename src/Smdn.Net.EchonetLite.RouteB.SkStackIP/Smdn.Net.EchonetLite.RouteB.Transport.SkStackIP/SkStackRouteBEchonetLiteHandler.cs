@@ -71,7 +71,8 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     SkStackRouteBSessionOptions sessionOptions,
     bool shouldDisposeClient,
     ILogger? logger,
-    IServiceProvider? serviceProvider
+    IServiceProvider? serviceProvider,
+    object? routeBServiceKey
   )
     : base(
       logger,
@@ -82,7 +83,7 @@ public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler
     this.sessionOptions = (sessionOptions ?? throw new ArgumentNullException(nameof(sessionOptions))).Clone(); // holds the clone to avoid being affected from the changes to the original
     this.shouldDisposeClient = shouldDisposeClient;
 
-    var resiliencePipelineProvider = serviceProvider?.GetService<ResiliencePipelineProvider<string>>();
+    var resiliencePipelineProvider = serviceProvider?.GetKeyedService<ResiliencePipelineProvider<string>>(serviceKey: routeBServiceKey);
 
     ResiliencePipeline? resiliencePipelineAuthenticate = null;
     ResiliencePipeline? resiliencePipelineSend = null;
