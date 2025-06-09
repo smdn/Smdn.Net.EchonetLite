@@ -4,17 +4,36 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.DependencyInjection;
-
 using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
-public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection services) : ISkStackRouteBEchonetLiteHandlerFactory {
-  private readonly IServiceCollection services = services;
+public abstract class SkStackRouteBEchonetLiteHandlerFactory : IRouteBEchonetLiteHandlerFactory {
+  /// <summary>
+  /// Gets the <see cref="IServiceProvider"/> for retrieving the configured service objects and other objects.
+  /// </summary>
+  public IServiceProvider ServiceProvider { get; }
 
-  public Action<SkStackClient>? ConfigureSkStackClient { get; set; }
-  public Action<SkStackRouteBSessionOptions>? ConfigureRouteBSessionOptions { get; set; }
+  /// <summary>
+  /// Gets the service key for retrieving the configured Route-B service objects from <see cref="ServiceProvider"/>.
+  /// </summary>
+  public object? RouteBServiceKey { get; }
+
+  protected SkStackRouteBSessionOptions SessionOptions { get; }
+  protected Action<SkStackClient>? PostConfigureClient { get; }
+
+  protected SkStackRouteBEchonetLiteHandlerFactory(
+    IServiceProvider serviceProvider,
+    object? routeBServiceKey,
+    SkStackRouteBSessionOptions sessionOptions,
+    Action<SkStackClient>? postConfigureClient
+  )
+  {
+    ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    RouteBServiceKey = routeBServiceKey;
+    SessionOptions = sessionOptions ?? throw new ArgumentNullException(nameof(serviceProvider));
+    PostConfigureClient = postConfigureClient;
+  }
 
   public ValueTask<RouteBEchonetLiteHandler> CreateAsync(
     CancellationToken cancellationToken
@@ -24,27 +43,15 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection 
     if (cancellationToken.IsCancellationRequested)
       return ValueTask.FromCanceled<RouteBEchonetLiteHandler>(cancellationToken);
 #else
-    // TODO
+    cancellationToken.ThrowIfCancellationRequested();
 #endif
 
-    var sessionOptions = new SkStackRouteBSessionOptions();
-
-    ConfigureRouteBSessionOptions?.Invoke(sessionOptions);
-
-    var serviceProvider = services.BuildServiceProvider();
-
     return CreateAsyncCore(
-      sessionOptions: sessionOptions,
-      configureSkStackClient: ConfigureSkStackClient,
-      serviceProvider: serviceProvider,
       cancellationToken: cancellationToken
     );
   }
 
   protected abstract ValueTask<RouteBEchonetLiteHandler> CreateAsyncCore(
-    SkStackRouteBSessionOptions sessionOptions,
-    Action<SkStackClient>? configureSkStackClient,
-    IServiceProvider serviceProvider,
     CancellationToken cancellationToken
   );
 }
