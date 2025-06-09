@@ -56,4 +56,30 @@ public sealed class SkStackRouteBSessionOptions : ICloneable {
     };
 
   object ICloneable.Clone() => Clone();
+
+  /// <summary>
+  /// Configure this instance to have the same values as the instance passed as an argument.
+  /// </summary>
+  /// <param name="baseOptions">
+  /// A <see cref="SkStackRouteBSessionOptions"/> that holds the values that are used to configure this instance.
+  /// </param>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="baseOptions"/> is <see langword="null"/>.
+  /// </exception>
+  /// <returns>
+  /// The current <see cref="SkStackRouteBSessionOptions"/> so that additional calls can be chained.
+  /// </returns>
+  public SkStackRouteBSessionOptions Configure(SkStackRouteBSessionOptions baseOptions)
+  {
+    if (baseOptions is null)
+      throw new ArgumentNullException(nameof(baseOptions));
+
+    PaaAddress = baseOptions.PaaAddress;
+    PaaMacAddress = baseOptions.PaaMacAddress;
+    Channel = baseOptions.Channel;
+    PanId = baseOptions.PanId;
+    ActiveScanOptions = baseOptions.ActiveScanOptions?.Clone();
+
+    return this;
+  }
 }
