@@ -1,103 +1,39 @@
 // SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
-
 using System;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using Polly;
 using Polly.DependencyInjection;
-using Polly.Retry;
-
-using Smdn.Net.EchonetLite;
-using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.SmartMeter;
 
 public static class SmartMeterDataAggregatorServiceCollectionExtensions {
-  /// <seealso cref="AddResiliencePipelineForSmartMeterConnection"/>
-  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection"/>
-  [CLSCompliant(false)]
-  public static IServiceCollection AddRetryForSmartMeterConnectionTimeout(
-    this IServiceCollection services,
-    int maxRetryAttempt,
-    TimeSpan delay,
-    Action<RetryStrategyOptions, AddResiliencePipelineContext<string>>? configureRetryOptions = null,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>>? configurePipeline = null
-  )
-    => AddResiliencePipelineForSmartMeterConnection(
-      services: services ?? throw new ArgumentNullException(nameof(services)),
-      configure: (builder, context) => {
-        var options = new RetryStrategyOptions {
-          ShouldHandle = new PredicateBuilder().Handle<TimeoutException>(),
-          MaxRetryAttempts = maxRetryAttempt,
-          Delay = delay,
-          BackoffType = DelayBackoffType.Constant,
-          OnRetry = static retryArgs => {
-            SmartMeterDataAggregator.GetLoggerForResiliencePipeline(retryArgs.Context)?.LogWarning(
-              "Retrying to establish connection to the smart meter (attempt {AttemptNumber})",
-              retryArgs.AttemptNumber
-            );
-
-            return default;
-          },
-        };
-
-        configureRetryOptions?.Invoke(options, context);
-
-        builder.AddRetry(options);
-
-        configurePipeline?.Invoke(builder, context);
-      }
-    );
-
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForSmartMeterConnection(
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
-    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipeline(
-      key: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection,
+    => AddSmartMeterDataAggregatorResiliencePipeline(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="AddResiliencePipelineForSmartMeterReconnection"/>
-  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection"/>
+  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddRetryForSmartMeterReconnectionTimeout(
+  public static IServiceCollection AddResiliencePipelineForSmartMeterConnection<TServiceKey>(
     this IServiceCollection services,
-    int maxRetryAttempt,
-    TimeSpan delay,
-    Action<RetryStrategyOptions, AddResiliencePipelineContext<string>>? configureRetryOptions = null,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>>? configurePipeline = null
+    TServiceKey serviceKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
-    => AddResiliencePipelineForSmartMeterReconnection(
+    => AddSmartMeterDataAggregatorResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      configure: (builder, context) => {
-        var options = new RetryStrategyOptions {
-          ShouldHandle = new PredicateBuilder().Handle<TimeoutException>(),
-          MaxRetryAttempts = maxRetryAttempt,
-          Delay = delay,
-          BackoffType = DelayBackoffType.Constant,
-          OnRetry = static retryArgs => {
-            SmartMeterDataAggregator.GetLoggerForResiliencePipeline(retryArgs.Context)?.LogWarning(
-              "Retrying to re-establish connection to the smart meter (attempt {AttemptNumber})",
-              retryArgs.AttemptNumber
-            );
-
-            return default;
-          },
-        };
-
-        configureRetryOptions?.Invoke(options, context);
-
-        builder.AddRetry(options);
-
-        configurePipeline?.Invoke(builder, context);
-      }
+      serviceKey: serviceKey,
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection"/>
@@ -106,64 +42,25 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
-    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipeline(
-      key: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection,
+    => AddSmartMeterDataAggregatorResiliencePipeline(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="AddResiliencePipelineForSmartMeterReadProperty"/>
-  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService"/>
+  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddRetryForSmartMeterReadPropertyException(
+  public static IServiceCollection AddResiliencePipelineForSmartMeterReconnection<TServiceKey>(
     this IServiceCollection services,
-    int maxRetryAttempt,
-    TimeSpan delay,
-    Action<PredicateBuilder> configureExceptionPredicates,
-    Action<RetryStrategyOptions, AddResiliencePipelineContext<string>>? configureRetryOptions = null,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>>? configurePipeline = null
+    TServiceKey serviceKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
-  {
-    if (configureExceptionPredicates is null)
-      throw new ArgumentNullException(nameof(configureExceptionPredicates));
-
-    return AddResiliencePipelineForSmartMeterReadProperty(
+    => AddSmartMeterDataAggregatorResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      configure: (builder, context) => {
-        var predicateBuilder = new PredicateBuilder();
-
-        configureExceptionPredicates(predicateBuilder);
-
-        var options = new RetryStrategyOptions {
-          ShouldHandle = predicateBuilder,
-          MaxRetryAttempts = maxRetryAttempt,
-          Delay = delay,
-          BackoffType = DelayBackoffType.Constant,
-          OnRetry = static retryArgs => {
-            ESV serviceCode = default;
-
-            if (EchonetClient.TryGetRequestServiceCodeForResiliencePipeline(retryArgs.Context, out var requestESV))
-              serviceCode = requestESV;
-            else if (EchonetClient.TryGetResponseServiceCodeForResiliencePipeline(retryArgs.Context, out var responseESV))
-              serviceCode = responseESV;
-
-            EchonetClient.GetLoggerForResiliencePipeline(retryArgs.Context)?.LogDebug(
-              "Failed to read the property value (ESV: {ESV}, attempt {AttemptNumber})",
-              serviceCode,
-              retryArgs.AttemptNumber
-            );
-
-            return default;
-          },
-        };
-
-        configureRetryOptions?.Invoke(options, context);
-
-        builder.AddRetry(options);
-
-        configurePipeline?.Invoke(builder, context);
-      }
+      serviceKey: serviceKey,
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
-  }
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService"/>
   [CLSCompliant(false)]
@@ -171,64 +68,25 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
-    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipeline(
-      key: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService,
+    => AddSmartMeterDataAggregatorResiliencePipeline(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="AddResiliencePipelineForSmartMeterWriteProperty"/>
-  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService"/>
+  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddRetryForSmartMeterWritePropertyException(
+  public static IServiceCollection AddResiliencePipelineForSmartMeterReadProperty<TServiceKey>(
     this IServiceCollection services,
-    int maxRetryAttempt,
-    TimeSpan delay,
-    Action<PredicateBuilder> configureExceptionPredicates,
-    Action<RetryStrategyOptions, AddResiliencePipelineContext<string>>? configureRetryOptions = null,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>>? configurePipeline = null
+    TServiceKey serviceKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
-  {
-    if (configureExceptionPredicates is null)
-      throw new ArgumentNullException(nameof(configureExceptionPredicates));
-
-    return AddResiliencePipelineForSmartMeterWriteProperty(
+    => AddSmartMeterDataAggregatorResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      configure: (builder, context) => {
-        var predicateBuilder = new PredicateBuilder();
-
-        configureExceptionPredicates(predicateBuilder);
-
-        var options = new RetryStrategyOptions {
-          ShouldHandle = predicateBuilder,
-          MaxRetryAttempts = maxRetryAttempt,
-          Delay = delay,
-          BackoffType = DelayBackoffType.Constant,
-          OnRetry = static retryArgs => {
-            ESV serviceCode = default;
-
-            if (EchonetClient.TryGetRequestServiceCodeForResiliencePipeline(retryArgs.Context, out var requestESV))
-              serviceCode = requestESV;
-            else if (EchonetClient.TryGetResponseServiceCodeForResiliencePipeline(retryArgs.Context, out var responseESV))
-              serviceCode = responseESV;
-
-            EchonetClient.GetLoggerForResiliencePipeline(retryArgs.Context)?.LogDebug(
-              "Failed to write the property value (ESV: {ESV}, attempt {AttemptNumber})",
-              serviceCode,
-              retryArgs.AttemptNumber
-            );
-
-            return default;
-          },
-        };
-
-        configureRetryOptions?.Invoke(options, context);
-
-        builder.AddRetry(options);
-
-        configurePipeline?.Invoke(builder, context);
-      }
+      serviceKey: serviceKey,
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
-  }
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService"/>
   [CLSCompliant(false)]
@@ -236,45 +94,24 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
-    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipeline(
-      key: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService,
+    => AddSmartMeterDataAggregatorResiliencePipeline(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="AddResiliencePipelineForAggregationDataAcquisition"/>
-  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData"/>
+  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddRetryForAggregationDataAcquisitionTimeout(
+  public static IServiceCollection AddResiliencePipelineForSmartMeterWriteProperty<TServiceKey>(
     this IServiceCollection services,
-    int maxRetryAttempt,
-    TimeSpan delay,
-    Action<RetryStrategyOptions, AddResiliencePipelineContext<string>>? configureRetryOptions = null,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>>? configurePipeline = null
+    TServiceKey serviceKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
-    => AddResiliencePipelineForAggregationDataAcquisition(
+    => AddSmartMeterDataAggregatorResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      configure: (builder, context) => {
-        var options = new RetryStrategyOptions {
-          ShouldHandle = new PredicateBuilder().Handle<TimeoutException>(),
-          MaxRetryAttempts = maxRetryAttempt,
-          Delay = delay,
-          BackoffType = DelayBackoffType.Constant,
-          OnRetry = static retryArgs => {
-            SmartMeterDataAggregator.GetLoggerForResiliencePipeline(retryArgs.Context)?.LogWarning(
-              "Retrying to acquire the property values for aggregating data (attempt {AttemptNumber})",
-              retryArgs.AttemptNumber
-            );
-
-            return default;
-          },
-        };
-
-        configureRetryOptions?.Invoke(options, context);
-
-        builder.AddRetry(options);
-
-        configurePipeline?.Invoke(builder, context);
-      }
+      serviceKey: serviceKey,
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData"/>
@@ -283,45 +120,24 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
-    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipeline(
-      key: SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData,
+    => AddSmartMeterDataAggregatorResiliencePipeline(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="AddResiliencePipelineForUpdatingElectricEnergyBaseline"/>
-  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue"/>
+  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddRetryForUpdatingElectricEnergyBaselineTimeout(
+  public static IServiceCollection AddResiliencePipelineForAggregationDataAcquisition<TServiceKey>(
     this IServiceCollection services,
-    int maxRetryAttempt,
-    TimeSpan delay,
-    Action<RetryStrategyOptions, AddResiliencePipelineContext<string>>? configureRetryOptions = null,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>>? configurePipeline = null
+    TServiceKey serviceKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
-    => AddResiliencePipelineForUpdatingElectricEnergyBaseline(
+    => AddSmartMeterDataAggregatorResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      configure: (builder, context) => {
-        var options = new RetryStrategyOptions {
-          ShouldHandle = new PredicateBuilder().Handle<TimeoutException>(),
-          MaxRetryAttempts = maxRetryAttempt,
-          Delay = delay,
-          BackoffType = DelayBackoffType.Constant,
-          OnRetry = static retryArgs => {
-            SmartMeterDataAggregator.GetLoggerForResiliencePipeline(retryArgs.Context)?.LogWarning(
-              "Retrying to update the baseline value for periodic cumulative electric energy (attempt {AttemptNumber})",
-              retryArgs.AttemptNumber
-            );
-
-            return default;
-          },
-        };
-
-        configureRetryOptions?.Invoke(options, context);
-
-        builder.AddRetry(options);
-
-        configurePipeline?.Invoke(builder, context);
-      }
+      serviceKey: serviceKey,
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue"/>
@@ -330,58 +146,25 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
-    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipeline(
-      key: SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue,
+    => AddSmartMeterDataAggregatorResiliencePipeline(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="AddResiliencePipelineForDataAggregationTask"/>
-  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask"/>
+  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddRetryForDataAggregationTaskException(
+  public static IServiceCollection AddResiliencePipelineForUpdatingElectricEnergyBaseline<TServiceKey>(
     this IServiceCollection services,
-    int maxRetryAttempt,
-    TimeSpan delay,
-    Action<PredicateBuilder> configureExceptionPredicates,
-    Action<RetryStrategyOptions, AddResiliencePipelineContext<string>>? configureRetryOptions = null,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>>? configurePipeline = null
+    TServiceKey serviceKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
-  {
-    if (configureExceptionPredicates is null)
-      throw new ArgumentNullException(nameof(configureExceptionPredicates));
-
-    return AddResiliencePipelineForDataAggregationTask(
+    => AddSmartMeterDataAggregatorResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      configure: (builder, context) => {
-        var predicateBuilder = new PredicateBuilder();
-
-        configureExceptionPredicates(predicateBuilder);
-
-        var options = new RetryStrategyOptions {
-          ShouldHandle = predicateBuilder,
-          MaxRetryAttempts = maxRetryAttempt,
-          Delay = delay,
-          BackoffType = DelayBackoffType.Constant,
-          OnRetry = static retryArgs => {
-            SmartMeterDataAggregator.GetLoggerForResiliencePipeline(retryArgs.Context)?.LogWarning(
-              "An expected exception occurred while aggregation. (attempt {AttemptNumber}, {TypeOfException}: {Message})",
-              retryArgs.AttemptNumber,
-              retryArgs.Outcome.Exception?.GetType()?.FullName,
-              retryArgs.Outcome.Exception?.Message
-            );
-
-            return default;
-          },
-        };
-
-        configureRetryOptions?.Invoke(options, context);
-
-        builder.AddRetry(options);
-
-        configurePipeline?.Invoke(builder, context);
-      }
+      serviceKey: serviceKey,
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
-  }
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask"/>
   [CLSCompliant(false)]
@@ -389,8 +172,62 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
-    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipeline(
-      key: SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask,
+    => AddSmartMeterDataAggregatorResiliencePipeline(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
+
+  /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask"/>
+  [CLSCompliant(false)]
+  public static IServiceCollection AddResiliencePipelineForDataAggregationTask<TServiceKey>(
+    this IServiceCollection services,
+    TServiceKey serviceKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
+  )
+    => AddSmartMeterDataAggregatorResiliencePipeline(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      serviceKey: serviceKey,
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
+    );
+
+  private static IServiceCollection AddSmartMeterDataAggregatorResiliencePipeline(
+    this IServiceCollection services,
+    string pipelineKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
+  )
+  {
+    if (services is null)
+      throw new ArgumentNullException(nameof(services));
+
+    services
+      .AddResiliencePipeline(
+        key: pipelineKey,
+        configure: configure
+      );
+
+    return services;
+  }
+
+  private static IServiceCollection AddSmartMeterDataAggregatorResiliencePipeline<TServiceKey>(
+    this IServiceCollection services,
+    TServiceKey serviceKey,
+    string pipelineKey,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
+  )
+  {
+    if (services is null)
+      throw new ArgumentNullException(nameof(services));
+
+    services
+      .AddResiliencePipeline(
+        serviceKey: serviceKey,
+        pipelineKey: pipelineKey,
+        createResiliencePipelineKeyPair: SmartMeterDataAggregator.CreateResiliencePipelineKeyPair<TServiceKey>,
+        configure: configure
+      );
+
+    return services;
+  }
 }

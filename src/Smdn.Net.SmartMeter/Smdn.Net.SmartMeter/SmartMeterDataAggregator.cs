@@ -28,7 +28,7 @@ namespace Smdn.Net.SmartMeter;
 /// <remarks>
 /// スマートメーターに対するデータ収集要求は、バックグラウンドで動作するタスクによって非同期的に行われます。
 /// </remarks>
-public class SmartMeterDataAggregator : HemsController {
+public partial class SmartMeterDataAggregator : HemsController {
   /// <summary>
   /// スマートメーターへの接続中における例外から回復するために使用される<see cref="ResiliencePipeline"/>と関連付けるキーを表します。
   /// </summary>
@@ -144,6 +144,32 @@ public class SmartMeterDataAggregator : HemsController {
       resiliencePipelineProvider: serviceProvider.GetService<ResiliencePipelineProvider<string>>(),
       logger: serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<SmartMeterDataAggregator>(),
       loggerFactoryForEchonetClient: serviceProvider.GetService<ILoggerFactory>()
+    )
+  {
+  }
+
+  public SmartMeterDataAggregator(
+    IEnumerable<SmartMeterDataAggregation> dataAggregations,
+    IServiceProvider serviceProvider,
+    /* [ServiceKey] */ object? routeBServiceKey
+  )
+    : this(
+      dataAggregations: dataAggregations,
+      echonetLiteHandlerFactory: (serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider))).GetRequiredKeyedService<IRouteBEchonetLiteHandlerFactory>(
+        serviceKey: routeBServiceKey
+      ),
+      routeBCredentialProvider: serviceProvider.GetRequiredKeyedService<IRouteBCredentialProvider>(
+        serviceKey: routeBServiceKey
+      ),
+      resiliencePipelineProvider: serviceProvider.GetKeyedService<ResiliencePipelineProvider<string>>(
+        serviceKey: routeBServiceKey
+      ),
+      logger:
+        // routeBServiceKey is not used for this retrieval
+        serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<SmartMeterDataAggregator>(),
+      loggerFactoryForEchonetClient:
+        // routeBServiceKey is not used for this retrieval
+        serviceProvider.GetService<ILoggerFactory>()
     )
   {
   }
