@@ -4,8 +4,11 @@ using System;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Smdn.Net.EchonetLite.RouteB.DependencyInjection;
+
 namespace Smdn.Net.EchonetLite.RouteB.Transport;
 
+[Obsolete($"Use {nameof(RouteBServiceCollectionExtensions)} instead.")]
 public static class RouteBEchonetLiteHandlerBuilderServiceCollectionExtensions {
   /// <summary>
   /// Adds <see cref="IRouteBEchonetLiteHandlerBuilder"/> to <see cref="IServiceCollection"/>.
