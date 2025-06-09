@@ -12,7 +12,7 @@ namespace Smdn.Net.SmartMeter;
 public static class SmartMeterDataAggregatorServiceCollectionExtensions {
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForSmartMeterConnection(
+  public static IServiceCollection AddResiliencePipelineSmartMeterConnection(
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
@@ -24,7 +24,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForSmartMeterConnection<TServiceKey>(
+  public static IServiceCollection AddResiliencePipelineSmartMeterConnection<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
@@ -38,7 +38,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForSmartMeterReconnection(
+  public static IServiceCollection AddResiliencePipelineSmartMeterReconnection(
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
@@ -50,7 +50,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForSmartMeterReconnection<TServiceKey>(
+  public static IServiceCollection AddResiliencePipelineSmartMeterReconnection<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
@@ -64,7 +64,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForSmartMeterReadProperty(
+  public static IServiceCollection AddResiliencePipelineSmartMeterReadProperty(
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
@@ -76,7 +76,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForSmartMeterReadProperty<TServiceKey>(
+  public static IServiceCollection AddResiliencePipelineSmartMeterReadProperty<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
@@ -90,7 +90,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForSmartMeterWriteProperty(
+  public static IServiceCollection AddResiliencePipelineSmartMeterWriteProperty(
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
@@ -102,7 +102,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForSmartMeterWriteProperty<TServiceKey>(
+  public static IServiceCollection AddResiliencePipelineSmartMeterWriteProperty<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
@@ -116,7 +116,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForAggregationDataAcquisition(
+  public static IServiceCollection AddResiliencePipelineAggregationDataAcquisition(
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
@@ -128,7 +128,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForAggregationDataAcquisition<TServiceKey>(
+  public static IServiceCollection AddResiliencePipelineAggregationDataAcquisition<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
@@ -142,7 +142,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForUpdatingElectricEnergyBaseline(
+  public static IServiceCollection AddResiliencePipelineUpdatingElectricEnergyBaseline(
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
@@ -154,7 +154,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForUpdatingElectricEnergyBaseline<TServiceKey>(
+  public static IServiceCollection AddResiliencePipelineUpdatingElectricEnergyBaseline<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure
@@ -168,7 +168,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForDataAggregationTask(
+  public static IServiceCollection AddResiliencePipelineDataAggregationTask(
     this IServiceCollection services,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure
   )
@@ -180,7 +180,7 @@ public static class SmartMeterDataAggregatorServiceCollectionExtensions {
 
   /// <seealso cref="SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask"/>
   [CLSCompliant(false)]
-  public static IServiceCollection AddResiliencePipelineForDataAggregationTask<TServiceKey>(
+  public static IServiceCollection AddResiliencePipelineDataAggregationTask<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
     Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure

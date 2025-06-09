@@ -79,18 +79,18 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
   }
 
   [Test]
-  public void AddResiliencePipelineForSmartMeterConnection()
+  public void AddResiliencePipelineSmartMeterConnection()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForSmartMeterConnection(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterConnection(
         configure: ConfigureNothing
       ),
       pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection
     );
 
   [Test]
-  public void AddResiliencePipelineForSmartMeterConnection_OfTServiceKey()
+  public void AddResiliencePipelineSmartMeterConnection_OfTServiceKey()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForSmartMeterConnection(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterConnection(
         configure: ConfigureNothing,
         serviceKey: ServiceKey
       ),
@@ -99,18 +99,18 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     );
 
   [Test]
-  public void AddResiliencePipelineForSmartMeterReconnection()
+  public void AddResiliencePipelineSmartMeterReconnection()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForSmartMeterReconnection(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterReconnection(
         configure: ConfigureNothing
       ),
       pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterReconnection
     );
 
   [Test]
-  public void AddResiliencePipelineForSmartMeterReconnection_OfTServiceKey()
+  public void AddResiliencePipelineSmartMeterReconnection_OfTServiceKey()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForSmartMeterReconnection(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterReconnection(
         configure: ConfigureNothing,
         serviceKey: ServiceKey
       ),
@@ -119,18 +119,18 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     );
 
   [Test]
-  public void AddResiliencePipelineForSmartMeterReadProperty()
+  public void AddResiliencePipelineSmartMeterReadProperty()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForSmartMeterReadProperty(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterReadProperty(
         configure: ConfigureNothing
       ),
       pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueReadService
     );
 
   [Test]
-  public void AddResiliencePipelineForSmartMeterReadProperty_OfTServiceKey()
+  public void AddResiliencePipelineSmartMeterReadProperty_OfTServiceKey()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForSmartMeterReadProperty(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterReadProperty(
         configure: ConfigureNothing,
         serviceKey: ServiceKey
       ),
@@ -139,18 +139,18 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     );
 
   [Test]
-  public void AddResiliencePipelineForSmartMeterWriteProperty()
+  public void AddResiliencePipelineSmartMeterWriteProperty()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForSmartMeterWriteProperty(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterWriteProperty(
         configure: ConfigureNothing
       ),
       pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterPropertyValueWriteService
     );
 
   [Test]
-  public void AddResiliencePipelineForSmartMeterWriteProperty_OfTServiceKey()
+  public void AddResiliencePipelineSmartMeterWriteProperty_OfTServiceKey()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForSmartMeterWriteProperty(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterWriteProperty(
         configure: ConfigureNothing,
         serviceKey: ServiceKey
       ),
@@ -159,18 +159,18 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     );
 
   [Test]
-  public void AddResiliencePipelineForAggregationDataAcquisition()
+  public void AddResiliencePipelineAggregationDataAcquisition()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForAggregationDataAcquisition(
+      services: new ServiceCollection().AddResiliencePipelineAggregationDataAcquisition(
         configure: ConfigureNothing
       ),
       pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData
     );
 
   [Test]
-  public void AddResiliencePipelineForAggregationDataAcquisition_OfTServiceKey()
+  public void AddResiliencePipelineAggregationDataAcquisition_OfTServiceKey()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForAggregationDataAcquisition(
+      services: new ServiceCollection().AddResiliencePipelineAggregationDataAcquisition(
         configure: ConfigureNothing,
         serviceKey: ServiceKey
       ),
@@ -179,9 +179,9 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     );
 
   [Test]
-  public void AddResiliencePipelineForUpdatingElectricEnergyBaseline()
+  public void AddResiliencePipelineUpdatingElectricEnergyBaseline()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForUpdatingElectricEnergyBaseline(
+      services: new ServiceCollection().AddResiliencePipelineUpdatingElectricEnergyBaseline(
         configure: ConfigureNothing
       ),
       pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue
@@ -189,9 +189,9 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
 
 
   [Test]
-  public void AddResiliencePipelineForUpdatingElectricEnergyBaseline_OfTServiceKey()
+  public void AddResiliencePipelineUpdatingElectricEnergyBaseline_OfTServiceKey()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForUpdatingElectricEnergyBaseline(
+      services: new ServiceCollection().AddResiliencePipelineUpdatingElectricEnergyBaseline(
         configure: ConfigureNothing,
         serviceKey: ServiceKey
       ),
@@ -200,18 +200,18 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     );
 
   [Test]
-  public void AddResiliencePipelineForDataAggregationTask()
+  public void AddResiliencePipelineDataAggregationTask()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForDataAggregationTask(
+      services: new ServiceCollection().AddResiliencePipelineDataAggregationTask(
         configure: ConfigureNothing
       ),
       pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForRunAggregationTask
     );
 
   [Test]
-  public void AddResiliencePipelineForDataAggregationTask_OfTServiceKey()
+  public void AddResiliencePipelineDataAggregationTask_OfTServiceKey()
     => AssertResiliencePipelineRegistered(
-      services: new ServiceCollection().AddResiliencePipelineForDataAggregationTask(
+      services: new ServiceCollection().AddResiliencePipelineDataAggregationTask(
         configure: ConfigureNothing,
         serviceKey: ServiceKey
       ),
