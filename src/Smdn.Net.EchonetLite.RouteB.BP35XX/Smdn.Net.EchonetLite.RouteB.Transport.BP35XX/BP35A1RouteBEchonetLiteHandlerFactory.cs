@@ -38,7 +38,7 @@ public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonet
     configure(options);
 
     if (string.IsNullOrEmpty(options.SerialPortName))
-      throw new InvalidOperationException($"{options.SerialPortName} is not valid");
+      throw new InvalidOperationException("Specifying null or an empty string for the serial port name is not valid.");
 
     cancellationToken.ThrowIfCancellationRequested();
 
