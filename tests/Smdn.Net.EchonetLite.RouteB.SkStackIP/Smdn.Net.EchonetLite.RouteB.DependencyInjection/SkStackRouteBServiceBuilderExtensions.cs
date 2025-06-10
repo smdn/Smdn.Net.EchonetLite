@@ -9,6 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
+using Polly;
+using Polly.DependencyInjection;
+using Polly.Registry;
+
 using Smdn.Net.SkStackIP;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
@@ -228,5 +232,91 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
     var anotherPseudoHandlerFactory = serviceProvider.GetRequiredKeyedService<IRouteBEchonetLiteHandlerFactory>(serviceKey: ServiceKey);
 
     Assert.That(anotherPseudoHandlerFactory, Is.SameAs(pseudoHandlerFactory));
+  }
+
+  private static void AssertResiliencePipelineRegistered<TServiceKey>(
+    IServiceCollection services,
+    TServiceKey serviceKey,
+    string pipelineKey
+  )
+  {
+    var serviceProvider = services.BuildServiceProvider();
+    var pipelineProvider = serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey);
+
+    Assert.That(
+      serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey),
+      Is.SameAs(pipelineProvider)
+    );
+
+    Assert.That(
+      () => pipelineProvider.GetPipeline(pipelineKey),
+      Throws.Nothing
+    );
+    Assert.That(
+      pipelineProvider.GetPipeline(pipelineKey),
+      Is.SameAs(
+        pipelineProvider.GetPipeline(pipelineKey)
+      )
+    );
+  }
+
+  private static void SkStackHandlerResiliencePipelineConfigureNothing(
+    ResiliencePipelineBuilder builder,
+    AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<string>> context
+  )
+  {
+    // do nothing
+  }
+
+  [Test]
+  public void AddResiliencePipelineSkStackHandlerAuthenticate()
+  {
+    const string ServiceKey = nameof(ServiceKey);
+
+    var services = new ServiceCollection();
+    var builder = new PseudoRouteBServiceBuilder<string>(
+      services: services,
+      serviceKey: ServiceKey,
+      optionNameSelector: static serviceKey => serviceKey
+    );
+
+    Assert.That(
+      builder.AddResiliencePipelineSkStackHandlerAuthenticate<string>(
+        configure: SkStackHandlerResiliencePipelineConfigureNothing
+      ),
+      Is.SameAs(builder)
+    );
+
+    AssertResiliencePipelineRegistered(
+      services,
+      ServiceKey,
+      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+    );
+  }
+
+  [Test]
+  public void AddResiliencePipelineSkStackHandlerSendFrame()
+  {
+    const string ServiceKey = nameof(ServiceKey);
+
+    var services = new ServiceCollection();
+    var builder = new PseudoRouteBServiceBuilder<string>(
+      services: services,
+      serviceKey: ServiceKey,
+      optionNameSelector: static serviceKey => serviceKey
+    );
+
+    Assert.That(
+      builder.AddResiliencePipelineSkStackHandlerSendFrame<string>(
+        configure: SkStackHandlerResiliencePipelineConfigureNothing
+      ),
+      Is.SameAs(builder)
+    );
+
+    AssertResiliencePipelineRegistered(
+      services,
+      ServiceKey,
+      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend
+    );
   }
 }

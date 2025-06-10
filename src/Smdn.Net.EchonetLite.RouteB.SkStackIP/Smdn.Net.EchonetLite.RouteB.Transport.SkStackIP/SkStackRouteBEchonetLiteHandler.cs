@@ -23,7 +23,7 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
-public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler {
+public abstract partial class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler {
   public static readonly string ResiliencePipelineKeyForAuthenticate = nameof(SkStackRouteBEchonetLiteHandler) + "." + nameof(resiliencePipelineAuthenticate);
   public static readonly string ResiliencePipelineKeyForSend = nameof(SkStackRouteBEchonetLiteHandler) + "." + nameof(resiliencePipelineSend);
 

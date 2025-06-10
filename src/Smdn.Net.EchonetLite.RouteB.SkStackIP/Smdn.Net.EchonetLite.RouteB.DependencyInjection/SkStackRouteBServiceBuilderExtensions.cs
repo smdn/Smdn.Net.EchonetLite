@@ -4,6 +4,9 @@ using System;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Polly;
+using Polly.DependencyInjection;
+
 using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
@@ -60,6 +63,38 @@ public static class SkStackRouteBServiceBuilderExtensions {
             .GetRequiredKeyedService<THandlerFactoryBuilder>(serviceKey)
             .Build(serviceProvider)
       )
+    );
+
+    return builder;
+  }
+
+  /// <seealso cref="SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate"/>
+  /// <seealso cref="SkStackRouteBEchonetLiteHandlerServiceCollectionExtensions.AddResiliencePipelineForAuthentication"/>
+  [CLSCompliant(false)]
+  public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSkStackHandlerAuthenticate<TServiceKey>(
+    this IRouteBServiceBuilder<TServiceKey> builder,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
+  )
+  {
+    _ = (builder ?? throw new ArgumentNullException(nameof(builder))).Services.AddResiliencePipelineForAuthentication(
+      serviceKey: builder.ServiceKey,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
+    );
+
+    return builder;
+  }
+
+  /// <seealso cref="SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend"/>
+  /// <seealso cref="SkStackRouteBEchonetLiteHandlerServiceCollectionExtensions.AddResiliencePipelineForSendingFrame"/>
+  [CLSCompliant(false)]
+  public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSkStackHandlerSendFrame<TServiceKey>(
+    this IRouteBServiceBuilder<TServiceKey> builder,
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
+  )
+  {
+    _ = (builder ?? throw new ArgumentNullException(nameof(builder))).Services.AddResiliencePipelineForSendingFrame(
+      serviceKey: builder.ServiceKey,
+      configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
     return builder;
