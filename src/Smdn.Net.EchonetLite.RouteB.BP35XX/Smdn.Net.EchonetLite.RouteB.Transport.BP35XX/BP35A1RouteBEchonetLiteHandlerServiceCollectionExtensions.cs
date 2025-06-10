@@ -15,6 +15,22 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
 public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
+  /// <inheritdoc cref="AddResiliencePipelineBP35A1PanaAuthenticationWorkaround{TServiceKey}(IServiceCollection, TServiceKey, RetryStrategyOptions)"/>
+  [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
+  public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+    this IServiceCollection services,
+    RetryStrategyOptions retryOptions
+  )
+    => AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      configureWorkaroundPipeline: (builder, _, applyWorkaroundAsync)
+        => ConfigureWorkaroundPipeline(
+          builder: builder,
+          retryOptions: retryOptions ?? throw new ArgumentNullException(nameof(services)),
+          applyWorkaroundAsync: applyWorkaroundAsync
+        )
+    );
+
 #pragma warning disable SA1004
   /// <inheritdoc cref="
   /// AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
@@ -30,6 +46,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   /// )
   /// "/>
   /// <param name="services">サービスを追加する対象の<see cref="IServiceCollection"/>。</param>
+  /// <param name="serviceKey">追加するサービスを指定する<see cref="ServiceDescriptor.ServiceKey"/>。</param>
   /// <param name="retryOptions">
   /// 追加される<see cref="ResiliencePipeline"/>に適用する<see cref="RetryStrategyOptions"/>を指定します。
   /// <see cref="RetryStrategyOptions{TResult}.OnRetry"/>を除くプロパティが適用されます。
@@ -40,44 +57,77 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   /// </exception>
 #pragma warning restore SA1004
   [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
-  public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+  public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround<TServiceKey>(
     this IServiceCollection services,
+    TServiceKey serviceKey,
     RetryStrategyOptions retryOptions
   )
+    => AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+      services: services ?? throw new ArgumentNullException(nameof(services)),
+      serviceKey: serviceKey,
+      configureWorkaroundPipeline: (builder, _, applyWorkaroundAsync)
+        => ConfigureWorkaroundPipeline(
+          builder: builder,
+          retryOptions: retryOptions ?? throw new ArgumentNullException(nameof(services)),
+          applyWorkaroundAsync: applyWorkaroundAsync
+        )
+    );
+
+  private static void ConfigureWorkaroundPipeline(
+    ResiliencePipelineBuilder builder,
+    RetryStrategyOptions retryOptions,
+    Func<ResilienceContext, ValueTask> applyWorkaroundAsync
+  )
   {
-    if (services is null)
-      throw new ArgumentNullException(nameof(services));
-    if (retryOptions is null)
-      throw new ArgumentNullException(nameof(retryOptions));
+    builder.AddRetry(
+      new RetryStrategyOptions {
+        ShouldHandle = args => {
+          if (args.Outcome.Exception is SkStackPanaSessionEstablishmentException)
+            return new(true);
 
-    return AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
-      services: services,
-      configureWorkaroundPipeline: (builder, context, applyWorkaroundAsync) => {
-        builder.AddRetry(
-          new RetryStrategyOptions {
-            ShouldHandle = args => {
-              if (args.Outcome.Exception is SkStackPanaSessionEstablishmentException)
-                return new(true);
-
-              return retryOptions.ShouldHandle(args);
-            },
-            OnRetry = retryArgs => {
-              if (retryArgs.AttemptNumber < retryOptions.MaxRetryAttempts - 1)
-                return default; // do nothing
-              else
-                return applyWorkaroundAsync(retryArgs.Context);
-            },
-            MaxRetryAttempts = retryOptions.MaxRetryAttempts,
-            BackoffType = retryOptions.BackoffType,
-            UseJitter = retryOptions.UseJitter,
-            MaxDelay = retryOptions.MaxDelay,
-            DelayGenerator = retryOptions.DelayGenerator,
-            Randomizer = retryOptions.Randomizer,
-          }
-        );
+          return retryOptions.ShouldHandle(args);
+        },
+        OnRetry = retryArgs => {
+          if (retryArgs.AttemptNumber < retryOptions.MaxRetryAttempts - 1)
+            return default; // do nothing
+          else
+            return applyWorkaroundAsync(retryArgs.Context);
+        },
+        MaxRetryAttempts = retryOptions.MaxRetryAttempts,
+        BackoffType = retryOptions.BackoffType,
+        UseJitter = retryOptions.UseJitter,
+        MaxDelay = retryOptions.MaxDelay,
+        DelayGenerator = retryOptions.DelayGenerator,
+        Randomizer = retryOptions.Randomizer,
       }
     );
   }
+
+  /// <inheritdoc cref="AddResiliencePipelineBP35A1PanaAuthenticationWorkaround{TServiceKey}(
+  ///   IServiceCollection,
+  ///   TServiceKey,
+  ///   Action{
+  ///     ResiliencePipelineBuilder,
+  ///     AddResiliencePipelineContext{SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair{TServiceKey}},
+  ///     Func{ResilienceContext, ValueTask}
+  ///   })"/>
+  [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
+  public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+    this IServiceCollection services,
+    Action<
+      ResiliencePipelineBuilder,
+      AddResiliencePipelineContext<string>,
+      Func<ResilienceContext, ValueTask>
+    > configureWorkaroundPipeline
+  )
+    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipelineForAuthentication(
+      configure: (builder, context) =>
+        (configureWorkaroundPipeline ?? throw new ArgumentNullException(nameof(configureWorkaroundPipeline)))(
+          builder,
+          context,
+          ApplyBP35A1PanaAuthenticationWorkaroundAsync
+        )
+    );
 
   /// <summary>
   /// <see cref="IServiceCollection"/>に対して、BP35A1でのPANA認証失敗時のリトライと回避策の適用を行う<see cref="ResiliencePipeline"/>を追加します。
@@ -97,6 +147,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   ///   </para>
   /// </remarks>
   /// <param name="services">サービスを追加する対象の<see cref="IServiceCollection"/>。</param>
+  /// <param name="serviceKey">追加するサービスを指定する<see cref="ServiceDescriptor.ServiceKey"/>。</param>
   /// <param name="configureWorkaroundPipeline">
   /// 追加する<see cref="ResiliencePipeline"/>を設定する<see cref="ResiliencePipelineBuilder"/>を処理するデリゲートを指定します。
   /// 第三引数に、ワークアラウンドを適用するためのメソッドへのデリゲートが渡されます。
@@ -107,40 +158,35 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   /// または、<paramref name="configureWorkaroundPipeline"/>が<see langword="null"/>です。
   /// </exception>
   [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
-  public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
+  public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround<TServiceKey>(
     this IServiceCollection services,
+    TServiceKey serviceKey,
     Action<
       ResiliencePipelineBuilder,
-      AddResiliencePipelineContext<string>,
+      AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>,
       Func<ResilienceContext, ValueTask>
     > configureWorkaroundPipeline
   )
-  {
-#pragma warning disable CA1510
-    if (services is null)
-      throw new ArgumentNullException(nameof(services));
-    if (configureWorkaroundPipeline is null)
-      throw new ArgumentNullException(nameof(configureWorkaroundPipeline));
-#pragma warning restore CA1510
-
-    return services.AddResiliencePipeline<string>(
-      key: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate,
+    => (services ?? throw new ArgumentNullException(nameof(services))).AddResiliencePipelineForAuthentication(
+      serviceKey: serviceKey,
       configure: (builder, context) =>
-        configureWorkaroundPipeline(
+        (configureWorkaroundPipeline ?? throw new ArgumentNullException(nameof(configureWorkaroundPipeline)))(
           builder,
           context,
-          static resilienceContext => {
-            // ResilienceContextのプロパティから、呼び出し元のSkStackRouteBEchonetLiteHandlerインスタンスを取得する
-            if (!resilienceContext.Properties.TryGetValue(SkStackRouteBEchonetLiteHandler.ResiliencePropertyKeyForInstance, out var handler))
-              return default;
-            if (handler is not BP35A1RouteBEchonetLiteHandler bp35a1Handler)
-              return default;
-
-            return bp35a1Handler.PerformPanaAuthenticationWorkaroundAsync(
-              cancellationToken: resilienceContext.CancellationToken
-            );
-          }
+          ApplyBP35A1PanaAuthenticationWorkaroundAsync
         )
+    );
+
+  private static ValueTask ApplyBP35A1PanaAuthenticationWorkaroundAsync(ResilienceContext resilienceContext)
+  {
+    // ResilienceContextのプロパティから、呼び出し元のSkStackRouteBEchonetLiteHandlerインスタンスを取得する
+    if (!resilienceContext.Properties.TryGetValue(SkStackRouteBEchonetLiteHandler.ResiliencePropertyKeyForInstance, out var handler))
+      return default;
+    if (handler is not BP35A1RouteBEchonetLiteHandler bp35a1Handler)
+      return default;
+
+    return bp35a1Handler.PerformPanaAuthenticationWorkaroundAsync(
+      cancellationToken: resilienceContext.CancellationToken
     );
   }
 }

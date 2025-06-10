@@ -9,8 +9,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
+using Polly;
+using Polly.DependencyInjection;
+using Polly.Registry;
+using Polly.Retry;
+
 using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
+using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 
@@ -129,6 +135,84 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
         }
       ),
       Throws.InvalidOperationException
+    );
+  }
+
+  private static void AssertResiliencePipelineRegistered<TServiceKey>(
+    IServiceCollection services,
+    TServiceKey serviceKey,
+    string pipelineKey
+  )
+  {
+    var serviceProvider = services.BuildServiceProvider();
+    var pipelineProvider = serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey);
+
+    Assert.That(
+      serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey),
+      Is.SameAs(pipelineProvider)
+    );
+
+    Assert.That(
+      () => pipelineProvider.GetPipeline(pipelineKey),
+      Throws.Nothing
+    );
+    Assert.That(
+      pipelineProvider.GetPipeline(pipelineKey),
+      Is.SameAs(
+        pipelineProvider.GetPipeline(pipelineKey)
+      )
+    );
+  }
+
+  [Test]
+  public void AddBP35A1PanaAuthenticationWorkaround_WithRetryOptions()
+  {
+    const string ServiceKey = nameof(ServiceKey);
+
+    var services = new ServiceCollection();
+    var builder = new PseudoRouteBServiceBuilder<string>(
+      services: services,
+      serviceKey: ServiceKey,
+      optionNameSelector: static serviceKey => serviceKey
+    );
+
+    Assert.That(
+      builder.AddBP35A1PanaAuthenticationWorkaround<string>(
+        retryOptions: new RetryStrategyOptions()
+      ),
+      Is.SameAs(builder)
+    );
+
+    AssertResiliencePipelineRegistered(
+      services,
+      ServiceKey,
+      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+    );
+  }
+
+   [Test]
+  public void AddBP35A1PanaAuthenticationWorkaround_WithConfigureWorkaroundPipeline()
+  {
+    const string ServiceKey = nameof(ServiceKey);
+
+    var services = new ServiceCollection();
+    var builder = new PseudoRouteBServiceBuilder<string>(
+      services: services,
+      serviceKey: ServiceKey,
+      optionNameSelector: static serviceKey => serviceKey
+    );
+
+    Assert.That(
+      builder.AddBP35A1PanaAuthenticationWorkaround<string>(
+        configureWorkaroundPipeline: (builder, context, applyWorkaroundAsync) => { }
+      ),
+      Is.SameAs(builder)
+    );
+
+    AssertResiliencePipelineRegistered(
+      services,
+      ServiceKey,
+      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
     );
   }
 }
