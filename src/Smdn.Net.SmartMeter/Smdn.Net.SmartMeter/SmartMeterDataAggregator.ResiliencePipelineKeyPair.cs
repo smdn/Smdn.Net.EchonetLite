@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Collections.Generic;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -35,7 +34,7 @@ partial class SmartMeterDataAggregator {
   /// Polly Dependency injection - Complex pipeline keys
   /// </seealso>
 #pragma warning disable IDE0055
-  public readonly struct ResiliencePipelineKeyPair<TServiceKey> :
+  public readonly record struct ResiliencePipelineKeyPair<TServiceKey> :
     IResiliencePipelineKeyPair<TServiceKey, string>,
     IEquatable<ResiliencePipelineKeyPair<TServiceKey>>
 #pragma warning restore IDE0055
@@ -61,22 +60,6 @@ partial class SmartMeterDataAggregator {
       ServiceKey = serviceKey;
       PipelineKey = pipelineKey;
     }
-
-    public override int GetHashCode()
-      => (ServiceKey, PipelineKey).GetHashCode();
-
-    public override bool Equals(object? obj)
-      => obj is ResiliencePipelineKeyPair<TServiceKey> otherKeyPair && Equals(other: otherKeyPair);
-
-    public bool Equals(ResiliencePipelineKeyPair<TServiceKey> other)
-      => EqualityComparer<TServiceKey>.Default.Equals(ServiceKey, other.ServiceKey) &&
-        StringComparer.Ordinal.Equals(PipelineKey, other.PipelineKey);
-
-    public static bool operator ==(ResiliencePipelineKeyPair<TServiceKey> x, ResiliencePipelineKeyPair<TServiceKey> y)
-      => x.Equals(y);
-
-    public static bool operator !=(ResiliencePipelineKeyPair<TServiceKey> x, ResiliencePipelineKeyPair<TServiceKey> y)
-      => !x.Equals(y);
 
     public override string ToString()
       => $"{{{ServiceKey}:{PipelineKey}}}";
