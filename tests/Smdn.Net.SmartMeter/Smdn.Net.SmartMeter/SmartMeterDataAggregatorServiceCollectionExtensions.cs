@@ -21,6 +21,7 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     AddResiliencePipelineContext<string> context
   )
   {
+    // do nothing
   }
 
   private static void ConfigureNothing(
@@ -28,6 +29,7 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<string>> context
   )
   {
+    // do nothing
   }
 
   private static void AssertResiliencePipelineRegistered(
@@ -42,6 +44,12 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
       () => pipelineProvider.GetPipeline(pipelineKey),
       Throws.Nothing
     );
+    Assert.That(
+      pipelineProvider.GetPipeline(pipelineKey),
+      Is.SameAs(
+        pipelineProvider.GetPipeline(pipelineKey)
+      )
+    );
   }
 
   private static void AssertResiliencePipelineRegistered<TServiceKey>(
@@ -50,16 +58,23 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     string pipelineKey
   )
   {
-    foreach (var desc in services) {
-      Console.WriteLine(desc);
-    }
-
     var serviceProvider = services.BuildServiceProvider();
     var pipelineProvider = serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey);
 
     Assert.That(
+      serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey),
+      Is.SameAs(pipelineProvider)
+    );
+
+    Assert.That(
       () => pipelineProvider.GetPipeline(pipelineKey),
       Throws.Nothing
+    );
+    Assert.That(
+      pipelineProvider.GetPipeline(pipelineKey),
+      Is.SameAs(
+        pipelineProvider.GetPipeline(pipelineKey)
+      )
     );
   }
 
