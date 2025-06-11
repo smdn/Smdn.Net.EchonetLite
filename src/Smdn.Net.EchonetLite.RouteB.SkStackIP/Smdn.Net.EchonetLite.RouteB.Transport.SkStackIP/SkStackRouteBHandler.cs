@@ -24,8 +24,10 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
-  public static readonly string ResiliencePipelineKeyForAuthenticate = nameof(SkStackRouteBHandler) + "." + nameof(resiliencePipelineAuthenticate);
-  public static readonly string ResiliencePipelineKeyForSend = nameof(SkStackRouteBHandler) + "." + nameof(resiliencePipelineSend);
+  public static class ResiliencePipelineKeys {
+    public static readonly string Authenticate = nameof(SkStackRouteBHandler) + "." + nameof(SkStackRouteBHandler.resiliencePipelineAuthenticate);
+    public static readonly string Send = nameof(SkStackRouteBHandler) + "." + nameof(SkStackRouteBHandler.resiliencePipelineSend);
+  }
 
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<SkStackRouteBHandler?> ResiliencePropertyKeyForInstance = new(
@@ -88,8 +90,8 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
     ResiliencePipeline? resiliencePipelineAuthenticate = null;
     ResiliencePipeline? resiliencePipelineSend = null;
 
-    _ = resiliencePipelineProvider?.TryGetPipeline(ResiliencePipelineKeyForAuthenticate, out resiliencePipelineAuthenticate);
-    _ = resiliencePipelineProvider?.TryGetPipeline(ResiliencePipelineKeyForSend, out resiliencePipelineSend);
+    _ = resiliencePipelineProvider?.TryGetPipeline(ResiliencePipelineKeys.Authenticate, out resiliencePipelineAuthenticate);
+    _ = resiliencePipelineProvider?.TryGetPipeline(ResiliencePipelineKeys.Send, out resiliencePipelineSend);
 
     this.resiliencePipelineAuthenticate = resiliencePipelineAuthenticate ?? ResiliencePipeline.Empty;
     this.resiliencePipelineSend = resiliencePipelineSend ?? ResiliencePipeline.Empty;

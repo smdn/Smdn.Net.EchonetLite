@@ -290,7 +290,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
     AssertResiliencePipelineRegistered(
       services,
       ServiceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
   }
 
@@ -316,7 +316,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
     AssertResiliencePipelineRegistered(
       services,
       ServiceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Send
     );
   }
 }

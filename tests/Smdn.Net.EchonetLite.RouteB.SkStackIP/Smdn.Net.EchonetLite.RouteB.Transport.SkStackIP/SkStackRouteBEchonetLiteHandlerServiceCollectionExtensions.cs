@@ -84,7 +84,7 @@ public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
       services: new ServiceCollection().AddResiliencePipelineForAuthentication(
         configure: ConfigureNothing
       ),
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
 
   [Test]
@@ -95,7 +95,7 @@ public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
         serviceKey: ServiceKey
       ),
       serviceKey: ServiceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
 
   [Test]
@@ -104,7 +104,7 @@ public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
       services: new ServiceCollection().AddResiliencePipelineForSendingFrame(
         configure: ConfigureNothing
       ),
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Send
     );
 
   [Test]
@@ -115,6 +115,6 @@ public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
         serviceKey: ServiceKey
       ),
       serviceKey: ServiceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Send
     );
 }

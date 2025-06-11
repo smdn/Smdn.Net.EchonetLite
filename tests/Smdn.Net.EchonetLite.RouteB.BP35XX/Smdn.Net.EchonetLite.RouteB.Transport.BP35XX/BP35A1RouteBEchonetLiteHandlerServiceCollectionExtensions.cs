@@ -71,7 +71,7 @@ public class BP35A1RouteBHandlerServiceCollectionExtensionsTests {
       services: new ServiceCollection().AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
         retryOptions: new RetryStrategyOptions()
       ),
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
 
   [Test]
@@ -82,7 +82,7 @@ public class BP35A1RouteBHandlerServiceCollectionExtensionsTests {
         retryOptions: new RetryStrategyOptions()
       ),
       serviceKey: ServiceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
 
   [Test]
@@ -91,7 +91,7 @@ public class BP35A1RouteBHandlerServiceCollectionExtensionsTests {
       services: new ServiceCollection().AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
         configureWorkaroundPipeline: (builder, context, applyWorkaroundAsync) => { }
       ),
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
 
   [Test]
@@ -102,6 +102,6 @@ public class BP35A1RouteBHandlerServiceCollectionExtensionsTests {
         configureWorkaroundPipeline: (builder, context, applyWorkaroundAsync) => { }
       ),
       serviceKey: ServiceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
 }

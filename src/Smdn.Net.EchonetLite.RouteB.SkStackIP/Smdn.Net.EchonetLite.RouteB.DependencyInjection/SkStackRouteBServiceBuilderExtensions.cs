@@ -68,7 +68,7 @@ public static class SkStackRouteBServiceBuilderExtensions {
     return builder;
   }
 
-  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate"/>
   /// <seealso cref="SkStackRouteBHandlerServiceCollectionExtensions.AddResiliencePipelineForAuthentication"/>
   [CLSCompliant(false)]
   public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSkStackHandlerAuthenticate<TServiceKey>(
@@ -84,7 +84,7 @@ public static class SkStackRouteBServiceBuilderExtensions {
     return builder;
   }
 
-  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForSend"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeys.Send"/>
   /// <seealso cref="SkStackRouteBHandlerServiceCollectionExtensions.AddResiliencePipelineForSendingFrame"/>
   [CLSCompliant(false)]
   public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSkStackHandlerSendFrame<TServiceKey>(

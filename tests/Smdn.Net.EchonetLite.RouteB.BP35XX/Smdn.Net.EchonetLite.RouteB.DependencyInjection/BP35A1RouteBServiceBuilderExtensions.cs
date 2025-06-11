@@ -186,7 +186,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
     AssertResiliencePipelineRegistered(
       services,
       ServiceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
   }
 
@@ -212,7 +212,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
     AssertResiliencePipelineRegistered(
       services,
       ServiceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
     );
   }
 }

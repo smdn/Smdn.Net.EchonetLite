@@ -10,7 +10,7 @@ using Polly.DependencyInjection;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 public static class SkStackRouteBHandlerServiceCollectionExtensions {
-  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForAuthentication(
     this IServiceCollection services,
@@ -18,11 +18,11 @@ public static class SkStackRouteBHandlerServiceCollectionExtensions {
   )
     => AddSkStackHandlerResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForAuthentication<TServiceKey>(
     this IServiceCollection services,
@@ -32,11 +32,11 @@ public static class SkStackRouteBHandlerServiceCollectionExtensions {
     => AddSkStackHandlerResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
       serviceKey: serviceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForSend"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeys.Send"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForSendingFrame(
     this IServiceCollection services,
@@ -44,11 +44,11 @@ public static class SkStackRouteBHandlerServiceCollectionExtensions {
   )
     => AddSkStackHandlerResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Send,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForSend"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeys.Send"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForSendingFrame<TServiceKey>(
     this IServiceCollection services,
@@ -58,7 +58,7 @@ public static class SkStackRouteBHandlerServiceCollectionExtensions {
     => AddSkStackHandlerResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
       serviceKey: serviceKey,
-      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Send,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
