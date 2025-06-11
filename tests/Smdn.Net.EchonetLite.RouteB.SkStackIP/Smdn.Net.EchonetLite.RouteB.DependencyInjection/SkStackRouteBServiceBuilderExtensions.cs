@@ -31,7 +31,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
     public Func<TServiceKey, string?>? OptionsNameSelector { get; } = optionNameSelector;
   }
 
-  private class PseudoHandlerFactoryBuilder : SkStackRouteBEchonetLiteHandlerFactoryBuilder<string> {
+  private class PseudoHandlerFactoryBuilder : SkStackRouteBHandlerFactoryBuilder<string> {
     public PseudoHandlerFactoryBuilder(
       IServiceCollection services,
       string serviceKey,
@@ -45,7 +45,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
     {
     }
 
-    protected override SkStackRouteBEchonetLiteHandlerFactory Build(
+    protected override SkStackRouteBHandlerFactory Build(
       IServiceProvider serviceProvider,
       SkStackRouteBSessionOptions sessionOptions,
       Action<SkStackClient>? postConfigureClient
@@ -58,7 +58,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
       );
   }
 
-  private class PseudoHandlerFactory : SkStackRouteBEchonetLiteHandlerFactory {
+  private class PseudoHandlerFactory : SkStackRouteBHandlerFactory {
     public new SkStackRouteBSessionOptions SessionOptions => base.SessionOptions;
     public new Action<SkStackClient>? PostConfigureClient => base.PostConfigureClient;
 
@@ -262,7 +262,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
 
   private static void SkStackHandlerResiliencePipelineConfigureNothing(
     ResiliencePipelineBuilder builder,
-    AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<string>> context
+    AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<string>> context
   )
   {
     // do nothing
@@ -290,7 +290,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
     AssertResiliencePipelineRegistered(
       services,
       ServiceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
   }
 
@@ -316,7 +316,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
     AssertResiliencePipelineRegistered(
       services,
       ServiceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend
     );
   }
 }

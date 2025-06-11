@@ -10,12 +10,12 @@ using Polly.Registry.KeyedRegistry;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 #pragma warning disable IDE0040
-partial class SkStackRouteBEchonetLiteHandler {
+partial class SkStackRouteBHandler {
 #pragma warning restore IDE0040
   /// <summary>
   /// A complex key representing a pair of keys: a key of <typeparamref name="TServiceKey"/> type specified when
   /// registering with <see cref="IServiceCollection"/> and a <see cref="string"/> key for
-  /// <see cref="ResiliencePipeline"/> referenced by <see cref="SkStackRouteBEchonetLiteHandler"/>.
+  /// <see cref="ResiliencePipeline"/> referenced by <see cref="SkStackRouteBHandler"/>.
   /// </summary>
   /// <typeparam name="TServiceKey">
   /// The type of key specified when the <see cref="ResiliencePipeline"/> is registered to the <see cref="IServiceCollection"/>.
@@ -36,7 +36,7 @@ partial class SkStackRouteBEchonetLiteHandler {
     public TServiceKey ServiceKey { get; }
 
     /// <summary name="pipelineKey">
-    /// A key for <see cref="ResiliencePipeline"/> referenced by <see cref="SkStackRouteBEchonetLiteHandler"/>.
+    /// A key for <see cref="ResiliencePipeline"/> referenced by <see cref="SkStackRouteBHandler"/>.
     /// </summary>
     public string PipelineKey { get; }
 

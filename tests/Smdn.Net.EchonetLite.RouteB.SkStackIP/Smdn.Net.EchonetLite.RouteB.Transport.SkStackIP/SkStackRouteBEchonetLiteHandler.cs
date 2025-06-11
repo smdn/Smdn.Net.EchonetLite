@@ -5,4 +5,4 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 [TestFixture]
-public class SkStackRouteBEchonetLiteHandlerTests { }
+public class SkStackRouteBHandlerTests { }

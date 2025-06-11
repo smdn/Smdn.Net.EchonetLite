@@ -12,14 +12,14 @@ using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
 [TestFixture]
-public class BP35A1RouteBEchonetLiteHandlerFactoryTests {
+public class BP35A1RouteBHandlerFactoryTests {
   [TestCase("/dev/null")]
   [TestCase("NUL")]
   public void CreateAsync(string serialPortName)
   {
     var services = new ServiceCollection();
 
-    var factory = new BP35A1RouteBEchonetLiteHandlerFactory(
+    var factory = new BP35A1RouteBHandlerFactory(
       serviceProvider: services.BuildServiceProvider(),
       routeBServiceKey: null,
       options: new BP35A1Options() {
@@ -45,7 +45,7 @@ public class BP35A1RouteBEchonetLiteHandlerFactoryTests {
   {
     var services = new ServiceCollection();
 
-    var factory = new BP35A1RouteBEchonetLiteHandlerFactory(
+    var factory = new BP35A1RouteBHandlerFactory(
       serviceProvider: services.BuildServiceProvider(),
       routeBServiceKey: null,
       options: new BP35A1Options() {

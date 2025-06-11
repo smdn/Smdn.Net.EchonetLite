@@ -10,10 +10,10 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
-public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonetLiteHandlerFactory {
+public sealed class BP35A1RouteBHandlerFactory : SkStackRouteBHandlerFactory {
   private readonly BP35A1Options options;
 
-  public BP35A1RouteBEchonetLiteHandlerFactory(
+  public BP35A1RouteBHandlerFactory(
     IServiceProvider serviceProvider,
     object? routeBServiceKey,
     BP35A1Options options,
@@ -47,7 +47,7 @@ public sealed class BP35A1RouteBEchonetLiteHandlerFactory : SkStackRouteBEchonet
 
     PostConfigureClient?.Invoke(client);
 
-    return new BP35A1RouteBEchonetLiteHandler(
+    return new BP35A1RouteBHandler(
       client: client,
       sessionOptions: SessionOptions,
       shouldDisposeClient: true,

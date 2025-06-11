@@ -21,7 +21,7 @@ public static class BP35A1RouteBServiceBuilderExtensions {
     this IRouteBServiceBuilder<TServiceKey> builder,
     Action<BP35A1Options> configureBP35A1Options,
     Action<SkStackRouteBSessionOptions> configureSessionOptions,
-    Action<BP35A1RouteBEchonetLiteHandlerFactoryBuilder<TServiceKey>> configureRouteBHandlerFactory
+    Action<BP35A1RouteBHandlerFactoryBuilder<TServiceKey>> configureRouteBHandlerFactory
   )
   {
     if (builder is null)
@@ -44,7 +44,7 @@ public static class BP35A1RouteBServiceBuilderExtensions {
     return builder.AddSkStackHandler(
       configureSessionOptions: configureSessionOptions,
       createHandlerFactoryBuilder: (services, serviceKey, selectOptionsNameForServiceKey) => {
-        var builder = new BP35A1RouteBEchonetLiteHandlerFactoryBuilder<TServiceKey>(
+        var builder = new BP35A1RouteBHandlerFactoryBuilder<TServiceKey>(
           services: services,
           serviceKey: serviceKey,
           selectOptionsNameForServiceKey: selectOptionsNameForServiceKey
@@ -76,7 +76,7 @@ public static class BP35A1RouteBServiceBuilderExtensions {
     this IRouteBServiceBuilder<TServiceKey> builder,
     Action<
       ResiliencePipelineBuilder,
-      AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>,
+      AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>,
       Func<ResilienceContext, ValueTask>
     > configureWorkaroundPipeline
   )

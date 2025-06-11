@@ -15,8 +15,8 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
-public class SkStackRouteBTcpEchonetLiteHandler : SkStackRouteBEchonetLiteHandler {
-  public SkStackRouteBTcpEchonetLiteHandler(
+public class SkStackTcpRouteBHandler : SkStackRouteBHandler {
+  public SkStackTcpRouteBHandler(
     SkStackClient client,
     SkStackRouteBSessionOptions sessionOptions,
     bool shouldDisposeClient,

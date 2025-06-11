@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
   <PropertyGroup Label="metadata">
     <Description>
 <![CDATA[Skyley Networksの[SKSTACK IP](https://www.skyley.com/wiki/?SKSTACK+IP+for+HAN)を使用して、 スマート電力量メータとの情報伝達手段である「Bルート」を介したECHONET Lite規格の通信を扱うためのAPIを提供します。
-ECHONET Lite規格における下位通信層に相当する実装である`SkStackRouteBUdpEchonetLiteHandler`クラスをはじめとするAPIを提供します。
+ECHONET Lite規格における下位通信層に相当する実装である`SkStackUdpRouteBHandler`クラスをはじめとするAPIを提供します。
 ]]>
     </Description>
     <CopyrightYear>2024</CopyrightYear>

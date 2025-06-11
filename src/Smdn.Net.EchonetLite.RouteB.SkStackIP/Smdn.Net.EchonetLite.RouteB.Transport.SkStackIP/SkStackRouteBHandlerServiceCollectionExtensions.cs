@@ -9,8 +9,8 @@ using Polly.DependencyInjection;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
-public static class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensions {
-  /// <seealso cref="SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate"/>
+public static class SkStackRouteBHandlerServiceCollectionExtensions {
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForAuthentication(
     this IServiceCollection services,
@@ -18,25 +18,25 @@ public static class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensions {
   )
     => AddSkStackHandlerResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForAuthentication<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
     => AddSkStackHandlerResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
       serviceKey: serviceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForSend"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForSendingFrame(
     this IServiceCollection services,
@@ -44,21 +44,21 @@ public static class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensions {
   )
     => AddSkStackHandlerResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
-  /// <seealso cref="SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForSend"/>
   [CLSCompliant(false)]
   public static IServiceCollection AddResiliencePipelineForSendingFrame<TServiceKey>(
     this IServiceCollection services,
     TServiceKey serviceKey,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
     => AddSkStackHandlerResiliencePipeline(
       services: services ?? throw new ArgumentNullException(nameof(services)),
       serviceKey: serviceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend,
       configure: configure ?? throw new ArgumentNullException(nameof(configure))
     );
 
@@ -84,7 +84,7 @@ public static class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensions {
     this IServiceCollection services,
     TServiceKey serviceKey,
     string pipelineKey,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
   {
     if (services is null)

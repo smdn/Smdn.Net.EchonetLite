@@ -16,7 +16,7 @@ using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
 [TestFixture]
-public class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
+public class BP35A1RouteBHandlerServiceCollectionExtensionsTests {
   private const string ServiceKey = nameof(ServiceKey);
 
   private static void AssertResiliencePipelineRegistered(
@@ -71,7 +71,7 @@ public class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
       services: new ServiceCollection().AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
         retryOptions: new RetryStrategyOptions()
       ),
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
 
   [Test]
@@ -82,7 +82,7 @@ public class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
         retryOptions: new RetryStrategyOptions()
       ),
       serviceKey: ServiceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
 
   [Test]
@@ -91,7 +91,7 @@ public class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
       services: new ServiceCollection().AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
         configureWorkaroundPipeline: (builder, context, applyWorkaroundAsync) => { }
       ),
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
 
   [Test]
@@ -102,6 +102,6 @@ public class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
         configureWorkaroundPipeline: (builder, context, applyWorkaroundAsync) => { }
       ),
       serviceKey: ServiceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
 }

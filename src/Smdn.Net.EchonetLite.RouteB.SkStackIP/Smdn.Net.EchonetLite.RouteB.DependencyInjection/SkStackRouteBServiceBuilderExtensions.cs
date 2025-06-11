@@ -22,7 +22,7 @@ public static class SkStackRouteBServiceBuilderExtensions {
     Action<SkStackRouteBSessionOptions> configureSessionOptions,
     Func<IServiceCollection, TServiceKey, Func<TServiceKey, string?>, THandlerFactoryBuilder> createHandlerFactoryBuilder
   )
-    where THandlerFactoryBuilder : SkStackRouteBEchonetLiteHandlerFactoryBuilder<TServiceKey>
+    where THandlerFactoryBuilder : SkStackRouteBHandlerFactoryBuilder<TServiceKey>
   {
     if (builder is null)
       throw new ArgumentNullException(nameof(builder));
@@ -68,12 +68,12 @@ public static class SkStackRouteBServiceBuilderExtensions {
     return builder;
   }
 
-  /// <seealso cref="SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate"/>
-  /// <seealso cref="SkStackRouteBEchonetLiteHandlerServiceCollectionExtensions.AddResiliencePipelineForAuthentication"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate"/>
+  /// <seealso cref="SkStackRouteBHandlerServiceCollectionExtensions.AddResiliencePipelineForAuthentication"/>
   [CLSCompliant(false)]
   public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSkStackHandlerAuthenticate<TServiceKey>(
     this IRouteBServiceBuilder<TServiceKey> builder,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
   {
     _ = (builder ?? throw new ArgumentNullException(nameof(builder))).Services.AddResiliencePipelineForAuthentication(
@@ -84,12 +84,12 @@ public static class SkStackRouteBServiceBuilderExtensions {
     return builder;
   }
 
-  /// <seealso cref="SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend"/>
-  /// <seealso cref="SkStackRouteBEchonetLiteHandlerServiceCollectionExtensions.AddResiliencePipelineForSendingFrame"/>
+  /// <seealso cref="SkStackRouteBHandler.ResiliencePipelineKeyForSend"/>
+  /// <seealso cref="SkStackRouteBHandlerServiceCollectionExtensions.AddResiliencePipelineForSendingFrame"/>
   [CLSCompliant(false)]
   public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSkStackHandlerSendFrame<TServiceKey>(
     this IRouteBServiceBuilder<TServiceKey> builder,
-    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
+    Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure
   )
   {
     _ = (builder ?? throw new ArgumentNullException(nameof(builder))).Services.AddResiliencePipelineForSendingFrame(

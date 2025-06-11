@@ -8,7 +8,7 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
-public abstract class SkStackRouteBEchonetLiteHandlerFactory : IRouteBEchonetLiteHandlerFactory {
+public abstract class SkStackRouteBHandlerFactory : IRouteBEchonetLiteHandlerFactory {
   /// <summary>
   /// Gets the <see cref="IServiceProvider"/> for retrieving the configured service objects and other objects.
   /// </summary>
@@ -22,7 +22,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactory : IRouteBEchonetLit
   protected SkStackRouteBSessionOptions SessionOptions { get; }
   protected Action<SkStackClient>? PostConfigureClient { get; }
 
-  protected SkStackRouteBEchonetLiteHandlerFactory(
+  protected SkStackRouteBHandlerFactory(
     IServiceProvider serviceProvider,
     object? routeBServiceKey,
     SkStackRouteBSessionOptions sessionOptions,

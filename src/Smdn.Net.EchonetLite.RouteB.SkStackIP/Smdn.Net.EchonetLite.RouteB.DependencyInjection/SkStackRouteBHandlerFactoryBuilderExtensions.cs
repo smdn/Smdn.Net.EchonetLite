@@ -6,12 +6,12 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 
-public static class SkStackRouteBEchonetLiteHandlerFactoryBuilderExtensions {
-  public static TSkStackRouteBEchonetLiteHandlerFactoryBuilder PostConfigureClient<TSkStackRouteBEchonetLiteHandlerFactoryBuilder, TServiceKey>(
-    this TSkStackRouteBEchonetLiteHandlerFactoryBuilder builder,
+public static class SkStackRouteBHandlerFactoryBuilderExtensions {
+  public static TSkStackRouteBHandlerFactoryBuilder PostConfigureClient<TSkStackRouteBHandlerFactoryBuilder, TServiceKey>(
+    this TSkStackRouteBHandlerFactoryBuilder builder,
     Action<SkStackClient> postConfigureClient
   )
-    where TSkStackRouteBEchonetLiteHandlerFactoryBuilder : SkStackRouteBEchonetLiteHandlerFactoryBuilder<TServiceKey>
+    where TSkStackRouteBHandlerFactoryBuilder : SkStackRouteBHandlerFactoryBuilder<TServiceKey>
   {
     if (builder is null)
       throw new ArgumentNullException(nameof(builder));

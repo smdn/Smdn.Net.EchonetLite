@@ -11,8 +11,8 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 
-public sealed class BP35A1RouteBEchonetLiteHandlerFactoryBuilder<TServiceKey> : SkStackRouteBEchonetLiteHandlerFactoryBuilder<TServiceKey> {
-  internal BP35A1RouteBEchonetLiteHandlerFactoryBuilder(
+public sealed class BP35A1RouteBHandlerFactoryBuilder<TServiceKey> : SkStackRouteBHandlerFactoryBuilder<TServiceKey> {
+  internal BP35A1RouteBHandlerFactoryBuilder(
     IServiceCollection services,
     TServiceKey serviceKey,
     Func<TServiceKey, string?> selectOptionsNameForServiceKey
@@ -25,12 +25,12 @@ public sealed class BP35A1RouteBEchonetLiteHandlerFactoryBuilder<TServiceKey> : 
   {
   }
 
-  protected override SkStackRouteBEchonetLiteHandlerFactory Build(
+  protected override SkStackRouteBHandlerFactory Build(
     IServiceProvider serviceProvider,
     SkStackRouteBSessionOptions sessionOptions,
     Action<SkStackClient>? postConfigureClient
   )
-    => new BP35A1RouteBEchonetLiteHandlerFactory(
+    => new BP35A1RouteBHandlerFactory(
       serviceProvider: serviceProvider,
       routeBServiceKey: ServiceKey,
       options: GetOption<BP35A1Options>(serviceProvider),

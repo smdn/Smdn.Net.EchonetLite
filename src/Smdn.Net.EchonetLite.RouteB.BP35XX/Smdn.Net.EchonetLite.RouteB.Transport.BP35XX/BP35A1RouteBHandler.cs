@@ -17,8 +17,8 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
-public sealed class BP35A1RouteBEchonetLiteHandler : SkStackRouteBUdpEchonetLiteHandler {
-  public BP35A1RouteBEchonetLiteHandler(
+public sealed class BP35A1RouteBHandler : SkStackUdpRouteBHandler {
+  public BP35A1RouteBHandler(
     BP35A1 client,
     SkStackRouteBSessionOptions sessionOptions,
     bool shouldDisposeClient,
@@ -29,7 +29,7 @@ public sealed class BP35A1RouteBEchonetLiteHandler : SkStackRouteBUdpEchonetLite
       client: client,
       sessionOptions: sessionOptions,
       shouldDisposeClient: shouldDisposeClient,
-      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<BP35A1RouteBEchonetLiteHandler>(),
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<BP35A1RouteBHandler>(),
       serviceProvider: serviceProvider,
       routeBServiceKey: routeBServiceKey
     )

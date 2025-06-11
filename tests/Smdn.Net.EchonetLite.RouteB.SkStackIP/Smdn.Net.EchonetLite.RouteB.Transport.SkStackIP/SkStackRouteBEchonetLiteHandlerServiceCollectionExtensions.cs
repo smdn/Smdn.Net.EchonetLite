@@ -13,7 +13,7 @@ using Polly.Registry;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 [TestFixture]
-public class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
+public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
   private const string ServiceKey = nameof(ServiceKey);
 
   private static void ConfigureNothing(
@@ -26,7 +26,7 @@ public class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
 
   private static void ConfigureNothing(
     ResiliencePipelineBuilder builder,
-    AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<string>> context
+    AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<string>> context
   )
   {
     // do nothing
@@ -84,7 +84,7 @@ public class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
       services: new ServiceCollection().AddResiliencePipelineForAuthentication(
         configure: ConfigureNothing
       ),
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
 
   [Test]
@@ -95,7 +95,7 @@ public class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
         serviceKey: ServiceKey
       ),
       serviceKey: ServiceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
 
   [Test]
@@ -104,7 +104,7 @@ public class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
       services: new ServiceCollection().AddResiliencePipelineForSendingFrame(
         configure: ConfigureNothing
       ),
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend
     );
 
   [Test]
@@ -115,6 +115,6 @@ public class SkStackRouteBEchonetLiteHandlerServiceCollectionExtensionsTests {
         serviceKey: ServiceKey
       ),
       serviceKey: ServiceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForSend
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForSend
     );
 }

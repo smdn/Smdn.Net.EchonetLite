@@ -10,7 +10,7 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 
-public abstract class SkStackRouteBEchonetLiteHandlerFactoryBuilder<TServiceKey> {
+public abstract class SkStackRouteBHandlerFactoryBuilder<TServiceKey> {
   /// <summary>
   /// Gets the <see cref="IServiceCollection"/> where the configured Route-B services will be registered.
   /// </summary>
@@ -24,7 +24,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactoryBuilder<TServiceKey>
   private readonly Func<TServiceKey, string?> selectOptionsNameForServiceKey;
   private Action<SkStackClient>? postConfigureClient;
 
-  protected internal SkStackRouteBEchonetLiteHandlerFactoryBuilder(
+  protected internal SkStackRouteBHandlerFactoryBuilder(
     IServiceCollection services,
     TServiceKey serviceKey,
     Func<TServiceKey, string?> selectOptionsNameForServiceKey
@@ -45,7 +45,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactoryBuilder<TServiceKey>
     this.postConfigureClient = postConfigureClient;
   }
 
-  public SkStackRouteBEchonetLiteHandlerFactory Build(
+  public SkStackRouteBHandlerFactory Build(
     IServiceProvider serviceProvider
   )
     => Build(
@@ -59,7 +59,7 @@ public abstract class SkStackRouteBEchonetLiteHandlerFactoryBuilder<TServiceKey>
         .GetRequiredService<IOptionsMonitor<TOption>>()
         .Get(name: selectOptionsNameForServiceKey(ServiceKey));
 
-  protected abstract SkStackRouteBEchonetLiteHandlerFactory Build(
+  protected abstract SkStackRouteBHandlerFactory Build(
     IServiceProvider serviceProvider,
     SkStackRouteBSessionOptions sessionOptions,
     Action<SkStackClient>? postConfigureClient

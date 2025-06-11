@@ -14,7 +14,7 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.BP35XX;
 
-public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
+public static class BP35A1RouteBHandlerServiceCollectionExtensions {
   /// <inheritdoc cref="AddResiliencePipelineBP35A1PanaAuthenticationWorkaround{TServiceKey}(IServiceCollection, TServiceKey, RetryStrategyOptions)"/>
   [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
   public static IServiceCollection AddResiliencePipelineBP35A1PanaAuthenticationWorkaround(
@@ -108,7 +108,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
   ///   TServiceKey,
   ///   Action{
   ///     ResiliencePipelineBuilder,
-  ///     AddResiliencePipelineContext{SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair{TServiceKey}},
+  ///     AddResiliencePipelineContext{SkStackRouteBHandler.ResiliencePipelineKeyPair{TServiceKey}},
   ///     Func{ResilienceContext, ValueTask}
   ///   })"/>
   [CLSCompliant(false)] // RetryStrategyOptions is not CLS compliant
@@ -163,7 +163,7 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
     TServiceKey serviceKey,
     Action<
       ResiliencePipelineBuilder,
-      AddResiliencePipelineContext<SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyPair<TServiceKey>>,
+      AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>,
       Func<ResilienceContext, ValueTask>
     > configureWorkaroundPipeline
   )
@@ -179,10 +179,10 @@ public static class BP35A1RouteBEchonetLiteHandlerServiceCollectionExtensions {
 
   private static ValueTask ApplyBP35A1PanaAuthenticationWorkaroundAsync(ResilienceContext resilienceContext)
   {
-    // ResilienceContextのプロパティから、呼び出し元のSkStackRouteBEchonetLiteHandlerインスタンスを取得する
-    if (!resilienceContext.Properties.TryGetValue(SkStackRouteBEchonetLiteHandler.ResiliencePropertyKeyForInstance, out var handler))
+    // ResilienceContextのプロパティから、呼び出し元のSkStackRouteBHandlerインスタンスを取得する
+    if (!resilienceContext.Properties.TryGetValue(SkStackRouteBHandler.ResiliencePropertyKeyForInstance, out var handler))
       return default;
-    if (handler is not BP35A1RouteBEchonetLiteHandler bp35a1Handler)
+    if (handler is not BP35A1RouteBHandler bp35a1Handler)
       return default;
 
     return bp35a1Handler.PerformPanaAuthenticationWorkaroundAsync(

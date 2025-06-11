@@ -12,8 +12,8 @@ using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 
 [TestFixture]
-public class SkStackRouteBEchonetLiteHandlerFactoryBuilderExtensionsTests {
-  private class PseudoFactoryBuilder : SkStackRouteBEchonetLiteHandlerFactoryBuilder<string> {
+public class SkStackRouteBHandlerFactoryBuilderExtensionsTests {
+  private class PseudoFactoryBuilder : SkStackRouteBHandlerFactoryBuilder<string> {
     private const string DefaultServiceKey = nameof(DefaultServiceKey);
 
     public Action<SkStackClient>? PostConfigureClientForLastBuiltFactory { get; set; }
@@ -27,7 +27,7 @@ public class SkStackRouteBEchonetLiteHandlerFactoryBuilderExtensionsTests {
     {
     }
 
-    protected override SkStackRouteBEchonetLiteHandlerFactory Build(
+    protected override SkStackRouteBHandlerFactory Build(
       IServiceProvider serviceProvider,
       SkStackRouteBSessionOptions sessionOptions,
       Action<SkStackClient>? postConfigureClient

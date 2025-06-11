@@ -23,13 +23,13 @@ using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
-public abstract partial class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler {
-  public static readonly string ResiliencePipelineKeyForAuthenticate = nameof(SkStackRouteBEchonetLiteHandler) + "." + nameof(resiliencePipelineAuthenticate);
-  public static readonly string ResiliencePipelineKeyForSend = nameof(SkStackRouteBEchonetLiteHandler) + "." + nameof(resiliencePipelineSend);
+public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
+  public static readonly string ResiliencePipelineKeyForAuthenticate = nameof(SkStackRouteBHandler) + "." + nameof(resiliencePipelineAuthenticate);
+  public static readonly string ResiliencePipelineKeyForSend = nameof(SkStackRouteBHandler) + "." + nameof(resiliencePipelineSend);
 
   [CLSCompliant(false)]
-  public static readonly ResiliencePropertyKey<SkStackRouteBEchonetLiteHandler?> ResiliencePropertyKeyForInstance = new(
-    $"{nameof(SkStackRouteBEchonetLiteHandler)}.{nameof(ResiliencePropertyKeyForInstance)}"
+  public static readonly ResiliencePropertyKey<SkStackRouteBHandler?> ResiliencePropertyKeyForInstance = new(
+    $"{nameof(SkStackRouteBHandler)}.{nameof(ResiliencePropertyKeyForInstance)}"
   );
 
   private SkStackClient? client;
@@ -66,7 +66,7 @@ public abstract partial class SkStackRouteBEchonetLiteHandler : RouteBEchonetLit
     }
   }
 
-  private protected SkStackRouteBEchonetLiteHandler(
+  private protected SkStackRouteBHandler(
     SkStackClient client,
     SkStackRouteBSessionOptions sessionOptions,
     bool shouldDisposeClient,

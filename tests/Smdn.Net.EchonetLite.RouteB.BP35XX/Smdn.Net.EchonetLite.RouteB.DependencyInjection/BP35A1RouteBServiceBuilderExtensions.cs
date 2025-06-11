@@ -88,7 +88,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
         configureBP35A1Options: static bp35a1Options => { },
         configureSessionOptions: static sessionOptions => { },
         configureRouteBHandlerFactory: factoryBuilder => {
-          factoryBuilder.PostConfigureClient<BP35A1RouteBEchonetLiteHandlerFactoryBuilder<string>, string>(
+          factoryBuilder.PostConfigureClient<BP35A1RouteBHandlerFactoryBuilder<string>, string>(
             postConfigureClient: static _ => throw new NotImplementedException()
           );
         }
@@ -104,9 +104,9 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
       () => handlerFactory = serviceProvider.GetRequiredKeyedService<IRouteBEchonetLiteHandlerFactory>(serviceKey: ServiceKey),
       Throws.Nothing
     );
-    Assert.That(handlerFactory, Is.TypeOf<BP35A1RouteBEchonetLiteHandlerFactory>());
+    Assert.That(handlerFactory, Is.TypeOf<BP35A1RouteBHandlerFactory>());
 
-    var bp35a1HandlerFactory = (BP35A1RouteBEchonetLiteHandlerFactory)handlerFactory;
+    var bp35a1HandlerFactory = (BP35A1RouteBHandlerFactory)handlerFactory;
 
     Assert.That(bp35a1HandlerFactory.ServiceProvider, Is.Not.Null);
     Assert.That(bp35a1HandlerFactory.RouteBServiceKey, Is.EqualTo(ServiceKey));
@@ -129,7 +129,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
         configureBP35A1Options: static bp35a1Options => { },
         configureSessionOptions: static sessionOptions => { },
         configureRouteBHandlerFactory: factoryBuilder => {
-          factoryBuilder.PostConfigureClient<BP35A1RouteBEchonetLiteHandlerFactoryBuilder<string>, string>(
+          factoryBuilder.PostConfigureClient<BP35A1RouteBHandlerFactoryBuilder<string>, string>(
             postConfigureClient: static _ => throw new NotImplementedException()
           );
         }
@@ -186,7 +186,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
     AssertResiliencePipelineRegistered(
       services,
       ServiceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
   }
 
@@ -212,7 +212,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
     AssertResiliencePipelineRegistered(
       services,
       ServiceKey,
-      pipelineKey: SkStackRouteBEchonetLiteHandler.ResiliencePipelineKeyForAuthenticate
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeyForAuthenticate
     );
   }
 }
