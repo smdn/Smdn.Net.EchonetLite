@@ -1,55 +1,101 @@
-// Smdn.Net.EchonetLite.RouteB.SkStackIP.dll (Smdn.Net.EchonetLite.RouteB.SkStackIP-2.0.0-preview3)
+// Smdn.Net.EchonetLite.RouteB.SkStackIP.dll (Smdn.Net.EchonetLite.RouteB.SkStackIP-2.0.0)
 //   Name: Smdn.Net.EchonetLite.RouteB.SkStackIP
 //   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0-preview3+370bdac018b42e5e04f531669d50f03b3bb6922f
+//   InformationalVersion: 2.0.0+b8918b93e150de00661851f24d5e87d139805913
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
-//     Microsoft.Extensions.DependencyInjection, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.Options, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
+//     Polly.Extensions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
+//     Smdn.Extensions.Polly.KeyedRegistry, Version=1.2.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.Primitives, Version=2.0.0.0, Culture=neutral
-//     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.0.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.1.0.0, Culture=neutral
 //     Smdn.Net.SkStackIP, Version=1.2.0.0, Culture=neutral
 //     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 #nullable enable annotations
 
 using System;
 using System.Buffers;
-using System.ComponentModel;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.DependencyInjection;
+using Polly.Registry;
+using Polly.Registry.KeyedRegistry;
 using Smdn.Net.EchonetLite.RouteB.Credentials;
+using Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 using Smdn.Net.SkStackIP;
 
+namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection {
+  public static class SkStackRouteBHandlerFactoryBuilderExtensions {
+    public static TSkStackRouteBHandlerFactoryBuilder PostConfigureClient<TSkStackRouteBHandlerFactoryBuilder, TServiceKey>(this TSkStackRouteBHandlerFactoryBuilder builder, Action<SkStackClient> postConfigureClient) where TSkStackRouteBHandlerFactoryBuilder : SkStackRouteBHandlerFactoryBuilder<TServiceKey> {}
+  }
+
+  public abstract class SkStackRouteBHandlerFactoryBuilder<TServiceKey> {
+    internal protected SkStackRouteBHandlerFactoryBuilder(IServiceCollection services, TServiceKey serviceKey, Func<TServiceKey, string?> selectOptionsNameForServiceKey) {}
+
+    public TServiceKey ServiceKey { get; }
+    public IServiceCollection Services { get; }
+
+    protected abstract SkStackRouteBHandlerFactory Build(IServiceProvider serviceProvider, SkStackRouteBSessionOptions sessionOptions, Action<SkStackClient>? postConfigureClient);
+    public SkStackRouteBHandlerFactory Build(IServiceProvider serviceProvider) {}
+    protected TOption GetOption<TOption>(IServiceProvider serviceProvider) {}
+  }
+
+  public static class SkStackRouteBServiceBuilderExtensions {
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSkStackHandlerAuthenticate<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSkStackHandlerSendFrame<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddSkStackHandler<TServiceKey, THandlerFactoryBuilder>(this IRouteBServiceBuilder<TServiceKey> builder, Action<SkStackRouteBSessionOptions> configureSessionOptions, Func<IServiceCollection, TServiceKey, Func<TServiceKey, string?>, THandlerFactoryBuilder> createHandlerFactoryBuilder) where THandlerFactoryBuilder : SkStackRouteBHandlerFactoryBuilder<TServiceKey> {}
+  }
+}
+
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP {
-  public interface ISkStackRouteBEchonetLiteHandlerFactory : IRouteBEchonetLiteHandlerFactory {
-    Action<SkStackRouteBSessionConfiguration>? ConfigureRouteBSessionConfiguration { get; set; }
-    Action<SkStackClient>? ConfigureSkStackClient { get; set; }
-  }
+  public abstract class SkStackRouteBHandler : RouteBEchonetLiteHandler {
+    public static class ResiliencePipelineKeys {
+      public static readonly string Authenticate = "SkStackRouteBHandler.resiliencePipelineAuthenticate";
+      public static readonly string Send = "SkStackRouteBHandler.resiliencePipelineSend";
+    }
 
-  public enum SkStackRouteBTransportProtocol : int {
-    Tcp = 0,
-    Udp = 1,
-  }
+    public readonly struct ResiliencePipelineKeyPair<TServiceKey> :
+      IEquatable<ResiliencePipelineKeyPair<TServiceKey>>,
+      IResiliencePipelineKeyPair<TServiceKey, string>
+    {
+      [CompilerGenerated]
+      public static bool operator == (SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey> left, SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey> right) {}
+      [CompilerGenerated]
+      public static bool operator != (SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey> left, SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey> right) {}
 
-  public abstract class SkStackRouteBEchonetLiteHandler : RouteBEchonetLiteHandler {
-    public static readonly string ResiliencePipelineKeyForAuthenticate = "SkStackRouteBEchonetLiteHandler.resiliencePipelineAuthenticate";
-    public static readonly string ResiliencePipelineKeyForSend = "SkStackRouteBEchonetLiteHandler.resiliencePipelineSend";
-    public static readonly ResiliencePropertyKey<SkStackClient?> ResiliencePropertyKeyForClient; // = "ResiliencePropertyKeyForClient"
+      public ResiliencePipelineKeyPair(TServiceKey serviceKey, string pipelineKey) {}
 
+      public string PipelineKey { get; }
+      public TServiceKey ServiceKey { get; }
+
+      [CompilerGenerated]
+      public bool Equals(SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey> other) {}
+      [CompilerGenerated]
+      public override bool Equals(object obj) {}
+      [CompilerGenerated]
+      public override int GetHashCode() {}
+      public override string ToString() {}
+    }
+
+    public static readonly ResiliencePropertyKey<SkStackRouteBHandler?> ResiliencePropertyKeyForInstance; // = "SkStackRouteBHandler.ResiliencePropertyKeyForInstance"
+
+    protected SkStackClient Client { get; }
     public override IPAddress? LocalAddress { get; }
     public override IPAddress? PeerAddress { get; }
-    public override ISynchronizeInvoke? SynchronizingObject { get; set; }
+    protected SkStackRouteBSessionOptions SessionOptions { get; }
 
-    protected override ValueTask ConnectAsyncCore(IRouteBCredential credential, CancellationToken cancellationToken) {}
+    protected override async ValueTask ConnectAsyncCore(IRouteBCredential credential, CancellationToken cancellationToken) {}
     protected override async ValueTask DisconnectAsyncCore(CancellationToken cancellationToken) {}
     protected override void Dispose(bool disposing) {}
     protected override async ValueTask DisposeAsyncCore() {}
@@ -59,24 +105,31 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP {
     protected override void ThrowIfDisposed() {}
   }
 
-  public static class SkStackRouteBEchonetLiteHandlerBuilderExtensions {
-    public static ISkStackRouteBEchonetLiteHandlerFactory ConfigureClient(this ISkStackRouteBEchonetLiteHandlerFactory factory, Action<SkStackClient> configureSkStackClient) {}
-    public static ISkStackRouteBEchonetLiteHandlerFactory ConfigureSession(this ISkStackRouteBEchonetLiteHandlerFactory factory, Action<SkStackRouteBSessionConfiguration> configureRouteBSessionConfiguration) {}
+  public abstract class SkStackRouteBHandlerFactory : IRouteBEchonetLiteHandlerFactory {
+    protected SkStackRouteBHandlerFactory(IServiceProvider serviceProvider, object? routeBServiceKey, SkStackRouteBSessionOptions sessionOptions, Action<SkStackClient>? postConfigureClient) {}
+
+    protected Action<SkStackClient>? PostConfigureClient { get; }
+    public object? RouteBServiceKey { get; }
+    public IServiceProvider ServiceProvider { get; }
+    protected SkStackRouteBSessionOptions SessionOptions { get; }
+
+    public ValueTask<RouteBEchonetLiteHandler> CreateAsync(CancellationToken cancellationToken) {}
+    protected abstract ValueTask<RouteBEchonetLiteHandler> CreateAsyncCore(CancellationToken cancellationToken);
   }
 
-  public abstract class SkStackRouteBEchonetLiteHandlerFactory : ISkStackRouteBEchonetLiteHandlerFactory {
-    protected SkStackRouteBEchonetLiteHandlerFactory(IServiceCollection services) {}
-
-    public Action<SkStackRouteBSessionConfiguration>? ConfigureRouteBSessionConfiguration { get; set; }
-    public Action<SkStackClient>? ConfigureSkStackClient { get; set; }
-    protected abstract SkStackRouteBTransportProtocol TransportProtocol { get; }
-
-    public virtual async ValueTask<RouteBEchonetLiteHandler> CreateAsync(CancellationToken cancellationToken) {}
-    protected abstract ValueTask<SkStackClient> CreateClientAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken);
+  public static class SkStackRouteBHandlerServiceCollectionExtensions {
+    public static IServiceCollection AddResiliencePipelineForAuthentication(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineForAuthentication<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IServiceCollection AddResiliencePipelineForSendingFrame(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineForSendingFrame<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
   }
 
-  public sealed class SkStackRouteBSessionConfiguration : ICloneable {
-    public SkStackRouteBSessionConfiguration() {}
+  public static class SkStackRouteBHandlerServiceProviderExtensions {
+    public static ResiliencePipelineProvider<string>? GetResiliencePipelineProviderForSkStackRouteBHandler(this IServiceProvider serviceProvider, object? serviceKey) {}
+  }
+
+  public sealed class SkStackRouteBSessionOptions : ICloneable {
+    public SkStackRouteBSessionOptions() {}
 
     public SkStackActiveScanOptions? ActiveScanOptions { get; set; }
     public SkStackChannel? Channel { get; set; }
@@ -84,17 +137,18 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP {
     public PhysicalAddress? PaaMacAddress { get; set; }
     public int? PanId { get; set; }
 
-    public SkStackRouteBSessionConfiguration Clone() {}
+    public SkStackRouteBSessionOptions Clone() {}
+    public SkStackRouteBSessionOptions Configure(SkStackRouteBSessionOptions baseOptions) {}
     object ICloneable.Clone() {}
   }
 
-  public sealed class SkStackRouteBTcpEchonetLiteHandler : SkStackRouteBEchonetLiteHandler {
-    public SkStackRouteBTcpEchonetLiteHandler(SkStackClient client, SkStackRouteBSessionConfiguration sessionConfiguration, bool shouldDisposeClient = false, IServiceProvider? serviceProvider = null) {}
+  public class SkStackTcpRouteBHandler : SkStackRouteBHandler {
+    public SkStackTcpRouteBHandler(SkStackClient client, SkStackRouteBSessionOptions sessionOptions, bool shouldDisposeClient, ILogger? logger, IServiceProvider? serviceProvider, object? routeBServiceKey) {}
   }
 
-  public sealed class SkStackRouteBUdpEchonetLiteHandler : SkStackRouteBEchonetLiteHandler {
-    public SkStackRouteBUdpEchonetLiteHandler(SkStackClient client, SkStackRouteBSessionConfiguration sessionConfiguration, bool shouldDisposeClient = false, IServiceProvider? serviceProvider = null) {}
+  public class SkStackUdpRouteBHandler : SkStackRouteBHandler {
+    public SkStackUdpRouteBHandler(SkStackClient client, SkStackRouteBSessionOptions sessionOptions, bool shouldDisposeClient, ILogger? logger, IServiceProvider? serviceProvider, object? routeBServiceKey) {}
   }
 }
-// API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.4.1.0.
+// API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.5.0.0.
 // Smdn.Reflection.ReverseGenerating.ListApi.Core v1.3.1.0 (https://github.com/smdn/Smdn.Reflection.ReverseGenerating)
