@@ -1,16 +1,16 @@
-// Smdn.Net.EchonetLite.RouteB.dll (Smdn.Net.EchonetLite.RouteB-2.0.0)
+// Smdn.Net.EchonetLite.RouteB.dll (Smdn.Net.EchonetLite.RouteB-2.1.0)
 //   Name: Smdn.Net.EchonetLite.RouteB
-//   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0+3138f40758ea06ba8f2c2eee70c4237b7f1411d1
+//   AssemblyVersion: 2.1.0.0
+//   InformationalVersion: 2.1.0+befaca421b43357fbc3b9cbd7d5824a66044d7c6
 //   TargetFramework: .NETCoreApp,Version=v8.0
 //   Configuration: Release
 //   Referenced assemblies:
-//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
-//     Smdn.Net.EchonetLite, Version=2.0.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite, Version=2.1.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.Primitives, Version=2.0.0.0, Culture=neutral
-//     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.0.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.1.0.0, Culture=neutral
 //     System.Collections, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.ComponentModel, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.ComponentModel.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
@@ -33,6 +33,7 @@ using Smdn.Net.EchonetLite;
 using Smdn.Net.EchonetLite.ObjectModel;
 using Smdn.Net.EchonetLite.RouteB;
 using Smdn.Net.EchonetLite.RouteB.Credentials;
+using Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 
 namespace Smdn.Net.EchonetLite.RouteB {
@@ -143,13 +144,30 @@ namespace Smdn.Net.EchonetLite.RouteB {
 
 namespace Smdn.Net.EchonetLite.RouteB.Credentials {
   public static class RouteBCredentialServiceCollectionExtensions {
+    public static IServiceCollection AddRouteBCredential(this IServiceCollection services, object? serviceKey, string id, string password) {}
     public static IServiceCollection AddRouteBCredential(this IServiceCollection services, string id, string password) {}
+    public static IServiceCollection AddRouteBCredentialFromEnvironmentVariable(this IServiceCollection services, object? serviceKey, string envVarForId, string envVarForPassword) {}
     public static IServiceCollection AddRouteBCredentialFromEnvironmentVariable(this IServiceCollection services, string envVarForId, string envVarForPassword) {}
     public static IServiceCollection AddRouteBCredentialProvider(this IServiceCollection services, IRouteBCredentialProvider credentialProvider) {}
+    public static IServiceCollection AddRouteBCredentialProvider(this IServiceCollection services, object? serviceKey, IRouteBCredentialProvider credentialProvider) {}
+  }
+}
+
+namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection {
+  public static class CredentialProviderRouteBServiceBuilderExtensions {
+    public static IRouteBServiceBuilder<TServiceKey> AddCredential<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, string id, string password) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddCredentialFromEnvironmentVariable<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, string envVarForId, string envVarForPassword) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddCredentialProvider<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, IRouteBCredentialProvider credentialProvider) {}
+  }
+
+  public static class RouteBServiceCollectionExtensions {
+    public static IServiceCollection AddRouteB(this IServiceCollection services, Action<IRouteBServiceBuilder<object?>> configure) {}
+    public static IServiceCollection AddRouteB<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Func<TServiceKey, string?>? selectOptionsNameForServiceKey, Action<IRouteBServiceBuilder<TServiceKey>> configure) {}
   }
 }
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport {
+  [Obsolete("Use RouteBServiceCollectionExtensions instead.")]
   public static class RouteBEchonetLiteHandlerBuilderServiceCollectionExtensions {
     public static IServiceCollection AddRouteBHandler(this IServiceCollection services, Action<IRouteBEchonetLiteHandlerBuilder> configure) {}
   }
