@@ -59,10 +59,13 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
   )
   {
     var serviceProvider = services.BuildServiceProvider();
-    var pipelineProvider = serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey);
+    var pipelineProvider = serviceProvider.GetResiliencePipelineProviderForSmartMeterDataAggregator(
+      serviceKey: serviceKey
+    );
 
+    Assert.That(pipelineProvider, Is.Not.Null);
     Assert.That(
-      serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey),
+      serviceProvider.GetResiliencePipelineProviderForSmartMeterDataAggregator(serviceKey: serviceKey),
       Is.SameAs(pipelineProvider)
     );
 

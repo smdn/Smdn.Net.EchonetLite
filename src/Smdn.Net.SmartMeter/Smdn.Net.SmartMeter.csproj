@@ -30,7 +30,7 @@ SPDX-License-Identifier: MIT
 
   <ItemGroup>
     <PackageReference Include="Polly.Extensions" />
-    <PackageReference Include="Smdn.Extensions.Polly.KeyedRegistry" Version="1.1.0" />
+    <PackageReference Include="Smdn.Extensions.Polly.KeyedRegistry" Version="1.2.0" />
     <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.RouteB\Smdn.Net.EchonetLite.RouteB.csproj'))" />
   </ItemGroup>
 

@@ -67,10 +67,13 @@ public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
   )
   {
     var serviceProvider = services.BuildServiceProvider();
-    var pipelineProvider = serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey);
+    var pipelineProvider = serviceProvider.GetResiliencePipelineProviderForSkStackRouteBHandler(
+      serviceKey: serviceKey
+    );
 
+    Assert.That(pipelineProvider, Is.Not.Null);
     Assert.That(
-      serviceProvider.GetRequiredKeyedService<ResiliencePipelineProvider<string>>(serviceKey: serviceKey),
+      serviceProvider.GetResiliencePipelineProviderForSkStackRouteBHandler(serviceKey: serviceKey),
       Is.SameAs(pipelineProvider)
     );
 

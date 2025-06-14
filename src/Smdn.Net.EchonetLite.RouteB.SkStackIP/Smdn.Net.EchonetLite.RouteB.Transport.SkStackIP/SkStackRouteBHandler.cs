@@ -12,11 +12,9 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Polly;
-using Polly.Registry;
 
 using Smdn.Net.EchonetLite.RouteB.Credentials;
 using Smdn.Net.SkStackIP;
@@ -85,7 +83,9 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
     this.sessionOptions = (sessionOptions ?? throw new ArgumentNullException(nameof(sessionOptions))).Clone(); // holds the clone to avoid being affected from the changes to the original
     this.shouldDisposeClient = shouldDisposeClient;
 
-    var resiliencePipelineProvider = serviceProvider?.GetKeyedService<ResiliencePipelineProvider<string>>(serviceKey: routeBServiceKey);
+    var resiliencePipelineProvider = serviceProvider?.GetResiliencePipelineProviderForSkStackRouteBHandler(
+      serviceKey: routeBServiceKey
+    );
 
     ResiliencePipeline? resiliencePipelineAuthenticate = null;
     ResiliencePipeline? resiliencePipelineSend = null;

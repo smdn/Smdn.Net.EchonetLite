@@ -138,12 +138,9 @@ public partial class SmartMeterDataAggregator : HemsController {
     IServiceProvider serviceProvider
   )
     : this(
-      dataAggregations: dataAggregations,
-      echonetLiteHandlerFactory: (serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider))).GetRequiredService<IRouteBEchonetLiteHandlerFactory>(),
-      routeBCredentialProvider: serviceProvider.GetRequiredService<IRouteBCredentialProvider>(),
-      resiliencePipelineProvider: serviceProvider.GetService<ResiliencePipelineProvider<string>>(),
-      logger: serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<SmartMeterDataAggregator>(),
-      loggerFactoryForEchonetClient: serviceProvider.GetService<ILoggerFactory>()
+      dataAggregations: dataAggregations ?? throw new ArgumentNullException(nameof(dataAggregations)),
+      serviceProvider: serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider)),
+      routeBServiceKey: null
     )
   {
   }
@@ -161,7 +158,7 @@ public partial class SmartMeterDataAggregator : HemsController {
       routeBCredentialProvider: serviceProvider.GetRequiredKeyedService<IRouteBCredentialProvider>(
         serviceKey: routeBServiceKey
       ),
-      resiliencePipelineProvider: serviceProvider.GetKeyedService<ResiliencePipelineProvider<string>>(
+      resiliencePipelineProvider: serviceProvider.GetResiliencePipelineProviderForSmartMeterDataAggregator(
         serviceKey: routeBServiceKey
       ),
       logger:
