@@ -1,7 +1,7 @@
-// Smdn.Net.EchonetLite.Primitives.dll (Smdn.Net.EchonetLite.Primitives-2.0.0)
+// Smdn.Net.EchonetLite.Primitives.dll (Smdn.Net.EchonetLite.Primitives-2.0.1)
 //   Name: Smdn.Net.EchonetLite.Primitives
-//   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0+e711220aebaba7dfe17051eed5e6dd8890ffd4d1
+//   AssemblyVersion: 2.0.1.0
+//   InformationalVersion: 2.0.1+a1a02047fb738e30ac5001d6149f8cc18eef4ee6
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
