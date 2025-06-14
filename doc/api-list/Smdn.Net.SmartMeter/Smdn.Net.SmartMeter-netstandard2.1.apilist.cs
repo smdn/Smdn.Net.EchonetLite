@@ -1,16 +1,18 @@
-// Smdn.Net.SmartMeter.dll (Smdn.Net.SmartMeter-2.0.0)
+// Smdn.Net.SmartMeter.dll (Smdn.Net.SmartMeter-2.1.0)
 //   Name: Smdn.Net.SmartMeter
-//   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0+1702d101b7d7da969b9b6258406b4aea5a1b98b4
+//   AssemblyVersion: 2.1.0.0
+//   InformationalVersion: 2.1.0+01af802c78a13826892462d3e0ae20ee33327eb5
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
-//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
-//     Smdn.Net.EchonetLite, Version=2.0.0.0, Culture=neutral
-//     Smdn.Net.EchonetLite.RouteB, Version=2.0.0.0, Culture=neutral
-//     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.0.0.0, Culture=neutral
+//     Polly.Extensions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
+//     Smdn.Extensions.Polly.KeyedRegistry, Version=1.2.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite, Version=2.1.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite.RouteB, Version=2.1.0.0, Culture=neutral
+//     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.1.0.0, Culture=neutral
 //     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 #nullable enable annotations
 
@@ -20,12 +22,35 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.DependencyInjection;
 using Polly.Registry;
+using Polly.Registry.KeyedRegistry;
 using Smdn.Net.EchonetLite.RouteB;
 using Smdn.Net.EchonetLite.RouteB.Credentials;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.SmartMeter;
+
+namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection {
+  public static class SmartMeterDataAggregatorRouteBServiceBuilderExtensions {
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineAggregationDataAcquisition<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineDataAggregationTask<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSmartMeterConnection<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSmartMeterReadProperty<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSmartMeterReconnection<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineSmartMeterWriteProperty<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddResiliencePipelineUpdatingElectricEnergyBaseline<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddRetryAggregationDataAcquisitionTimeout<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, int maxRetryAttempt, TimeSpan delay, Action<RetryStrategyOptions, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configureRetryOptions = null, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configurePipeline = null) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddRetryDataAggregationTaskException<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, int maxRetryAttempt, TimeSpan delay, Action<PredicateBuilder> configureExceptionPredicates, Action<RetryStrategyOptions, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configureRetryOptions = null, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configurePipeline = null) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddRetrySmartMeterConnectionTimeout<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, int maxRetryAttempt, TimeSpan delay, Action<RetryStrategyOptions, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configureRetryOptions = null, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configurePipeline = null) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddRetrySmartMeterReadPropertyException<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, int maxRetryAttempt, TimeSpan delay, Action<PredicateBuilder> configureExceptionPredicates, Action<RetryStrategyOptions, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configureRetryOptions = null, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configurePipeline = null) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddRetrySmartMeterReconnectionTimeout<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, int maxRetryAttempt, TimeSpan delay, Action<RetryStrategyOptions, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configureRetryOptions = null, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configurePipeline = null) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddRetrySmartMeterWritePropertyException<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, int maxRetryAttempt, TimeSpan delay, Action<PredicateBuilder> configureExceptionPredicates, Action<RetryStrategyOptions, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configureRetryOptions = null, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configurePipeline = null) {}
+    public static IRouteBServiceBuilder<TServiceKey> AddRetryUpdatingElectricEnergyBaselineTimeout<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder, int maxRetryAttempt, TimeSpan delay, Action<RetryStrategyOptions, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configureRetryOptions = null, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>>? configurePipeline = null) {}
+  }
+}
 
 namespace Smdn.Net.SmartMeter {
   public sealed class CumulativeElectricEnergyAggregation : PeriodicCumulativeElectricEnergyAggregation {
@@ -101,6 +126,29 @@ namespace Smdn.Net.SmartMeter {
   }
 
   public class SmartMeterDataAggregator : HemsController {
+    public readonly struct ResiliencePipelineKeyPair<TServiceKey> :
+      IEquatable<ResiliencePipelineKeyPair<TServiceKey>>,
+      IResiliencePipelineKeyPair<TServiceKey, string>
+    {
+      [CompilerGenerated]
+      public static bool operator == (SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey> left, SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey> right) {}
+      [CompilerGenerated]
+      public static bool operator != (SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey> left, SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey> right) {}
+
+      public ResiliencePipelineKeyPair(TServiceKey serviceKey, string pipelineKey) {}
+
+      public string PipelineKey { get; }
+      public TServiceKey ServiceKey { get; }
+
+      [CompilerGenerated]
+      public bool Equals(SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey> other) {}
+      [CompilerGenerated]
+      public override bool Equals(object obj) {}
+      [CompilerGenerated]
+      public override int GetHashCode() {}
+      public override string ToString() {}
+    }
+
     public static readonly string ResiliencePipelineKeyForAcquirePropertyValuesForAggregatingData = "SmartMeterDataAggregator.resiliencePipelineAcquirePropertyValuesForAggregatingData";
     public static readonly string ResiliencePipelineKeyForRunAggregationTask = "SmartMeterDataAggregator.resiliencePipelineRunAggregationTask";
     public static readonly string ResiliencePipelineKeyForSmartMeterConnection = "SmartMeterDataAggregator.resiliencePipelineConnectToSmartMeter";
@@ -109,8 +157,12 @@ namespace Smdn.Net.SmartMeter {
     public static readonly string ResiliencePipelineKeyForSmartMeterReconnection = "SmartMeterDataAggregator.resiliencePipelineReconnectToSmartMeter";
     public static readonly string ResiliencePipelineKeyForUpdatePeriodicCumulativeElectricEnergyBaselineValue = "SmartMeterDataAggregator.resiliencePipelineUpdatePeriodicCumulativeElectricEnergyBaselineValue";
 
+    public static SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey> CreateResiliencePipelineKeyPair<TServiceKey>(TServiceKey serviceKey, string pipelineKey) {}
+    public static ILogger? GetLoggerForResiliencePipeline(ResilienceContext resilienceContext) {}
+
     public SmartMeterDataAggregator(IEnumerable<SmartMeterDataAggregation> dataAggregations, IRouteBEchonetLiteHandlerFactory echonetLiteHandlerFactory, IRouteBCredentialProvider routeBCredentialProvider, ResiliencePipelineProvider<string>? resiliencePipelineProvider, ILogger? logger, ILoggerFactory? loggerFactoryForEchonetClient) {}
     public SmartMeterDataAggregator(IEnumerable<SmartMeterDataAggregation> dataAggregations, IServiceProvider serviceProvider) {}
+    public SmartMeterDataAggregator(IEnumerable<SmartMeterDataAggregation> dataAggregations, IServiceProvider serviceProvider, object? routeBServiceKey) {}
 
     public IReadOnlyCollection<SmartMeterDataAggregation> DataAggregations { get; }
     public bool IsRunning { get; }
@@ -120,6 +172,27 @@ namespace Smdn.Net.SmartMeter {
     public ValueTask StartAsync(CancellationToken cancellationToken = default) {}
     public async ValueTask StartAsync(TaskFactory? aggregationTaskFactory, CancellationToken cancellationToken = default) {}
     public async ValueTask StopAsync(CancellationToken cancellationToken) {}
+  }
+
+  public static class SmartMeterDataAggregatorServiceCollectionExtensions {
+    public static IServiceCollection AddResiliencePipelineAggregationDataAcquisition(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineAggregationDataAcquisition<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IServiceCollection AddResiliencePipelineDataAggregationTask(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineDataAggregationTask<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IServiceCollection AddResiliencePipelineSmartMeterConnection(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineSmartMeterConnection<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IServiceCollection AddResiliencePipelineSmartMeterReadProperty(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineSmartMeterReadProperty<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IServiceCollection AddResiliencePipelineSmartMeterReconnection(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineSmartMeterReconnection<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IServiceCollection AddResiliencePipelineSmartMeterWriteProperty(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineSmartMeterWriteProperty<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+    public static IServiceCollection AddResiliencePipelineUpdatingElectricEnergyBaseline(this IServiceCollection services, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<string>> configure) {}
+    public static IServiceCollection AddResiliencePipelineUpdatingElectricEnergyBaseline<TServiceKey>(this IServiceCollection services, TServiceKey serviceKey, Action<ResiliencePipelineBuilder, AddResiliencePipelineContext<SmartMeterDataAggregator.ResiliencePipelineKeyPair<TServiceKey>>> configure) {}
+  }
+
+  public static class SmartMeterDataAggregatorServiceProviderExtensions {
+    public static ResiliencePipelineProvider<string>? GetResiliencePipelineProviderForSmartMeterDataAggregator(this IServiceProvider serviceProvider, object? serviceKey) {}
   }
 
   public sealed class WeeklyCumulativeElectricEnergyAggregation : PeriodicCumulativeElectricEnergyAggregation {
