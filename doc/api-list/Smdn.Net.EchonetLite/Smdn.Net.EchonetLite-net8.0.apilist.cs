@@ -1,7 +1,7 @@
-// Smdn.Net.EchonetLite.dll (Smdn.Net.EchonetLite-2.0.0)
+// Smdn.Net.EchonetLite.dll (Smdn.Net.EchonetLite-2.1.0)
 //   Name: Smdn.Net.EchonetLite
-//   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0+2bb1851c89ba40ded2eeae51a98f8f88d864931f
+//   AssemblyVersion: 2.1.0.0
+//   InformationalVersion: 2.1.0+a1a02047fb738e30ac5001d6149f8cc18eef4ee6
 //   TargetFramework: .NETCoreApp,Version=v8.0
 //   Configuration: Release
 //   Referenced assemblies:
@@ -51,8 +51,13 @@ namespace Smdn.Net.EchonetLite {
     IAsyncDisposable,
     IDisposable
   {
-    public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForRequestServiceCode; // = "ResiliencePropertyKeyForRequestServiceCode"
-    public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForResponseServiceCode; // = "ResiliencePropertyKeyForResponseServiceCode"
+    public static readonly ResiliencePropertyKey<ILogger?> ResiliencePropertyKeyForLogger; // = "EchonetClient.ResiliencePropertyKeyForLogger"
+    public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForRequestServiceCode; // = "EchonetClient.ResiliencePropertyKeyForRequestServiceCode"
+    public static readonly ResiliencePropertyKey<ESV> ResiliencePropertyKeyForResponseServiceCode; // = "EchonetClient.ResiliencePropertyKeyForResponseServiceCode"
+
+    public static ILogger? GetLoggerForResiliencePipeline(ResilienceContext resilienceContext) {}
+    public static bool TryGetRequestServiceCodeForResiliencePipeline(ResilienceContext resilienceContext, out ESV serviceCode) {}
+    public static bool TryGetResponseServiceCodeForResiliencePipeline(ResilienceContext resilienceContext, out ESV serviceCode) {}
 
     public event EventHandler<EchonetNodeEventArgs>? InstanceListUpdated;
     public event EventHandler<EchonetNodeEventArgs>? InstanceListUpdating;
