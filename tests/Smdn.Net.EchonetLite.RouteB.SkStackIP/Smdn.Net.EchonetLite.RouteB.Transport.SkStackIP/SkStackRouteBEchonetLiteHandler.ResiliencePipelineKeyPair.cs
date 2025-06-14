@@ -122,6 +122,42 @@ partial class SkStackRouteBHandlerResiliencePipelineKeyPairTests {
     };
   }
 
+  private static System.Collections.IEnumerable YieldTestCases_Equals_OfObjectServiceKey()
+  {
+    var nonNullKey = new object();
+    object? nullKey = null;
+
+    yield return new object[] {
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nonNullKey, "PipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nonNullKey, "PipelineKey"),
+      true
+    };
+
+    yield return new object[] {
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nonNullKey, "PipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nonNullKey, "pipelineKey"),
+      false
+    };
+
+    yield return new object[] {
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nonNullKey, "PipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nullKey!, "PipelineKey"),
+      false
+    };
+
+    yield return new object[] {
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nullKey!, "PipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nullKey!, "PipelineKey"),
+      true
+    };
+
+    yield return new object[] {
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nullKey!, "PipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<object>(nullKey!, "pipelineKey"),
+      false
+    };
+  }
+
   [TestCaseSource(nameof(YieldTestCases_Equals_OfString))]
   public void Equals_OfString(
     SkStackRouteBHandler.ResiliencePipelineKeyPair<string> x,
@@ -137,6 +173,17 @@ partial class SkStackRouteBHandlerResiliencePipelineKeyPairTests {
   public void Equals_OfInt32(
     SkStackRouteBHandler.ResiliencePipelineKeyPair<int> x,
     SkStackRouteBHandler.ResiliencePipelineKeyPair<int> y,
+    bool areEqual
+  )
+  {
+    Assert.That(x.Equals(y), Is.EqualTo(areEqual));
+    Assert.That(y.Equals(x), Is.EqualTo(areEqual));
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfObjectServiceKey))]
+  public void Equals_OfObject(
+    SkStackRouteBHandler.ResiliencePipelineKeyPair<object> x,
+    SkStackRouteBHandler.ResiliencePipelineKeyPair<object> y,
     bool areEqual
   )
   {
@@ -166,6 +213,17 @@ partial class SkStackRouteBHandlerResiliencePipelineKeyPairTests {
     Assert.That(y == x, Is.EqualTo(areEqual));
   }
 
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfObjectServiceKey))]
+  public void OpEquality_OfObject(
+    SkStackRouteBHandler.ResiliencePipelineKeyPair<object> x,
+    SkStackRouteBHandler.ResiliencePipelineKeyPair<object> y,
+    bool areEqual
+  )
+  {
+    Assert.That(x == y, Is.EqualTo(areEqual));
+    Assert.That(y == x, Is.EqualTo(areEqual));
+  }
+
   [TestCaseSource(nameof(YieldTestCases_Equals_OfString))]
   public void OpInequality_OfString(
     SkStackRouteBHandler.ResiliencePipelineKeyPair<string> x,
@@ -181,6 +239,17 @@ partial class SkStackRouteBHandlerResiliencePipelineKeyPairTests {
   public void OpInequality_OfInt32(
     SkStackRouteBHandler.ResiliencePipelineKeyPair<int> x,
     SkStackRouteBHandler.ResiliencePipelineKeyPair<int> y,
+    bool areEqual
+  )
+  {
+    Assert.That(x != y, Is.Not.EqualTo(areEqual));
+    Assert.That(y != x, Is.Not.EqualTo(areEqual));
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfObjectServiceKey))]
+  public void OpInequality_OfObject(
+    SkStackRouteBHandler.ResiliencePipelineKeyPair<object> x,
+    SkStackRouteBHandler.ResiliencePipelineKeyPair<object> y,
     bool areEqual
   )
   {
@@ -205,6 +274,19 @@ partial class SkStackRouteBHandlerResiliencePipelineKeyPairTests {
   public void GetHashCode_OfInt32(
     SkStackRouteBHandler.ResiliencePipelineKeyPair<int> x,
     SkStackRouteBHandler.ResiliencePipelineKeyPair<int> y,
+    bool areEqual
+  )
+    => Assert.That(
+      x.GetHashCode(),
+      areEqual
+        ? Is.EqualTo(y.GetHashCode())
+        : Is.Not.EqualTo(y.GetHashCode())
+    );
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfObjectServiceKey))]
+  public void GetHashCode_OfObject(
+    SkStackRouteBHandler.ResiliencePipelineKeyPair<object> x,
+    SkStackRouteBHandler.ResiliencePipelineKeyPair<object> y,
     bool areEqual
   )
     => Assert.That(

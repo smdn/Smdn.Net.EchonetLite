@@ -122,6 +122,42 @@ public class SmartMeterDataAggregatorResiliencePipelineKeyPairTests {
     };
   }
 
+  private static System.Collections.IEnumerable YieldTestCases_Equals_OfObjectServiceKey()
+  {
+    var nonNullKey = new object();
+    object? nullKey = null;
+
+    yield return new object[] {
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nonNullKey, "PipelineKey"),
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nonNullKey, "PipelineKey"),
+      true
+    };
+
+    yield return new object[] {
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nonNullKey, "PipelineKey"),
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nonNullKey, "pipelineKey"),
+      false
+    };
+
+    yield return new object[] {
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nonNullKey, "PipelineKey"),
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nullKey, "PipelineKey"),
+      false
+    };
+
+    yield return new object[] {
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nullKey, "PipelineKey"),
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nullKey, "PipelineKey"),
+      true
+    };
+
+    yield return new object[] {
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nullKey, "PipelineKey"),
+      SmartMeterDataAggregator.CreateResiliencePipelineKeyPair(nullKey, "pipelineKey"),
+      false
+    };
+  }
+
   [TestCaseSource(nameof(YieldTestCases_Equals_OfString))]
   public void Equals_OfString(
     SmartMeterDataAggregator.ResiliencePipelineKeyPair<string> x,
@@ -137,6 +173,17 @@ public class SmartMeterDataAggregatorResiliencePipelineKeyPairTests {
   public void Equals_OfInt32(
     SmartMeterDataAggregator.ResiliencePipelineKeyPair<int> x,
     SmartMeterDataAggregator.ResiliencePipelineKeyPair<int> y,
+    bool areEqual
+  )
+  {
+    Assert.That(x.Equals(y), Is.EqualTo(areEqual));
+    Assert.That(y.Equals(x), Is.EqualTo(areEqual));
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfObjectServiceKey))]
+  public void Equals_OfObject(
+    SmartMeterDataAggregator.ResiliencePipelineKeyPair<object> x,
+    SmartMeterDataAggregator.ResiliencePipelineKeyPair<object> y,
     bool areEqual
   )
   {
@@ -166,6 +213,17 @@ public class SmartMeterDataAggregatorResiliencePipelineKeyPairTests {
     Assert.That(y == x, Is.EqualTo(areEqual));
   }
 
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfObjectServiceKey))]
+  public void OpEquality_OfObject(
+    SmartMeterDataAggregator.ResiliencePipelineKeyPair<object> x,
+    SmartMeterDataAggregator.ResiliencePipelineKeyPair<object> y,
+    bool areEqual
+  )
+  {
+    Assert.That(x == y, Is.EqualTo(areEqual));
+    Assert.That(y == x, Is.EqualTo(areEqual));
+  }
+
   [TestCaseSource(nameof(YieldTestCases_Equals_OfString))]
   public void OpInequality_OfString(
     SmartMeterDataAggregator.ResiliencePipelineKeyPair<string> x,
@@ -181,6 +239,17 @@ public class SmartMeterDataAggregatorResiliencePipelineKeyPairTests {
   public void OpInequality_OfInt32(
     SmartMeterDataAggregator.ResiliencePipelineKeyPair<int> x,
     SmartMeterDataAggregator.ResiliencePipelineKeyPair<int> y,
+    bool areEqual
+  )
+  {
+    Assert.That(x != y, Is.Not.EqualTo(areEqual));
+    Assert.That(y != x, Is.Not.EqualTo(areEqual));
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfObjectServiceKey))]
+  public void OpInequality_OfObject(
+    SmartMeterDataAggregator.ResiliencePipelineKeyPair<object> x,
+    SmartMeterDataAggregator.ResiliencePipelineKeyPair<object> y,
     bool areEqual
   )
   {
@@ -205,6 +274,19 @@ public class SmartMeterDataAggregatorResiliencePipelineKeyPairTests {
   public void GetHashCode_OfInt32(
     SmartMeterDataAggregator.ResiliencePipelineKeyPair<int> x,
     SmartMeterDataAggregator.ResiliencePipelineKeyPair<int> y,
+    bool areEqual
+  )
+    => Assert.That(
+      x.GetHashCode(),
+      areEqual
+        ? Is.EqualTo(y.GetHashCode())
+        : Is.Not.EqualTo(y.GetHashCode())
+    );
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfObjectServiceKey))]
+  public void GetHashCode_OfObject(
+    SmartMeterDataAggregator.ResiliencePipelineKeyPair<object> x,
+    SmartMeterDataAggregator.ResiliencePipelineKeyPair<object> y,
     bool areEqual
   )
     => Assert.That(

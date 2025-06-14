@@ -99,6 +99,17 @@ public class SmartMeterDataAggregatorServiceCollectionExtensionsTests {
     );
 
   [Test]
+  public void AddResiliencePipelineSmartMeterConnection_OfTServiceKey_Object()
+    => AssertResiliencePipelineRegistered(
+      services: new ServiceCollection().AddResiliencePipelineSmartMeterConnection(
+        configure: (_, _) => { },
+        serviceKey: (object?)null
+      ),
+      serviceKey: (object?)null,
+      pipelineKey: SmartMeterDataAggregator.ResiliencePipelineKeyForSmartMeterConnection
+    );
+
+  [Test]
   public void AddResiliencePipelineSmartMeterReconnection()
     => AssertResiliencePipelineRegistered(
       services: new ServiceCollection().AddResiliencePipelineSmartMeterReconnection(

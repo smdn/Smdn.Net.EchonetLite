@@ -32,6 +32,14 @@ public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
     // do nothing
   }
 
+  private static void ConfigureNothing(
+    ResiliencePipelineBuilder builder,
+    AddResiliencePipelineContext<SkStackRouteBHandler.ResiliencePipelineKeyPair<object?>> context
+  )
+  {
+    // do nothing
+  }
+
   private static void AssertResiliencePipelineRegistered(
     IServiceCollection services,
     string pipelineKey
@@ -99,6 +107,17 @@ public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
     );
 
   [Test]
+  public void AddResiliencePipelineForAuthentication_OfTServiceKey_Object()
+    => AssertResiliencePipelineRegistered(
+      services: new ServiceCollection().AddResiliencePipelineForAuthentication(
+        configure: ConfigureNothing,
+        serviceKey: (object?)null
+      ),
+      serviceKey: (object?)null,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Authenticate
+    );
+
+  [Test]
   public void AddResiliencePipelineForSendingFrame()
     => AssertResiliencePipelineRegistered(
       services: new ServiceCollection().AddResiliencePipelineForSendingFrame(
@@ -115,6 +134,17 @@ public class SkStackRouteBHandlerServiceCollectionExtensionsTests {
         serviceKey: ServiceKey
       ),
       serviceKey: ServiceKey,
+      pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Send
+    );
+
+  [Test]
+  public void AddResiliencePipelineForSendingFrame_OfTServiceKey_Object()
+    => AssertResiliencePipelineRegistered(
+      services: new ServiceCollection().AddResiliencePipelineForSendingFrame(
+        configure: ConfigureNothing,
+        serviceKey: (object?)null
+      ),
+      serviceKey: (object?)null,
       pipelineKey: SkStackRouteBHandler.ResiliencePipelineKeys.Send
     );
 }
