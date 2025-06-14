@@ -1,7 +1,7 @@
-// Smdn.Net.EchonetLite.RouteB.Primitives.dll (Smdn.Net.EchonetLite.RouteB.Primitives-2.0.0)
+// Smdn.Net.EchonetLite.RouteB.Primitives.dll (Smdn.Net.EchonetLite.RouteB.Primitives-2.1.0)
 //   Name: Smdn.Net.EchonetLite.RouteB.Primitives
-//   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0+7829b96052cff6b82bd3e68fb0ced5454037c338
+//   AssemblyVersion: 2.1.0.0
+//   InformationalVersion: 2.1.0+8350a1992a3cc375c86febf128c7a1ab32401211
 //   TargetFramework: .NETCoreApp,Version=v8.0
 //   Configuration: Release
 //   Referenced assemblies:
@@ -44,7 +44,20 @@ namespace Smdn.Net.EchonetLite.RouteB.Credentials {
   }
 }
 
+namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection {
+  public interface IRouteBServiceBuilder<TServiceKey> {
+    Func<TServiceKey, string?>? OptionsNameSelector { get; }
+    TServiceKey ServiceKey { get; }
+    IServiceCollection Services { get; }
+  }
+
+  public static class IRouteBServiceBuilderExtensions {
+    public static string? GetOptionsName<TServiceKey>(this IRouteBServiceBuilder<TServiceKey> builder) {}
+  }
+}
+
 namespace Smdn.Net.EchonetLite.RouteB.Transport {
+  [Obsolete("Use IRouteBServiceBuilder instead.")]
   public interface IRouteBEchonetLiteHandlerBuilder {
     IServiceCollection Services { get; }
   }
