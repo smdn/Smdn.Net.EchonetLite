@@ -21,6 +21,6 @@ SPDX-License-Identifier: MIT
     <ProjectOrPackageReference ReferencePackageVersion="2.1.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB\Smdn.Net.EchonetLite.RouteB.csproj'))" />
     <ProjectOrPackageReference ReferencePackageVersion="2.1.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB.Primitives\Smdn.Net.EchonetLite.RouteB.Primitives.csproj'))" />
     <ProjectOrPackageReference ReferencePackageVersion="2.0.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB.SkStackIP\Smdn.Net.EchonetLite.RouteB.SkStackIP.csproj'))" />
-    <ProjectOrPackageReference ReferencePackageVersion="2.0.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.SmartMeter\Smdn.Net.SmartMeter.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.1.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.SmartMeter\Smdn.Net.SmartMeter.csproj'))" />
   </ItemGroup>
 </Project>
