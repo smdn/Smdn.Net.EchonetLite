@@ -121,7 +121,7 @@ partial class EchonetClientOperationsTests {
 
       Assert.That(message[7], Is.EqualTo(0x0E), "DEOJ class group code");
       Assert.That(message[8], Is.EqualTo(0xF0), "DEOJ class code");
-      Assert.That(message[9], Is.EqualTo(0x00), "DEOJ instance code");
+      Assert.That(message[9], Is.Zero, "DEOJ instance code");
 
       Assert.That(message[10], Is.EqualTo((byte)ESV.Inf), "ESV");
 

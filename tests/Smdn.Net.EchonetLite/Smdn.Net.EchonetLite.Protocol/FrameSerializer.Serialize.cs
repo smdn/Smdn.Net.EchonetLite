@@ -511,7 +511,7 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[0], Is.EqualTo(0x10), "Frame[0] EHD1");
     Assert.That(frameBytes[1], Is.EqualTo(0x81), "Frame[1] EHD2");
 
-    Assert.That(frameBytes[11], Is.EqualTo(0), "Frame[11] OPCSet");
+    Assert.That(frameBytes[11], Is.Zero, "Frame[11] OPCSet");
 
     Assert.That(frameBytes[12], Is.EqualTo(propsGet.Count), "Frame[12] OPCGet");
     Assert.That(frameBytes[13], Is.EqualTo(propsGet[0].EPC), "Frame[13] OPCGet#0 EPC");
@@ -566,7 +566,7 @@ partial class FrameSerializerTests {
     Assert.That(frameBytes[13], Is.EqualTo(propsSet[0].PDC), "Frame[13] OPCSet#0 PDC");
     Assert.That(frameBytes[14..19], SequenceIs.EqualTo(propsSet[0].EDT), "Frame[14..19] OPCSet#0 EDT");
 
-    Assert.That(frameBytes[19], Is.EqualTo(0), "Frame[19] OPCGet");
+    Assert.That(frameBytes[19], Is.Zero, "Frame[19] OPCGet");
   }
 
   [Test]

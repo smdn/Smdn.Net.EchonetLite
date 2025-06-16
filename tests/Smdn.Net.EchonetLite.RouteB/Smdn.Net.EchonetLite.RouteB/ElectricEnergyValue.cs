@@ -38,10 +38,10 @@ public class ElectricEnergyValueTests {
   [Test]
   public void Zero()
   {
-    Assert.That(ElectricEnergyValue.Zero.RawValue, Is.EqualTo(0));
+    Assert.That(ElectricEnergyValue.Zero.RawValue, Is.Zero);
     Assert.That(ElectricEnergyValue.Zero.IsValid, Is.True);
-    Assert.That(ElectricEnergyValue.Zero.WattHours, Is.EqualTo(0.0m));
-    Assert.That(ElectricEnergyValue.Zero.KiloWattHours, Is.EqualTo(0.0m));
+    Assert.That(ElectricEnergyValue.Zero.WattHours, Is.Zero);
+    Assert.That(ElectricEnergyValue.Zero.KiloWattHours, Is.Zero);
     Assert.That(ElectricEnergyValue.Zero.ToString(), Is.EqualTo("0 [kWh]"));
   }
 
@@ -50,8 +50,8 @@ public class ElectricEnergyValueTests {
   {
     Assert.That(ElectricEnergyValue.NoMeasurementData.RawValue, Is.EqualTo(unchecked((int)0x_FFFF_FFFEu)));
     Assert.That(ElectricEnergyValue.NoMeasurementData.IsValid, Is.False);
-    Assert.That(ElectricEnergyValue.NoMeasurementData.WattHours, Is.EqualTo(0.0m));
-    Assert.That(ElectricEnergyValue.NoMeasurementData.KiloWattHours, Is.EqualTo(0.0m));
+    Assert.That(ElectricEnergyValue.NoMeasurementData.WattHours, Is.Zero);
+    Assert.That(ElectricEnergyValue.NoMeasurementData.KiloWattHours, Is.Zero);
     Assert.That(ElectricEnergyValue.NoMeasurementData.ToString(), Is.EqualTo("(no data)"));
   }
 

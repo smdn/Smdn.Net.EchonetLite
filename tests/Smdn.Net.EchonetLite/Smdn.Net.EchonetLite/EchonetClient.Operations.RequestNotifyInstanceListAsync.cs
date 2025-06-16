@@ -31,13 +31,13 @@ partial class EchonetClientOperationsTests {
 
     Assert.That(message[7], Is.EqualTo(0x0E), "DEOJ class group code");
     Assert.That(message[8], Is.EqualTo(0xF0), "DEOJ class code");
-    Assert.That(message[9], Is.EqualTo(0x00), "DEOJ instance code");
+    Assert.That(message[9], Is.Zero, "DEOJ instance code");
 
     Assert.That(message[10], Is.EqualTo((byte)ESV.InfRequest), "ESV");
 
     Assert.That(message[11], Is.EqualTo(1), "OPC");
     Assert.That(message[12], Is.EqualTo(0xD5), "EPC #1");
-    Assert.That(message[13], Is.EqualTo(0), "PDC #1");
+    Assert.That(message[13], Is.Zero, "PDC #1");
   }
 
   [Test]

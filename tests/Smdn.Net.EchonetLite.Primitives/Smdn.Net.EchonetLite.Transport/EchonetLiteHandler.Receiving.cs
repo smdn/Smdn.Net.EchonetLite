@@ -197,7 +197,7 @@ partial class EchonetLiteHandlerTests {
 
     callsToReceiveTaskExceptionHandlerEvent.Wait(cts.Token);
 
-    Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(0));
+    Assert.That(numberOfCallsToReceiveCallback, Is.Zero);
     Assert.That(numberOfCallsToReceiveTaskExceptionHandler, Is.EqualTo(1));
     Assert.That(exceptionOccurredInReceiveEchonetLiteAsync, Is.InstanceOf<InvalidOperationException>());
   }
@@ -238,7 +238,7 @@ partial class EchonetLiteHandlerTests {
 
     callsToReceiveTaskExceptionHandlerEvent.Wait(cts.Token);
 
-    Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(0));
+    Assert.That(numberOfCallsToReceiveCallback, Is.Zero);
     Assert.That(numberOfCallsToReceiveTaskExceptionHandler, Is.EqualTo(1));
     Assert.That(handler.IsReceiving, Is.True);
 

@@ -101,7 +101,7 @@ public class EchonetPropertyTests {
   {
     var (_, p) = await CreatePropertyAsync();
 
-    Assert.That(p.ValueSpan.Length, Is.EqualTo(0), nameof(p.ValueSpan.Length));
+    Assert.That(p.ValueSpan.Length, Is.Zero, nameof(p.ValueSpan.Length));
   }
 
   [Test]
@@ -109,7 +109,7 @@ public class EchonetPropertyTests {
   {
     var (_, p) = await CreatePropertyAsync();
 
-    Assert.That(p.ValueMemory.Length, Is.EqualTo(0), nameof(p.ValueMemory.Length));
+    Assert.That(p.ValueMemory.Length, Is.Zero, nameof(p.ValueMemory.Length));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_SetValue()
@@ -221,7 +221,7 @@ public class EchonetPropertyTests {
       SynchronizingObject = new SynchronousEventInvoker(),
     };
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.SetValue)}");
+    Assert.That(p.LastUpdatedTime, Is.Default, $"{nameof(p.LastUpdatedTime)} before {nameof(p.SetValue)}");
 
     var newValue = new byte[] { 0x00 };
 
@@ -349,7 +349,7 @@ public class EchonetPropertyTests {
       SynchronizingObject = new SynchronousEventInvoker(),
     };
 
-    Assert.That(p.LastUpdatedTime, Is.EqualTo(default(DateTime)), $"{nameof(p.LastUpdatedTime)} before {nameof(p.WriteValue)}");
+    Assert.That(p.LastUpdatedTime, Is.Default, $"{nameof(p.LastUpdatedTime)} before {nameof(p.WriteValue)}");
 
     var newValue = new byte[] { 0x00 };
 
@@ -393,7 +393,7 @@ public class EchonetPropertyTests {
       Assert.That(e.Property, Is.SameAs(p), nameof(e.Property));
       Assert.That(e.OldValue, SequenceIs.EqualTo(ReadOnlyMemory<byte>.Empty), nameof(e.OldValue));
       Assert.That(e.NewValue, SequenceIs.EqualTo(newValue), nameof(e.NewValue));
-      Assert.That(e.PreviousUpdatedTime, Is.EqualTo(default(DateTime)), nameof(e.PreviousUpdatedTime));
+      Assert.That(e.PreviousUpdatedTime, Is.Default, nameof(e.PreviousUpdatedTime));
       Assert.That(e.UpdatedTime, Is.GreaterThan(e.PreviousUpdatedTime), nameof(e.UpdatedTime));
 
       countOfValueUpdated++;

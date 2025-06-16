@@ -13,8 +13,8 @@ public class PropertyValueTests {
   {
     var p = default(PropertyValue);
 
-    Assert.That(p.EPC, Is.EqualTo(0x00));
-    Assert.That(p.PDC, Is.EqualTo(0));
+    Assert.That(p.EPC, Is.Zero);
+    Assert.That(p.PDC, Is.Zero);
     Assert.That(p.EDT.IsEmpty, Is.True);
   }
 
@@ -23,8 +23,8 @@ public class PropertyValueTests {
   {
     var p = new PropertyValue(0x00, ReadOnlyMemory<byte>.Empty);
 
-    Assert.That(p.EPC, Is.EqualTo(0x00));
-    Assert.That(p.PDC, Is.EqualTo(0));
+    Assert.That(p.EPC, Is.Zero);
+    Assert.That(p.PDC, Is.Zero);
     Assert.That(p.EDT.IsEmpty, Is.True);
   }
 

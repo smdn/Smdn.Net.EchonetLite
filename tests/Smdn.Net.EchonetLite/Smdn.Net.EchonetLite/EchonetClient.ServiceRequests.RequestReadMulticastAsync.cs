@@ -63,7 +63,7 @@ partial class EchonetClientServiceRequestsTests {
       }
 
       Assert.That(props[0], Is.EqualTo(requestedPropertyCodes[i]), $"EPC #{i}");
-      Assert.That(props[1], Is.EqualTo(0), $"PDC #{i}");
+      Assert.That(props[1], Is.Zero, $"PDC #{i}");
 
       props = props[2..];
     }
@@ -188,7 +188,7 @@ partial class EchonetClientServiceRequestsTests {
     Assert.That(wasRequestSent, Is.True);
     Assert.That(loggerForResiliencePipeline, Is.SameAs(logger));
     Assert.That(requestServiceCodeForResiliencePipeline, Is.EqualTo(ESV.Get));
-    Assert.That(responseServiceCodeForResiliencePipeline, Is.EqualTo(default(ESV)));
+    Assert.That(responseServiceCodeForResiliencePipeline, Is.Default);
   }
 
   [Test]

@@ -126,19 +126,19 @@ partial class EchonetClientOperationsTests {
     Assert.That(device.Properties[0x9D].CanGet, Is.True);
     Assert.That(device.Properties[0x9D].CanAnnounceStatusChange, Is.False);
     Assert.That(device.Properties[0x9D].ValueMemory, SequenceIs.EqualTo(getResponses[0x9D]));
-    Assert.That(device.Properties[0x9D].LastUpdatedTime, Is.Not.EqualTo(default(DateTime)));
+    Assert.That(device.Properties[0x9D].LastUpdatedTime, Is.Not.Default);
 
     Assert.That(device.Properties[0x9E].CanSet, Is.False);
     Assert.That(device.Properties[0x9E].CanGet, Is.True);
     Assert.That(device.Properties[0x9E].CanAnnounceStatusChange, Is.False);
     Assert.That(device.Properties[0x9E].ValueMemory, SequenceIs.EqualTo(getResponses[0x9E]));
-    Assert.That(device.Properties[0x9E].LastUpdatedTime, Is.Not.EqualTo(default(DateTime)));
+    Assert.That(device.Properties[0x9E].LastUpdatedTime, Is.Not.Default);
 
     Assert.That(device.Properties[0x9F].CanSet, Is.False);
     Assert.That(device.Properties[0x9F].CanGet, Is.True);
     Assert.That(device.Properties[0x9F].CanAnnounceStatusChange, Is.False);
     Assert.That(device.Properties[0x9F].ValueMemory, SequenceIs.EqualTo(getResponses[0x9F]));
-    Assert.That(device.Properties[0x9F].LastUpdatedTime, Is.Not.EqualTo(default(DateTime)));
+    Assert.That(device.Properties[0x9F].LastUpdatedTime, Is.Not.Default);
   }
 
   [Test]
@@ -260,13 +260,13 @@ partial class EchonetClientOperationsTests {
     Assert.That(device.Properties[0x80].CanGet, Is.True);
     Assert.That(device.Properties[0x80].CanAnnounceStatusChange, Is.True);
     Assert.That(device.Properties[0x80].ValueMemory, SequenceIs.EqualTo(getResponses[0x80]));
-    Assert.That(device.Properties[0x80].LastUpdatedTime, Is.Not.EqualTo(default(DateTime)));
+    Assert.That(device.Properties[0x80].LastUpdatedTime, Is.Not.Default);
 
     Assert.That(device.Properties[0x82].CanSet, Is.False);
     Assert.That(device.Properties[0x82].CanGet, Is.True);
     Assert.That(device.Properties[0x82].CanAnnounceStatusChange, Is.False);
     Assert.That(device.Properties[0x82].ValueMemory, SequenceIs.EqualTo(getResponses[0x82]));
-    Assert.That(device.Properties[0x82].LastUpdatedTime, Is.Not.EqualTo(default(DateTime)));
+    Assert.That(device.Properties[0x82].LastUpdatedTime, Is.Not.Default);
   }
 
   [Test]

@@ -122,7 +122,7 @@ partial class EchonetClientServiceHandlingsTests {
     Assert.That(sourceNode.NodeProfile, Is.Not.Null);
     Assert.That(sourceNode.NodeProfile.Properties.ContainsKey(0xD5), Is.True);
     Assert.That(sourceNode.NodeProfile.Properties[0xD5].HasModified, Is.False);
-    Assert.That(sourceNode.NodeProfile.Properties[0xD5].LastUpdatedTime, Is.Not.EqualTo(default(DateTime)));
+    Assert.That(sourceNode.NodeProfile.Properties[0xD5].LastUpdatedTime, Is.Not.Default);
 
     Assert.That(sourceNode.Devices.Count, Is.EqualTo(1));
     Assert.That(sourceNode.Devices.First().EOJ, Is.EqualTo(new EOJ(0x05, 0xFF, 0x01)));
@@ -170,10 +170,10 @@ partial class EchonetClientServiceHandlingsTests {
       Assert.That(sender, Is.SameAs(sourceObject));
       Assert.That(e.Property, Is.Not.Null);
       Assert.That(e.Property.Code, Is.EqualTo(0x80));
-      Assert.That(e.OldValue, SequenceIs.EqualTo(default(ReadOnlyMemory<byte>)));
-      Assert.That(e.NewValue, SequenceIs.Not.EqualTo(default(ReadOnlyMemory<byte>)));
-      Assert.That(e.PreviousUpdatedTime, Is.EqualTo(default(DateTime)));
-      Assert.That(e.UpdatedTime, Is.Not.EqualTo(default(DateTime)));
+      Assert.That(e.OldValue, SequenceIs.Default);
+      Assert.That(e.NewValue, SequenceIs.Not.Default);
+      Assert.That(e.PreviousUpdatedTime, Is.Default);
+      Assert.That(e.UpdatedTime, Is.Not.Default);
     };
 
     var properties = new Dictionary<byte, byte[]>() {
@@ -197,7 +197,7 @@ partial class EchonetClientServiceHandlingsTests {
 
     Assert.That(sourceObject.Properties.ContainsKey(0x80), Is.True);
     Assert.That(sourceObject.Properties[0x80].HasModified, Is.False);
-    Assert.That(sourceObject.Properties[0x80].LastUpdatedTime, Is.Not.EqualTo(default(DateTime)));
+    Assert.That(sourceObject.Properties[0x80].LastUpdatedTime, Is.Not.Default);
     Assert.That(sourceObject.Properties[0x80].ValueMemory, SequenceIs.EqualTo(properties[0x80]));
 
     if (setSynchronizingObject) {
@@ -260,7 +260,7 @@ partial class EchonetClientServiceHandlingsTests {
     Assert.That(sourceObject!.HasPropertyMapAcquired, Is.False);
     Assert.That(sourceObject.Properties.ContainsKey(0x80), Is.True);
     Assert.That(sourceObject.Properties[0x80].HasModified, Is.False);
-    Assert.That(sourceObject.Properties[0x80].LastUpdatedTime, Is.Not.EqualTo(default(DateTime)));
+    Assert.That(sourceObject.Properties[0x80].LastUpdatedTime, Is.Not.Default);
     Assert.That(sourceObject.Properties[0x80].ValueMemory, SequenceIs.EqualTo(properties[0x80]));
   }
 }

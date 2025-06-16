@@ -26,7 +26,7 @@ public partial class PropertyMapSerializerSerializerTests {
       Is.EqualTo(1)
     );
     Assert.That(buffer.WrittenCount, Is.EqualTo(1));
-    Assert.That(buffer.WrittenSpan[0], Is.EqualTo(0));
+    Assert.That(buffer.WrittenSpan[0], Is.Zero);
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Serialize_NotationType1()
@@ -479,7 +479,7 @@ public partial class PropertyMapSerializerSerializerTests {
     );
 
     Assert.That(propertyMap, Is.Not.Null, nameof(propertyMap));
-    Assert.That(propertyMap!.Count, Is.EqualTo(0), nameof(propertyMap));
+    Assert.That(propertyMap!.Count, Is.Zero, nameof(propertyMap));
     Assert.That(propertyMap, Is.Empty, nameof(propertyMap));
   }
 }

@@ -87,7 +87,7 @@ partial class EchonetClientServiceRequestsTests {
     Assert.That(wasRequestSent, Is.True);
     Assert.That(loggerForResiliencePipeline, Is.SameAs(logger));
     Assert.That(requestServiceCodeForResiliencePipeline, Is.EqualTo(ESV.Get));
-    Assert.That(responseServiceCodeForResiliencePipeline, Is.EqualTo(default(ESV)));
+    Assert.That(responseServiceCodeForResiliencePipeline, Is.Default);
   }
 
   [Test]

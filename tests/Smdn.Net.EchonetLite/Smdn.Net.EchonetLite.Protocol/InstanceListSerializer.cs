@@ -64,7 +64,7 @@ public partial class InstanceListSerializerTests {
   public void TrySerialize_NodesNull()
   {
     Assert.That(InstanceListSerializer.TrySerialize(null!, stackalloc byte[1], out var bytesWritten), Is.False);
-    Assert.That(bytesWritten, Is.EqualTo(0), nameof(bytesWritten));
+    Assert.That(bytesWritten, Is.Zero, nameof(bytesWritten));
   }
 
   [Test]
@@ -170,8 +170,8 @@ public partial class InstanceListSerializerTests {
   {
     var writer = new ArrayBufferWriter<byte>();
 
-    Assert.That(InstanceListSerializer.Serialize(writer, null!, prependPdc), Is.EqualTo(0));
-    Assert.That(writer.WrittenCount, Is.EqualTo(0));
+    Assert.That(InstanceListSerializer.Serialize(writer, null!, prependPdc), Is.Zero);
+    Assert.That(writer.WrittenCount, Is.Zero);
   }
 
   [Test]
