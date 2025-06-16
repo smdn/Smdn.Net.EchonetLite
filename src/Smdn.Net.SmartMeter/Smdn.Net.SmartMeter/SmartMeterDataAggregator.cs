@@ -108,7 +108,9 @@ public partial class SmartMeterDataAggregator : HemsController {
   public IReadOnlyCollection<SmartMeterDataAggregation> DataAggregations { get; }
 
   private readonly IReadOnlyCollection<IMeasurementValueAggregation> measurementValueAggregations;
+#pragma warning disable CA1859
   private readonly IReadOnlyCollection<PeriodicCumulativeElectricEnergyAggregation> periodicCumulativeElectricEnergyAggregations;
+#pragma warning restore CA1859
 
   private readonly bool shouldAggregateCumulativeElectricEnergyNormalDirection;
   private readonly bool shouldAggregateCumulativeElectricEnergyReverseDirection;
@@ -577,10 +579,12 @@ public partial class SmartMeterDataAggregator : HemsController {
       yield return SmartMeter.ReverseDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode;
   }
 
+#pragma warning disable CA1859
   private async ValueTask AcquirePropertyValuesForAggregatingDataAsync(
     IReadOnlyCollection<byte> propertyCodesToAcquire,
     CancellationToken stoppingToken
   )
+#pragma warning restore CA1859
   {
     if (propertyCodesToAcquire.Count <= 0)
       return; // nothing to do
