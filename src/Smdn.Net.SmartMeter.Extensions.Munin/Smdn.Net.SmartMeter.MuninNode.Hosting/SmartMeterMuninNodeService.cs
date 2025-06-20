@@ -74,6 +74,20 @@ public class SmartMeterMuninNodeService : MuninNodeBackgroundService {
       Logger?.LogDebug(message: "A stop request has been made.");
 #pragma warning restore CA1848
     }
+    catch (OperationCanceledException) when (ctsAggregationHalted.IsCancellationRequested) {
+      // stopped by aggregator exception (expected exception)
+#pragma warning disable CA1848
+      Logger?.LogDebug(message: "The aggregation task has stopped due to an exception.");
+#pragma warning restore CA1848
+
+      if (HasAggregationHalted) {
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
+        OnAggregationHalted(unhandledAggregationException);
+#else
+        OnAggregationHalted(unhandledAggregationException!);
+#endif
+      }
+    }
   }
 
   protected bool TryGetAggregationFaultedException(
@@ -93,4 +107,10 @@ public class SmartMeterMuninNodeService : MuninNodeBackgroundService {
 
     return false;
   }
+
+  protected virtual void OnAggregationHalted(Exception exception)
+    => throw new AggregationHaltedException(
+      message: "Data aggregation from the smart meters has been halted due to an unhandled exception.",
+      innerException: exception
+    );
 }

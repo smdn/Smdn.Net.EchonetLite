@@ -147,6 +147,12 @@ public class SmartMeterMuninNodeSystemdService : SmartMeterMuninNodeService {
       applicationLifetime.StopApplication();
   }
 
+  protected override void OnAggregationHalted(Exception exception)
+    => throw new AggregationHaltedException(
+      message: "Data aggregation from the smart meters has been halted due to an unhandled exception.",
+      innerException: null // the unhandled exception will be logged in StopAsync(), so report only the message here
+    );
+
   protected virtual bool DetermineExitCodeForUnhandledException(
     Exception exception,
     out int exitCode,
