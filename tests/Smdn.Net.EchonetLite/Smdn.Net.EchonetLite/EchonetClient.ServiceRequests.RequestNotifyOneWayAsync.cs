@@ -1,12 +1,7 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,8 +12,6 @@ using Polly;
 
 using Smdn.Net.EchonetLite.Protocol;
 using Smdn.Net.EchonetLite.ResilienceStrategies;
-
-using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite;
 
@@ -42,7 +35,7 @@ partial class EchonetClientServiceRequestsTests {
 
     yield return new object?[] {
       new byte[] { 0x80 },
-      (IPAddress?)null, // multicast
+      null, // multicast
     };
   }
 
@@ -106,14 +99,14 @@ partial class EchonetClientServiceRequestsTests {
     Assert.That(requestServiceCodeForResiliencePipeline, Is.EqualTo(ESV.InfRequest));
     Assert.That(responseServiceCodeForResiliencePipeline, Is.Default);
 
-    void TestRequestNotifyOneWayMessage(
+    static void TestRequestNotifyOneWayMessage(
       ReadOnlySpan<byte> message,
       EOJ requestedSEOJ,
       EOJ requestedDEOJ,
       byte[] requestedPropertyCodes
     )
     {
-      Assert.That(message.Length, Is.EqualTo(12 + 2 * requestedPropertyCodes.Length), "request message length");
+      Assert.That(message.Length, Is.EqualTo(12 + (2 * requestedPropertyCodes.Length)), "request message length");
 
       Assert.That(message[0], Is.EqualTo((byte)EHD1.EchonetLite), "EHD1");
       Assert.That(message[1], Is.EqualTo((byte)EHD2.Format1), "EHD2");

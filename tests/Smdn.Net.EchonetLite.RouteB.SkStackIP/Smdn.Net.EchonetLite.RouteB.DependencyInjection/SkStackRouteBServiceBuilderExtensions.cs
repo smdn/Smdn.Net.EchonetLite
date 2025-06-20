@@ -13,9 +13,9 @@ using Polly;
 using Polly.DependencyInjection;
 using Polly.Registry;
 
-using Smdn.Net.SkStackIP;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
+using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 

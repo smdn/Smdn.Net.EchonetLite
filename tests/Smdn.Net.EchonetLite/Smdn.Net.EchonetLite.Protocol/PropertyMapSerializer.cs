@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Linq;
 
 using NUnit.Framework;
@@ -330,7 +329,7 @@ public partial class PropertyMapSerializerSerializerTests {
       PropertyMapSerializer.TrySerialize(
         propertyMap: propertyMap,
         destination: buffer,
-        out var bytesWritten
+        out _
       ),
       Is.False
     );
@@ -462,9 +461,9 @@ public partial class PropertyMapSerializerSerializerTests {
   [Test]
   public void TryDeserialize_NotationType2_ContentTooShort()
   {
-    Assert.That(PropertyMapSerializer.TryDeserialize(new byte[] { (byte)16 }.AsSpan(), out _), Is.False, "case #1");
-    Assert.That(PropertyMapSerializer.TryDeserialize(new byte[] { (byte)16, 0x00 }.AsSpan(), out _), Is.False, "case #2");
-    Assert.That(PropertyMapSerializer.TryDeserialize(new byte[] { (byte)16, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E }.AsSpan(), out _), Is.False, "case #3");
+    Assert.That(PropertyMapSerializer.TryDeserialize(new byte[] { 16 }.AsSpan(), out _), Is.False, "case #1");
+    Assert.That(PropertyMapSerializer.TryDeserialize(new byte[] { 16, 0x00 }.AsSpan(), out _), Is.False, "case #2");
+    Assert.That(PropertyMapSerializer.TryDeserialize(new byte[] { 16, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E }.AsSpan(), out _), Is.False, "case #3");
   }
 
   [Test]

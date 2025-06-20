@@ -60,7 +60,7 @@ partial class FrameSerializerTests {
         sourceObject: default,
         destinationObject: default,
         esv: ESV.SetGet,
-        propertiesForSet: [ new() ],
+        propertiesForSet: [new()],
         propertiesForGet: null!
       ),
       message: "propertiesForGet null"
@@ -198,8 +198,8 @@ partial class FrameSerializerTests {
         sourceObject: default,
         destinationObject: default,
         esv: esv,
-        propertiesForSet: [ new() ],
-        propertiesForGet: [ new() ]
+        propertiesForSet: [new()],
+        propertiesForGet: [new()]
       );
     }
     else {

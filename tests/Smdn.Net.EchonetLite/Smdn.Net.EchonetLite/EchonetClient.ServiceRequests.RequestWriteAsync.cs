@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -165,7 +163,7 @@ partial class EchonetClientServiceRequestsTests {
     var destinationNodeAddress = IPAddress.Loopback;
     using var client = new EchonetClient(
       new SingleTransactionEchonetLiteHandler(
-        responseEData: CreateResponseEData(seoj, default(EOJ), ESV.SetResponse, propertyCodes: null, propertyValues: null)
+        responseEData: CreateResponseEData(seoj, default, ESV.SetResponse, propertyCodes: null, propertyValues: null)
       )
     );
 

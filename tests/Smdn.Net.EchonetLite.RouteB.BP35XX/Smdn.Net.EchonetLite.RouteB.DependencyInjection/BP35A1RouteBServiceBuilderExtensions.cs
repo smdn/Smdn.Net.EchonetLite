@@ -1,16 +1,11 @@
 // SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-using Polly;
-using Polly.DependencyInjection;
 using Polly.Registry;
 using Polly.Retry;
 
@@ -190,7 +185,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
     );
   }
 
-   [Test]
+  [Test]
   public void AddBP35A1PanaAuthenticationWorkaround_WithConfigureWorkaroundPipeline()
   {
     const string ServiceKey = nameof(ServiceKey);

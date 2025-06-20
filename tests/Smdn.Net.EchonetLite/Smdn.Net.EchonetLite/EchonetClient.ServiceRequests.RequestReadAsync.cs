@@ -155,7 +155,7 @@ partial class EchonetClientServiceRequestsTests {
     var destinationNodeAddress = IPAddress.Loopback;
     using var client = new EchonetClient(
       new SingleTransactionEchonetLiteHandler(
-        responseEData: CreateResponseEData(seoj, default(EOJ), ESV.GetResponse, propertyCodes: null, propertyValues: null)
+        responseEData: CreateResponseEData(seoj, default, ESV.GetResponse, propertyCodes: null, propertyValues: null)
       )
     );
 

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 
 namespace Smdn.Net.EchonetLite;
 

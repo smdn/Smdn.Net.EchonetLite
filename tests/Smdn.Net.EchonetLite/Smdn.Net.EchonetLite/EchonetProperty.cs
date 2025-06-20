@@ -3,17 +3,14 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-using Smdn.Net.EchonetLite.ComponentModel;
 using Smdn.Net.EchonetLite.Protocol;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
@@ -24,7 +21,7 @@ namespace Smdn.Net.EchonetLite;
 public class EchonetPropertyTests {
 #if SYSTEM_TIMEPROVIDER
   private class PseudoConstantTimeProvider(DateTime localNow) : TimeProvider {
-    private readonly DateTimeOffset LocalNow = new DateTimeOffset(localNow, TimeZoneInfo.Local.BaseUtcOffset);
+    private readonly DateTimeOffset LocalNow = new(localNow, TimeZoneInfo.Local.BaseUtcOffset);
 
     public override DateTimeOffset GetUtcNow() => LocalNow.ToUniversalTime();
   }

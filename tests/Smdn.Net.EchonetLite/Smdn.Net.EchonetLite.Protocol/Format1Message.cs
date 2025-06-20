@@ -127,7 +127,13 @@ public class Format1MessageTests {
   {
     var message = default(Format1Message);
 
-    Assert.That(message.ToString(), Is.EqualTo(@"{""SEOJ"": ""00.00 00"", ""DEOJ"": ""00.00 00"", ""ESV"": ""00[0x00]"", ""OPC"": 0, ""Properties"": []}"));
+    Assert.That(
+      message.ToString(),
+      Is.EqualTo(
+        // lang=json,strict
+        @"{""SEOJ"": ""00.00 00"", ""DEOJ"": ""00.00 00"", ""ESV"": ""00[0x00]"", ""OPC"": 0, ""Properties"": []}"
+      )
+    );
   }
 
   private static System.Collections.IEnumerable YieldTestCases_ToString_ESV()
@@ -191,6 +197,7 @@ public class Format1MessageTests {
         ESV.Inf,
         []
       ),
+      // lang=json,strict
       @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF[0x73]"", ""OPC"": 0, ""Properties"": []}"
     };
 
@@ -203,6 +210,7 @@ public class Format1MessageTests {
           new(0xFF, new byte[] { 0x00, 0x01 })
         ]
       ),
+      // lang=json,strict
       @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF[0x73]"", ""OPC"": 1, ""Properties"": [{""EPC"": ""FF"", ""PDC"": ""02"", ""EDT"": ""0001""}]}"
     };
 
@@ -217,6 +225,7 @@ public class Format1MessageTests {
           new(0xF2, new byte[] { 0x0A, 0x0B, 0x0C })
         ]
       ),
+      // lang=json,strict
       @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""INF[0x73]"", ""OPC"": 3, ""Properties"": [{""EPC"": ""F0"", ""PDC"": ""00"", ""EDT"": """"}, {""EPC"": ""F1"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""F2"", ""PDC"": ""03"", ""EDT"": ""0A0B0C""}]}"
     };
 
@@ -234,6 +243,7 @@ public class Format1MessageTests {
           new(0xC1, new byte[] { 0x10, 0x20 }),
         ]
       ),
+      // lang=json,strict
       @"{""SEOJ"": ""0E.F0 02"", ""DEOJ"": ""0E.F0 01"", ""ESV"": ""SetGet[0x6E]"", ""OPCSet"": 2, ""Properties"": [{""EPC"": ""A0"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""A1"", ""PDC"": ""02"", ""EDT"": ""0102""}], ""OPCGet"": 2, ""Properties"": [{""EPC"": ""C0"", ""PDC"": ""01"", ""EDT"": ""00""}, {""EPC"": ""C1"", ""PDC"": ""02"", ""EDT"": ""1020""}]}"
     };
   }

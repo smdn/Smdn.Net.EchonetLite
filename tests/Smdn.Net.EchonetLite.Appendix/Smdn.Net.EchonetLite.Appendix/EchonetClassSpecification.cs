@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Reflection;
 
 using NUnit.Framework;
 
@@ -93,6 +93,7 @@ public class EchonetClassSpecificationTests {
   private static System.Collections.IEnumerable YieldTestCases_Deserialize()
   {
     yield return new object?[] {
+      // lang=json,strict
       @"{
   ""Status"": true,
   ""ClassCode"": ""0x88"",
@@ -107,6 +108,7 @@ public class EchonetClassSpecificationTests {
 
     // upper case hex
     yield return new object?[] {
+      // lang=json,strict
       @"{
   ""Status"": true,
   ""ClassCode"": ""0xFF"",
@@ -121,6 +123,7 @@ public class EchonetClassSpecificationTests {
 
     // lower case hex
     yield return new object?[] {
+      // lang=json,strict
       @"{
   ""Status"": true,
   ""ClassCode"": ""0xff"",

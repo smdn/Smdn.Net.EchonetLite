@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Reflection;
 
 using NUnit.Framework;
 
@@ -67,7 +67,7 @@ public class EchonetClassGroupSpecificationTests {
     yield return new object?[] {
       "classList not empty",
       new object?[] { (byte)0x00, "classGroupNameOfficial", "classGroupName", "superClass", new List<EchonetClassSpecification>() {
-          new EchonetClassSpecification(false, (byte)0x00, "?", "?"),
+          new(false, 0x00, "?", "?"),
         }
       },
       null, null, static (EchonetClassGroupSpecification cg) => Assert.That(cg.Classes.Count, Is.EqualTo(1), nameof(cg.Classes))
@@ -124,6 +124,7 @@ public class EchonetClassGroupSpecificationTests {
   private static System.Collections.IEnumerable YieldTestCases_Deserialize()
   {
     yield return new object?[] {
+      // lang=json,strict
       @"{
   ""ClassGroupCode"": ""0x02"",
   ""ClassGroupNameOfficial"": ""住宅・設備関連機器クラスグループ"",
@@ -139,6 +140,7 @@ public class EchonetClassGroupSpecificationTests {
 
     // upper case hex
     yield return new object?[] {
+      // lang=json,strict
       @"{
   ""ClassGroupCode"": ""0xFF"",
   ""ClassGroupNameOfficial"": ""?"",
@@ -154,6 +156,7 @@ public class EchonetClassGroupSpecificationTests {
 
     // lower case hex
     yield return new object?[] {
+      // lang=json,strict
       @"{
   ""ClassGroupCode"": ""0xff"",
   ""ClassGroupNameOfficial"": ""?"",

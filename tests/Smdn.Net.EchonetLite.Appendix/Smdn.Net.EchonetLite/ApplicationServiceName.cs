@@ -36,4 +36,5 @@ public class ApplicationServiceNameTests {
     var json = "\"" + value + "\"";
 
     Assert.That(JsonSerializer.Deserialize<ApplicationServiceName>(json), Is.EqualTo(expected));
-  }}
+  }
+}

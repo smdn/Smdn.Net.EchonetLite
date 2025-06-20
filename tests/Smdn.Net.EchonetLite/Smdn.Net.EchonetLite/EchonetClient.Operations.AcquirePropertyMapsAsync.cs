@@ -1,17 +1,13 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 using NUnit.Framework;
-
-using Smdn.Net.EchonetLite.Protocol;
 
 using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 

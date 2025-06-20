@@ -3,9 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 using NUnit.Framework;
 
@@ -99,13 +96,13 @@ partial class EchonetClientOperationsTests {
       Throws.Nothing
     );
 
-    void TestNotifyInstanceListMessage(
+    static void TestNotifyInstanceListMessage(
       ReadOnlySpan<byte> message,
       EchonetObject selfNodeProfile,
       IReadOnlyList<EchonetObject> notifiedInstanceList
     )
     {
-      var expectedPDC = 1 + 3 * Math.Min(notifiedInstanceList.Count, MaximumNumberOfInstancesInSingleInstanceListNotification);
+      var expectedPDC = 1 + (3 * Math.Min(notifiedInstanceList.Count, MaximumNumberOfInstancesInSingleInstanceListNotification));
 
       Assert.That(message.Length, Is.EqualTo(14 + expectedPDC), "request message length");
 

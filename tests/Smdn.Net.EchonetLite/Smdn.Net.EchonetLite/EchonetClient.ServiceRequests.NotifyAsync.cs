@@ -1,9 +1,6 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,8 +14,6 @@ using Polly;
 
 using Smdn.Net.EchonetLite.Protocol;
 using Smdn.Net.EchonetLite.ResilienceStrategies;
-
-using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite;
 
@@ -151,7 +146,7 @@ partial class EchonetClientServiceRequestsTests {
     var destinationNodeAddress = IPAddress.Loopback;
     using var client = new EchonetClient(
       new SingleTransactionEchonetLiteHandler(
-        responseEData: CreateResponseEData(seoj, default(EOJ), ESV.InfCResponse, propertyCodes: null, propertyValues: null)
+        responseEData: CreateResponseEData(seoj, default, ESV.InfCResponse, propertyCodes: null, propertyValues: null)
       )
     );
 

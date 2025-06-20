@@ -89,14 +89,14 @@ partial class SkStackRouteBHandlerResiliencePipelineKeyPairTests {
     };
 
     yield return new object[] {
-      new SkStackRouteBHandler.ResiliencePipelineKeyPair<string>((string)null!, "PipelineKey"),
-      new SkStackRouteBHandler.ResiliencePipelineKeyPair<string>((string)null!, "PipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<string>(null!, "PipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<string>(null!, "PipelineKey"),
       true
     };
 
     yield return new object[] {
-      new SkStackRouteBHandler.ResiliencePipelineKeyPair<string>((string)null!, "PipelineKey"),
-      new SkStackRouteBHandler.ResiliencePipelineKeyPair<string>((string)null!, "pipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<string>(null!, "PipelineKey"),
+      new SkStackRouteBHandler.ResiliencePipelineKeyPair<string>(null!, "pipelineKey"),
       false
     };
   }

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
@@ -19,7 +18,7 @@ namespace Smdn.Net.EchonetLite;
 [TestFixture]
 public class EchonetClientTests {
   public static CancellationTokenSource CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed()
-    => new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    => new(TimeSpan.FromSeconds(5));
 
   private class ReceiveEDATA2EchonetLiteHandler : IEchonetLiteHandler {
     public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
@@ -37,8 +36,8 @@ public class EchonetClientTests {
         new byte[] {
           (byte)EHD1.EchonetLite, // EHD1
           (byte)EHD2.Format2, // EHD2
-          (byte)0x00, // TID
-          (byte)0x00, // TID
+          0x00, // TID
+          0x00, // TID
           0x00, 0x00, 0x00 // EDATA2
         }.AsMemory(),
         cancellationToken
@@ -132,13 +131,13 @@ public class EchonetClientTests {
 
     using var client = new EchonetClient(handler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler);
 
-    Assert.DoesNotThrow(() => client.Dispose(), "Dispose #1");
+    Assert.DoesNotThrow(client.Dispose, "Dispose #1");
 
     Assert.DoesNotThrowAsync(async () => await handler.RaiseEDATA2ReceivedAsync(), "frame received after dispose");
 
     Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.NotifyInstanceListAsync(), "send request after dispose");
 
-    Assert.DoesNotThrow(() => client.Dispose(), "Dispose #2");
+    Assert.DoesNotThrow(client.Dispose, "Dispose #2");
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync");
   }
 
@@ -157,7 +156,7 @@ public class EchonetClientTests {
     Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.NotifyInstanceListAsync(), "send request after dispose");
 
     Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync #2");
-    Assert.DoesNotThrow(() => client.Dispose(), "Dispose");
+    Assert.DoesNotThrow(client.Dispose, "Dispose");
   }
 
   [TestCase(true)]
@@ -168,7 +167,7 @@ public class EchonetClientTests {
 
     using var client = new EchonetClient(disposableHandler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler);
 
-    Assert.DoesNotThrow(() => client.Dispose(), nameof(client.Dispose));
+    Assert.DoesNotThrow(client.Dispose, nameof(client.Dispose));
 
     Assert.That(disposableHandler.IsDisposed, Is.EqualTo(shouldDisposeEchonetLiteHandler), nameof(disposableHandler.IsDisposed));
   }
@@ -254,7 +253,7 @@ public class EchonetClientTests {
       handler: handler,
       testReceivedFormat2Message: (address, tid, edata) => {
         Assert.That(address, Is.EqualTo(expectedAddress));
-        Assert.That((int)tid, Is.EqualTo(expectedTid));
+        Assert.That(tid, Is.EqualTo(expectedTid));
         Assert.That(edata, SequenceIs.EqualTo(expectedEData));
       }
     );

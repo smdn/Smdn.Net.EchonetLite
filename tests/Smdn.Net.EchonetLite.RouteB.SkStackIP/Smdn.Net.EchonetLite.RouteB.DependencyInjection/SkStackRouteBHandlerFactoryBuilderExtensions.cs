@@ -6,8 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-using Smdn.Net.SkStackIP;
 using Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
+using Smdn.Net.SkStackIP;
 
 namespace Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 

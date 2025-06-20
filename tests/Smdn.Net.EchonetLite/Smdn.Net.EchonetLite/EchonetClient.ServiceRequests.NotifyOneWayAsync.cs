@@ -1,12 +1,8 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -49,7 +45,7 @@ partial class EchonetClientServiceRequestsTests {
       new PropertyValue[] {
         new(0x80, new byte[] { 0x31 }),
       },
-      (IPAddress?)null, // multicast
+      null, // multicast
     };
   }
 
@@ -113,7 +109,7 @@ partial class EchonetClientServiceRequestsTests {
     Assert.That(requestServiceCodeForResiliencePipeline, Is.EqualTo(ESV.Inf));
     Assert.That(responseServiceCodeForResiliencePipeline, Is.Default);
 
-    void TestNotifyOneWayMessage(
+    static void TestNotifyOneWayMessage(
       ReadOnlySpan<byte> message,
       EOJ requestedSEOJ,
       EOJ requestedDEOJ,
@@ -154,9 +150,9 @@ partial class EchonetClientServiceRequestsTests {
 
         Assert.That(props[0], Is.EqualTo(requestedProperties[i].EPC), $"EPC #{i}");
         Assert.That(props[1], Is.EqualTo(requestedProperties[i].PDC), $"PDC #{i}");
-        Assert.That(props.Slice(2, (int)props[1]).ToArray(), SequenceIs.EqualTo(requestedProperties[i].EDT), $"PDC #{i}");
+        Assert.That(props.Slice(2, props[1]).ToArray(), SequenceIs.EqualTo(requestedProperties[i].EDT), $"PDC #{i}");
 
-        props = props[(2 + (int)props[1])..];
+        props = props[(2 + props[1])..];
       }
     }
   }

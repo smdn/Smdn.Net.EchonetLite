@@ -1,13 +1,9 @@
 // SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using System;
-
 using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-using Polly;
-using Polly.DependencyInjection;
 using Polly.Registry;
 using Polly.Retry;
 

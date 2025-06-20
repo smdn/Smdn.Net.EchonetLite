@@ -1,11 +1,9 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -64,9 +62,9 @@ partial class EchonetClientServiceRequestsTests {
 
       Assert.That(props[0], Is.EqualTo(requestedProperties[i].EPC), $"EPC #{i}");
       Assert.That(props[1], Is.EqualTo(requestedProperties[i].PDC), $"PDC #{i}");
-      Assert.That(props.Slice(2, (int)props[1]).ToArray(), SequenceIs.EqualTo(requestedProperties[i].EDT), $"PDC #{i}");
+      Assert.That(props.Slice(2, props[1]).ToArray(), SequenceIs.EqualTo(requestedProperties[i].EDT), $"PDC #{i}");
 
-      props = props[(2 + (int)props[1])..];
+      props = props[(2 + props[1])..];
     }
   }
 
@@ -171,7 +169,7 @@ partial class EchonetClientServiceRequestsTests {
         var destinationObject = otherNode.Devices.First(obj => obj.EOJ == deoj);
 
         foreach (var property in requestPropertyValues) {
-          Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+          Assert.That(destinationObject.Properties, Contains.Key(property.EPC));
           Assert.That(destinationObject.Properties[property.EPC].ValueMemory, SequenceIs.EqualTo(property.EDT));
           Assert.That(destinationObject.Properties[property.EPC].HasModified, Is.False);
         }
@@ -186,14 +184,14 @@ partial class EchonetClientServiceRequestsTests {
 
         if (isUnicastDestination) {
           foreach (var property in requestPropertyValues) {
-            Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+            Assert.That(destinationObject.Properties, Contains.Key(property.EPC));
             Assert.That(destinationObject.Properties[property.EPC].ValueMemory, SequenceIs.EqualTo(property.EDT));
             Assert.That(destinationObject.Properties[property.EPC].HasModified, Is.False);
           }
         }
         else {
           foreach (var property in requestPropertyValues) {
-            Assert.That(destinationObject.Properties, Does.Not.ContainKey((byte)property.EPC));
+            Assert.That(destinationObject.Properties, Does.Not.ContainKey(property.EPC));
           }
         }
       }
@@ -265,7 +263,7 @@ partial class EchonetClientServiceRequestsTests {
         var destinationObject = otherNode.Devices.First(obj => obj.EOJ == deoj);
 
         foreach (var property in requestPropertyValues) {
-          Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+          Assert.That(destinationObject.Properties, Contains.Key(property.EPC));
           Assert.That(destinationObject.Properties[property.EPC].ValueMemory, SequenceIs.EqualTo(property.EDT));
           Assert.That(destinationObject.Properties[property.EPC].HasModified, Is.True); // must be restored to modified state
         }
@@ -280,14 +278,14 @@ partial class EchonetClientServiceRequestsTests {
 
         if (isUnicastDestination) {
           foreach (var property in requestPropertyValues) {
-            Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+            Assert.That(destinationObject.Properties, Contains.Key(property.EPC));
             Assert.That(destinationObject.Properties[property.EPC].ValueMemory, SequenceIs.EqualTo(property.EDT));
             Assert.That(destinationObject.Properties[property.EPC].HasModified, Is.True); // must be restored to modified state
           }
         }
         else {
           foreach (var property in requestPropertyValues) {
-            Assert.That(destinationObject.Properties, Does.Not.ContainKey((byte)property.EPC));
+            Assert.That(destinationObject.Properties, Does.Not.ContainKey(property.EPC));
           }
         }
       }
@@ -382,7 +380,7 @@ partial class EchonetClientServiceRequestsTests {
         var destinationObject = otherNode.Devices.First(obj => obj.EOJ == deoj);
 
         foreach (var property in requestPropertyValues) {
-          Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+          Assert.That(destinationObject.Properties, Contains.Key(property.EPC));
         }
       }
     }
@@ -395,12 +393,12 @@ partial class EchonetClientServiceRequestsTests {
 
         if (isUnicastDestination) {
           foreach (var property in requestPropertyValues) {
-            Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+            Assert.That(destinationObject.Properties, Contains.Key(property.EPC));
           }
         }
         else {
           foreach (var property in requestPropertyValues) {
-            Assert.That(destinationObject.Properties, Does.Not.ContainKey((byte)property.EPC));
+            Assert.That(destinationObject.Properties, Does.Not.ContainKey(property.EPC));
           }
         }
       }
@@ -432,10 +430,10 @@ partial class EchonetClientServiceRequestsTests {
         var isUnicastDestination = !performMulticast && ReferenceEquals(otherNode, destinationNode);
 
         if (performMulticast || isUnicastDestination) {
-          Assert.That(destinationObject.Properties, Contains.Key((byte)property.EPC));
+          Assert.That(destinationObject.Properties, Contains.Key(property.EPC));
         }
         else {
-          Assert.That(destinationObject.Properties, Does.Not.ContainKey((byte)property.EPC));
+          Assert.That(destinationObject.Properties, Does.Not.ContainKey(property.EPC));
           continue;
         }
 

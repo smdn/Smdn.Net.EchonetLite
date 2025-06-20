@@ -3,7 +3,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Linq;
 
 using NUnit.Framework;
 
@@ -212,14 +211,14 @@ public partial class InstanceListSerializerTests {
     yield return new object?[] {
       new byte[] { 0x01, 0xBE, 0xAF, 0x01 },
       new List<EOJ>() {
-        new EOJ(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x01)
+        new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x01)
       }
     };
     yield return new object?[] {
       new byte[] { 0x02, 0xBE, 0xAF, 0x01, 0xBE, 0xAF, 0x02 },
       new List<EOJ>() {
-        new EOJ(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x01),
-        new EOJ(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x02)
+        new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x01),
+        new(classGroupCode: 0xBE, classCode: 0xAF, instanceCode: 0x02)
       }
     };
   }

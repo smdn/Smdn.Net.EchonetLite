@@ -1,11 +1,9 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -32,7 +30,7 @@ partial class EchonetClientServiceRequestsTests {
   {
     Assert.That(
       message.Length,
-      Is.EqualTo(12 + 2 /* EPC + PDC */ * requestedPropertyCodes.Length),
+      Is.EqualTo(12 + (2 /* EPC + PDC */ * requestedPropertyCodes.Length)),
       "request message length"
     );
 

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Reflection;
 
 using NUnit.Framework;
 
@@ -189,6 +189,7 @@ public class EchonetPropertySpecificationTests {
   {
     yield return new object?[] {
       "standard property",
+      // lang=json,strict
       @"{
   ""Name"": ""異常発生状態"",
   ""Code"": ""0x88"",
@@ -216,6 +217,7 @@ public class EchonetPropertySpecificationTests {
 
     yield return new object?[] {
       "Code: upper case hex",
+      // lang=json,strict
       @"{
   ""Name"": ""?"",
   ""Code"": ""0xFF"",
@@ -243,6 +245,7 @@ public class EchonetPropertySpecificationTests {
 
     yield return new object?[] {
       "Code: lower case hex",
+      // lang=json,strict
       @"{
   ""Name"": ""?"",
   ""Code"": ""0xff"",
@@ -270,6 +273,7 @@ public class EchonetPropertySpecificationTests {
 
     yield return new object?[] {
       "MinSize: null",
+      // lang=json,strict
       @"{
   ""Name"": ""?"",
   ""Code"": ""0xFF"",
@@ -290,13 +294,14 @@ public class EchonetPropertySpecificationTests {
 }",
       "?",
       (byte)0xFF,
-      (int?)null,
+      null,
       false,
       Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
       "MinSize: not specified",
+      // lang=json,strict
       @"{
   ""Name"": ""?"",
   ""Code"": ""0xFF"",
@@ -316,13 +321,14 @@ public class EchonetPropertySpecificationTests {
 }",
       "?",
       (byte)0xFF,
-      (int?)null,
+      null,
       false,
       Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
       "OptionRequired: not empty",
+      // lang=json,strict
       @"{
   ""Name"": ""?"",
   ""Code"": ""0xFF"",
@@ -349,7 +355,7 @@ public class EchonetPropertySpecificationTests {
 }",
       "?",
       (byte)0xFF,
-      (int?)null,
+      null,
       false,
       new[] {
         ApplicationServiceName.MobileServices,
@@ -363,6 +369,7 @@ public class EchonetPropertySpecificationTests {
 
     yield return new object?[] {
       "OptionRequired: empty",
+      // lang=json,strict
       @"{
   ""Name"": ""?"",
   ""Code"": ""0xFF"",
@@ -382,13 +389,14 @@ public class EchonetPropertySpecificationTests {
 }",
       "?",
       (byte)0xFF,
-      (int?)null,
+      null,
       false,
       Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
       "OptionRequired: null",
+      // lang=json,strict
       @"{
   ""Name"": ""?"",
   ""Code"": ""0xFF"",
@@ -408,13 +416,14 @@ public class EchonetPropertySpecificationTests {
 }",
       "?",
       (byte)0xFF,
-      (int?)null,
+      null,
       false,
       Array.Empty<ApplicationServiceName>()
     };
 
     yield return new object?[] {
       "OptionRequired: not specified",
+      // lang=json,strict
       @"{
   ""Name"": ""?"",
   ""Code"": ""0xFF"",
@@ -433,7 +442,7 @@ public class EchonetPropertySpecificationTests {
 }",
       "?",
       (byte)0xFF,
-      (int?)null,
+      null,
       false,
       Array.Empty<ApplicationServiceName>()
     };
