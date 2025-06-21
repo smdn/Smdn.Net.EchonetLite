@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 [TestFixture]
-partial class SkStackRouteBHandlerResiliencePipelineKeyPairTests {
+public partial class SkStackRouteBHandlerResiliencePipelineKeyPairTests {
   [Test]
   public void Ctor()
   {
