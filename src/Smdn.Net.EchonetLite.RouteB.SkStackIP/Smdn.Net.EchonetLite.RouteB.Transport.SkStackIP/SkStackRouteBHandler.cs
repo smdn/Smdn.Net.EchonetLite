@@ -248,6 +248,8 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
 #pragma warning restore CS8602
 
     _ = await client.TerminatePanaSessionAsync(cancellationToken: default).ConfigureAwait(false);
+
+    panaSessionInfo = null;
   }
 
   /// <inheritdoc/>
