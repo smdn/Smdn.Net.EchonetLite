@@ -281,7 +281,14 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
 #pragma warning disable CS8602, CS8604
 #endif
-    client.ThrowIfPanaSessionNotAlive();
+    try {
+      client.ThrowIfPanaSessionNotAlive();
+    }
+    catch (SkStackPanaSessionStateException) {
+      panaSessionInfo = null; // expired or terminated
+
+      throw;
+    }
 
     return SendToAsyncCore(
       remoteAddress: client.PanaSessionPeerAddress, // TODO: multicast
@@ -308,7 +315,14 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
 #pragma warning disable CS8602,CS8604
 #endif
-    client.ThrowIfPanaSessionNotAlive();
+    try {
+      client.ThrowIfPanaSessionNotAlive();
+    }
+    catch (SkStackPanaSessionStateException) {
+      panaSessionInfo = null; // expired or terminated
+
+      throw;
+    }
 
     if (!client.PanaSessionPeerAddress.Equals(remoteAddress))
       throw new NotSupportedException($"Sending to a specified remote address {remoteAddress} is not supported.");
@@ -323,6 +337,7 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
       ).ConfigureAwait(false);
 
       try {
+        // this call does not throw a SkStackPanaSessionStateException
         await SendEchonetLiteAsync(
           buffer: buffer,
           resiliencePipeline: resiliencePipelineSend,

@@ -630,6 +630,9 @@ public class SkStackRouteBHandlerTests {
           ).ConfigureAwait(false),
           Throws.TypeOf<SkStackPanaSessionExpiredException>()
         );
+
+        Assert.That(handler.LocalAddress, Is.Null);
+        Assert.That(handler.PeerAddress, Is.Null);
       },
       cancellationToken
     );
@@ -657,6 +660,9 @@ public class SkStackRouteBHandlerTests {
           ).ConfigureAwait(false),
           Throws.TypeOf<SkStackPanaSessionExpiredException>()
         );
+
+        Assert.That(handler.LocalAddress, Is.Null);
+        Assert.That(handler.PeerAddress, Is.Null);
       },
       cancellationToken
     );
