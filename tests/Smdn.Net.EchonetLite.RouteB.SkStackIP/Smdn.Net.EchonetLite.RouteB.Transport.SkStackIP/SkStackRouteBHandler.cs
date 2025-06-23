@@ -433,7 +433,7 @@ public class SkStackRouteBHandlerTests {
         credential: credential,
         cancellationToken
       ).ConfigureAwait(false),
-      Throws.InvalidOperationException
+      Throws.TypeOf<SkStackPanaSessionStateException>()
     );
   }
 
@@ -628,7 +628,7 @@ public class SkStackRouteBHandlerTests {
             data: new byte[] { 0x00 },
             cancellationToken: ct
           ).ConfigureAwait(false),
-          Throws.InvalidOperationException
+          Throws.TypeOf<SkStackPanaSessionExpiredException>()
         );
       },
       cancellationToken
@@ -655,7 +655,7 @@ public class SkStackRouteBHandlerTests {
             data: new byte[] { 0x00 },
             cancellationToken: ct
           ).ConfigureAwait(false),
-          Throws.InvalidOperationException
+          Throws.TypeOf<SkStackPanaSessionExpiredException>()
         );
       },
       cancellationToken

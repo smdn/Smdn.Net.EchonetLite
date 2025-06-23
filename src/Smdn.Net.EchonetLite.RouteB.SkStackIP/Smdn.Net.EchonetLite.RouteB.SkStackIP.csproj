@@ -32,7 +32,7 @@ ECHONET Lite規格における下位通信層に相当する実装である`SkSt
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Polly.Extensions" />
     <PackageReference Include="Smdn.Extensions.Polly.KeyedRegistry" Version="1.2.0" />
-    <PackageReference Include="Smdn.Net.SkStackIP" Version="[1.2.0,2.0.0)" />
+    <PackageReference Include="Smdn.Net.SkStackIP" Version="[1.5.2,2.0.0)" />
     <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.RouteB.Primitives\Smdn.Net.EchonetLite.RouteB.Primitives.csproj'))" />
   </ItemGroup>
 

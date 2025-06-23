@@ -149,8 +149,7 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
 #pragma warning disable CS8602
 #endif
-    if (client.IsPanaSessionAlive)
-      throw new InvalidOperationException("PANA session has already been established.");
+    client.ThrowIfPanaSessionAlreadyEstablished();
 #pragma warning restore CS8602
 
     await PrepareSessionAsync(cancellationToken).ConfigureAwait(false);
@@ -243,7 +242,7 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
 #pragma warning disable CS8602
 #endif
-    if (!client.IsPanaSessionAlive)
+    if (client.PanaSessionState != SkStackEventNumber.PanaSessionEstablishmentCompleted)
       return;
 #pragma warning restore CS8602
 
@@ -282,8 +281,7 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
 #pragma warning disable CS8602, CS8604
 #endif
-    if (!client.IsPanaSessionAlive)
-      throw new InvalidOperationException("pana session terminated or expired"); // TODO: throw SkStackPanaSessionTerminatedException instead, or re-establish pana session
+    client.ThrowIfPanaSessionNotAlive();
 
     return SendToAsyncCore(
       remoteAddress: client.PanaSessionPeerAddress, // TODO: multicast
@@ -308,12 +306,13 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
     ThrowIfDisposed();
 
 #if !SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLATTRIBUTE
-#pragma warning disable CS8602
+#pragma warning disable CS8602,CS8604
 #endif
-    if (!client.IsPanaSessionAlive)
-      throw new InvalidOperationException("pana session terminated or expired"); // TODO: throw SkStackPanaSessionTerminatedException instead, or re-establish pana session
+    client.ThrowIfPanaSessionNotAlive();
+
     if (!client.PanaSessionPeerAddress.Equals(remoteAddress))
       throw new NotSupportedException($"Sending to a specified remote address {remoteAddress} is not supported.");
+#pragma warning restore CS8602,CS8604
 
     return Core();
 
@@ -334,7 +333,6 @@ public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
         semaphore.Release();
       }
     }
-#pragma warning restore CS8602
   }
 
   private protected abstract ValueTask SendEchonetLiteAsync(

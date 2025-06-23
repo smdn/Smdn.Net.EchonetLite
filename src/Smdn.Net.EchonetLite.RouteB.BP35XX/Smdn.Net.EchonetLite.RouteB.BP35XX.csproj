@@ -29,7 +29,7 @@ ECHONET Lite規格における下位通信層に相当する実装を作成す�
 
   <ItemGroup>
     <PackageReference Include="Polly.Extensions" />
-    <PackageReference Include="Smdn.Net.SkStackIP" Version="[1.4.0,2.0.0)" />
+    <PackageReference Include="Smdn.Net.SkStackIP" Version="[1.5.2,2.0.0)" />
     <PackageReference Include="Smdn.Devices.BP35XX" Version="[2.2.0,3.0.0)" />
     <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.RouteB.SkStackIP\Smdn.Net.EchonetLite.RouteB.SkStackIP.csproj'))" />
   </ItemGroup>
