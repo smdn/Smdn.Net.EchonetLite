@@ -75,7 +75,7 @@ internal sealed class SkStackDuplexPipe : IDuplexPipe, IAsyncDisposable {
   public ValueTask WriteResponseLineAsync(string line)
     => WriteResponseLinesAsync(lines: [line]);
 
-  public async ValueTask WriteResponseLinesAsync(params IEnumerable<string> lines)
+  public async ValueTask WriteResponseLinesAsync(params string[] /*IEnumerable<string>*/ lines)
   {
     if (stopTokenSource is null)
       throw new InvalidOperationException("not started yet");
