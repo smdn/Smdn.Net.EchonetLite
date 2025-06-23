@@ -1,7 +1,7 @@
-// Smdn.Net.EchonetLite.RouteB.SkStackIP.dll (Smdn.Net.EchonetLite.RouteB.SkStackIP-2.0.0)
+// Smdn.Net.EchonetLite.RouteB.SkStackIP.dll (Smdn.Net.EchonetLite.RouteB.SkStackIP-2.0.1)
 //   Name: Smdn.Net.EchonetLite.RouteB.SkStackIP
-//   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0+b8918b93e150de00661851f24d5e87d139805913
+//   AssemblyVersion: 2.0.1.0
+//   InformationalVersion: 2.0.1+d43a3f8ed071ed5e6ac93fdfd72d49d75ba986c5
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
@@ -13,7 +13,7 @@
 //     Smdn.Extensions.Polly.KeyedRegistry, Version=1.2.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.Primitives, Version=2.0.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.1.0.0, Culture=neutral
-//     Smdn.Net.SkStackIP, Version=1.2.0.0, Culture=neutral
+//     Smdn.Net.SkStackIP, Version=1.5.2.0, Culture=neutral
 //     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 #nullable enable annotations
 
