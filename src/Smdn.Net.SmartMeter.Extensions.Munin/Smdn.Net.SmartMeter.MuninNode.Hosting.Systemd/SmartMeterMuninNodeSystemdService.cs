@@ -98,16 +98,6 @@ public class SmartMeterMuninNodeSystemdService : SmartMeterMuninNodeService {
       await base.StopAsync(
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
-
-      if (TryGetAggregationFaultedException(out var unhandledAggregationException)) {
-        ExitCode = EX_UNAVAILABLE;
-
-        Logger?.LogError(
-          exception: unhandledAggregationException,
-          message: "Data aggregation faulted with an unhandled exception. ({ExitCode})",
-          ExitCode
-        );
-      }
     }
     catch (TimeoutException ex) {
       ExitCode = EX_TEMPFAIL;
@@ -148,10 +138,22 @@ public class SmartMeterMuninNodeSystemdService : SmartMeterMuninNodeService {
   }
 
   protected override void OnAggregationHalted(Exception exception)
-    => throw new AggregationHaltedException(
-      message: "Data aggregation from the smart meters has been halted due to an unhandled exception.",
-      innerException: null // the unhandled exception will be logged in StopAsync(), so report only the message here
+  {
+#if true // TODO: make configurable
+    // unhandled exception occurred; stop application and should report exit code
+    ExitCode = EX_UNAVAILABLE;
+
+    Logger?.LogError(
+      exception: exception,
+      message: "Data aggregation faulted with an unhandled exception. Requests termination of the current application. ({ExitCode})",
+      ExitCode
     );
+
+    applicationLifetime.StopApplication();
+#else
+    base.OnAggregationHalted(exception);
+#endif
+  }
 
   protected virtual bool DetermineExitCodeForUnhandledException(
     Exception exception,
