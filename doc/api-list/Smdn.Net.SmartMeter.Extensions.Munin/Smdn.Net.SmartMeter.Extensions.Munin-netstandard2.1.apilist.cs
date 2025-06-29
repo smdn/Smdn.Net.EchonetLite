@@ -1,7 +1,7 @@
-// Smdn.Net.SmartMeter.Extensions.Munin.dll (Smdn.Net.SmartMeter.Extensions.Munin-2.0.0)
+// Smdn.Net.SmartMeter.Extensions.Munin.dll (Smdn.Net.SmartMeter.Extensions.Munin-2.1.0)
 //   Name: Smdn.Net.SmartMeter.Extensions.Munin
-//   AssemblyVersion: 2.0.0.0
-//   InformationalVersion: 2.0.0+af25552aabd41ce54db2ed417a0dc9390a5dbadf
+//   AssemblyVersion: 2.1.0.0
+//   InformationalVersion: 2.1.0+d6881059bda1389c20c3dc8eacfd375f4dd752fe
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
@@ -83,6 +83,12 @@ namespace Smdn.Net.SmartMeter.MuninNode {
 }
 
 namespace Smdn.Net.SmartMeter.MuninNode.Hosting {
+  public class AggregationHaltedException : InvalidOperationException {
+    public AggregationHaltedException() {}
+    public AggregationHaltedException(string message) {}
+    public AggregationHaltedException(string message, Exception? innerException) {}
+  }
+
   public static class IServiceCollectionExtensions {
     public static IServiceCollection AddHostedSmartMeterMuninNodeService(this IServiceCollection services, Action<IRouteBServiceBuilder<string>> configureRouteBServices, Action<MuninNodeOptions> configureMuninNodeOptions, Action<SmartMeterMuninNodeBuilder> configureSmartMeterMuninNode) {}
     public static IServiceCollection AddHostedSmartMeterMuninNodeService<TSmartMeterMuninNodeService>(this IServiceCollection services, Action<IRouteBServiceBuilder<string>> configureRouteBServices, Action<MuninNodeOptions> configureMuninNodeOptions, Action<SmartMeterMuninNodeBuilder> configureSmartMeterMuninNode) where TSmartMeterMuninNodeService : SmartMeterMuninNodeService {}
@@ -95,6 +101,7 @@ namespace Smdn.Net.SmartMeter.MuninNode.Hosting {
 
     public override void Dispose() {}
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {}
+    protected virtual void OnAggregationHalted(Exception exception) {}
     protected bool TryGetAggregationFaultedException([NotNullWhen(true)] out Exception? unhandledAggregationException) {}
   }
 }
@@ -114,6 +121,7 @@ namespace Smdn.Net.SmartMeter.MuninNode.Hosting.Systemd {
     public int? ExitCode { get; }
 
     protected virtual bool DetermineExitCodeForUnhandledException(Exception exception, out int exitCode, [NotNullWhen(true)] out string? logMessage) {}
+    protected override void OnAggregationHalted(Exception exception) {}
     public override async Task StartAsync(CancellationToken cancellationToken) {}
     public override async Task StopAsync(CancellationToken cancellationToken) {}
   }
