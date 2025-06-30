@@ -6,9 +6,9 @@ using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 
-using NUnit.Framework;
-
 using Microsoft.Extensions.Logging;
+
+using NUnit.Framework;
 
 using Smdn.Net.EchonetLite.RouteB.Credentials;
 using Smdn.Net.SkStackIP;

@@ -9,8 +9,7 @@ namespace Smdn.Net.EchonetLite;
 internal class PseudoEventInvoker(
   Action onBeginInvoke,
   bool invokeRequired = true
-) : ISynchronizeInvoke
-{
+) : ISynchronizeInvoke {
   public bool InvokeRequired => invokeRequired;
 
   public IAsyncResult BeginInvoke(Delegate method, object?[]? args)

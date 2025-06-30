@@ -15,8 +15,7 @@ public class IRouteBServiceBuilderExtensionsTests {
     TServiceKey serviceKey,
     Func<TServiceKey, string?>? optionsNameSelector
   )
-    : IRouteBServiceBuilder<TServiceKey>
-  {
+    : IRouteBServiceBuilder<TServiceKey> {
     public IServiceCollection Services { get; } = services ?? throw new ArgumentNullException(nameof(services));
     public TServiceKey ServiceKey { get; } = serviceKey;
     public Func<TServiceKey, string?>? OptionsNameSelector { get; } = optionsNameSelector;

@@ -20,8 +20,7 @@ public class SmartMeterDataAggregatorRouteBServiceBuilderExtensions {
     services: new ServiceCollection(),
     serviceKey: DefaultServiceKey,
     optionNameSelector: static key => key
-  )
-  {
+  ) {
     public const string DefaultServiceKey = nameof(DefaultServiceKey);
   }
 
@@ -29,8 +28,7 @@ public class SmartMeterDataAggregatorRouteBServiceBuilderExtensions {
     IServiceCollection services,
     TServiceKey serviceKey,
     Func<TServiceKey, string?>? optionNameSelector
-  ) : IRouteBServiceBuilder<TServiceKey>
-  {
+  ) : IRouteBServiceBuilder<TServiceKey> {
     public IServiceCollection Services { get; } = services ?? throw new ArgumentNullException(nameof(services));
     public TServiceKey ServiceKey { get; } = serviceKey;
     public Func<TServiceKey, string?>? OptionsNameSelector { get; } = optionNameSelector;

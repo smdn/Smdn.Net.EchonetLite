@@ -224,8 +224,7 @@ internal class RespondPropertyMapEchonetLiteHandler(
   : RespondSingleGetRequestEchonetLiteHandler(
     getResponses: getResponses,
     responseServiceCode: ESV.GetResponse
-  )
-{
+  ) {
 }
 
 internal class RespondSingleGetRequestEchonetLiteHandler(
@@ -236,16 +235,14 @@ internal class RespondSingleGetRequestEchonetLiteHandler(
     propertyResponses: getResponses,
     expectedRequestServiceCode: ESV.Get,
     responseServiceCode: responseServiceCode
-  )
-{
+  ) {
 }
 
 internal class RespondSingleServiceRequestEchonetLiteHandler(
   IReadOnlyDictionary<byte, byte[]> propertyResponses,
   ESV expectedRequestServiceCode,
   ESV responseServiceCode
-) : IEchonetLiteHandler
-{
+) : IEchonetLiteHandler {
   public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
     => throw new InvalidOperationException("can not perform multicast");
 
