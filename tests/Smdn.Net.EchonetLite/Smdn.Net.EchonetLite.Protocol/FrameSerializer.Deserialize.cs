@@ -9,7 +9,9 @@ using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
+#pragma warning disable IDE0040
 partial class FrameSerializerTests {
+#pragma warning restore IDE0040
   private const byte EHD1_ECHONETLite = 0x10;
   private const byte EHD2_Format1 = 0x81;
   private const byte EHD2_Format2 = 0x82;

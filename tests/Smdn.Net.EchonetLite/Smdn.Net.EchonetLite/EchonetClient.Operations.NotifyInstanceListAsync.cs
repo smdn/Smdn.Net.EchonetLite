@@ -10,7 +10,9 @@ using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
 
+#pragma warning disable IDE0040
 partial class EchonetClientOperationsTests {
+#pragma warning restore IDE0040
   private const int MaximumNumberOfInstancesInSingleInstanceListNotification = 84;
 
   private static System.Collections.IEnumerable YieldTestCases_NotifyInstanceListAsync()

@@ -13,7 +13,9 @@ using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite.Transport;
 
+#pragma warning disable IDE0040
 partial class EchonetLiteHandlerTests {
+#pragma warning restore IDE0040
   private class PseudoIncomingEchonetLiteHandler : EchonetLiteHandler {
     private readonly ConcurrentQueue<Func<IBufferWriter<byte>, CancellationToken, ValueTask<IPAddress>>> incomingActionQueue = new();
 

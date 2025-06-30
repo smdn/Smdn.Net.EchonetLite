@@ -20,7 +20,9 @@ using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite;
 
+#pragma warning disable IDE0040
 partial class EchonetClientServiceRequestsTests {
+#pragma warning restore IDE0040
   [Test]
   public async Task RequestWriteAsync()
   {

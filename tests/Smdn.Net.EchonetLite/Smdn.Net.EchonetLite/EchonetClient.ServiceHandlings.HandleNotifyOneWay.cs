@@ -21,7 +21,9 @@ using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite;
 
+#pragma warning disable IDE0040
 partial class EchonetClientServiceHandlingsTests {
+#pragma warning restore IDE0040
   [TestCase(ESV.Inf, false, default(ESV))]
   [TestCase(ESV.InfC, true, ESV.InfCResponse)]
   public async Task HandleNotify_ResilienceContextProperties(ESV esv, bool shouldResponseSent, ESV expectedResponseESV)

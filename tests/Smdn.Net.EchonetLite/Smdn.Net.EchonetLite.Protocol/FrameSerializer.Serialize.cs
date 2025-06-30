@@ -10,7 +10,9 @@ using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
+#pragma warning disable IDE0040
 partial class FrameSerializerTests {
+#pragma warning restore IDE0040
   private class PseudoBufferWriter : IBufferWriter<byte> {
     public static readonly PseudoBufferWriter Instance = new();
 
