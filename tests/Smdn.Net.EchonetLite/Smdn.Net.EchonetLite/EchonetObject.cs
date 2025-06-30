@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NUnit.Framework;
@@ -107,8 +108,10 @@ public class EchonetObjectTests {
   }
 
   [Test]
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
   public async Task PropertyValueUpdated_MustBeInvokedByISynchronizeInvoke(
-    [Values] bool setSynchronizingObject
+    [Values] bool setSynchronizingObject,
+    CancellationToken cancellationToken
   )
   {
     const byte EPCOperatingStatus = 0x80;
@@ -116,8 +119,6 @@ public class EchonetObjectTests {
     var destinationNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
     var device = nodeRegistry.Nodes.First(node => node.Address.Equals(destinationNodeAddress)).Devices.First();
-
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
 
     using var client = new EchonetClient(
       echonetLiteHandler: new QueuedEchonetLiteHandler(
@@ -144,7 +145,7 @@ public class EchonetObjectTests {
 
     Assert.That(
       async () => _ = await device.AcquirePropertyMapsAsync(
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -172,7 +173,7 @@ public class EchonetObjectTests {
       async () => _ = await device.ReadPropertiesAsync(
         readPropertyCodes: [property.Code],
         sourceObject: client.SelfNode.NodeProfile,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NUnit.Framework;
@@ -17,7 +18,8 @@ namespace Smdn.Net.EchonetLite;
 partial class EchonetClientOperationsTests {
 #pragma warning restore IDE0040
   [Test]
-  public async Task AcquirePropertyMapsAsync()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task AcquirePropertyMapsAsync(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
@@ -87,14 +89,12 @@ partial class EchonetClientOperationsTests {
       }
     };
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     EchonetServiceResponse response = default;
 
     Assert.That(
       async () => response = await client.AcquirePropertyMapsAsync(
         device: device,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -140,7 +140,8 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
-  public async Task AcquirePropertyMapsAsync_EventsMustBeInvokedByISynchronizeInvoke()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task AcquirePropertyMapsAsync_EventsMustBeInvokedByISynchronizeInvoke(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
@@ -188,12 +189,10 @@ partial class EchonetClientOperationsTests {
       Assert.That(sender, Is.SameAs(device));
     };
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await client.AcquirePropertyMapsAsync(
         device: device,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -214,7 +213,8 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
-  public async Task AcquirePropertyMapsAsync_WithExtraPropertyCodes()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task AcquirePropertyMapsAsync_WithExtraPropertyCodes(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
@@ -237,15 +237,13 @@ partial class EchonetClientOperationsTests {
     Assert.That(device.HasPropertyMapAcquired, Is.False);
     Assert.That(device.Properties.Count, Is.Zero);
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     EchonetServiceResponse response = default;
 
     Assert.That(
       async () => response = await client.AcquirePropertyMapsAsync(
         device: device,
         extraPropertyCodes: [0x80, 0x82],
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -268,7 +266,8 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
-  public async Task AcquirePropertyMapsAsync_PropertyInstanceMustBeReused()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task AcquirePropertyMapsAsync_PropertyInstanceMustBeReused(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
@@ -286,14 +285,12 @@ partial class EchonetClientOperationsTests {
       deviceFactory: null
     );
 
-    using var ctsRead = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     _ = await clientForReadProperty.RequestReadAsync(
       sourceObject: clientForReadProperty.SelfNode.NodeProfile.EOJ,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: device.EOJ,
       propertyCodes: [0x80],
-      cancellationToken: ctsRead.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(device.Properties[0x80], Is.Not.Null);
@@ -314,14 +311,12 @@ partial class EchonetClientOperationsTests {
       deviceFactory: null
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     EchonetServiceResponse response = default;
 
     Assert.That(
       async () => response = await client.AcquirePropertyMapsAsync(
         device: device,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );

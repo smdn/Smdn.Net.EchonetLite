@@ -65,7 +65,8 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
-  public void RequestNotifyInstanceListAsync_Multicast()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public void RequestNotifyInstanceListAsync_Multicast(CancellationToken cancellationToken)
   {
     using var client = new EchonetClient(
       new ValidateMulticastRequestEchonetLiteHandler(
@@ -73,12 +74,10 @@ partial class EchonetClientOperationsTests {
       )
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await client.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );
@@ -120,7 +119,7 @@ partial class EchonetClientOperationsTests {
       new NoOpEchonetLiteHandler()
     );
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+    using var cts = new CancellationTokenSource(delay: TimeSpan.FromMilliseconds(100));
 
     Assert.That(
       async () => await client.RequestNotifyInstanceListAsync(
@@ -135,7 +134,8 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
-  public void RequestNotifyInstanceListAsync_InstanceListUpdateEventMustBeRaised()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public void RequestNotifyInstanceListAsync_InstanceListUpdateEventMustBeRaised(CancellationToken cancellationToken)
   {
     var instanceLists = new KeyValuePair<IPAddress, IEnumerable<EOJ>>[] {
       KeyValuePair.Create(IPAddress.Loopback, (IEnumerable<EOJ>)new EOJ[] { new(0x0E, 0xF0, 0x01), new(0x05, 0xFF, 0x01) }),
@@ -168,13 +168,11 @@ partial class EchonetClientOperationsTests {
       Assert.That(e.Node.Address, Is.EqualTo(instanceLists[numberOfRaisingsOfInstanceListUpdatedEvent - 1].Key));
     };
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await client.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
         onInstanceListUpdated: _ => true,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );
@@ -184,7 +182,8 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
-  public void RequestNotifyInstanceListAsync_InstanceListUpdateEventMustBeInvokedByISynchronizeInvoke()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public void RequestNotifyInstanceListAsync_InstanceListUpdateEventMustBeInvokedByISynchronizeInvoke(CancellationToken cancellationToken)
   {
     var instanceLists = new KeyValuePair<IPAddress, IEnumerable<EOJ>>[] {
       KeyValuePair.Create(IPAddress.Loopback, (IEnumerable<EOJ>)new EOJ[] { new(0x0E, 0xF0, 0x01), new(0x05, 0xFF, 0x01) }),
@@ -211,13 +210,11 @@ partial class EchonetClientOperationsTests {
       numberOfRaisingsOfInstanceListUpdatedEvent++;
     };
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await client.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
         onInstanceListUpdated: _ => true,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );
@@ -236,7 +233,8 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
-  public void RequestNotifyInstanceListAsync_NodeAndObjectInstanceMustBeReused()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public void RequestNotifyInstanceListAsync_NodeAndObjectInstanceMustBeReused(CancellationToken cancellationToken)
   {
     var instanceLists = new Dictionary<IPAddress, IEnumerable<EOJ>>() {
       [IPAddress.Loopback] = [new EOJ(0x0E, 0xF0, 0x01), new EOJ(0x05, 0xFF, 0x01)],
@@ -247,13 +245,11 @@ partial class EchonetClientOperationsTests {
     );
 
     // request instance list
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await client.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
         onInstanceListUpdated: _ => true,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );
@@ -273,7 +269,7 @@ partial class EchonetClientOperationsTests {
       async () => await client.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
         onInstanceListUpdated: _ => true,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );
@@ -303,8 +299,10 @@ partial class EchonetClientOperationsTests {
   }
 
   [Test]
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
   public void RequestNotifyInstanceListAsync_NodeAndObjectInstanceMustBeReused_AcrossClient(
-    [Values] bool shareInstances
+    [Values] bool shareInstances,
+    CancellationToken cancellationToken
   )
   {
     var instanceLists = new Dictionary<IPAddress, IEnumerable<EOJ>>() {
@@ -312,7 +310,6 @@ partial class EchonetClientOperationsTests {
       [IPAddress.Parse("192.0.2.0")] = [new EOJ(0x0E, 0xF0, 0x01), new EOJ(0x05, 0xFF, 0x01)],
     };
     var nodeRegistry = shareInstances ? new EchonetNodeRegistry() : null;
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
 
     // request instance list
     using var client1 = new EchonetClient(
@@ -326,7 +323,7 @@ partial class EchonetClientOperationsTests {
       async () => await client1.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
         onInstanceListUpdated: _ => true,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );
@@ -353,7 +350,7 @@ partial class EchonetClientOperationsTests {
       async () => await client2.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
         onInstanceListUpdated: _ => true,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );

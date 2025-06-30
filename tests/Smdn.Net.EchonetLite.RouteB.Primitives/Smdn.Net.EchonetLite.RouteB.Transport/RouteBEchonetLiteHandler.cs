@@ -122,20 +122,23 @@ public class RouteBEchonetLiteHandlerTests {
   {
     using var handler = new PseudoRouteBEchonetLiteHandler();
     using var credential = new PseudoRouteBCredential();
-    using var cts = new CancellationTokenSource();
-
-    cts.Cancel();
 
     Assert.That(handler.IsReceiving, Is.False, $"{nameof(handler.IsReceiving)} before attempting connection");
 
     Assert.That(
-      async () => await handler.ConnectAsync(credential: credential, cancellationToken: cts.Token),
+      async () => await handler.ConnectAsync(
+        credential: credential,
+        cancellationToken: new(canceled: true)
+      ),
       Throws.InstanceOf<OperationCanceledException>()
     );
 
 #pragma warning disable CA2012
     Assert.That(
-      handler.ConnectAsync(credential: credential, cancellationToken: cts.Token).IsCanceled,
+      handler.ConnectAsync(
+        credential: credential,
+        cancellationToken: new(canceled: true)
+      ).IsCanceled,
       Is.True
     );
 #pragma warning restore CA2012
@@ -195,20 +198,18 @@ public class RouteBEchonetLiteHandlerTests {
 
     await handler.ConnectAsync(credential: credential);
 
-    using var cts = new CancellationTokenSource();
-
-    cts.Cancel();
-
     Assert.That(handler.IsReceiving, Is.True, $"{nameof(handler.IsReceiving)} before attempting disconnection");
 
     Assert.That(
-      async () => await handler.DisconnectAsync(cancellationToken: cts.Token),
+      async () => await handler.DisconnectAsync(cancellationToken: new(canceled: true)),
       Throws.InstanceOf<OperationCanceledException>()
     );
 
 #pragma warning disable CA2012
     Assert.That(
-      handler.DisconnectAsync(cancellationToken: cts.Token).IsCanceled,
+      handler.DisconnectAsync(
+        cancellationToken: new(canceled: true)
+      ).IsCanceled,
       Is.True
     );
 #pragma warning restore CA2012

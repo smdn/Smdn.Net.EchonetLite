@@ -17,8 +17,10 @@ namespace Smdn.Net.EchonetLite;
 
 [TestFixture]
 public class EchonetClientTests {
+  internal const int TimeoutInMillisecondsForOperationExpectedToSucceed = 5_000;
+
   public static CancellationTokenSource CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed()
-    => new(TimeSpan.FromSeconds(5));
+    => new(TimeSpan.FromMilliseconds(TimeoutInMillisecondsForOperationExpectedToSucceed));
 
   private class ReceiveEDATA2EchonetLiteHandler : IEchonetLiteHandler {
     public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)

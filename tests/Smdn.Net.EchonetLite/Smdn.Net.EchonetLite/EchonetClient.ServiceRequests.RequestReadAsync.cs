@@ -23,7 +23,8 @@ namespace Smdn.Net.EchonetLite;
 partial class EchonetClientServiceRequestsTests {
 #pragma warning restore IDE0040
   [Test]
-  public async Task RequestReadAsync()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task RequestReadAsync(CancellationToken cancellationToken)
   {
     var seoj = new EOJ(0x05, 0xFF, 0x01);
     var deoj = new EOJ(0x05, 0xFF, 0x02);
@@ -58,15 +59,13 @@ partial class EchonetClientServiceRequestsTests {
       logger: logger
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.RequestReadAsync(
       sourceObject: seoj,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: deoj,
       propertyCodes: propertyCodes,
       resiliencePipeline: resiliencePipeline,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.True);
@@ -215,7 +214,8 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
-  public async Task RequestReadAsync_NotAccepted_Partial()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task RequestReadAsync_NotAccepted_Partial(CancellationToken cancellationToken)
   {
     var seoj = new EOJ(0x05, 0xFF, 0x01);
     var deoj = new EOJ(0x05, 0xFF, 0x02);
@@ -231,14 +231,12 @@ partial class EchonetClientServiceRequestsTests {
       )
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.RequestReadAsync(
       sourceObject: seoj,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: deoj,
       propertyCodes: propertyCodes,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.True);
@@ -259,7 +257,8 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
-  public async Task RequestReadAsync_NotAccepted_All()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task RequestReadAsync_NotAccepted_All(CancellationToken cancellationToken)
   {
     var seoj = new EOJ(0x05, 0xFF, 0x01);
     var deoj = new EOJ(0x05, 0xFF, 0x02);
@@ -275,14 +274,12 @@ partial class EchonetClientServiceRequestsTests {
       )
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.RequestReadAsync(
       sourceObject: seoj,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: deoj,
       propertyCodes: propertyCodes,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.True);

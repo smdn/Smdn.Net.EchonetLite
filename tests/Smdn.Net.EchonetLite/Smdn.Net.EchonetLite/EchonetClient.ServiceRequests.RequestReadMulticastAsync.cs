@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -70,7 +71,8 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
-  public async Task RequestReadMulticastAsync()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task RequestReadMulticastAsync(CancellationToken cancellationToken)
   {
     var otherNodeAddresses = new[] { IPAddress.Parse("192.0.2.1"), IPAddress.Parse("192.0.2.2") };
     var deoj = new EOJ(0x05, 0xFF, 0x01);
@@ -135,8 +137,6 @@ partial class EchonetClientServiceRequestsTests {
       Assert.That(otherNodeDestinationObjects[1].Properties, Does.Not.ContainKey(epc), $"property EPC={epc:X2} not known yet");
     }
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     // send request
     Assert.That(
       async () => await client.RequestReadMulticastAsync(
@@ -144,7 +144,7 @@ partial class EchonetClientServiceRequestsTests {
         destinationObject: deoj,
         propertyCodes: requestPropertyCodes,
         resiliencePipeline: resiliencePipeline,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -156,7 +156,7 @@ partial class EchonetClientServiceRequestsTests {
       deoj: seoj,
       esv: ESV.GetResponse,
       properties: otherNodeDestinationObjectPropertyValues[0],
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     foreach (var epc in requestPropertyCodes) {
@@ -174,7 +174,7 @@ partial class EchonetClientServiceRequestsTests {
       deoj: seoj,
       esv: ESV.GetResponse,
       properties: otherNodeDestinationObjectPropertyValues[1],
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     foreach (var epc in requestPropertyCodes) {
@@ -209,7 +209,8 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
-  public async Task RequestReadMulticastAsync_ServiceNotAvailable()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task RequestReadMulticastAsync_ServiceNotAvailable(CancellationToken cancellationToken)
   {
     var otherNodeAddresses = new[] { IPAddress.Parse("192.0.2.1"), IPAddress.Parse("192.0.2.2") };
     var deoj = new EOJ(0x05, 0xFF, 0x01);
@@ -254,15 +255,13 @@ partial class EchonetClientServiceRequestsTests {
       Assert.That(otherNodeDestinationObjects[1].Properties, Does.Not.ContainKey(epc), $"property EPC={epc:X2} not known yet");
     }
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     // send request
     Assert.That(
       async () => await client.RequestReadMulticastAsync(
         sourceObject: seoj,
         destinationObject: deoj,
         propertyCodes: requestPropertyCodes,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -274,7 +273,7 @@ partial class EchonetClientServiceRequestsTests {
       deoj: seoj,
       esv: ESV.GetResponse,
       properties: otherNodeDestinationObjectPropertyValues[0],
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     foreach (var epc in requestPropertyCodes) {
@@ -292,7 +291,7 @@ partial class EchonetClientServiceRequestsTests {
       deoj: seoj,
       esv: ESV.GetServiceNotAvailable,
       properties: otherNodeDestinationObjectPropertyValues[1],
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     foreach (var epc in requestPropertyCodes) {

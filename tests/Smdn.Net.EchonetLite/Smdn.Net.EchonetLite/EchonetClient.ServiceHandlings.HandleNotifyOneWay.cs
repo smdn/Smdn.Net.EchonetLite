@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -26,7 +27,13 @@ partial class EchonetClientServiceHandlingsTests {
 #pragma warning restore IDE0040
   [TestCase(ESV.Inf, false, default(ESV))]
   [TestCase(ESV.InfC, true, ESV.InfCResponse)]
-  public async Task HandleNotify_ResilienceContextProperties(ESV esv, bool shouldResponseSent, ESV expectedResponseESV)
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task HandleNotify_ResilienceContextProperties(
+    ESV esv,
+    bool shouldResponseSent,
+    ESV expectedResponseESV,
+    CancellationToken cancellationToken
+  )
   {
     var sourceNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(sourceNodeAddress, []);
@@ -58,8 +65,6 @@ partial class EchonetClientServiceHandlingsTests {
       logger: logger
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await notifyHandler.NotifyAsync(
         sourceObject: sourceNode.NodeProfile,
@@ -71,7 +76,7 @@ partial class EchonetClientServiceHandlingsTests {
             0x0E, 0xF0, 0x01,
           ],
         },
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -87,7 +92,8 @@ partial class EchonetClientServiceHandlingsTests {
 
   [TestCase(ESV.Inf)]
   [TestCase(ESV.InfC)]
-  public async Task HandleNotify_FromNodeProfile(ESV esv)
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task HandleNotify_FromNodeProfile(ESV esv, CancellationToken cancellationToken)
   {
     var sourceNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(sourceNodeAddress, []);
@@ -101,8 +107,6 @@ partial class EchonetClientServiceHandlingsTests {
       deviceFactory: null
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await notifyHandler.NotifyAsync(
         sourceObject: sourceNode.NodeProfile,
@@ -115,7 +119,7 @@ partial class EchonetClientServiceHandlingsTests {
             0x05, 0xFF, 0x01,
           ],
         },
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -130,9 +134,11 @@ partial class EchonetClientServiceHandlingsTests {
   }
 
   [Test]
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
   public async Task HandleNotify_FromKnownObject(
     [Values(ESV.Inf, ESV.InfC)] ESV esv,
-    [Values] bool setSynchronizingObject
+    [Values] bool setSynchronizingObject,
+    CancellationToken cancellationToken
   )
   {
     var sourceNodeAddress = IPAddress.Loopback;
@@ -181,15 +187,13 @@ partial class EchonetClientServiceHandlingsTests {
       [0x80] = [0x31],
     };
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await notifyHandler.NotifyAsync(
         sourceObject: sourceObject,
         deoj: controllerObject.EOJ,
         esv: esv,
         properties: properties,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
@@ -211,7 +215,8 @@ partial class EchonetClientServiceHandlingsTests {
 
   [TestCase(ESV.Inf)]
   [TestCase(ESV.InfC)]
-  public async Task HandleNotify_FromUnknownObject(ESV esv)
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task HandleNotify_FromUnknownObject(ESV esv, CancellationToken cancellationToken)
   {
     var sourceNodeAddress = IPAddress.Loopback;
     var seoj = new EOJ(0x05, 0xFF, 0x01);
@@ -237,8 +242,6 @@ partial class EchonetClientServiceHandlingsTests {
       [0x80] = [0x31],
     };
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await notifyHandler.NotifyAsync(
         fromAddress: sourceNodeAddress,
@@ -246,12 +249,12 @@ partial class EchonetClientServiceHandlingsTests {
         deoj: controllerObject.EOJ,
         esv: esv,
         properties: properties,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );
 
-    await Task.Delay(TimeSpan.FromSeconds(1));
+    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
 
     Assert.That(sourceNode.Devices.Count, Is.EqualTo(1));
 

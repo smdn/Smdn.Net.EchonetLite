@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System.Net;
+using System.Threading;
 
 using NUnit.Framework;
 
@@ -16,7 +17,8 @@ public partial class EchonetClientEventsTests {
   [TestCase(ESV.SetGetServiceNotAvailable)]
   [TestCase(ESV.Inf)]
   [TestCase(ESV.InfC)]
-  public void InstanceListUpdating_InstanceListUpdated(ESV esv)
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public void InstanceListUpdating_InstanceListUpdated(ESV esv, CancellationToken cancellationToken)
   {
     var receiveFromAddress = IPAddress.Loopback;
     var handler = new ReceiveInstanceListEchonetLiteHandler(
@@ -47,13 +49,11 @@ public partial class EchonetClientEventsTests {
       Assert.That(e.Node.Address, Is.EqualTo(receiveFromAddress));
     };
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => await handler.PerformReceivingAsync(
         receiveFromAddress: receiveFromAddress,
         esv: esv,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NUnit.Framework;
@@ -74,8 +75,10 @@ public class EchonetNodeTests {
   }
 
   [Test]
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
   public void DevicesChanged_OfOtherNode(
-    [Values] bool setSynchronizingObject
+    [Values] bool setSynchronizingObject,
+    CancellationToken cancellationToken
   )
   {
     var nodeAddress = IPAddress.Loopback;
@@ -94,7 +97,6 @@ public class EchonetNodeTests {
         ]
       )
     );
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
 
     var numberOfCallsToBeginInvoke = 0;
 
@@ -109,7 +111,7 @@ public class EchonetNodeTests {
       async () => await client.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
         onInstanceListUpdated: _ => true,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );
@@ -137,7 +139,7 @@ public class EchonetNodeTests {
       async () => await client.RequestNotifyInstanceListAsync(
         destinationNodeAddress: null,
         onInstanceListUpdated: _ => true,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ),
       Throws.Nothing
     );

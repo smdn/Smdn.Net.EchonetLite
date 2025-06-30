@@ -16,6 +16,8 @@ namespace Smdn.Net.EchonetLite.Transport;
 #pragma warning disable IDE0040
 partial class EchonetLiteHandlerTests {
 #pragma warning restore IDE0040
+  private const int TimeoutInMillisecondsForReceiveOperationExpectedToSucceed = 5_000;
+
   private class PseudoIncomingEchonetLiteHandler : EchonetLiteHandler {
     private readonly ConcurrentQueue<Func<IBufferWriter<byte>, CancellationToken, ValueTask<IPAddress>>> incomingActionQueue = new();
 
@@ -83,7 +85,8 @@ partial class EchonetLiteHandlerTests {
   }
 
   [Test]
-  public async Task ReceiveCallback()
+  [CancelAfter(TimeoutInMillisecondsForReceiveOperationExpectedToSucceed)]
+  public async Task ReceiveCallback(CancellationToken cancellationToken)
   {
     var expectedFromAddress = IPAddress.Loopback;
     var expectedData = new byte[] { 0x01, 0x23 };
@@ -96,7 +99,7 @@ partial class EchonetLiteHandlerTests {
     var numberOfCallsToReceiveCallback = 0;
     Exception? exceptionOccurredInReceiveCallback = null;
 
-    handler.ReceiveCallback = async (address, data, cancellationToken) => {
+    handler.ReceiveCallback = async (address, data, ct) => {
       numberOfCallsToReceiveCallback++;
 
       try {
@@ -114,24 +117,23 @@ partial class EchonetLiteHandlerTests {
 
     Assert.That(handler.ReceiveCallback, Is.Not.Null);
 
-    handler.QueueIncomingAction((writer, cancellationToken) => {
+    handler.QueueIncomingAction((writer, ct) => {
       writer.Write(expectedData);
 
       return new(expectedFromAddress);
     });
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    await handler.WaitUntilConsumedAsync(cancellationToken);
 
-    await handler.WaitUntilConsumedAsync(cts.Token);
-
-    callsToReceiveCallbackEvent.Wait(cts.Token);
+    callsToReceiveCallbackEvent.Wait(cancellationToken);
 
     Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(1));
     Assert.That(exceptionOccurredInReceiveCallback, Is.Null);
   }
 
   [Test]
-  public async Task ReceiveCallback_Null()
+  [CancelAfter(TimeoutInMillisecondsForReceiveOperationExpectedToSucceed)]
+  public async Task ReceiveCallback_Null(CancellationToken cancellationToken)
   {
     var expectedFromAddress = IPAddress.Loopback;
     var expectedData = new byte[] { 0x01, 0x23 };
@@ -144,19 +146,18 @@ partial class EchonetLiteHandlerTests {
 
     Assert.That(handler.ReceiveCallback, Is.Null);
 
-    handler.QueueIncomingAction((writer, cancellationToken) => {
+    handler.QueueIncomingAction((writer, ct) => {
       writer.Write(expectedData);
 
       return new(expectedFromAddress);
     });
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-    await handler.WaitUntilConsumedAsync(cts.Token);
+    await handler.WaitUntilConsumedAsync(cancellationToken);
   }
 
   [Test]
-  public async Task ReceiveEchonetLiteAsync_ReceiveFromNullAddress()
+  [CancelAfter(TimeoutInMillisecondsForReceiveOperationExpectedToSucceed)]
+  public async Task ReceiveEchonetLiteAsync_ReceiveFromNullAddress(CancellationToken cancellationToken)
   {
     IPAddress nullFromAddress = null!;
     var expectedData = new byte[] { 0x01, 0x23 };
@@ -170,7 +171,7 @@ partial class EchonetLiteHandlerTests {
     var numberOfCallsToReceiveTaskExceptionHandler = 0;
     Exception? exceptionOccurredInReceiveEchonetLiteAsync = null;
 
-    handler.ReceiveCallback = (address, data, cancellationToken) => {
+    handler.ReceiveCallback = (address, data, ct) => {
       numberOfCallsToReceiveCallback++;
 
       return default;
@@ -186,18 +187,16 @@ partial class EchonetLiteHandlerTests {
     };
 
     handler.QueueIncomingAction(
-      (writer, cancellationToken) => {
+      (writer, ct) => {
         writer.Write(expectedData);
 
         return new(nullFromAddress); // return null as a remote address
       }
     );
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    await handler.WaitUntilConsumedAsync(cancellationToken);
 
-    await handler.WaitUntilConsumedAsync(cts.Token);
-
-    callsToReceiveTaskExceptionHandlerEvent.Wait(cts.Token);
+    callsToReceiveTaskExceptionHandlerEvent.Wait(cancellationToken);
 
     Assert.That(numberOfCallsToReceiveCallback, Is.Zero);
     Assert.That(numberOfCallsToReceiveTaskExceptionHandler, Is.EqualTo(1));
@@ -205,7 +204,8 @@ partial class EchonetLiteHandlerTests {
   }
 
   [Test]
-  public async Task ReceiveEchonetLiteAsync_ExceptionOccurredInReceiveAsyncCore()
+  [CancelAfter(TimeoutInMillisecondsForReceiveOperationExpectedToSucceed)]
+  public async Task ReceiveEchonetLiteAsync_ExceptionOccurredInReceiveAsyncCore(CancellationToken cancellationToken)
   {
     using var callsToReceiveTaskExceptionHandlerEvent = new ManualResetEventSlim(false);
     using var handler = new PseudoIncomingEchonetLiteHandler();
@@ -215,7 +215,7 @@ partial class EchonetLiteHandlerTests {
     var numberOfCallsToReceiveCallback = 0;
     var numberOfCallsToReceiveTaskExceptionHandler = 0;
 
-    handler.ReceiveCallback = (address, data, cancellationToken) => {
+    handler.ReceiveCallback = (address, data, ct) => {
       numberOfCallsToReceiveCallback++;
 
       return default;
@@ -234,11 +234,9 @@ partial class EchonetLiteHandlerTests {
       (writer, cancellationToken) => throw new NotImplementedException()
     );
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    await handler.WaitUntilConsumedAsync(cancellationToken);
 
-    await handler.WaitUntilConsumedAsync(cts.Token);
-
-    callsToReceiveTaskExceptionHandlerEvent.Wait(cts.Token);
+    callsToReceiveTaskExceptionHandlerEvent.Wait(cancellationToken);
 
     Assert.That(numberOfCallsToReceiveCallback, Is.Zero);
     Assert.That(numberOfCallsToReceiveTaskExceptionHandler, Is.EqualTo(1));
@@ -247,7 +245,7 @@ partial class EchonetLiteHandlerTests {
     // following inputs must be processed successfully
     using var callsToReceiveCallbackEvent = new ManualResetEventSlim(false);
 
-    handler.ReceiveCallback = (address, data, cancellationToken) => {
+    handler.ReceiveCallback = (address, data, ct) => {
       numberOfCallsToReceiveCallback++;
 
       callsToReceiveCallbackEvent.Set();
@@ -263,15 +261,16 @@ partial class EchonetLiteHandlerTests {
       }
     );
 
-    await handler.WaitUntilConsumedAsync(cts.Token);
+    await handler.WaitUntilConsumedAsync(cancellationToken);
 
-    callsToReceiveCallbackEvent.Wait(cts.Token);
+    callsToReceiveCallbackEvent.Wait(cancellationToken);
 
     Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(1));
   }
 
   [Test]
-  public async Task ReceiveEchonetLiteAsync_ExceptionOccurredInReceiveCallback()
+  [CancelAfter(TimeoutInMillisecondsForReceiveOperationExpectedToSucceed)]
+  public async Task ReceiveEchonetLiteAsync_ExceptionOccurredInReceiveCallback(CancellationToken cancellationToken)
   {
     var expectedFromAddress = IPAddress.Loopback;
     var expectedData = new byte[] { 0x01, 0x23 };
@@ -285,7 +284,7 @@ partial class EchonetLiteHandlerTests {
     var numberOfCallsToReceiveCallback = 0;
     var numberOfCallsToReceiveTaskExceptionHandler = 0;
 
-    handler.ReceiveCallback = (address, data, cancellationToken) => {
+    handler.ReceiveCallback = (address, data, ct) => {
       numberOfCallsToReceiveCallback++;
 
       throw new NotImplementedException();
@@ -307,11 +306,9 @@ partial class EchonetLiteHandlerTests {
       }
     );
 
-    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    await handler.WaitUntilConsumedAsync(cancellationToken);
 
-    await handler.WaitUntilConsumedAsync(cts.Token);
-
-    callsToReceiveTaskExceptionHandlerEvent.Wait(cts.Token);
+    callsToReceiveTaskExceptionHandlerEvent.Wait(cancellationToken);
 
     Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(1));
     Assert.That(numberOfCallsToReceiveTaskExceptionHandler, Is.EqualTo(1));
@@ -320,7 +317,7 @@ partial class EchonetLiteHandlerTests {
     // following inputs must be processed successfully
     using var callsToReceiveCallbackEvent = new ManualResetEventSlim(false);
 
-    handler.ReceiveCallback = (address, data, cancellationToken) => {
+    handler.ReceiveCallback = (address, data, ct) => {
       numberOfCallsToReceiveCallback++;
 
       callsToReceiveCallbackEvent.Set();
@@ -336,9 +333,9 @@ partial class EchonetLiteHandlerTests {
       }
     );
 
-    await handler.WaitUntilConsumedAsync(cts.Token);
+    await handler.WaitUntilConsumedAsync(cancellationToken);
 
-    callsToReceiveCallbackEvent.Wait(cts.Token);
+    callsToReceiveCallbackEvent.Wait(cancellationToken);
 
     Assert.That(numberOfCallsToReceiveCallback, Is.EqualTo(2));
   }

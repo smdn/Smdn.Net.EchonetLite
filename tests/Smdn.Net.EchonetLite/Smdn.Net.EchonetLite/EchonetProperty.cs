@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -64,8 +65,6 @@ public class EchonetPropertyTests {
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
     var device = nodeRegistry.Nodes.First(node => node.Address.Equals(destinationNodeAddress)).Devices.First();
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var propertyMapResponse = new Dictionary<byte, byte[]>() {
       [0x9D] = EchonetClientTests.CreatePropertyMapEDT(epc), // Status change announcement property map
       [0x9E] = EchonetClientTests.CreatePropertyMapEDT(epc), // Set property map
@@ -81,6 +80,8 @@ public class EchonetPropertyTests {
       nodeRegistry: nodeRegistry,
       deviceFactory: null
     );
+
+    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
 
     Assert.That(
       async () => _ = await device.AcquirePropertyMapsAsync(
@@ -478,8 +479,10 @@ public class EchonetPropertyTests {
   }
 
   [Test]
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
   public async Task ValueUpdated_MustBeInvokedByISynchronizeInvoke(
-    [Values] bool setSynchronizingObject
+    [Values] bool setSynchronizingObject,
+    CancellationToken cancellationToken
   )
   {
     const byte EPCOperatingStatus = 0x80;
@@ -525,13 +528,11 @@ public class EchonetPropertyTests {
       );
     }
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     Assert.That(
       async () => _ = await property.Device.ReadPropertiesAsync(
         readPropertyCodes: [property.Code],
         sourceObject: client.SelfNode.NodeProfile,
-        cancellationToken: cts.Token
+        cancellationToken: cancellationToken
       ).ConfigureAwait(false),
       Throws.Nothing
     );

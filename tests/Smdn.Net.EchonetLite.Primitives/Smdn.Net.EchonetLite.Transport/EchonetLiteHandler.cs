@@ -186,15 +186,16 @@ public partial class EchonetLiteHandlerTests {
 
     handler.StartReceiving();
 
-    using var cts = new CancellationTokenSource();
-
-    cts.Cancel();
+    var cancellationToken = new CancellationToken(canceled: true);
 
     Assert.That(
-      async () => await handler.SendAsync(data: default, cancellationToken: cts.Token),
+      async () => await handler.SendAsync(
+        data: default,
+        cancellationToken: cancellationToken
+      ),
       Throws
         .InstanceOf<OperationCanceledException>()
-        .With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cts.Token)
+        .With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cancellationToken)
     );
   }
 
@@ -242,15 +243,17 @@ public partial class EchonetLiteHandlerTests {
 
     handler.StartReceiving();
 
-    using var cts = new CancellationTokenSource();
-
-    cts.Cancel();
+    var cancellationToken = new CancellationToken(canceled: true);
 
     Assert.That(
-      async () => await handler.SendToAsync(remoteAddress: IPAddress.Loopback, data: default, cancellationToken: cts.Token),
+      async () => await handler.SendToAsync(
+        remoteAddress: IPAddress.Loopback,
+        data: default,
+        cancellationToken: cancellationToken
+      ),
       Throws
         .InstanceOf<OperationCanceledException>()
-        .With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cts.Token)
+        .With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cancellationToken)
     );
   }
 }

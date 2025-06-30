@@ -21,7 +21,8 @@ namespace Smdn.Net.EchonetLite;
 partial class EchonetClientServiceRequestsTests {
 #pragma warning restore IDE0040
   [Test]
-  public async Task NotifyAsync()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task NotifyAsync(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var seoj = new EOJ(0x05, 0xFF, 0x01);
@@ -59,15 +60,13 @@ partial class EchonetClientServiceRequestsTests {
       logger: logger
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.NotifyAsync(
       sourceObject: seoj,
       properties: requestPropertyValues,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: deoj,
       resiliencePipeline: resiliencePipeline,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.True);
@@ -206,7 +205,8 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
-  public async Task NotifyAsync_NotAccepted_Partial()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task NotifyAsync_NotAccepted_Partial(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var seoj = new EOJ(0x05, 0xFF, 0x01);
@@ -226,14 +226,12 @@ partial class EchonetClientServiceRequestsTests {
       )
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.NotifyAsync(
       sourceObject: seoj,
       properties: requestPropertyValues,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: deoj,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.True);
@@ -245,7 +243,8 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
-  public async Task NotifyAsync_NotAccepted_All()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task NotifyAsync_NotAccepted_All(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var seoj = new EOJ(0x05, 0xFF, 0x01);
@@ -265,14 +264,12 @@ partial class EchonetClientServiceRequestsTests {
       )
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.NotifyAsync(
       sourceObject: seoj,
       properties: requestPropertyValues,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: deoj,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.True);

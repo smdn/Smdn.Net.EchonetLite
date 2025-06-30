@@ -24,7 +24,8 @@ namespace Smdn.Net.EchonetLite;
 partial class EchonetClientServiceRequestsTests {
 #pragma warning restore IDE0040
   [Test]
-  public async Task RequestWriteAsync()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task RequestWriteAsync(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
@@ -68,15 +69,13 @@ partial class EchonetClientServiceRequestsTests {
       logger: logger
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.RequestWriteAsync(
       sourceObject: seoj,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: destinationObject.EOJ,
       properties: requestPropertyValues,
       resiliencePipeline: resiliencePipeline,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.True);
@@ -262,7 +261,8 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
-  public async Task RequestWriteAsync_NotAccepted_Partial()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task RequestWriteAsync_NotAccepted_Partial(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
@@ -287,14 +287,12 @@ partial class EchonetClientServiceRequestsTests {
       deviceFactory: null
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.RequestWriteAsync(
       sourceObject: seoj,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: destinationObject.EOJ,
       properties: requestPropertyValues,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.False);
@@ -314,7 +312,8 @@ partial class EchonetClientServiceRequestsTests {
   }
 
   [Test]
-  public async Task RequestWriteAsync_NotAccepted_All()
+  [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
+  public async Task RequestWriteAsync_NotAccepted_All(CancellationToken cancellationToken)
   {
     var destinationNodeAddress = IPAddress.Loopback;
     var nodeRegistry = await EchonetClientTests.CreateOtherNodeAsync(destinationNodeAddress, [new(0x05, 0xFF, 0x01)]);
@@ -339,14 +338,12 @@ partial class EchonetClientServiceRequestsTests {
       deviceFactory: null
     );
 
-    using var cts = EchonetClientTests.CreateTimeoutCancellationTokenSourceForOperationExpectedToSucceed();
-
     var response = await client.RequestWriteAsync(
       sourceObject: seoj,
       destinationNodeAddress: destinationNodeAddress,
       destinationObject: destinationObject.EOJ,
       properties: requestPropertyValues,
-      cancellationToken: cts.Token
+      cancellationToken: cancellationToken
     );
 
     Assert.That(response.IsSuccess, Is.False);
