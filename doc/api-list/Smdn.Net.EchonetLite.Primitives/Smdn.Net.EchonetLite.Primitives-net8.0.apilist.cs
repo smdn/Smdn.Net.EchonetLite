@@ -1,7 +1,7 @@
-// Smdn.Net.EchonetLite.Primitives.dll (Smdn.Net.EchonetLite.Primitives-2.0.1)
+// Smdn.Net.EchonetLite.Primitives.dll (Smdn.Net.EchonetLite.Primitives-2.0.2)
 //   Name: Smdn.Net.EchonetLite.Primitives
-//   AssemblyVersion: 2.0.1.0
-//   InformationalVersion: 2.0.1+a1a02047fb738e30ac5001d6149f8cc18eef4ee6
+//   AssemblyVersion: 2.0.2.0
+//   InformationalVersion: 2.0.2+10cb847a99b6c2ad30297280debeb56a41a346bb
 //   TargetFramework: .NETCoreApp,Version=v8.0
 //   Configuration: Release
 //   Referenced assemblies:
