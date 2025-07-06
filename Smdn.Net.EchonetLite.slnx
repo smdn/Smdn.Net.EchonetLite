@@ -1,3 +1,7 @@
+<!--
+SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Smdn.Net.EchonetLite.Appendix/Smdn.Net.EchonetLite.Appendix.csproj" />
