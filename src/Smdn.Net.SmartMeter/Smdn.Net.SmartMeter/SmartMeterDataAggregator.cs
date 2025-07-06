@@ -376,7 +376,9 @@ public partial class SmartMeterDataAggregator : HemsController {
         }
       },
       state: aggregationTaskStoppingTokenSource.Token,
-      cancellationToken: aggregationTaskStoppingTokenSource.Token
+      cancellationToken: aggregationTaskStoppingTokenSource.Token,
+      creationOptions: aggregationTaskFactory?.CreationOptions ?? default,
+      scheduler: aggregationTaskFactory?.Scheduler ?? TaskScheduler.Default
     );
 
     Logger?.LogInformation("Started data aggregation.");

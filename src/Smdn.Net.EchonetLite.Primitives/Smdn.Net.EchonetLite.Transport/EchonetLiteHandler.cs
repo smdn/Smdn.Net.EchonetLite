@@ -129,7 +129,9 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
         cancellationToken: (CancellationToken)state!
       ).ConfigureAwait(false),
       state: cancellationTokenSourceReceiveEchonetLite.Token,
-      cancellationToken: cancellationTokenSourceReceiveEchonetLite.Token
+      cancellationToken: cancellationTokenSourceReceiveEchonetLite.Token,
+      creationOptions: taskFactoryForReceiving?.CreationOptions ?? default,
+      scheduler: taskFactoryForReceiving?.Scheduler ?? TaskScheduler.Default
     );
   }
 
