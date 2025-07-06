@@ -21,6 +21,7 @@
     "LINQ",
     "LVSM",
     "memberwise",
+    "MSBuild",
     "Munin",
     "PANA",
     "RBID",
@@ -34,12 +35,18 @@
     "UART",
   ],
   "ignoreWords": [
+    "netcoreapp",
+    "netframework",
+    "netfx",
     "netstandard",
     "HiroyukiSakoh",
   ],
   "ignoreRegExpList": [
     "SYSTEM_[A-Z][A-Z0-9_]+",
     "SK[A-Z]+",
+    "NETFRAMEWORK[0-9][A-Z0-9_]+",
+    "NETCOREAPP[0-9]_[0-9]_[A-Z0-9_]+",
+    "NETSTANDARD[0-9]_[0-9]_[A-Z0-9_]+",
   ],
   // flagWords - list of words to be always considered incorrect
   // This is useful for offensive words and common spelling errors.
@@ -52,6 +59,7 @@
     "**/bin",
     "**/obj",
     ".git",
+    "doc/api-list/",
   ],
   "enabledLanguageIds": [
     "csharp",

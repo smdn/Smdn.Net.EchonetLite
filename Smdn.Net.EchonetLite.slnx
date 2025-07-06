@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Smdn.Net.EchonetLite.Appendix/Smdn.Net.EchonetLite.Appendix.csproj" />
+    <Project Path="src/Smdn.Net.EchonetLite.Primitives/Smdn.Net.EchonetLite.Primitives.csproj" />
+    <Project Path="src/Smdn.Net.EchonetLite.RouteB.BP35XX/Smdn.Net.EchonetLite.RouteB.BP35XX.csproj" />
+    <Project Path="src/Smdn.Net.EchonetLite.RouteB.Primitives/Smdn.Net.EchonetLite.RouteB.Primitives.csproj" />
+    <Project Path="src/Smdn.Net.EchonetLite.RouteB.SkStackIP/Smdn.Net.EchonetLite.RouteB.SkStackIP.csproj" />
+    <Project Path="src/Smdn.Net.EchonetLite.RouteB/Smdn.Net.EchonetLite.RouteB.csproj" />
+    <Project Path="src/Smdn.Net.EchonetLite/Smdn.Net.EchonetLite.csproj" />
+    <Project Path="src/Smdn.Net.SmartMeter.Extensions.Munin/Smdn.Net.SmartMeter.Extensions.Munin.csproj" />
+    <Project Path="src/Smdn.Net.SmartMeter/Smdn.Net.SmartMeter.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Smdn.Net.EchonetLite.Appendix/Smdn.Net.EchonetLite.Appendix.Tests.csproj" />
+    <Project Path="tests/Smdn.Net.EchonetLite.Primitives/Smdn.Net.EchonetLite.Primitives.Tests.csproj" />
+    <Project Path="tests/Smdn.Net.EchonetLite.RouteB.BP35XX/Smdn.Net.EchonetLite.RouteB.BP35XX.Tests.csproj" />
+    <Project Path="tests/Smdn.Net.EchonetLite.RouteB.Primitives/Smdn.Net.EchonetLite.RouteB.Primitives.Tests.csproj" />
+    <Project Path="tests/Smdn.Net.EchonetLite.RouteB.SkStackIP/Smdn.Net.EchonetLite.RouteB.SkStackIP.Tests.csproj" />
+    <Project Path="tests/Smdn.Net.EchonetLite.RouteB/Smdn.Net.EchonetLite.RouteB.Tests.csproj" />
+    <Project Path="tests/Smdn.Net.EchonetLite/Smdn.Net.EchonetLite.Tests.csproj" />
+    <Project Path="tests/Smdn.Net.SmartMeter.Extensions.Munin/Smdn.Net.SmartMeter.Extensions.Munin.Tests.csproj" />
+    <Project Path="tests/Smdn.Net.SmartMeter/Smdn.Net.SmartMeter.Tests.csproj" />
+  </Folder>
+</Solution>
