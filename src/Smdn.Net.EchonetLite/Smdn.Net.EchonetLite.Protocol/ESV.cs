@@ -22,7 +22,7 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// <seealso href="https://echonet.jp/spec_v114_lite/">
 /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 表 ３-１１ 不可応答用 ESV コード一覧表
 /// </seealso>
-// #pragma warning disable CA1027
+#pragma warning disable CA1028
 public enum ESV : byte {
   /// <summary>
   /// 未定義または無効なサービスコードを表す値を示します。

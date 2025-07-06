@@ -5,4 +5,5 @@ namespace Smdn.Net.EchonetLite.RouteB.Credentials;
 /// <summary>
 /// Provides a mechanism for abstracting identities corresponding to credentials used for the route B authentication.
 /// </summary>
+#pragma warning disable CA1040
 public interface IRouteBCredentialIdentity { }

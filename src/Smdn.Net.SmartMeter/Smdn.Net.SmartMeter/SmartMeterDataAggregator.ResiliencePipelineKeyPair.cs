@@ -33,6 +33,7 @@ partial class SmartMeterDataAggregator {
   /// <seealso href="https://www.pollydocs.org/advanced/dependency-injection.html#complex-pipeline-keys">
   /// Polly Dependency injection - Complex pipeline keys
   /// </seealso>
+#pragma warning disable CA1034
 #pragma warning disable IDE0055
   public readonly record struct ResiliencePipelineKeyPair<TServiceKey> :
     IResiliencePipelineKeyPair<TServiceKey, string>,
@@ -64,4 +65,5 @@ partial class SmartMeterDataAggregator {
     public override string ToString()
       => $"{{{ServiceKey}:{PipelineKey}}}";
   }
+#pragma warning restore CA1034
 }

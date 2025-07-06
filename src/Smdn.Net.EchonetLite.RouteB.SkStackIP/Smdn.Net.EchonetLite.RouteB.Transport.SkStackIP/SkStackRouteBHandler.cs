@@ -22,10 +22,12 @@ using Smdn.Net.SkStackIP;
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
 public abstract partial class SkStackRouteBHandler : RouteBEchonetLiteHandler {
+#pragma warning disable CA1034
   public static class ResiliencePipelineKeys {
     public static readonly string Authenticate = nameof(SkStackRouteBHandler) + "." + nameof(SkStackRouteBHandler.resiliencePipelineAuthenticate);
     public static readonly string Send = nameof(SkStackRouteBHandler) + "." + nameof(SkStackRouteBHandler.resiliencePipelineSend);
   }
+#pragma warning restore CA1034
 
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<SkStackRouteBHandler?> ResiliencePropertyKeyForInstance = new(

@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 // cSpell:ignore JEMA,JEMAHA
+#pragma warning disable CA1034
+
 using System.Collections.Generic;
 #if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
 using System.Diagnostics.CodeAnalysis;

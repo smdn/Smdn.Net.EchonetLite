@@ -13,6 +13,7 @@ namespace Smdn.Net.EchonetLite.Protocol;
 /// <seealso href="https://echonet.jp/spec_v114_lite/">
 /// ECHONET Lite規格書 Ver.1.14 第2部 ECHONET Lite 通信ミドルウェア仕様 図 ３-３ EHD2 詳細規定
 /// </seealso>
+#pragma warning disable CA1028
 #pragma warning disable CA1008
 public enum EHD2 : byte {
 #pragma warning restore CA1008
