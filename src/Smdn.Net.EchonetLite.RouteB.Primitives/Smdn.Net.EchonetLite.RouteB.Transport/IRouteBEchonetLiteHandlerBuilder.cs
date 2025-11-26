@@ -11,7 +11,7 @@ namespace Smdn.Net.EchonetLite.RouteB.Transport;
 /// <summary>
 /// An interface for configuring <see cref="RouteBEchonetLiteHandler"/> providers.
 /// </summary>
-[Obsolete($"Use {nameof(IRouteBServiceBuilder<object>)} instead.")] // TODO: use nameof with open generic type
+[Obsolete($"Use {nameof(IRouteBServiceBuilder<>)} instead.")]
 public interface IRouteBEchonetLiteHandlerBuilder {
   /// <summary>
   /// Gets the <see cref="IServiceCollection"/> where <see cref="RouteBEchonetLiteHandler"/> services are configured.
