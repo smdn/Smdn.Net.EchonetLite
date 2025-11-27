@@ -2,7 +2,7 @@
 //   Name: Smdn.Net.SmartMeter.Extensions.Munin
 //   AssemblyVersion: 2.2.0.0
 //   InformationalVersion: 2.2.0+291dc030d4c0805f26c6d95ef97ee47c2d34e54d
-//   TargetFramework: .NETStandard,Version=v2.1
+//   TargetFramework: .NETCoreApp,Version=v10.0
 //   Configuration: Release
 //   Referenced assemblies:
 //     Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
@@ -14,7 +14,13 @@
 //     Smdn.Net.MuninNode, Version=2.5.0.0, Culture=neutral
 //     Smdn.Net.MuninNode.Hosting, Version=3.1.0.0, Culture=neutral
 //     Smdn.Net.SmartMeter, Version=2.1.0.0, Culture=neutral
-//     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+//     System.Collections, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Collections.Concurrent, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Linq, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Net.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Threading, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 #nullable enable annotations
 
 using System;
@@ -91,7 +97,7 @@ namespace Smdn.Net.SmartMeter.MuninNode.Hosting {
 
   public static class IServiceCollectionExtensions {
     public static IServiceCollection AddHostedSmartMeterMuninNodeService(this IServiceCollection services, Action<IRouteBServiceBuilder<string>> configureRouteBServices, Action<MuninNodeOptions> configureMuninNodeOptions, Action<SmartMeterMuninNodeBuilder> configureSmartMeterMuninNode) {}
-    public static IServiceCollection AddHostedSmartMeterMuninNodeService<TSmartMeterMuninNodeService>(this IServiceCollection services, Action<IRouteBServiceBuilder<string>> configureRouteBServices, Action<MuninNodeOptions> configureMuninNodeOptions, Action<SmartMeterMuninNodeBuilder> configureSmartMeterMuninNode) where TSmartMeterMuninNodeService : SmartMeterMuninNodeService {}
+    public static IServiceCollection AddHostedSmartMeterMuninNodeService<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSmartMeterMuninNodeService>(this IServiceCollection services, Action<IRouteBServiceBuilder<string>> configureRouteBServices, Action<MuninNodeOptions> configureMuninNodeOptions, Action<SmartMeterMuninNodeBuilder> configureSmartMeterMuninNode) where TSmartMeterMuninNodeService : SmartMeterMuninNodeService {}
   }
 
   public class SmartMeterMuninNodeService : MuninNodeBackgroundService {
@@ -109,7 +115,7 @@ namespace Smdn.Net.SmartMeter.MuninNode.Hosting {
 namespace Smdn.Net.SmartMeter.MuninNode.Hosting.Systemd {
   public static class IServiceCollectionExtensions {
     public static IServiceCollection AddHostedSmartMeterMuninNodeSystemdService(this IServiceCollection services, Action<IRouteBServiceBuilder<string>> configureRouteBServices, Action<MuninNodeOptions> configureMuninNodeOptions, Action<SmartMeterMuninNodeBuilder> configureSmartMeterMuninNode) {}
-    public static IServiceCollection AddHostedSmartMeterMuninNodeSystemdService<TSmartMeterMuninNodeSystemdService>(this IServiceCollection services, Action<IRouteBServiceBuilder<string>> configureRouteBServices, Action<MuninNodeOptions> configureMuninNodeOptions, Action<SmartMeterMuninNodeBuilder> configureSmartMeterMuninNode) where TSmartMeterMuninNodeSystemdService : SmartMeterMuninNodeSystemdService {}
+    public static IServiceCollection AddHostedSmartMeterMuninNodeSystemdService<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSmartMeterMuninNodeSystemdService>(this IServiceCollection services, Action<IRouteBServiceBuilder<string>> configureRouteBServices, Action<MuninNodeOptions> configureMuninNodeOptions, Action<SmartMeterMuninNodeBuilder> configureSmartMeterMuninNode) where TSmartMeterMuninNodeSystemdService : SmartMeterMuninNodeSystemdService {}
   }
 
   public class SmartMeterMuninNodeSystemdService : SmartMeterMuninNodeService {
