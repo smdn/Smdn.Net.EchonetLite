@@ -51,17 +51,9 @@ public abstract partial class EchonetObject {
   public EchonetNode Node => OwnerNode ?? throw new InvalidOperationException($"{nameof(OwnerNode)} is not set to a valid value.");
 
   internal EchonetNode? OwnerNode {
-#if false // requires semi-auto properties
-    get => field;
+    get;
     set => field = value ?? throw new InvalidOperationException($"{nameof(OwnerNode)} can not be null");
   }
-#else
-    get => ownerNode;
-    set => ownerNode = value ?? throw new InvalidOperationException($"{nameof(OwnerNode)} can not be null.");
-  }
-
-  private EchonetNode? ownerNode;
-#endif
 
   /// <summary>
   /// イベントの結果として発行されるイベントハンドラー呼び出しをマーシャリングするために使用する<see cref="ISynchronizeInvoke"/>オブジェクトを取得します。
