@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: MIT
 #pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
 
-// ref: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-13.0/ref-unsafe-in-iterators-async
-// #define CSHARP_13_REF_UNSAFE_IN_ITERATORS_ASYNC
-
 using System;
 using System.Linq;
 using System.Threading;
@@ -192,7 +189,6 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
 
     var smartMeter = GetAggregatorOrThrow().SmartMeter;
 
-#if CSHARP_13_REF_UNSAFE_IN_ITERATORS_ASYNC
     for (var direction = 0; direction <= 1; direction++) { // 0: normal, 1: reverse
       var doAggregate = direction switch {
         0 => AggregateNormalDirection,
@@ -239,55 +235,6 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
         }
       }
     }
-#else
-    if (
-      AggregateNormalDirection &&
-      smartMeter.NormalDirectionCumulativeElectricEnergyAtEvery30Min.TryGetValue(out var normalDirectionValue) &&
-      normalDirectionValue.MeasuredAt == StartDateOfMeasurementPeriod
-    ) {
-      // if the first measurement value of the day is set, use it as the baseline value
-      // in this way, the baseline value can be updated without querying historical data
-      var prevValue = baselineElectricEnergyNormalDirection;
-
-      baselineElectricEnergyNormalDirection = normalDirectionValue;
-
-      if (!prevValue.HasValue || prevValue.Value.MeasuredAt != normalDirectionValue.MeasuredAt) {
-        logger?.LogDebug(
-          "{TypeName}.{FieldName}: {Value} ({MeasuredAt}, first measurement value of the day)",
-          GetType().FullName,
-          nameof(baselineElectricEnergyNormalDirection),
-          baselineElectricEnergyNormalDirection!.Value.Value,
-          baselineElectricEnergyNormalDirection!.Value.MeasuredAt
-        );
-
-        OnNormalDirectionBaselineValueUpdated();
-      }
-    }
-
-    if (
-      AggregateReverseDirection &&
-      smartMeter.ReverseDirectionCumulativeElectricEnergyAtEvery30Min.TryGetValue(out var reverseDirectionValue) &&
-      reverseDirectionValue.MeasuredAt == StartDateOfMeasurementPeriod
-    ) {
-      // if the first measurement value of the day is set, use it as the baseline value
-      // in this way, the baseline value can be updated without querying historical data
-      var prevValue = baselineElectricEnergyReverseDirection;
-
-      baselineElectricEnergyReverseDirection = reverseDirectionValue;
-
-      if (!prevValue.HasValue || prevValue.Value.MeasuredAt != reverseDirectionValue.MeasuredAt) {
-        logger?.LogDebug(
-          "{TypeName}.{FieldName}: {Value} ({MeasuredAt}, first measurement value of the day)",
-          GetType().FullName,
-          nameof(baselineElectricEnergyNormalDirection),
-          baselineElectricEnergyReverseDirection!.Value.Value,
-          baselineElectricEnergyReverseDirection!.Value.MeasuredAt
-        );
-
-        OnReverseDirectionBaselineValueUpdated();
-      }
-    }
-#endif
 
     var shouldUpdateNormalDirection = AggregateNormalDirection && !TryGetBaselineValue(normalOrReverseDirection: true, out _);
     var shouldUpdateReverseDirection = AggregateReverseDirection && !TryGetBaselineValue(normalOrReverseDirection: false, out _);
@@ -351,7 +298,6 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
     ).ConfigureAwait(false);
 
     // ... then get the historical data (EPC=0xE2 and/or 0xE4)
-#if CSHARP_13_REF_UNSAFE_IN_ITERATORS_ASYNC
     for (var direction = 0; direction <= 1; direction++) { // 0: normal, 1: reverse
       var shouldUpdate = direction == 0
         ? shouldUpdateNormalDirection
@@ -402,7 +348,7 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
       else
         OnReverseDirectionBaselineValueUpdated();
 
-      if (TryGetCumulativeValue(direction == 0, out var periodicValueInKiloWattHours, out var measuredAt)) {
+      if (TryGetCumulativeValue(normalOrReverseDirection: direction == 0, out var periodicValueInKiloWattHours, out var measuredAt)) {
         logger?.LogDebug(
           "{TypeName} ({Direction} direction): {Value} [kWh] ({MeasuredAt:s})",
           direction == 0 ? "normal" : "reverse",
@@ -412,83 +358,6 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
         );
       }
     }
-#else
-    if (shouldUpdateNormalDirection) {
-      // EPC=0xE2を要求するため、応答待ちタイマー２を使用する
-      // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
-      // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
-      // > ２．４．２ 応答待ちタイマー
-      _ = await aggregator.RunWithResponseWaitTimer2Async(
-        asyncAction: ct => smartMeter.ReadPropertiesAsync(
-          readPropertyCodes: [smartMeter.NormalDirectionCumulativeElectricEnergyLog1.PropertyCode],
-          sourceObject: aggregator.Controller,
-          resiliencePipeline: aggregator.ResiliencePipelineReadSmartMeterPropertyValue,
-          cancellationToken: ct
-        ),
-        messageForTimeoutException: "Timed out while requesting Get 0xE2.",
-        cancellationToken: cancellationToken
-      ).ConfigureAwait(false);
-
-      baselineElectricEnergyNormalDirection = smartMeter.NormalDirectionCumulativeElectricEnergyLog1.Value.First(IsFirstMeasurementValueOfDay);
-
-      logger?.LogDebug(
-        "{TypeName}.{FieldName}: {Value} ({MeasuredAt:s})",
-        GetType().FullName,
-        nameof(baselineElectricEnergyNormalDirection),
-        baselineElectricEnergyNormalDirection!.Value.Value,
-        baselineElectricEnergyNormalDirection!.Value.MeasuredAt
-      );
-
-      OnNormalDirectionBaselineValueUpdated();
-
-      if (TryGetCumulativeValue(normalOrReverseDirection: true, out var periodicValueInKiloWattHours, out var measuredAt)) {
-        logger?.LogDebug(
-          "{TypeName} (normal direction): {Value} [kWh] ({MeasuredAt:s})",
-          GetType().FullName,
-          periodicValueInKiloWattHours,
-          measuredAt
-        );
-      }
-    }
-
-    if (shouldUpdateReverseDirection) {
-      // EPC=0xE4を要求するため、応答待ちタイマー２を使用する
-      // > https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/AIF/lvsm/lvsm_aif_ver1.01.pdf
-      // > 低圧スマート電力量メータ・HEMS コントローラ間アプリケーション通信インタフェース仕様書 Version 1.01
-      // > ２．４．２ 応答待ちタイマー
-      _ = await aggregator.RunWithResponseWaitTimer2Async(
-        asyncAction: ct => smartMeter.ReadPropertiesAsync(
-          readPropertyCodes: [smartMeter.ReverseDirectionCumulativeElectricEnergyLog1.PropertyCode],
-          sourceObject: aggregator.Controller,
-          resiliencePipeline: aggregator.ResiliencePipelineReadSmartMeterPropertyValue,
-          cancellationToken: ct
-        ),
-        messageForTimeoutException: "Timed out while requesting Get 0xE4.",
-        cancellationToken: cancellationToken
-      ).ConfigureAwait(false);
-
-      baselineElectricEnergyReverseDirection = smartMeter.ReverseDirectionCumulativeElectricEnergyLog1.Value.First(IsFirstMeasurementValueOfDay);
-
-      logger?.LogDebug(
-        "{TypeName}.{FieldName}: {Value} ({MeasuredAt:s})",
-        GetType().FullName,
-        nameof(baselineElectricEnergyReverseDirection),
-        baselineElectricEnergyReverseDirection!.Value.Value,
-        baselineElectricEnergyReverseDirection!.Value.MeasuredAt
-      );
-
-      OnReverseDirectionBaselineValueUpdated();
-
-      if (TryGetCumulativeValue(normalOrReverseDirection: false, out var periodicValueInKiloWattHours, out var measuredAt)) {
-        logger?.LogDebug(
-          "{TypeName} (reverse direction): {Value} [kWh] ({MeasuredAt:s})",
-          GetType().FullName,
-          periodicValueInKiloWattHours,
-          measuredAt
-        );
-      }
-    }
-#endif
 
     return true;
   }
