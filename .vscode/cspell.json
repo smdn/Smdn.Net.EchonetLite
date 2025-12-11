@@ -32,6 +32,7 @@
     "SetCSNA",
     "smdn",
     "SYSLIB",
+    "trimmable",
     "UART",
   ],
   "ignoreWords": [

@@ -19,3 +19,15 @@ updates:
       day: "wednesday"
       time: "03:14"
       timezone: "Asia/Tokyo"
+  - package-ecosystem: "nuget"
+    directory: "/"
+    groups:
+      smdn-msbuild-projectassets:
+        patterns:
+          - "Smdn.MSBuild.ProjectAssets.Common"
+          - "Smdn.MSBuild.ProjectAssets.Library"
+      nunit:
+        patterns:
+          - "NUnit*"
+    schedule:
+      interval: "monthly"
