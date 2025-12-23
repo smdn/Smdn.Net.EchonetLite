@@ -2,14 +2,18 @@
 //   Name: Smdn.Net.EchonetLite.Primitives
 //   AssemblyVersion: 2.1.0.0
 //   InformationalVersion: 2.1.0+eceaa1ab8c33ec84da009bb0a40f14181fd5e97b
-//   TargetFramework: .NETStandard,Version=v2.1
+//   TargetFramework: .NETCoreApp,Version=v10.0
 //   Configuration: Release
+//   Metadata: IsTrimmable=True
 //   Metadata: RepositoryUrl=https://github.com/smdn/Smdn.Net.EchonetLite
 //   Metadata: RepositoryBranch=main
 //   Metadata: RepositoryCommit=eceaa1ab8c33ec84da009bb0a40f14181fd5e97b
 //   Referenced assemblies:
 //     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
-//     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+//     System.ComponentModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Memory, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+//     System.Net.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 #nullable enable annotations
 
 using System;
