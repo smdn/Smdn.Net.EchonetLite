@@ -2,7 +2,7 @@
 //   Name: Smdn.Net.EchonetLite.RouteB.BP35XX
 //   AssemblyVersion: 2.0.0.0
 //   InformationalVersion: 2.0.0-preview6+eceaa1ab8c33ec84da009bb0a40f14181fd5e97b
-//   TargetFramework: .NETCoreApp,Version=v8.0
+//   TargetFramework: .NETCoreApp,Version=v10.0
 //   Configuration: Release
 //   Metadata: IsTrimmable=True
 //   Metadata: RepositoryUrl=https://github.com/smdn/Smdn.Net.EchonetLite
@@ -19,11 +19,11 @@
 //     Smdn.Net.EchonetLite.RouteB.Primitives, Version=2.1.0.0, Culture=neutral
 //     Smdn.Net.EchonetLite.RouteB.SkStackIP, Version=2.0.0.0, Culture=neutral
 //     Smdn.Net.SkStackIP, Version=1.5.2.0, Culture=neutral
-//     System.ComponentModel, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Linq, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Net.NetworkInformation, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Net.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Linq, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Net.NetworkInformation, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Net.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 #nullable enable annotations
 
 using System;
