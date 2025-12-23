@@ -2,8 +2,9 @@
 //   Name: Smdn.Net.EchonetLite
 //   AssemblyVersion: 2.2.0.0
 //   InformationalVersion: 2.2.0+eceaa1ab8c33ec84da009bb0a40f14181fd5e97b
-//   TargetFramework: .NETStandard,Version=v2.1
+//   TargetFramework: .NETCoreApp,Version=v10.0
 //   Configuration: Release
+//   Metadata: IsTrimmable=True
 //   Metadata: RepositoryUrl=https://github.com/smdn/Smdn.Net.EchonetLite
 //   Metadata: RepositoryBranch=main
 //   Metadata: RepositoryCommit=eceaa1ab8c33ec84da009bb0a40f14181fd5e97b
@@ -12,7 +13,16 @@
 //     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc
 //     Smdn.Net.EchonetLite.Primitives, Version=2.0.0.0, Culture=neutral
-//     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+//     System.Collections, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Collections.Concurrent, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Linq, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Memory, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+//     System.Net.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ObjectModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Threading, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 #nullable enable annotations
 
 using System;
@@ -184,6 +194,7 @@ namespace Smdn.Net.EchonetLite {
     public abstract EchonetObject Device { get; }
     public bool HasModified { get; }
     public DateTime LastUpdatedTime { get; }
+    protected virtual TimeProvider TimeProvider { get; }
     public ReadOnlyMemory<byte> ValueMemory { get; }
     public ReadOnlySpan<byte> ValueSpan { get; }
 
