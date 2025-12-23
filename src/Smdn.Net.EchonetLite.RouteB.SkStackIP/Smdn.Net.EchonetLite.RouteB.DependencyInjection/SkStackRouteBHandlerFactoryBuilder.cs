@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_DYNAMICALLYACCESSEDMEMBERSATTRIBUTE
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -54,7 +57,14 @@ public abstract class SkStackRouteBHandlerFactoryBuilder<TServiceKey> {
       postConfigureClient: postConfigureClient
     );
 
-  protected TOption GetOption<TOption>(IServiceProvider serviceProvider)
+#pragma warning disable IDE0055
+  protected TOption GetOption<
+#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_DYNAMICALLYACCESSEDMEMBERSATTRIBUTE
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
+    TOption
+  >(IServiceProvider serviceProvider)
+#pragma warning restore IDE0055
     => (serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider)))
         .GetRequiredService<IOptionsMonitor<TOption>>()
         .Get(name: selectOptionsNameForServiceKey(ServiceKey));
