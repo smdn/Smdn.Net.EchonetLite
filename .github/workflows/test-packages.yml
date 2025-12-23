@@ -46,6 +46,12 @@ on:
         required: false
         type: string
 
+      dotnet_test_options_output_verbosity_level:
+        description: "The argument to be set to the `--output <VERBOSITY_LEVEL>` option of the `dotnet test` command."
+        required: false
+        type: string
+        default: ''
+
 jobs:
   await-package-publishing:
     name: Wait for publishing of released package
@@ -56,7 +62,7 @@ jobs:
 
   run-test:
     name: Run tests with released packages
-    uses: smdn/Smdn.Fundamentals/.github/workflows/test.yml@workflows/test/v1.6.0
+    uses: smdn/Smdn.Fundamentals/.github/workflows/test.yml@workflows/test/v1.6.1
     needs: await-package-publishing
     if: ${{ always() && !failure() && !cancelled() }} # run tests even if await-package-publishing is skipped
     with:
@@ -71,5 +77,6 @@ jobs:
       dotnet_test_options_verbosity_level:    ${{ inputs.dotnet_test_options_verbosity_level }}
       dotnet_test_options_framework:          ${{ inputs.dotnet_test_options_framework }}
       dotnet_test_options_filter_expression:  ${{ inputs.dotnet_test_options_filter_expression }}
+      dotnet_test_options_output_verbosity_level: ${{ inputs.dotnet_test_options_output_verbosity_level }}
     secrets:
       token_repo: ${{ secrets.GITHUB_TOKEN }}

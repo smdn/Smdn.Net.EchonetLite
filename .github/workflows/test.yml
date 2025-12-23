@@ -64,10 +64,16 @@ on:
         required: false
         type: string
 
+      dotnet_test_options_output_verbosity_level:
+        description: "The argument to be set to the `--output <VERBOSITY_LEVEL>` option of the `dotnet test` command."
+        required: false
+        type: string
+        default: ''
+
 jobs:
   run-test:
     name: Run tests
-    uses: smdn/Smdn.Fundamentals/.github/workflows/test.yml@workflows/test/v1.6.0
+    uses: smdn/Smdn.Fundamentals/.github/workflows/test.yml@workflows/test/v1.6.1
     with:
       project:                                ${{ inputs.project }}
       os:                                     ${{ inputs.os == '' && 'ubuntu-24.04, ubuntu-22.04, windows-latest, macos-latest' || inputs.os }}
@@ -80,5 +86,6 @@ jobs:
       dotnet_test_options_verbosity_level:    ${{ inputs.dotnet_test_options_verbosity_level }}
       dotnet_test_options_framework:          ${{ inputs.dotnet_test_options_framework }}
       dotnet_test_options_filter_expression:  ${{ inputs.dotnet_test_options_filter_expression }}
+      dotnet_test_options_output_verbosity_level: ${{ inputs.dotnet_test_options_output_verbosity_level }}
     secrets:
       token_repo: ${{ secrets.GITHUB_TOKEN }}
