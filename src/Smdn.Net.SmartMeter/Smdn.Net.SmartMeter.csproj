@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 SPDX-License-Identifier: MIT
 -->
@@ -51,9 +51,9 @@ This is an example that implements a `BackgroundService` that periodically reads
 $([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\..\examples\$(PackageId)\GettingStarted\SmartMeterAggregationService.cs').TrimEnd())
 ```
 
-The entire code is available on the [GitHub repository]($(RepositoryUrl)/tree/main/examples/$(PackageId)/).
+The entire code is available on the [GitHub repository]($(RepositoryUrl)/tree/$(SmdnWorkflowsDotNetExpectedReleaseTag)/examples/$(PackageId)/).
 
-完全なコードは[GitHubリポジトリ]($(RepositoryUrl)/tree/main/examples/$(PackageId)/)を参照してください。
+完全なコードは[GitHubリポジトリ]($(RepositoryUrl)/tree/$(SmdnWorkflowsDotNetExpectedReleaseTag)/examples/$(PackageId)/)を参照してください。
 
 ## Contributing
 This project welcomes contributions, feedbacks and suggestions. You can contribute to this project by submitting [Issues]($(RepositoryUrl)/issues/new/choose) or [Pull Requests]($(RepositoryUrl)/pulls/) on the [GitHub repository]($(RepositoryUrl)).
