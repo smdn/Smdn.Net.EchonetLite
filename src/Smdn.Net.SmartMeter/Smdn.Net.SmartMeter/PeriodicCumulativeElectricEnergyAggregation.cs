@@ -225,8 +225,8 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
             direction == 0
               ? nameof(baselineElectricEnergyNormalDirection)
               : nameof(baselineElectricEnergyReverseDirection),
-            directionalBaselineValue!.Value.Value,
-            directionalBaselineValue!.Value.MeasuredAt
+            directionalBaselineValue.Value.Value,
+            directionalBaselineValue.Value.MeasuredAt
           );
 
           if (direction == 0)
@@ -340,8 +340,8 @@ public abstract class PeriodicCumulativeElectricEnergyAggregation : SmartMeterDa
         direction == 0
           ? nameof(baselineElectricEnergyNormalDirection)
           : nameof(baselineElectricEnergyReverseDirection),
-        directionalBaselineValue!.Value.Value,
-        directionalBaselineValue!.Value.MeasuredAt
+        directionalBaselineValue.Value.Value,
+        directionalBaselineValue.Value.MeasuredAt
       );
 
       if (direction == 0)

@@ -687,7 +687,7 @@ partial class HemsController {
             SmartMeter.NormalDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode,
             SmartMeter.ReverseDirectionCumulativeElectricEnergyAtEvery30Min.PropertyCode,
           ],
-          sourceObject: controllerObject!,
+          sourceObject: controllerObject,
           resiliencePipeline: resiliencePipelineForServiceRequest,
           cancellationToken: ct
         ).ConfigureAwait(false);
