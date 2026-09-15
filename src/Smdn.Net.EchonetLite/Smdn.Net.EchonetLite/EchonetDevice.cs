@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
+#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します
+#pragma warning disable CA1873 // CA1873: ログが無効になっている場合、この引数の評価は高価で不要である可能性があります
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

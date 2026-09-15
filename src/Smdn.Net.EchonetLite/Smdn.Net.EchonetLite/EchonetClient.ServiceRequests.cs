@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2018 HiroyukiSakoh
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します -->
+#pragma warning disable CA1848 // CA1848: パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します
+#pragma warning disable CA1873 // CA1873: ログが無効になっている場合、この引数の評価は高価で不要である可能性があります
 #pragma warning disable CA1506 // <Method> is coupled with 'n' different types from 'n' different namespaces. Rewrite or refactor the code to decrease its class coupling below 'n'.
 
 using System;
