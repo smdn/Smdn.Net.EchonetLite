@@ -211,7 +211,7 @@ public sealed class LowVoltageSmartElectricEnergyMeter : DeviceSuperClass {
         (byte)value.DateAndTime.Day,
         (byte)value.DateAndTime.Hour,
         (byte)(value.DateAndTime.Minute / 30 * 30), // 0 or 30
-        (byte)value.NumberOfItems
+        (byte)value.NumberOfItems,
       ]
     );
   }

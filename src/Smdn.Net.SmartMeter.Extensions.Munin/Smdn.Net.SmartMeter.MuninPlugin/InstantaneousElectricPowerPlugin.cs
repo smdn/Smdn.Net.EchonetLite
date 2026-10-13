@@ -113,7 +113,7 @@ public sealed class InstantaneousElectricPowerPlugin : InstantaneousElectricPowe
           start: MuninPluginUtils.GetPrevious5MinuteInterval(),
           duration: MuninPluginUtils.Interval5Minutes
         )
-      )
+      ),
     ];
 
     latestMeasurementTimeIn5MinutesInterval = MuninPluginUtils.GetCurrent5MinuteInterval();
