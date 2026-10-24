@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 // cSpell:ignore JEMA,JEMAHA
 #pragma warning disable CA1034
+#pragma warning disable SA1317 // SA1317: Identifier should be named only with Latin letters.
 
 using System.Collections.Generic;
 #if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
