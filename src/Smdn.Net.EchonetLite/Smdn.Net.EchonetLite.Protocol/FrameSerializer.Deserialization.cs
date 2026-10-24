@@ -7,9 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
-#pragma warning disable IDE0040
 partial class FrameSerializer {
-#pragma warning restore IDE0040
   public static bool TryDeserialize(
     ReadOnlyMemory<byte> bytes,
     out EHD1 ehd1,

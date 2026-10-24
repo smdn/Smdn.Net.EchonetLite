@@ -5,9 +5,7 @@ using Smdn.Net.EchonetLite.Specifications;
 
 namespace Smdn.Net.EchonetLite;
 
-#pragma warning disable IDE0040
 partial class EchonetObject {
-#pragma warning restore IDE0040
   /// <summary>
   /// ノードプロファイルオブジェクトを作成します。
   /// </summary>

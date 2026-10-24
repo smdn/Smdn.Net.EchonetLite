@@ -7,10 +7,7 @@ using System.Threading;
 
 namespace Smdn.Net.EchonetLite;
 
-#pragma warning disable IDE0040
-partial class EchonetClient
-#pragma warning restore IDE0040
-{
+partial class EchonetClient {
   /// <summary>
   /// 現在のトランザクションID(TID)。
   /// </summary>

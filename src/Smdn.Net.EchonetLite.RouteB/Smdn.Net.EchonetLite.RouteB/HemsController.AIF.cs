@@ -19,9 +19,7 @@ using Polly;
 
 namespace Smdn.Net.EchonetLite.RouteB;
 
-#pragma warning disable IDE0040
 partial class HemsController {
-#pragma warning restore IDE0040
   private EchonetClient? client;
   private LowVoltageSmartElectricEnergyMeter? smartMeterObject;
 

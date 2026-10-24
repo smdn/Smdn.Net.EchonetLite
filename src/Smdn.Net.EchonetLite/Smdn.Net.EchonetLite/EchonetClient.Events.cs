@@ -7,10 +7,7 @@ using Smdn.Net.EchonetLite.ComponentModel;
 
 namespace Smdn.Net.EchonetLite;
 
-#pragma warning disable IDE0040
-partial class EchonetClient
-#pragma warning restore IDE0040
-{
+partial class EchonetClient {
   /// <summary>
   /// イベントの結果として発行されるイベントハンドラー呼び出しをマーシャリングするために使用する<see cref="ISynchronizeInvoke"/>オブジェクトを取得または設定します。
   /// </summary>

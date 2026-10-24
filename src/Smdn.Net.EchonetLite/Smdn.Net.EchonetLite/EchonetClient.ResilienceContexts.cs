@@ -11,10 +11,7 @@ using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
 
-#pragma warning disable IDE0040
-partial class EchonetClient
-#pragma warning restore IDE0040
-{
+partial class EchonetClient {
   [CLSCompliant(false)]
   public static readonly ResiliencePropertyKey<ILogger?> ResiliencePropertyKeyForLogger = new(
     $"{nameof(EchonetClient)}.{nameof(ResiliencePropertyKeyForLogger)}"

@@ -9,9 +9,7 @@ using Polly.Registry.KeyedRegistry;
 
 namespace Smdn.Net.SmartMeter;
 
-#pragma warning disable IDE0040
 partial class SmartMeterDataAggregator {
-#pragma warning restore IDE0040
   public static ResiliencePipelineKeyPair<TServiceKey> CreateResiliencePipelineKeyPair<TServiceKey>(TServiceKey serviceKey, string pipelineKey)
   {
     if (pipelineKey is null)

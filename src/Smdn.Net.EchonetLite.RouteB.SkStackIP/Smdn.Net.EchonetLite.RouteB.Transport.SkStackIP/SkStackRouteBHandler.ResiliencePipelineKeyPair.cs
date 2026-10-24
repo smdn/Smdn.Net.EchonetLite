@@ -9,9 +9,7 @@ using Polly.Registry.KeyedRegistry;
 
 namespace Smdn.Net.EchonetLite.RouteB.Transport.SkStackIP;
 
-#pragma warning disable IDE0040
 partial class SkStackRouteBHandler {
-#pragma warning restore IDE0040
   /// <summary>
   /// A complex key representing a pair of keys: a key of <typeparamref name="TServiceKey"/> type specified when
   /// registering with <see cref="IServiceCollection"/> and a <see cref="string"/> key for

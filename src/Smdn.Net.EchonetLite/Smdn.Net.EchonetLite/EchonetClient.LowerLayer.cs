@@ -16,10 +16,7 @@ using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
 
-#pragma warning disable IDE0040
-partial class EchonetClient
-#pragma warning restore IDE0040
-{
+partial class EchonetClient {
   /// <summary>
   /// 送信するECHONET Lite フレームを書き込むバッファ。
   /// <see cref="echonetLiteHandler"/>によって送信する内容を書き込むために使用する。

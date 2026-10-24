@@ -8,9 +8,7 @@ using System.Linq;
 
 namespace Smdn.Net.EchonetLite.Protocol;
 
-#pragma warning disable IDE0040
 partial class FrameSerializer {
-#pragma warning restore IDE0040
   /// <summary>
   /// 引数で与えられた値をもとに、ECHONET Liteフレームの電文形式 1（規定電文形式）の電文をシリアライズして<see cref="IBufferWriter{Byte}"/>へ書き込みます
   /// </summary>

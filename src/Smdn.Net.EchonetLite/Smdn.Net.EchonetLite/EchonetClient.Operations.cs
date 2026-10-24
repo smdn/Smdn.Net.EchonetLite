@@ -20,10 +20,7 @@ using Smdn.Net.EchonetLite.Protocol;
 
 namespace Smdn.Net.EchonetLite;
 
-#pragma warning disable IDE0040
-partial class EchonetClient
-#pragma warning restore IDE0040
-{
+partial class EchonetClient {
   private const byte EPCInstanceListNotification = 0xD5; // 0xD5 インスタンスリスト通知
 
   /// <summary>

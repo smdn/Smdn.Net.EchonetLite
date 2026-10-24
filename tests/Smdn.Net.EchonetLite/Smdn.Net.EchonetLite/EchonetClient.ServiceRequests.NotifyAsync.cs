@@ -17,9 +17,7 @@ using Smdn.Net.EchonetLite.ResilienceStrategies;
 
 namespace Smdn.Net.EchonetLite;
 
-#pragma warning disable IDE0040
 partial class EchonetClientServiceRequestsTests {
-#pragma warning restore IDE0040
   [Test]
   [CancelAfter(EchonetClientTests.TimeoutInMillisecondsForOperationExpectedToSucceed)]
   public async Task NotifyAsync(CancellationToken cancellationToken)

@@ -13,9 +13,7 @@ using SequenceIs = Smdn.Test.NUnit.Constraints.Buffers.Is;
 
 namespace Smdn.Net.EchonetLite.Transport;
 
-#pragma warning disable IDE0040
 partial class EchonetLiteHandlerTests {
-#pragma warning restore IDE0040
   private const int TimeoutInMillisecondsForReceiveOperationExpectedToSucceed = 5_000;
 
   private class PseudoIncomingEchonetLiteHandler : EchonetLiteHandler {
