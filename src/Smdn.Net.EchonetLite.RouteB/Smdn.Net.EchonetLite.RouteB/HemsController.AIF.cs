@@ -68,16 +68,14 @@ partial class HemsController {
   /// ２．４．２ 応答待ちタイマー
   /// </seealso>
   public TimeSpan TimeoutWaitingResponse1 {
-    get => timeoutWaitingResponse1;
+    get;
     set {
       if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
         throw new ArgumentOutOfRangeException(message: "invalid timeout duration", paramName: nameof(TimeoutWaitingResponse1));
 
-      timeoutWaitingResponse1 = value;
+      field = value;
     }
-  }
-
-  private TimeSpan timeoutWaitingResponse1 = TimeSpan.FromSeconds(20); // XXX: at least 20 sec
+  } = TimeSpan.FromSeconds(20); // XXX: at least 20 sec
 
   /// <summary>
   /// 「応答待ちタイマー2」として定義されるタイムアウト時間を取得・設定します。
@@ -90,16 +88,14 @@ partial class HemsController {
   /// ２．４．２ 応答待ちタイマー
   /// </seealso>
   public TimeSpan TimeoutWaitingResponse2 {
-    get => timeoutWaitingResponse2;
+    get;
     set {
       if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
         throw new ArgumentOutOfRangeException(message: "invalid timeout duration", paramName: nameof(TimeoutWaitingResponse2));
 
-      timeoutWaitingResponse2 = value;
+      field = value;
     }
-  }
-
-  private TimeSpan timeoutWaitingResponse2 = TimeSpan.FromSeconds(60); // XXX: at least 60 sec
+  } = TimeSpan.FromSeconds(60); // XXX: at least 60 sec
 
   /// <summary>
   /// 下位層でのネットワーク接続確立を契機とする、スマートメーターからの自発的な
@@ -110,16 +106,14 @@ partial class HemsController {
   /// タイムアウトさせない場合は、<see cref="Timeout.InfiniteTimeSpan"/>を指定することができます。
   /// </value>
   public TimeSpan TimeoutWaitingProactiveNotification {
-    get => timeoutWaitingProactiveNotification;
+    get;
     set {
       if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
         throw new ArgumentOutOfRangeException(message: "invalid timeout duration", paramName: nameof(TimeoutWaitingProactiveNotification));
 
-      timeoutWaitingProactiveNotification = value;
+      field = value;
     }
-  }
-
-  private TimeSpan timeoutWaitingProactiveNotification = TimeSpan.FromSeconds(5.0); // as default
+  } = TimeSpan.FromSeconds(5.0); // as default
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(true, nameof(client))]

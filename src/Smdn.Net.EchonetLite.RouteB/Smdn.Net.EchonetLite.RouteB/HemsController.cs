@@ -57,8 +57,7 @@ public partial class HemsController : IRouteBCredentialIdentity, IDisposable, IA
       synchronizingObject = value;
 
       // share same ISynchronizeInvoke
-      if (client is not null)
-        client.SynchronizingObject = value;
+      client?.SynchronizingObject = value;
     }
   }
 
