@@ -29,7 +29,7 @@ internal sealed class EchonetSelfNode : EchonetNode {
   internal EchonetSelfNode(EchonetObject nodeProfile, IEnumerable<EchonetObject> devices)
     : base(nodeProfile)
   {
-    this.devices = new(devices);
+    this.devices = [.. devices];
 
     foreach (var device in this.devices) {
       device.OwnerNode = this;
