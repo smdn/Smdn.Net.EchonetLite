@@ -799,8 +799,7 @@ public static class DeviceClasses {
     bool includeProfiles
   )
     => TryLookupClass(classGroupCode, classCode, includeProfiles, out var classObject)
-      ?
-        classObject
+      ? classObject
 #if !NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
         !
 #endif
