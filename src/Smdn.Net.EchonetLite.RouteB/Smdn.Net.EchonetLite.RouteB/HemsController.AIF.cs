@@ -75,7 +75,7 @@ partial class HemsController {
 
       field = value;
     }
-  } = TimeSpan.FromSeconds(20);
+  } = TimeSpan.FromSeconds(20); // XXX: at least 20 sec
 
   /// <summary>
   /// 「応答待ちタイマー2」として定義されるタイムアウト時間を取得・設定します。
@@ -95,7 +95,7 @@ partial class HemsController {
 
       field = value;
     }
-  } = TimeSpan.FromSeconds(60);
+  } = TimeSpan.FromSeconds(60); // XXX: at least 60 sec
 
   /// <summary>
   /// 下位層でのネットワーク接続確立を契機とする、スマートメーターからの自発的な
@@ -113,7 +113,7 @@ partial class HemsController {
 
       field = value;
     }
-  } = TimeSpan.FromSeconds(5.0);
+  } = TimeSpan.FromSeconds(5.0); // as default
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(true, nameof(client))]
