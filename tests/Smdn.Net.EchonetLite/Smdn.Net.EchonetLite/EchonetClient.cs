@@ -133,14 +133,34 @@ public class EchonetClientTests {
 
     using var client = new EchonetClient(handler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler);
 
-    Assert.DoesNotThrow(client.Dispose, "Dispose #1");
+    Assert.That(
+      client.Dispose,
+      Throws.Nothing,
+      "Dispose #1"
+    );
 
-    Assert.DoesNotThrowAsync(async () => await handler.RaiseEDATA2ReceivedAsync(), "frame received after dispose");
+    Assert.That(
+      async () => await handler.RaiseEDATA2ReceivedAsync(),
+      Throws.Nothing,
+      "frame received after dispose"
+    );
 
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.NotifyInstanceListAsync(), "send request after dispose");
+    Assert.That(
+      async () => await client.NotifyInstanceListAsync(),
+      Throws.TypeOf<ObjectDisposedException>(),
+      "send request after dispose"
+    );
 
-    Assert.DoesNotThrow(client.Dispose, "Dispose #2");
-    Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync");
+    Assert.That(
+      client.Dispose,
+      Throws.Nothing,
+      "Dispose #2"
+    );
+    Assert.That(
+      async () => await client.DisposeAsync(),
+      Throws.Nothing,
+      "DisposeAsync"
+    );
   }
 
   [TestCase(true)]
@@ -151,14 +171,35 @@ public class EchonetClientTests {
 
     using var client = new EchonetClient(handler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler);
 
-    Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync #1");
+    Assert.That(
+      async () => await client.DisposeAsync(),
+      Throws.Nothing,
+      "DisposeAsync #1"
+    );
 
-    Assert.DoesNotThrowAsync(async () => await handler.RaiseEDATA2ReceivedAsync(), "frame received after dispose");
+    Assert.That(
+      async () => await handler.RaiseEDATA2ReceivedAsync(),
+      Throws.Nothing,
+      "frame received after dispose"
+    );
 
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.NotifyInstanceListAsync(), "send request after dispose");
+    Assert.That(
+      async () => await client.NotifyInstanceListAsync(),
+      Throws.TypeOf<ObjectDisposedException>(),
+      "send request after dispose"
+    );
 
-    Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), "DisposeAsync #2");
-    Assert.DoesNotThrow(client.Dispose, "Dispose");
+    Assert.That(
+      async () => await client.DisposeAsync(),
+      Throws.Nothing,
+      "DisposeAsync #2"
+    );
+    Assert.That(
+      client.Dispose,
+      Throws.Nothing,
+      "Dispose"
+    );
+
   }
 
   [TestCase(true)]
@@ -182,7 +223,11 @@ public class EchonetClientTests {
 
     using var client = new EchonetClient(asyncDisposableHandler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler);
 
-    Assert.DoesNotThrowAsync(async () => await client.DisposeAsync(), nameof(client.DisposeAsync));
+    Assert.That(
+      async () => await client.DisposeAsync(),
+      Throws.Nothing,
+      nameof(client.DisposeAsync)
+    );
 
     Assert.That(asyncDisposableHandler.IsDisposed, Is.EqualTo(shouldDisposeEchonetLiteHandler), nameof(asyncDisposableHandler.IsDisposed));
   }
