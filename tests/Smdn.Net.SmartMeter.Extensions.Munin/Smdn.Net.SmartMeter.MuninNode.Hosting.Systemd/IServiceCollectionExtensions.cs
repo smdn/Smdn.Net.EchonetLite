@@ -1,16 +1,11 @@
 // SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using System;
-
-using NUnit.Framework;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using NUnit.Framework;
+
 using Smdn.Net.EchonetLite.RouteB;
-using Smdn.Net.EchonetLite.RouteB.DependencyInjection;
-using Smdn.Net.EchonetLite.RouteB.Transport;
-using Smdn.Net.MuninNode.DependencyInjection;
 
 namespace Smdn.Net.SmartMeter.MuninNode.Hosting.Systemd;
 

@@ -429,15 +429,13 @@ internal class QueuedEchonetLiteHandler(IReadOnlyList<IEchonetLiteHandler> queue
   }
 
   public Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? ReceiveCallback {
-    get => receiveCallback;
+    get;
     set {
-      receiveCallback = value;
+      field = value;
 
       foreach (var handler in queuedHandlers) {
         handler.ReceiveCallback = value;
       }
     }
   }
-
-  private Func<IPAddress, ReadOnlyMemory<byte>, CancellationToken, ValueTask>? receiveCallback;
 }

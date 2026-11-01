@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2024 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;

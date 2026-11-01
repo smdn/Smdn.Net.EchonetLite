@@ -1,10 +1,7 @@
 // SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using System;
-
 using Microsoft.Extensions.DependencyInjection;
 
-using Smdn.Net.EchonetLite.RouteB.Credentials;
 using Smdn.Net.EchonetLite.RouteB.DependencyInjection;
 using Smdn.Net.EchonetLite.RouteB.Transport;
 

@@ -1,17 +1,14 @@
 // SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using System;
-
-using NUnit.Framework;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Smdn.Net.EchonetLite.RouteB;
-using Smdn.Net.EchonetLite.RouteB.DependencyInjection;
-using Smdn.Net.EchonetLite.RouteB.Transport;
-using Smdn.Net.MuninNode.DependencyInjection;
+using NUnit.Framework;
 
-namespace Smdn.Net.SmartMeter.MuninNode;
+using Smdn.Net.EchonetLite.RouteB;
+using Smdn.Net.SmartMeter.MuninNode;
+
+namespace Smdn.Net.MuninNode.DependencyInjection;
 
 [TestFixture]
 public class IMuninServiceBuilderExtensionsTests {
@@ -20,15 +17,15 @@ public class IMuninServiceBuilderExtensionsTests {
   {
     new ServiceCollection().AddMunin(
       muninServiceBuilder => {
-      Assert.That(
-        () => ((IMuninServiceBuilder)null!).AddSmartMeterMuninNode(
-          configureMuninNodeOptions: options => { },
-          configureRouteBServices: routeBServices => { }
-        ),
-        Throws
-          .ArgumentNullException
-          .ParamName
-          .EqualTo("builder")
+        Assert.That(
+          () => ((IMuninServiceBuilder)null!).AddSmartMeterMuninNode(
+            configureMuninNodeOptions: options => { },
+            configureRouteBServices: routeBServices => { }
+          ),
+          Throws
+            .ArgumentNullException
+            .ParamName
+            .EqualTo("builder")
         );
       }
     );

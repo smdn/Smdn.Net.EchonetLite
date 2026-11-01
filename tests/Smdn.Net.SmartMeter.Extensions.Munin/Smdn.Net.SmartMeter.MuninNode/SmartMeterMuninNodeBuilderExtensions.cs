@@ -3,13 +3,11 @@
 using System;
 using System.Linq;
 
-using NUnit.Framework;
-
 using Microsoft.Extensions.DependencyInjection;
 
+using NUnit.Framework;
+
 using Smdn.Net.EchonetLite.RouteB;
-using Smdn.Net.EchonetLite.RouteB.DependencyInjection;
-using Smdn.Net.EchonetLite.RouteB.Transport;
 using Smdn.Net.MuninNode.DependencyInjection;
 using Smdn.Net.SmartMeter.MuninPlugin;
 

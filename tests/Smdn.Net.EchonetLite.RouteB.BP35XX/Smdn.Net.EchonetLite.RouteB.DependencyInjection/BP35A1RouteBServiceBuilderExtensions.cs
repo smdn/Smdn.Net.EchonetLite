@@ -114,7 +114,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
     var builder = new PseudoRouteBServiceBuilder<string>(
       services: services,
       serviceKey: ServiceKey,
-      optionNameSelector: null!
+      optionNameSelector: null
     );
 
     Assert.That(
