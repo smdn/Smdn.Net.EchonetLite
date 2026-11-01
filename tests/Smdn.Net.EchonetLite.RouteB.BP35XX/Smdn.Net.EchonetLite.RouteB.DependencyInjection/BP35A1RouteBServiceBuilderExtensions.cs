@@ -47,8 +47,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
       ),
       Throws
         .ArgumentNullException
-        .With
-        .Property(nameof(ArgumentNullException.ParamName))
+        .ParamName
         .EqualTo("configureBP35A1Options")
     );
 
@@ -60,8 +59,7 @@ public class BP35A1RouteBServiceBuilderExtensionsTests {
       ),
       Throws
         .ArgumentNullException
-        .With
-        .Property(nameof(ArgumentNullException.ParamName))
+        .ParamName
         .EqualTo("configureBP35A1Options")
     );
   }

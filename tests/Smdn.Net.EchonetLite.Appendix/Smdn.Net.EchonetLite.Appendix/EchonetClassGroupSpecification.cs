@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace Smdn.Net.EchonetLite.Appendix;
 
@@ -99,8 +100,9 @@ public class EchonetClassGroupSpecificationTests {
     if (expectedExceptionType is null) {
       EchonetClassGroupSpecification? cg = null;
 
-      Assert.DoesNotThrow(
+      Assert.That(
         () => cg = createClassGroup(),
+        Throws.Nothing,
         message: testCaseName
       );
 
@@ -110,14 +112,16 @@ public class EchonetClassGroupSpecificationTests {
         assertClassGroup(cg!);
     }
     else {
-      var ex = Assert.Throws(
-        expectedExceptionType,
-        () => createClassGroup(),
-        message: testCaseName
-      );
+      Constraint constraint = Throws.TypeOf(expectedExceptionType);
 
       if (expectedArgumentExceptionParamName is not null)
-        Assert.That((ex as ArgumentException)!.ParamName, Is.EqualTo(expectedArgumentExceptionParamName), $"{testCaseName} ParamName");
+        constraint = constraint.With.Property(nameof(ArgumentException.ParamName)).EqualTo(expectedArgumentExceptionParamName);
+
+      Assert.That(
+        () => createClassGroup(),
+        constraint,
+        message: testCaseName
+      );
     }
   }
 

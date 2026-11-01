@@ -71,7 +71,7 @@ public class RouteBEchonetLiteHandlerTests {
       async () => await handler.ConnectAsync(credential: null!),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("credential")
+        .ParamName.EqualTo("credential")
     );
   }
 

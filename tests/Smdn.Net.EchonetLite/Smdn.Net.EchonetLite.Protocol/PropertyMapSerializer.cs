@@ -231,7 +231,7 @@ public partial class PropertyMapSerializerSerializerTests {
       ),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("propertyMap")
+        .ParamName.EqualTo("propertyMap")
     );
   }
 
@@ -245,7 +245,7 @@ public partial class PropertyMapSerializerSerializerTests {
       ),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("writer")
+        .ParamName.EqualTo("writer")
     );
   }
 

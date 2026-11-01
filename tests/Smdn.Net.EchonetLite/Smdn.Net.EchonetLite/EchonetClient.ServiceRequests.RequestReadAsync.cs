@@ -103,7 +103,7 @@ partial class EchonetClientServiceRequestsTests {
       ),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("destinationNodeAddress")
+        .ParamName.EqualTo("destinationNodeAddress")
     );
   }
 
@@ -121,7 +121,7 @@ partial class EchonetClientServiceRequestsTests {
       ),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("propertyCodes")
+        .ParamName.EqualTo("propertyCodes")
     );
   }
 

@@ -27,8 +27,7 @@ public class IMuninServiceBuilderExtensionsTests {
         ),
         Throws
           .ArgumentNullException
-          .With
-          .Property(nameof(ArgumentNullException.ParamName))
+          .ParamName
           .EqualTo("builder")
         );
       }

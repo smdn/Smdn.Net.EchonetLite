@@ -24,7 +24,7 @@ partial class FrameSerializerTests {
   [Test]
   public void SerializeEchonetLiteFrameFormat1_ArgumentNull_Buffer()
   {
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: null!,
         tid: ZeroTID,
@@ -33,6 +33,7 @@ partial class FrameSerializerTests {
         esv: default,
         properties: Array.Empty<PropertyValue>()
       ),
+      Throws.ArgumentNullException,
       message: "buffer null"
     );
   }
@@ -40,7 +41,7 @@ partial class FrameSerializerTests {
   [Test]
   public void SerializeEchonetLiteFrameFormat1_ArgumentNull_Properties()
   {
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: new ArrayBufferWriter<byte>(),
         tid: ZeroTID,
@@ -50,10 +51,11 @@ partial class FrameSerializerTests {
         propertiesForSet: null!,
         propertiesForGet: Array.Empty<PropertyValue>()
       ),
+      Throws.ArgumentNullException,
       message: "propertiesForSet null"
     );
 
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => FrameSerializer.SerializeEchonetLiteFrameFormat1(
         buffer: new ArrayBufferWriter<byte>(),
         tid: ZeroTID,
@@ -63,6 +65,7 @@ partial class FrameSerializerTests {
         propertiesForSet: [new()],
         propertiesForGet: null!
       ),
+      Throws.ArgumentNullException,
       message: "propertiesForGet null"
     );
   }
@@ -477,8 +480,9 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetGetResponse)]
   public void SerializeEchonetLiteFrameFormat1_OPCSet_ForNoProperty_OfESVOtherThanSetGetSNA(ESV esv)
   {
-    Assert.Throws<InvalidOperationException>(
+    Assert.That(
       () => SerializeEchonetLiteFrameFormat1_OPCSet_ForNoProperty(esv),
+      Throws.InvalidOperationException,
       message: "OPCSet can not be zero when ESV is other than SetGet_SNA."
     );
   }
@@ -527,8 +531,9 @@ partial class FrameSerializerTests {
   [TestCase(ESV.SetGetResponse)]
   public void SerializeEchonetLiteFrameFormat1_OPCGet_ForNoProperty_OfESVOtherThanSetGetSNA(ESV esv)
   {
-    Assert.Throws<InvalidOperationException>(
+    Assert.That(
       () => SerializeEchonetLiteFrameFormat1_OPCGet_ForNoProperty(esv),
+      Throws.InvalidOperationException,
       message: "OPCGet can not be zero when ESV is other than SetGet_SNA."
     );
   }
@@ -572,12 +577,13 @@ partial class FrameSerializerTests {
   [Test]
   public void SerializeEchonetLiteFrameFormat2_ArgumentNull_Buffer()
   {
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => FrameSerializer.SerializeEchonetLiteFrameFormat2(
         buffer: null!,
         tid: ZeroTID,
         edata: default
       ),
+      Throws.ArgumentNullException,
       message: "buffer null"
     );
   }

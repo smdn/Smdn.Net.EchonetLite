@@ -12,22 +12,23 @@ public class Format1MessageTests {
   [TestCase(ESV.SetGetResponse)]
   [TestCase(ESV.SetGetServiceNotAvailable)]
   public void Ctor_NotForWriteOrReadService_ESVMismatch(ESV esv)
-  {
-    Assert.Throws<ArgumentException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyValue>())
+    => Assert.That(
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, properties: Array.Empty<PropertyValue>()),
+      Throws.ArgumentException
     );
-  }
 
   [TestCase(ESV.SetGet)]
   [TestCase(ESV.SetGetResponse)]
   [TestCase(ESV.SetGetServiceNotAvailable)]
   public void Ctor_ForWriteOrReadService_BothPropsForSetAndPropsForGetCanNotBeNull(ESV esv)
   {
-    Assert.Throws<ArgumentNullException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: null!, propertiesForGet: Array.Empty<PropertyValue>())
+    Assert.That(
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: null!, propertiesForGet: Array.Empty<PropertyValue>()),
+      Throws.ArgumentNullException
     );
-    Assert.Throws<ArgumentNullException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyValue>(), propertiesForGet: null!)
+    Assert.That(
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyValue>(), propertiesForGet: null!),
+      Throws.ArgumentNullException
     );
   }
 
@@ -37,11 +38,10 @@ public class Format1MessageTests {
   [TestCase(ESV.SetIServiceNotAvailable)]
   [TestCase(ESV.GetServiceNotAvailable)]
   public void Ctor_ForWriteOrReadService_ESVMismatch(ESV esv)
-  {
-    Assert.Throws<ArgumentException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyValue>(), propertiesForGet: Array.Empty<PropertyValue>())
+    => Assert.That(
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, propertiesForSet: Array.Empty<PropertyValue>(), propertiesForGet: Array.Empty<PropertyValue>()),
+      Throws.ArgumentException
     );
-  }
 
   [TestCase(ESV.SetI)]
   [TestCase(ESV.Get)]
@@ -49,11 +49,10 @@ public class Format1MessageTests {
   [TestCase(ESV.SetIServiceNotAvailable)]
   [TestCase(ESV.GetServiceNotAvailable)]
   public void Ctor_NotForWriteOrReadService_PropsCanNotBeNull(ESV esv)
-  {
-    Assert.Throws<ArgumentNullException>(
-      () => new Format1Message(seoj: default, deoj: default, esv: esv, properties: null!)
+    => Assert.That(
+      () => new Format1Message(seoj: default, deoj: default, esv: esv, properties: null!),
+      Throws.ArgumentNullException
     );
-  }
 
   [TestCase(ESV.SetI, false)]
   [TestCase(ESV.SetC, false)]

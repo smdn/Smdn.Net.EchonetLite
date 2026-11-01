@@ -171,7 +171,7 @@ partial class EchonetClientServiceRequestsTests {
       ),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("properties")
+        .ParamName.EqualTo("properties")
     );
   }
 }

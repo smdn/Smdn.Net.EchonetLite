@@ -16,7 +16,7 @@ public class ElectricEnergyValueTests {
       () => new ElectricEnergyValue(rawValue: rawValue, multiplierToKiloWattHours: 1.0m),
       Throws
         .TypeOf<ArgumentOutOfRangeException>()
-        .With.Property(nameof(ArgumentOutOfRangeException.ParamName)).EqualTo("rawValue")
+        .ParamName.EqualTo("rawValue")
         .With.Property(nameof(ArgumentOutOfRangeException.ActualValue)).EqualTo(rawValue)
     );
   }
@@ -31,7 +31,7 @@ public class ElectricEnergyValueTests {
       () => new ElectricEnergyValue(rawValue: 0, multiplierToKiloWattHours: multiplierToKiloWattHours),
       Throws
         .TypeOf<ArgumentOutOfRangeException>()
-        .With.Property(nameof(ArgumentOutOfRangeException.ParamName)).EqualTo("multiplierToKiloWattHours")
+        .ParamName.EqualTo("multiplierToKiloWattHours")
         .With.Property(nameof(ArgumentOutOfRangeException.ActualValue)).EqualTo(multiplierToKiloWattHours)
     );
   }

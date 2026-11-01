@@ -210,7 +210,7 @@ public class EchonetClientTests {
 
     using var client = new EchonetClient(disposableHandler, shouldDisposeEchonetLiteHandler: shouldDisposeEchonetLiteHandler);
 
-    Assert.DoesNotThrow(client.Dispose, nameof(client.Dispose));
+    Assert.That(client.Dispose, Throws.Nothing, nameof(client.Dispose));
 
     Assert.That(disposableHandler.IsDisposed, Is.EqualTo(shouldDisposeEchonetLiteHandler), nameof(disposableHandler.IsDisposed));
   }

@@ -32,17 +32,25 @@ public class SmartMeterDataAggregatorResiliencePipelineKeyPairTests {
     Assert.That(key.PipelineKey, Is.EqualTo(PipelineKey));
   }
 
-  [TestCase(null, typeof(ArgumentNullException))]
-  [TestCase("", typeof(ArgumentException))]
-  public void Ctor_ArgumentException(string? pipelineKey, Type typeOfExpectedException)
+  [Test]
+  public void Ctor_ArgumentNullException()
   {
     Assert.That(
-      () => new SmartMeterDataAggregator.ResiliencePipelineKeyPair<string>("service", pipelineKey: pipelineKey!),
+      () => new SmartMeterDataAggregator.ResiliencePipelineKeyPair<string>("service", pipelineKey: null!),
       Throws
-        .TypeOf(typeOfExpectedException)
-        .With
-        .Property(nameof(ArgumentException.ParamName))
-        .EqualTo("pipelineKey")
+        .ArgumentNullException
+        .ParamName.EqualTo("pipelineKey")
+    );
+  }
+
+  [Test]
+  public void Ctor_ArgumentException_PipelineKeyEmpty()
+  {
+    Assert.That(
+      () => new SmartMeterDataAggregator.ResiliencePipelineKeyPair<string>("service", pipelineKey: string.Empty),
+      Throws
+        .ArgumentException
+        .ParamName.EqualTo("pipelineKey")
     );
   }
 

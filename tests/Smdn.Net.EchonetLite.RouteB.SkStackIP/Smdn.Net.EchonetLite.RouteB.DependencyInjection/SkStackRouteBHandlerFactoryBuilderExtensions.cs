@@ -51,8 +51,7 @@ public class SkStackRouteBHandlerFactoryBuilderExtensionsTests {
       ),
       Throws
         .ArgumentNullException
-        .With
-        .Property(nameof(ArgumentNullException.ParamName))
+        .ParamName
         .EqualTo("postConfigureClient")
     );
   }

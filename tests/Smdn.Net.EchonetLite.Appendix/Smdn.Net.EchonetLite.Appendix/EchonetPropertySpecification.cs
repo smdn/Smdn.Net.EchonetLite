@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace Smdn.Net.EchonetLite.Appendix;
 
@@ -141,8 +142,9 @@ public class EchonetPropertySpecificationTests {
     if (expectedExceptionType is null) {
       EchonetPropertySpecification? prop = null;
 
-      Assert.DoesNotThrow(
+      Assert.That(
         () => prop = createProperty(),
+        Throws.Nothing,
         message: testCaseName
       );
 
@@ -152,14 +154,16 @@ public class EchonetPropertySpecificationTests {
         assertProperty(prop!);
     }
     else {
-      var ex = Assert.Throws(
-        expectedExceptionType,
-        () => createProperty(),
-        message: testCaseName
-      );
+      Constraint constraint = Throws.TypeOf(expectedExceptionType);
 
       if (expectedArgumentExceptionParamName is not null)
-        Assert.That((ex as ArgumentException)!.ParamName, Is.EqualTo(expectedArgumentExceptionParamName), $"{testCaseName} ParamName");
+        constraint = constraint.With.Property(nameof(ArgumentException.ParamName)).EqualTo(expectedArgumentExceptionParamName);
+
+      Assert.That(
+        () => createProperty(),
+        constraint,
+        message: testCaseName
+      );
     }
   }
 

@@ -113,18 +113,20 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   {
     var services = new ServiceCollection();
 
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => services.AddRouteBCredential(
         id: id!,
         password: password!
-      )
+      ),
+      Throws.ArgumentNullException
     );
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => services.AddRouteBCredential(
         serviceKey: "key",
         id: id!,
         password: password!
-      )
+      ),
+      Throws.ArgumentNullException
     );
   }
 
@@ -133,11 +135,12 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   {
     var services = new ServiceCollection();
 
-    Assert.DoesNotThrow(
+    Assert.That(
       () => services.AddRouteBCredentialFromEnvironmentVariable(
         envVarForId: EnvVarForId,
         envVarForPassword: EnvVarForPassword
-      )
+      ),
+      Throws.Nothing
     );
 
     var credentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
@@ -164,19 +167,21 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   {
     var services = new ServiceCollection();
 
-    Assert.DoesNotThrow(
+    Assert.That(
       () => services.AddRouteBCredentialFromEnvironmentVariable(
         serviceKey: "key1",
         envVarForId: "this_must_not_be_selected",
         envVarForPassword: "this_must_not_be_selected"
-      )
+      ),
+      Throws.Nothing
     );
-    Assert.DoesNotThrow(
+    Assert.That(
       () => services.AddRouteBCredentialFromEnvironmentVariable(
         serviceKey: "key2",
         envVarForId: EnvVarForId,
         envVarForPassword: EnvVarForPassword
-      )
+      ),
+      Throws.Nothing
     );
 
     var credentialProvider = services.BuildServiceProvider().GetRequiredKeyedService<IRouteBCredentialProvider>("key2");
@@ -204,11 +209,12 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   {
     var services = new ServiceCollection();
 
-    Assert.DoesNotThrow(
+    Assert.That(
       () => services.AddRouteBCredentialFromEnvironmentVariable(
         envVarForId: EnvVarForId,
         envVarForPassword: EnvVarForPassword
-      )
+      ),
+      Throws.Nothing
     );
 
     var credentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
@@ -219,8 +225,9 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
       Environment.SetEnvironmentVariable(EnvVarForId, id);
       Environment.SetEnvironmentVariable(EnvVarForPassword, password);
 
-      Assert.Throws<InvalidOperationException>(
-        () => GetCredential(credentialProvider, identity: null!)
+      Assert.That(
+        () => GetCredential(credentialProvider, identity: null!),
+        Throws.InvalidOperationException
       );
     }
     finally {
@@ -234,18 +241,20 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   {
     var services = new ServiceCollection();
 
-    Assert.DoesNotThrow(
+    Assert.That(
       () => services.AddRouteBCredentialFromEnvironmentVariable(
         envVarForId: EnvVarForId,
         envVarForPassword: EnvVarForPassword
-      )
+      ),
+      Throws.Nothing
     );
 
-    Assert.DoesNotThrow(
+    Assert.That(
       () => services.AddRouteBCredentialFromEnvironmentVariable(
         envVarForId: "this_must_not_be_selected",
         envVarForPassword: "this_must_not_be_selected"
-      )
+      ),
+      Throws.Nothing
     );
 
     var credentialProvider = services.BuildServiceProvider().GetRequiredService<IRouteBCredentialProvider>();
@@ -279,21 +288,21 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   {
     var services = new ServiceCollection();
 
-    Assert.Throws(
-      typeOfExpectedException,
+    Assert.That(
       () => services.AddRouteBCredentialFromEnvironmentVariable(
         envVarForId: envVarForId!,
         envVarForPassword: envVarForPassword!
-      )
+      ),
+      Throws.TypeOf(typeOfExpectedException)
     );
 
-    Assert.Throws(
-      typeOfExpectedException,
+    Assert.That(
       () => services.AddRouteBCredentialFromEnvironmentVariable(
         serviceKey: "key",
         envVarForId: envVarForId!,
         envVarForPassword: envVarForPassword!
-      )
+      ),
+      Throws.TypeOf(typeOfExpectedException)
     );
   }
 
@@ -392,16 +401,18 @@ public class RouteBCredentialServiceCollectionExtensionsTests {
   {
     var services = new ServiceCollection();
 
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => services.AddRouteBCredentialProvider(
         credentialProvider: null!
-      )
+      ),
+      Throws.ArgumentNullException
     );
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => services.AddRouteBCredentialProvider(
         serviceKey: "key",
         credentialProvider: null!
-      )
+      ),
+      Throws.ArgumentNullException
     );
   }
 }

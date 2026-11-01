@@ -102,8 +102,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
       ),
       Throws
         .ArgumentNullException
-        .With
-        .Property(nameof(ArgumentNullException.ParamName))
+        .ParamName
         .EqualTo("configureSessionOptions")
     );
 
@@ -114,8 +113,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
       ),
       Throws
         .ArgumentNullException
-        .With
-        .Property(nameof(ArgumentNullException.ParamName))
+        .ParamName
         .EqualTo("configureSessionOptions")
     );
   }
@@ -160,8 +158,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
       ),
       Throws
         .ArgumentNullException
-        .With
-        .Property(nameof(ArgumentNullException.ParamName))
+        .ParamName
         .EqualTo("createHandlerFactoryBuilder")
     );
 
@@ -172,8 +169,7 @@ public class SkStackRouteBServiceBuilderExtensionsTests {
       ),
       Throws
         .ArgumentNullException
-        .With
-        .Property(nameof(ArgumentNullException.ParamName))
+        .ParamName
         .EqualTo("createHandlerFactoryBuilder")
     );
   }

@@ -221,7 +221,7 @@ public partial class EchonetLiteHandlerTests {
       async () => await handler.SendToAsync(remoteAddress: null!, data: default, cancellationToken: default),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("remoteAddress")
+        .ParamName.EqualTo("remoteAddress")
     );
   }
 

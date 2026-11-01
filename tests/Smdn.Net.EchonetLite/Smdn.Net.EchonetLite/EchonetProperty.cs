@@ -237,7 +237,7 @@ public class EchonetPropertyTests {
   {
     var (_, p) = await CreatePropertyAsync();
 
-    Assert.Throws<ArgumentNullException>(() => p.WriteValue(null!));
+    Assert.That(() => p.WriteValue(null!), Throws.ArgumentNullException);
   }
 
   private static System.Collections.IEnumerable YieldTestCases_WriteValue()
@@ -397,11 +397,17 @@ public class EchonetPropertyTests {
       countOfValueUpdated++;
     };
 
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true));
+    Assert.That(
+      () => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true),
+      Throws.Nothing
+    );
 
     Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #1");
 
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: false, setLastUpdatedTime: true));
+    Assert.That(
+      () => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: false, setLastUpdatedTime: true),
+      Throws.Nothing
+    );
 
     Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #2");
   }
@@ -464,16 +470,25 @@ public class EchonetPropertyTests {
       countOfValueUpdated++;
     };
 
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true));
+    Assert.That(
+      () => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true),
+      Throws.Nothing
+    );
 
     Assert.That(countOfValueUpdated, Is.EqualTo(1), $"{nameof(countOfValueUpdated)} #1");
 
     // set same value again
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true));
+    Assert.That(
+      () => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: true, setLastUpdatedTime: true),
+      Throws.Nothing
+    );
 
     Assert.That(countOfValueUpdated, Is.EqualTo(2), $"{nameof(countOfValueUpdated)} #2");
 
-    Assert.DoesNotThrow(() => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: false, setLastUpdatedTime: true));
+    Assert.That(
+      () => p.SetValue(newValue.AsMemory(), raiseValueUpdatedEvent: false, setLastUpdatedTime: true),
+      Throws.Nothing
+    );
 
     Assert.That(countOfValueUpdated, Is.EqualTo(2), $"{nameof(countOfValueUpdated)} #3");
   }

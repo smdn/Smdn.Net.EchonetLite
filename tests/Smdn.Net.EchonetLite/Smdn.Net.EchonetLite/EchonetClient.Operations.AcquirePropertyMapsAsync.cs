@@ -336,7 +336,7 @@ partial class EchonetClientOperationsTests {
       ),
       Throws
         .ArgumentNullException
-        .With.Property(nameof(ArgumentNullException.ParamName)).EqualTo("device")
+        .ParamName.EqualTo("device")
     );
   }
 
@@ -360,7 +360,7 @@ partial class EchonetClientOperationsTests {
       ),
       Throws
         .ArgumentException
-        .With.Property(nameof(ArgumentException.ParamName)).EqualTo("device")
+        .ParamName.EqualTo("device")
     );
   }
 }
