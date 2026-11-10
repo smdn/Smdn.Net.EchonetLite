@@ -25,7 +25,11 @@ public abstract class PeriodicCumulativeElectricEnergyPlugin : PeriodicCumulativ
   public string Name { get; }
   public IPluginGraphAttributes GraphAttributes { get; }
   public IPluginDataSource DataSource => this;
+#pragma warning disable CS0618 // CS0618: 'INodeSessionCallback' is obsolete
+  // Although `INodeSessionCallback` is marked as obsolete, this property will be
+  // retained until the next major version release to maintain API compatibility.
   public INodeSessionCallback? SessionCallback => null;
+#pragma warning restore CS0618
 
   /*
    * IPluginDataSource
