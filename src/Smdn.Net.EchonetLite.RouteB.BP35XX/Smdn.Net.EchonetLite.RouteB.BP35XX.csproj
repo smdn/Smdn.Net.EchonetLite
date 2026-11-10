@@ -32,6 +32,14 @@ ECHONET Lite規格における下位通信層に相当する実装を作成す�
     <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.EchonetLite.RouteB.SkStackIP\Smdn.Net.EchonetLite.RouteB.SkStackIP.csproj'))" />
   </ItemGroup>
 
+  <ItemGroup
+    Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))"
+    Label="Update to AOT-ready package version"
+  >
+    <PackageReference Update="Smdn.Net.SkStackIP" Version="[1.7.0,2.0.0)" />
+    <PackageReference Update="Smdn.Devices.BP35XX" Version="[2.4.0,3.0.0)" />
+  </ItemGroup>
+
   <Target Name="GenerateReadmeFileContent">
     <PropertyGroup>
       <PackageReadmeFileContent><![CDATA[# $(PackageId) $(PackageVersion)

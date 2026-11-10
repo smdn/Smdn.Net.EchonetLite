@@ -14,6 +14,20 @@ SPDX-License-Identifier: MIT
     <PackageReference Update="System.Text.Json" Version="6.0.10" />
   </ItemGroup>
 
+  <ItemGroup
+    Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))"
+    Label="Update to AOT-ready package version"
+  >
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Options" Version="10.0.0" />
+    <PackageReference Update="Polly.Core" Version="8.9.0" />
+    <PackageReference Update="Polly.Extensions" Version="8.9.0" />
+    <PackageReference Update="Smdn.Extensions.Polly.KeyedRegistry" Version="[1.3.0,2.0.0)" />
+    <PackageReference Update="System.Text.Json" Version="10.0.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectOrPackageReference ReferencePackageVersion="2.1.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite\Smdn.Net.EchonetLite.csproj'))" />
     <ProjectOrPackageReference ReferencePackageVersion="2.0.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.Primitives\Smdn.Net.EchonetLite.Primitives.csproj'))" />
@@ -21,5 +35,17 @@ SPDX-License-Identifier: MIT
     <ProjectOrPackageReference ReferencePackageVersion="2.1.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB.Primitives\Smdn.Net.EchonetLite.RouteB.Primitives.csproj'))" />
     <ProjectOrPackageReference ReferencePackageVersion="2.0.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB.SkStackIP\Smdn.Net.EchonetLite.RouteB.SkStackIP.csproj'))" />
     <ProjectOrPackageReference ReferencePackageVersion="2.1.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.SmartMeter\Smdn.Net.SmartMeter.csproj'))" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))"
+    Label="Update to AOT-ready package version"
+  >
+    <ProjectOrPackageReference ReferencePackageVersion="2.3.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite\Smdn.Net.EchonetLite.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.3.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.Primitives\Smdn.Net.EchonetLite.Primitives.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.3.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB\Smdn.Net.EchonetLite.RouteB.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.3.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB.Primitives\Smdn.Net.EchonetLite.RouteB.Primitives.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.2.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.EchonetLite.RouteB.SkStackIP\Smdn.Net.EchonetLite.RouteB.SkStackIP.csproj'))" />
+    <ProjectOrPackageReference ReferencePackageVersion="2.3.0" Update="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)\Smdn.Net.SmartMeter\Smdn.Net.SmartMeter.csproj'))" />
   </ItemGroup>
 </Project>
