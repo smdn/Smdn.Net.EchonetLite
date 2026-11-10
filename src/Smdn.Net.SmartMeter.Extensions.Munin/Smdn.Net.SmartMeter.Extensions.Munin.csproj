@@ -38,6 +38,13 @@ This library also provides a `BackgroundService` implementation that allows the 
     <ProjectOrPackageReference Include="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\Smdn.Net.SmartMeter\Smdn.Net.SmartMeter.csproj'))" />
   </ItemGroup>
 
+  <ItemGroup
+    Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))"
+    Label="Update to AOT-ready package version"
+  >
+    <PackageReference Update="Smdn.Net.MuninNode.Hosting" Version="3.3.0"/>
+  </ItemGroup>
+
   <Target Name="GenerateReadmeFileContent">
     <PropertyGroup>
       <PackageReadmeFileContent><![CDATA[# $(PackageId) $(PackageVersion)
