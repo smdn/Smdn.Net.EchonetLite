@@ -86,9 +86,10 @@ public sealed class EchonetNodeRegistry {
 
     if (ReferenceEquals(newNode, addedNode)) {
       addedNode.SetOwner(
+#if DEBUG
         owner
-#if !DEBUG
-        !
+#else
+        owner!
 #endif
       );
 
