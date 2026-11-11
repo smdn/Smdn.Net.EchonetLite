@@ -21,7 +21,7 @@ internal static class ReadOnlyMemoryOfByteExtensions {
     => Convert.ToHexString(bytes.Span);
 #else
     => MemoryMarshal.TryGetArray(bytes, out var segment)
-      ? BitConverter.ToString(segment.Array!, segment.Offset, segment.Count)
+      ? BitConverter.ToString(segment.Array, segment.Offset, segment.Count)
       : BitConverter.ToString(bytes.ToArray()); // fallback
 #endif
 }

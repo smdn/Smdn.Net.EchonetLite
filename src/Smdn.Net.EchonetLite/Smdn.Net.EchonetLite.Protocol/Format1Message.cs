@@ -133,11 +133,7 @@ public readonly struct Format1Message {
     if (IsWriteAndReadService)
       throw new InvalidOperationException($"invalid operation for the ESV of the current instance (ESV={ESV.ToSymbolString()})");
 
-#if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
     return propsForSetOrGet;
-#else
-    return propsForSetOrGet!;
-#endif
   }
 
   /// <summary>
@@ -163,7 +159,7 @@ public readonly struct Format1Message {
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
     return (propsForSetOrGet, propsForGet);
 #else
-    return (propsForSetOrGet!, propsForGet!);
+    return (propsForSetOrGet, propsForGet!);
 #endif
   }
 

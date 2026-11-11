@@ -126,7 +126,7 @@ public abstract class EchonetLiteHandler : IEchonetLiteHandler, IDisposable, IAs
 
     taskReceiveEchonetLite = (taskFactoryForReceiving ?? Task.Factory).StartNew(
       function: async state => await ReceiveEchonetLiteAsync(
-        cancellationToken: (CancellationToken)state
+        cancellationToken: state is CancellationToken token ? token : default
       ).ConfigureAwait(false),
       state: cancellationTokenSourceReceiveEchonetLite.Token,
       cancellationToken: cancellationTokenSourceReceiveEchonetLite.Token,
