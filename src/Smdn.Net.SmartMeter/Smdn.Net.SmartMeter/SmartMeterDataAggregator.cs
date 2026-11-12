@@ -350,7 +350,7 @@ public partial class SmartMeterDataAggregator : HemsController {
     aggregationTask = (aggregationTaskFactory ?? Task.Factory).StartNew(
       action: async state => {
         var resilienceContext = ResilienceContextPool.Shared.Get(
-          cancellationToken: (CancellationToken)state!
+          cancellationToken: state is CancellationToken token ? token : default
         );
 
         try {
